@@ -1,57 +1,8 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { mailpitAvailable, signInByEmail, signInLinkFor } from "./support/email-sign-in";
 
 // Workflow A, first half (SPEC §3): sign in with an email link, see the departments, request to
 // join. Needs the local Supabase stack (`npm run db:start`); Mailpit catches the email.
-
-const MAILPIT_URL = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
-
-type MailpitSearch = { messages: { ID: string }[] };
-type MailpitMessage = { HTML: string };
-
-async function mailpitAvailable(): Promise<boolean> {
-  try {
-    const response = await fetch(`${MAILPIT_URL}/api/v1/info`);
-    return response.ok;
-  } catch {
-    return false;
-  }
-}
-
-async function signInLinkFor(email: string): Promise<string> {
-  const query = encodeURIComponent(`to:"${email}"`);
-  let link: string | undefined;
-  await expect
-    .poll(
-      async () => {
-        const search = (await (
-          await fetch(`${MAILPIT_URL}/api/v1/search?query=${query}`)
-        ).json()) as MailpitSearch;
-        const id = search.messages[0]?.ID;
-        if (!id) {
-          return undefined;
-        }
-        const message = (await (
-          await fetch(`${MAILPIT_URL}/api/v1/message/${id}`)
-        ).json()) as MailpitMessage;
-        link = /href="([^"]*\/auth\/confirm[^"]*)"/
-          .exec(message.HTML)?.[1]
-          ?.replaceAll("&amp;", "&");
-        return link;
-      },
-      { message: "waiting for the sign-in email", timeout: 15_000 },
-    )
-    .toBeTruthy();
-  return link as string;
-}
-
-async function signInByEmail(page: Page, email: string) {
-  await page.goto("/sign-in");
-  await page.getByLabel("Email address").fill(email);
-  await page.getByRole("button", { name: "Email me a sign-in link" }).click();
-  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
-  await page.goto(await signInLinkFor(email));
-  await expect(page).toHaveURL(/\/home$/);
-}
 
 test.beforeEach(async () => {
   test.skip(!(await mailpitAvailable()), "Local Supabase is not running (npm run db:start)");
