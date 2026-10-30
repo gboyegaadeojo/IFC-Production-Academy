@@ -4,6 +4,8 @@ import { Wordmark } from "@/components/brand";
 import { buttonClasses } from "@/components/ui/button";
 import { signOutAction } from "@/app/auth/actions";
 import { getCurrentUser } from "@/lib/data/auth";
+import { getMyCapabilities } from "@/lib/data/capabilities";
+import { adminSections } from "@/lib/domain/admin";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
@@ -30,8 +32,18 @@ async function AccountMenu() {
   if (!user) {
     return null;
   }
+  // Only areas a person may use are shown (SPEC §8); each admin page checks again on the server.
+  const showAdmin = user.status === "active" && adminSections(await getMyCapabilities()).length > 0;
   return (
     <div className="flex items-center gap-3">
+      {showAdmin ? (
+        <Link
+          href="/admin"
+          className="flex min-h-11 items-center rounded-button px-3 text-small font-medium text-accent-light underline-offset-4 hover:underline"
+        >
+          Admin
+        </Link>
+      ) : null}
       <span className="hidden text-small text-text-secondary sm:inline">{user.displayName}</span>
       <form action={signOutAction}>
         <button type="submit" className={buttonClasses("secondary", "min-h-11 px-4 text-small")}>

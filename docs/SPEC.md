@@ -436,7 +436,7 @@ Your full inventory (section 26 of your package) stands. These are the screens t
 
 | Screen | What it must do |
 | --- | --- |
-| Sign-in and invitation | Full-bleed IFC team photo, logo, one-tap Google, email link fallback; invite links and QR codes open straight into the right department |
+| Sign-in and invitation | Full-bleed IFC team photo, logo, email sign-in link (the only sign-in method, decided 2026-10-30); invite links and QR codes open straight into the right department |
 | Onboarding | Pick departments of interest from large photo tiles in each department's hue; set notification preferences |
 | Home dashboard | Answers "Where am I? What next? Am I ready?": greeting, a dominant Continue Learning card, department progress rings with text labels, next assessment or action, upcoming serving, recent achievements |
 | Department overview | Cinematic cover, purpose, three level cards; locked levels say what is missing ("Pass the Level 1 practical to unlock"); SOPs and leader contact |

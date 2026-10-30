@@ -192,6 +192,18 @@ export type Database = {
         Args: never;
         Returns: { capability: string; department_id: string | null }[];
       };
+      profile_emails: {
+        Args: { p_user_ids: string[] };
+        Returns: { user_id: string; email: string | null }[];
+      };
+      set_account_status: {
+        Args: {
+          p_user_id: string;
+          p_status: Database["public"]["Enums"]["account_status"];
+          p_reason?: string | null;
+        };
+        Returns: Database["public"]["Tables"]["profiles"]["Row"];
+      };
       keepalive: {
         Args: never;
         Returns: string;
