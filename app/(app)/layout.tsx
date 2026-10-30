@@ -44,7 +44,13 @@ async function AccountMenu() {
           Admin
         </Link>
       ) : null}
-      <span className="hidden text-small text-text-secondary sm:inline">{user.displayName}</span>
+      <Link
+        href="/profile"
+        aria-label={`Your profile: ${user.displayName}`}
+        className="flex min-h-11 max-w-40 items-center truncate rounded-button px-2 text-small text-text-secondary underline-offset-4 hover:text-text hover:underline"
+      >
+        <span className="truncate">{user.displayName}</span>
+      </Link>
       <form action={signOutAction}>
         <button type="submit" className={buttonClasses("secondary", "min-h-11 px-4 text-small")}>
           Sign out
