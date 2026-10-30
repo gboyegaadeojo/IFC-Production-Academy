@@ -5,7 +5,8 @@ import { safeNextPath } from "@/lib/domain/auth";
 
 const codeSchema = z.string().min(1).max(512);
 
-// Google sign-in returns here with a one-time code (PKCE).
+// Google sign-in, and email links sent with Supabase's default template (via=email), return
+// here with a one-time code (PKCE).
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const code = codeSchema.safeParse(params.get("code"));
@@ -16,5 +17,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(new URL(safeNextPath(params.get("next")), request.url));
     }
   }
-  return NextResponse.redirect(new URL("/sign-in?error=oauth_failed", request.url));
+  const error = params.get("via") === "email" ? "link_invalid" : "oauth_failed";
+  return NextResponse.redirect(new URL(`/sign-in?error=${error}`, request.url));
 }
