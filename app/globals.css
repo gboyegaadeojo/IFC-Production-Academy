@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens (SPEC §7). Components use these through Tailwind utilities such as bg-card,
+ * text-text-secondary, or rounded-card. Never hardcode hex values in components.
+ * Dark is the primary theme; light is a SHOULD and switches on with data-theme="light".
+ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --bg: #080808;
+  --surface: #101010;
+  --card: #151515;
+  --hover: #1c1c1c;
+  --border: #292929;
+
+  /* Text. Muted is #8A8A8A, not #737373, to reach 5.29:1 on cards. */
+  --text: #f5f5f5;
+  --text-secondary: #a3a3a3;
+  --text-muted: #8a8a8a;
+
+  /* Purple is the one action colour. Use --accent for fills, --accent-light for text and links. */
+  --accent: #7c3aed;
+  --accent-light: #a78bfa;
+  --on-accent: #ffffff;
+
+  /* Status */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #60a5fa;
+
+  /* Department identity hues: covers, icons, rings, and badges only. Never buttons. */
+  --dept-blue: #4f8cff;
+  --dept-teal: #2bd4a4;
+  --dept-violet: #b07cff;
+  --dept-coral: #ff6b57;
+  --dept-amber: #ffc23d;
+
+  /* Motion: short and calm. Zeroed for reduced motion below. */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 250ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f7f8;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --hover: #f0f0f2;
+  --border: #e4e4e8;
+  --text: #111114;
+  --text-secondary: #5b5b66;
+  --text-muted: #6b6b76;
+  --accent: #6d28d9;
+  --accent-light: #7c3aed;
+  --success: #15803d;
+  --warning: #b45309;
+  --error: #b91c1c;
+  --info: #1d4ed8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+  }
+}
+
+@theme inline {
+  /* Only token colours exist, so a stray palette class fails to style instead of drifting. */
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-hover: var(--hover);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-on-accent: var(--on-accent);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  --color-info: var(--info);
+  --color-dept-blue: var(--dept-blue);
+  --color-dept-teal: var(--dept-teal);
+  --color-dept-violet: var(--dept-violet);
+  --color-dept-coral: var(--dept-coral);
+  --color-dept-amber: var(--dept-amber);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Type scale 40 / 32 / 24 / 20 / 17 / 15 / 13 px. Nothing smaller than 13. */
+  --text-*: initial;
+  --text-display: 2.5rem;
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.02em;
+  --text-title: 2rem;
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.015em;
+  --text-heading: 1.5rem;
+  --text-heading--line-height: 1.25;
+  --text-heading--letter-spacing: -0.01em;
+  --text-subheading: 1.25rem;
+  --text-subheading--line-height: 1.3;
+  --text-subheading--letter-spacing: -0.005em;
+  --text-lead: 1.0625rem;
+  --text-lead--line-height: 1.5;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.5;
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.5;
+
+  /* Card 16, button 12, pills fully round. */
+  --radius-button: 12px;
+  --radius-card: 16px;
+  --radius-pill: 9999px;
+
+  --ease-standard: var(--ease-standard);
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+}
+
+body {
+  font-feature-settings: "cv11", "ss01";
+}
+
+/* Visible focus everywhere (WCAG 2.2 AA, SPEC §6). */
+:focus-visible {
+  outline: 2px solid var(--accent-light);
+  outline-offset: 2px;
+}
+
+/* Tabular numerals for progress and metrics. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
