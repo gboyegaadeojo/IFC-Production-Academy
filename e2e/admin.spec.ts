@@ -83,6 +83,9 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   await clearMailFor(email);
   await guest.getByLabel("Email address").fill(email);
   await guest.getByRole("button", { name: "Email me a sign-in link" }).click();
+  // Wait for the request to finish (it also sets the pending-invitation cookie) before using the
+  // link; the email can arrive a moment before the sign-in token is saved.
+  await expect(guest.getByRole("heading", { name: "Check your email" })).toBeVisible();
   await guest.goto(await signInLinkFor(email));
 
   // The email link returns them to the invitation.
