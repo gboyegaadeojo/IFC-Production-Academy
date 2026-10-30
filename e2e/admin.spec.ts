@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { mailpitAvailable, signInByEmail } from "./support/email-sign-in";
+import {
+  clearMailFor,
+  mailpitAvailable,
+  signInByEmail,
+  signInLinkFor,
+} from "./support/email-sign-in";
 
 // Admin and leader screens (SPEC §4, §8; SRS-MEM-003, SRS-RBAC-001). Needs the local Supabase stack
 // with the fake seed accounts. These sign in as shared seed accounts, so they run one at a time and
@@ -51,6 +56,58 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   await leaderContext.close();
 });
 
+test("a leader invites someone, who signs in from the link and joins", async ({ browser }) => {
+  // Devon leads Audio (seed data) and creates a one-person invitation.
+  const leaderContext = await browser.newContext();
+  const leader = await leaderContext.newPage();
+  await signInByEmail(leader, "devon.leader@example.com");
+  await leader.goto("/admin/invitations");
+  await leader.getByLabel("Invite to").selectOption({ label: "Audio Engineering" });
+  await leader.getByLabel("Note for you (optional)").fill("E2E invitation");
+  await leader.getByRole("button", { name: "Create invitation link" }).click();
+  await expect(
+    leader.getByRole("heading", { name: "Your invitation link is ready" }),
+  ).toBeVisible();
+  await expect(leader.getByRole("img", { name: "QR code for the invitation link" })).toBeVisible();
+  const link = await leader.getByLabel("Invitation link", { exact: true }).inputValue();
+  expect(link).toMatch(/\/invite\/[A-Za-z0-9_-]{32}$/);
+  const path = new URL(link).pathname;
+
+  // A new person opens it signed out: no details until they sign in.
+  const email = `e2e-invited-${Date.now()}@example.com`;
+  const guestContext = await browser.newContext();
+  const guest = await guestContext.newPage();
+  await guest.goto(path);
+  await expect(guest.getByRole("heading", { name: "You're invited" })).toBeVisible();
+  await expect(guest.getByText("Audio Engineering")).toHaveCount(0);
+  await clearMailFor(email);
+  await guest.getByLabel("Email address").fill(email);
+  await guest.getByRole("button", { name: "Email me a sign-in link" }).click();
+  await guest.goto(await signInLinkFor(email));
+
+  // The email link returns them to the invitation.
+  await expect(guest).toHaveURL(new RegExp(`${path}$`));
+  await guest.getByRole("button", { name: "Accept and join Audio Engineering" }).click();
+  await expect(guest).toHaveURL(/\/home$/);
+  await expect(
+    guest.getByRole("article", { name: "Audio Engineering" }).getByText("You're a member"),
+  ).toBeVisible();
+
+  // It was for one person, so it's now used up.
+  const otherContext = await browser.newContext();
+  const other = await otherContext.newPage();
+  await signInByEmail(other, `e2e-late-${Date.now()}@example.com`);
+  await other.goto(path);
+  await expect(other.getByRole("heading", { name: "This invitation can't be used" })).toBeVisible();
+
+  await leader.reload();
+  await expect(
+    leader.getByRole("listitem").filter({ hasText: "E2E invitation" }).first(),
+  ).toContainText("All places used");
+
+  await Promise.all([leaderContext.close(), guestContext.close(), otherContext.close()]);
+});
+
 test("a Platform Admin manages people and departments but not memberships", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
   await page.getByRole("link", { name: "Admin" }).click();
@@ -78,7 +135,13 @@ test("a Platform Admin manages people and departments but not memberships", asyn
 test("a volunteer can't open the admin area", async ({ page }) => {
   await signInByEmail(page, `e2e-noadmin-${Date.now()}@example.com`);
   await expect(page.getByRole("link", { name: "Admin" })).toHaveCount(0);
-  for (const path of ["/admin", "/admin/people", "/admin/departments", "/admin/audit"]) {
+  for (const path of [
+    "/admin",
+    "/admin/invitations",
+    "/admin/people",
+    "/admin/departments",
+    "/admin/audit",
+  ]) {
     await page.goto(path);
     await expect(page.getByRole("heading", { name: "This area isn't open to you" })).toBeVisible();
   }

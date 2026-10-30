@@ -5,12 +5,13 @@
  */
 import { hasCapability, hasCapabilityAnywhere, type CapabilityGrant } from "./capabilities";
 
-export type AdminSectionKey = "members" | "people" | "departments" | "audit";
+export type AdminSectionKey = "members" | "invitations" | "people" | "departments" | "audit";
 
 export type AdminSection = { key: AdminSectionKey; href: string; label: string };
 
 const SECTIONS: readonly AdminSection[] = [
   { key: "members", href: "/admin/members", label: "Membership requests" },
+  { key: "invitations", href: "/admin/invitations", label: "Invitations" },
   { key: "people", href: "/admin/people", label: "People and roles" },
   { key: "departments", href: "/admin/departments", label: "Departments" },
   { key: "audit", href: "/admin/audit", label: "Audit log" },
@@ -24,6 +25,8 @@ export function canOpenAdminSection(
   switch (key) {
     case "members":
       return hasCapabilityAnywhere(grants, "member.approve");
+    case "invitations":
+      return hasCapabilityAnywhere(grants, "member.invite");
     case "people":
       return hasCapability(grants, "user.manage") || hasCapability(grants, "role.assign");
     case "departments":
@@ -237,6 +240,17 @@ export function describeAuditEvent(event: AuditEventSummary): string {
       return changedFields(event.metadata).includes("display_name")
         ? "Changed a display name"
         : "Updated a profile";
+    case "invitation.created":
+      return "Created an invitation";
+    case "invitation.updated":
+      if (revoked(event.metadata)) {
+        return "Revoked an invitation";
+      }
+      return changedFields(event.metadata).includes("use_count")
+        ? "An invitation place was used"
+        : "Updated an invitation";
+    case "invitation_acceptance.created":
+      return "Accepted an invitation";
     case "department.created":
       return "Created a department";
     case "department.updated":

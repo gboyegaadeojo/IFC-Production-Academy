@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { exchangeAuthCode } from "@/lib/data/auth";
-import { safeNextPath } from "@/lib/domain/auth";
+import { afterSignInPath } from "../after-sign-in";
 
 const codeSchema = z.string().min(1).max(512);
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   if (code.success) {
     const result = await exchangeAuthCode(code.data);
     if (result.ok) {
-      return NextResponse.redirect(new URL(safeNextPath(params.get("next")), request.url));
+      return NextResponse.redirect(new URL(afterSignInPath(request), request.url));
     }
   }
   return NextResponse.redirect(new URL("/sign-in?error=link_invalid", request.url));
