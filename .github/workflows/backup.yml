@@ -1,0 +1,40 @@
+# Nightly encrypted backup to Google Drive (CLAUDE.md "Scheduled jobs", SPEC §9 "Backup design").
+#
+# SKELETON: not configured yet. It waits on the Google service account and the
+# "IFC Academy Backups" Shared Drive. Until then it runs only by hand and fails on purpose, so
+# nobody mistakes it for a working backup ("no false success messages", SPEC §6).
+#
+# Planned steps once the Drive exists:
+#   1. pg_dump --format=custom, with pg_dump's major version matched to the Supabase Postgres
+#      version, using the SUPABASE_DB_URL secret (connection string masked, never echoed).
+#   2. Download every Supabase Storage object and zip it.
+#   3. Encrypt both with `age` to the AGE_RECIPIENT public key. The private key stays offline.
+#   4. Upload academy-db-<UTC>.dump.age, academy-files-<UTC>.zip.age, and SHA-256 checksums to the
+#      Shared Drive with the service account (GDRIVE_SERVICE_ACCOUNT_JSON secret).
+#   5. Apply retention: 30 daily, 12 weekly (Sundays), 12 monthly (1st of the month).
+#   6. Log only status, timings, and file sizes. Never upload dumps as workflow artifacts.
+#   7. On failure, email G and the Platform Admin (./.github/actions/notify-failure).
+name: Backup
+
+on:
+  # Enable once configured: nightly at 08:00 UTC (2 am Winnipeg in winter).
+  # schedule:
+  #   - cron: "0 8 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Backup is not configured yet
+        run: |
+          echo "::error::Backups are not set up yet. See the comments at the top of .github/workflows/backup.yml."
+          exit 1

@@ -1,0 +1,61 @@
+# Daily keep-alive (CLAUDE.md "Scheduled jobs", SPEC §9 "Keep-alive design").
+# Makes a real database read through the Supabase API so the free project never reaches the
+# 7-day inactivity pause. The read (public.keepalive) returns a timestamp only, never data.
+# Logs only the HTTP status and timing.
+name: Keep-alive
+
+on:
+  schedule:
+    # 18:00 UTC: noon in Winnipeg in winter, 1 pm in summer.
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: keepalive
+  cancel-in-progress: false
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions
+
+      - name: Read from the database through the Supabase API
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error::SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY secrets are not configured"
+            exit 1
+          fi
+          started="$(date +%s%N)"
+          status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+            --max-time 30 --retry 3 --retry-delay 10 --retry-all-errors --fail \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/keepalive" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}' || true)"
+          elapsed_ms="$(( ($(date +%s%N) - started) / 1000000 ))"
+          echo "Keep-alive read: HTTP $status in ${elapsed_ms} ms"
+          if [ "$status" != "200" ]; then
+            echo "::error::Keep-alive read failed (HTTP $status)"
+            exit 1
+          fi
+
+      - name: Email the admins
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          resend-api-key: ${{ secrets.RESEND_API_KEY }}
+          to: ${{ secrets.ALERT_EMAILS }}
+          from: ${{ secrets.ALERT_FROM }}
+          subject: "IFC Academy: keep-alive failed"
