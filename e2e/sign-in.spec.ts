@@ -28,6 +28,18 @@ test("an expired or reused link explains what happened", async ({ page }) => {
   await expect(page.getByRole("main").getByRole("alert")).toHaveText(/expired or was already used/);
 });
 
+test("a bad code from an email link is reported as a link problem, not Google", async ({
+  page,
+}) => {
+  await page.goto("/auth/callback?code=not-a-real-code&next=/home&via=email");
+  await expect(page).toHaveURL(/error=link_invalid/);
+});
+
+test("a bad code from Google is reported as a Google problem", async ({ page }) => {
+  await page.goto("/auth/callback?code=not-a-real-code");
+  await expect(page).toHaveURL(/error=oauth_failed/);
+});
+
 test("an unknown error code is ignored rather than shown", async ({ page }) => {
   await page.goto("/sign-in?error=%3Cscript%3E");
   await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0);

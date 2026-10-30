@@ -48,14 +48,18 @@ export async function requireActiveUser(): Promise<CurrentUser> {
 export type AuthResult = { ok: true } | { ok: false };
 
 /**
- * Sends a magic link (SRS-AUTH-002). The email template builds the link itself: it opens
- * /auth/confirm with a token hash and lands on /home.
+ * Sends a magic link (SRS-AUTH-002). Our email template builds the link itself: it opens
+ * /auth/confirm with a token hash and lands on /home. Supabase's default template (used until
+ * custom SMTP is set up) ignores that and sends people to emailRedirectTo with a PKCE code.
  */
 export async function sendMagicLink(email: string): Promise<AuthResult> {
   const supabase = await createSupabaseServerClient();
+  const emailRedirectTo = new URL("/auth/callback", publicEnv().NEXT_PUBLIC_SITE_URL);
+  emailRedirectTo.searchParams.set("next", "/home");
+  emailRedirectTo.searchParams.set("via", "email");
   const { error } = await supabase.auth.signInWithOtp({
     email,
-    options: { shouldCreateUser: true },
+    options: { shouldCreateUser: true, emailRedirectTo: emailRedirectTo.toString() },
   });
   return error ? { ok: false } : { ok: true };
 }
