@@ -23,7 +23,7 @@ The biggest change from my draft is adopting your rule that completing a course 
 | Video completion | Never claim full watch verification | Auto-complete at 90% watched | **Mark complete by learner**; watch percentage from the YouTube player recorded as an informal signal only, never as proof |
 | Sign-in | Google + email (password or passwordless, TBD) | Apple, Google, magic link | **Email magic link only** (decided 2026-10-30: membership is approved by a leader, so one simple sign-in path is enough). Revisit Apple and Google sign-in when native iOS ships |
 | Roles | Volunteer, Trainer/Evaluator, Department Leader, Production Director, Platform Admin | Volunteer, Lead, Content editor, Super admin | **Your five roles**; content authoring is a permission, not a separate role |
-| Content governance | Draft, pending review, published, archived, superseded; approver publishes; versioned | Draft and published only | **Your versioned workflow** |
+| Content governance | Draft, pending review, published, archived, superseded; approver publishes; versioned | Draft and published only | **Versioned, author publishes** (decided 2026-10-30): department leaders publish their own department's content; every publish is a version with a change note and can be rolled back; optional review per department |
 | Accent colour | Single purple accent (#7C3AED) | Church brand colour plus one accent per department | **Purple stays the action colour**; department hues used only for covers, icons, and progress rings |
 | Success metrics | Measure baselines in pilot, no targets yet | Specific 3-month targets | **Baselines first**; my targets kept as optional goals to set after the pilot |
 | Tech stack and cost | Left to discovery | Recommended stack, about $25 to $105 a month | **Recommendation included** for Phase 0 to confirm |
@@ -147,8 +147,8 @@ IDs come from your package. Rows marked **ADD-** are additions from my draft tha
 | SRS-CUR-002 | Configurable departments, levels, courses, modules, lessons, prerequisites, completion rules | M |
 | SRS-CUR-003 | Course title, description, objectives, duration, owner, status, revision metadata | M |
 | SRS-CUR-004 | Required and optional lessons | M |
-| SRS-CUR-005 | Publishing requires an authorized approver | M |
-| SRS-CUR-006 | States: draft, pending review, published, archived, superseded | M |
+| SRS-CUR-005 | Publishing requires `course.publish` for the department. Department leaders hold it for their own department; a department can turn on "require review" so a second person publishes (decided 2026-10-30) | M |
+| SRS-CUR-006 | States: draft, published, archived, superseded; pending review only when the department requires review | M |
 | SRS-CUR-007 | Published changes create a revision | M |
 | SRS-CUR-008 | Updates never erase historic completion or certification | M |
 | SRS-CUR-009 | Activate or deactivate a department without deployment | M |
@@ -205,16 +205,16 @@ YouTube note: **Private** videos cannot be embedded for volunteers, so lessons m
 
 | ID | Requirement | Level |
 | --- | --- | --- |
-| SRS-ASSESS-001–002 | Rubrics with criteria, descriptions, outcome options | M |
-| SRS-ASSESS-003 | Outcomes: Pass, Further Practice Required, Fail, Not Yet Assessed | M |
-| SRS-ASSESS-004 | Record learner, evaluator, rubric version, date, result, feedback | M |
+| SRS-ASSESS-001–002 | Practical checklists: observable criteria with descriptions, each required or optional, plus a pass rule (for example every required item and at least 80% of all items) set by the department leader | M |
+| SRS-ASSESS-003 | Outcomes: Pass, Further Practice Required, Not Yet Assessed. **The system computes the outcome** from the observed criteria and the pass rule; the evaluator only records what they observed and never chooses the outcome (decided 2026-10-30) | M |
+| SRS-ASSESS-004 | Record learner, observer, checklist version, date, each criterion observed, computed result, feedback | M |
 | SRS-ASSESS-005 | Reassessment per configured rules | M |
 | SRS-ASSESS-006 | Decisions and corrections audited | M |
 | SRS-ASSESS-007 | Learners see shareable feedback | M |
 | SRS-ASSESS-008 | One assessment does not authorize the whole department unless policy says so | M |
-| SRS-COMP-001–002 | Competency records separate from completion, scoped to skill or equipment, with approver and date | M |
+| SRS-COMP-001–002 | Competency records separate from completion, scoped to skill or equipment, with date and the assessment that granted them. **A passed practical grants the competency automatically**; no separate approval (decided 2026-10-30) | M |
 | SRS-COMP-003 | States: Not Assessed, Supervised Practice, Approved, Suspended, Expired | S |
-| SRS-COMP-004 | Leaders define competencies required for serving roles | M |
+| SRS-COMP-004 | Leaders define competencies required for serving roles. **Approved to Serve is granted automatically** when every required competency is approved, and withdrawn if one is suspended or expires; it stays its own record (decided 2026-10-30) | M |
 | SRS-COMP-005–006 | Scheduling checks competency; no silent unqualified assignment | M |
 | SRS-COMP-007 | Supervised-practice assignments with a named supervisor | S |
 | SRS-COMP-008 | Overrides need permission, reason, audit | M |
@@ -253,14 +253,14 @@ flowchart LR
   D -- passed --> E{Practical assessment<br/>evaluator, rubric}
   E -- further practice: reassess later --> E
   E -- pass --> F[Course completed<br/>certificate, level badge]
-  F --> G[Competency approved<br/>by department leader]
-  G --> H([Approved to Serve<br/>for a scheduled role])
+  F --> G[Competency granted<br/>automatically on a pass]
+  G --> H([Approved to Serve<br/>automatically, once a role's<br/>competencies are all granted])
   G -. before approval .-> S[Supervised Practice<br/>with a named supervisor]
 ```
 
 *Finishing a course is not the same as being approved to serve. Repeated for each level in each department; every step is recorded separately.*
 
-A volunteer moves from membership through lessons, a quiz, and a practical assessment to a completed course; a leader's competency approval is a separate step, and only that unlocks independent serving.
+A volunteer moves from membership through lessons, a quiz, and a practical assessment to a completed course. The system decides every result (decided 2026-10-30): lessons are marked complete by the volunteer, quizzes are scored automatically, and a practical is passed when the observed checklist meets the leader's pass rule. A passed practical grants the competency, and Approved to Serve follows once a role's competencies are all granted. These remain separate records, and a quiz alone never makes anyone Approved to Serve.
 
 ### Business rules
 
@@ -285,8 +285,8 @@ A volunteer moves from membership through lessons, a quiz, and a practical asses
 | Workflow | Steps | Acceptance test |
 | --- | --- | --- |
 | A. Join a department | Sign in or accept invite, view departments, request or accept, leader approves, pathway appears, start Level 1 | No restricted resource opens before approval |
-| B. Complete a course | Open course, complete required lessons, take quiz, status becomes Awaiting Assessment, evaluator records practical, leader approves if configured, dashboard and notification update | Never Approved to Serve just because a video was marked complete |
-| C. Publish curriculum | Leader drafts, sets prerequisites, lessons, rules, resources, submits; approver approves or returns; published version goes live; publisher, approver, version recorded | A user without publish rights cannot make content live |
+| B. Complete a course | Open course, complete required lessons, take quiz, status becomes Awaiting Assessment, observer ticks the practical checklist, the system computes the result and grants the competency, Approved to Serve follows automatically when a role's competencies are complete, dashboard and notification update | Never Approved to Serve just because a video was marked complete or a quiz was passed; the observer cannot choose the outcome |
+| C. Publish curriculum | Leader drafts, sets prerequisites, lessons, rules, resources, adds a change note, publishes; the published version goes live and earlier versions stay in history for rollback; publisher and version recorded; departments that require review send it to a second person instead | A user without publish rights for the department cannot make content live |
 | D. Schedule a role | Create event and roles, set competency needs, assign, system checks conflicts and competency, confirm or block/warn, supervisor named for supervised practice, notify | No silent confirmation of an unqualified volunteer |
 | E. Maintain an SOP | Create or update, review and publish, keep old version, review reminders, mark superseded | Current SOP is clearly distinguishable from obsolete versions |
 
@@ -301,9 +301,9 @@ Roles are scoped per department (someone can lead Audio and be a volunteer in Ca
 | See own progress, feedback, schedule | Yes | Yes | Yes | Yes | Yes |
 | Approve or invite members | No | No | Own | All | No |
 | Draft curriculum and SOPs | No | No | Own | All | No |
-| Publish curriculum | No | No | Only if delegated | Yes | No |
-| Record practical assessments | No | Assigned learners | Own | All | No |
-| Approve competency | No | No | Own | All | No |
+| Publish curriculum | No | No | Own | All | No |
+| Record practical observations (the system decides the result) | No | Assigned learners | Own | All | No |
+| Suspend or restore a competency (with reason) | No | No | Own | All | No |
 | Schedule events and roles | No | No | Own | All | No |
 | Override competency on schedule (with reason) | No | No | Only if delegated | Yes | No |
 | Mentoring: shared feedback | Own (view) | Assigned learners | Own | All | No |
@@ -443,7 +443,7 @@ Your full inventory (section 26 of your package) stands. These are the screens t
 | Course detail | Outcomes, duration, required vs optional, lesson list with progress, quiz and practical requirements, Start or Continue |
 | Lesson player | Desktop: video with outline sidebar and resources panel. Mobile: video first, objectives, expandable materials, clear Mark complete, previous and next, outline drawer; landscape full screen. Never implies the video was fully watched |
 | Quiz | One question at a time, progress, large answer targets, confirm before submit, result with score and next step (continue, review, or request coaching) |
-| Practical assessment (trainer, tablet-first) | Learner and competency, rubric rows with consistent rating controls, evidence and feedback, explicit outcome, confirm, clear draft vs submitted |
+| Practical assessment (observer, phone or tablet first) | Learner and competency, one row per checklist item with Observed / Not observed, optional evidence and feedback, confirm; the system then shows the computed result and what is missing; clear draft vs submitted |
 | Achievement moment | Level badge reveal in the department hue, certificate link; calm and short |
 | Leader dashboard | Cards for active, in progress, awaiting assessment, further practice, approved, schedule gaps; actionable queues below; every number links to its records |
 | Readiness overview (Production Director) | Matrix of departments by role showing approved, supervised, and in-training counts |
@@ -553,7 +553,7 @@ Your phases stand; lengths are my estimates for one experienced full-stack devel
 | --- | --- | --- | --- |
 | 0. Discovery | 3 to 4 weeks | Confirm PRD and SRS, hosting, identity, email, budget, owner; privacy, retention, governance policies; YouTube expectations; pilot department; wireframes and clickable prototype | Leadership approves scope, risks, MVP criteria |
 | 1. Design system and foundation | 4 weeks | App shell, tokens, components, auth, permissions, user and department management, audit, environments, migrations, backups | Secure sign-in, role tests, department access reliable |
-| 2. Core learning | 6 to 8 weeks | Curriculum admin and publishing, YouTube player, SOP attachments, progress, quizzes, practicals, competency, certificates, dashboards | A volunteer completes Level 1 end to end and a leader verifies each result |
+| 2. Core learning | 6 to 8 weeks | Curriculum admin and publishing, YouTube player, SOP attachments, progress, quizzes, practicals, competency, certificates, dashboards | A volunteer completes Level 1 end to end and every result is recorded correctly by the system |
 | 3. Ministry operations | 4 to 6 weeks | Basic scheduling, availability, competency checks, email notifications, mentoring, reports and exports, SOP reminders | Leaders run training and basic assignments with reliable permissions and audit |
 | 4. Pilot | 4 weeks | Camera Operations Level 1 with a small group; test on iPhone, Android, tablet, desktop; restore test; accessibility and security review; fix critical issues | Pilot users complete workflows without critical defects |
 | 5. Expansion | Ongoing | Other curricula, activate Lighting Operations, PWA push, calendar integration, advanced scheduling, native apps judged on adoption data | Driven by demand |
@@ -584,14 +584,14 @@ Measure baselines during the pilot before setting targets: share of enrolled vol
 - [ ] Users sign in and recover access
 - [ ] Admins manage roles and departments
 - [ ] Volunteers request membership and accept invitations
-- [ ] Leaders draft and submit curriculum for approval
+- [ ] Leaders draft and publish curriculum, with version history and rollback
 - [ ] Three configurable levels per department
 - [ ] Lessons embed unlisted YouTube videos and include SOPs and resources
 - [ ] Progress persists across sessions and devices
 - [ ] Quizzes enforce scoring and attempt rules
 - [ ] Practical records include evaluator, rubric, outcome, feedback
 - [ ] Course completion and serving authorization stay separate
-- [ ] Leaders approve competency records
+- [ ] Passed practicals grant competency automatically; Approved to Serve follows automatically
 - [ ] Certificates issue only when requirements are met
 - [ ] Completion and competency reports, with export
 - [ ] Basic schedules with conflict and competency checks; supervisor recorded on supervised practice

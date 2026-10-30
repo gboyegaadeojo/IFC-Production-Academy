@@ -7,6 +7,7 @@ A volunteer learning and competency platform for the production ministry at Imma
 ## Non-negotiable product rules
 
 - **Course completion, competency approval, and Approved to Serve are three separate records.** Watching videos or passing a quiz never makes someone Approved to Serve (SPEC §3, SRS-PROG-007, SRS-COMP-001).
+- **The system decides results, not people** (decided 2026-10-30). Lessons are completed by the learner, quizzes are scored automatically, and a practical passes when the observer's checklist meets the leader's pass rule; the observer never picks the outcome. A pass grants the competency, and Approved to Serve follows automatically. Leaders publish their own department's curriculum with version history and rollback, with no approval gate.
 - **Departments, levels, courses, and rules are data, never code.** No `if (department === 'camera')`. Lighting Operations goes live by changing a status row.
 - **Never claim a video was fully watched.** Completion is a learner action; watch % is an informal signal only (SRS-LESSON-006).
 - **History is never rewritten.** Progress, quiz attempts, assessments, and certificates link to the content version they were earned on (SRS-CUR-008).
