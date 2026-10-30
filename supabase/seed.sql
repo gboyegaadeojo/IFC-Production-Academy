@@ -1,0 +1,52 @@
+-- Local development seed: obviously fake people only (CLAUDE.md "Security rules").
+-- Runs on `supabase db reset` and `supabase start`, never against the hosted project.
+-- Departments, roles, and capabilities come from migrations.
+--
+-- Sign in locally with any address below via the magic link form, then open Mailpit
+-- (http://127.0.0.1:54324) to click the link.
+
+create function pg_temp.seed_user(p_id uuid, p_email text, p_name text)
+returns uuid
+language plpgsql
+as $$
+begin
+  insert into auth.users (
+    instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+    confirmation_token, recovery_token, email_change_token_new, email_change,
+    email_change_token_current, reauthentication_token, phone_change, phone_change_token
+  ) values (
+    '00000000-0000-0000-0000-000000000000', p_id, 'authenticated', 'authenticated', p_email, '', now(),
+    '{"provider": "email", "providers": ["email"]}', jsonb_build_object('full_name', p_name), now(), now(),
+    '', '', '', '', '', '', '', ''
+  );
+  insert into auth.identities (id, user_id, provider_id, identity_data, provider, last_sign_in_at, created_at, updated_at)
+  values (
+    gen_random_uuid(), p_id, p_id::text,
+    jsonb_build_object('sub', p_id::text, 'email', p_email, 'email_verified', true),
+    'email', now(), now(), now()
+  );
+  return p_id;
+end;
+$$;
+
+select pg_temp.seed_user('aaaaaaaa-0000-4000-8000-000000000001', 'avery.volunteer@example.com', 'Avery Example');
+select pg_temp.seed_user('aaaaaaaa-0000-4000-8000-000000000002', 'blake.volunteer@example.com', 'Blake Example');
+select pg_temp.seed_user('aaaaaaaa-0000-4000-8000-000000000003', 'casey.leader@example.com', 'Casey Example');
+select pg_temp.seed_user('aaaaaaaa-0000-4000-8000-000000000004', 'devon.leader@example.com', 'Devon Example');
+select pg_temp.seed_user('aaaaaaaa-0000-4000-8000-000000000005', 'emery.director@example.com', 'Emery Example');
+select pg_temp.seed_user('aaaaaaaa-0000-4000-8000-000000000006', 'frankie.admin@example.com', 'Frankie Example');
+
+-- Roles beyond the Volunteer role every sign-up gets.
+insert into public.user_roles (user_id, role_id, department_id) values
+  -- Casey leads Camera Operations, Devon leads Audio Engineering.
+  ('aaaaaaaa-0000-4000-8000-000000000003', '297464be-2cae-430d-94bf-6038bd745384', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855'),
+  ('aaaaaaaa-0000-4000-8000-000000000004', '297464be-2cae-430d-94bf-6038bd745384', '8cd57d7d-1aab-4be6-b67b-e9bc606e0d73'),
+  -- Emery is Production Director, Frankie is Platform Administrator.
+  ('aaaaaaaa-0000-4000-8000-000000000005', 'bb83337d-c513-4ed9-b348-e2df0aad280b', null),
+  ('aaaaaaaa-0000-4000-8000-000000000006', 'd8b78629-6772-4a39-8c9f-be33ba201e05', null);
+
+-- Avery belongs to Camera Operations; Blake has asked to join Audio Engineering.
+insert into public.department_memberships (department_id, user_id, status, decided_at, decided_by) values
+  ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'aaaaaaaa-0000-4000-8000-000000000001', 'active', now(), 'aaaaaaaa-0000-4000-8000-000000000003'),
+  ('8cd57d7d-1aab-4be6-b67b-e9bc606e0d73', 'aaaaaaaa-0000-4000-8000-000000000002', 'requested', null, null);

@@ -1,0 +1,15 @@
+.next/
+.open-next/
+.wrangler/
+node_modules/
+coverage/
+playwright-report/
+test-results/
+supabase/.temp/
+supabase/config.toml
+supabase/templates/
+package-lock.json
+cloudflare-env.d.ts
+docs/
+CLAUDE.md
+AGENTS.md

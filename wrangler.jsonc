@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ifc-production-academy",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-29",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      // Self-reference used by OpenNext for caching; the name must match "name" above.
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "ifc-production-academy",
+    },
+  ],
+  "observability": {
+    "enabled": true,
+  },
+  // Runtime configuration lives in Cloudflare (dashboard or `wrangler secret put`), never here.
+  // NEXT_PUBLIC_* values are inlined at build time, so set them as build variables too (README).
+}

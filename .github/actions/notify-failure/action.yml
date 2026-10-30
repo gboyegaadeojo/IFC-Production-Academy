@@ -1,0 +1,52 @@
+name: Email a failure alert
+description: >
+  Emails G and the Platform Admin through Resend when a scheduled job fails (SPEC §9).
+  Sends only the workflow name, time, and run link. Never include data in the message.
+
+inputs:
+  resend-api-key:
+    description: Resend API key (from secrets)
+    required: true
+  to:
+    description: Comma-separated recipient addresses (from secrets)
+    required: true
+  from:
+    description: Verified sender address (from secrets)
+    required: true
+  subject:
+    description: Email subject
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Send the alert
+      shell: bash
+      env:
+        RESEND_API_KEY: ${{ inputs.resend-api-key }}
+        ALERT_TO: ${{ inputs.to }}
+        ALERT_FROM: ${{ inputs.from }}
+        ALERT_SUBJECT: ${{ inputs.subject }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        WORKFLOW_NAME: ${{ github.workflow }}
+      run: |
+        set -euo pipefail
+        if [ -z "$RESEND_API_KEY" ] || [ -z "$ALERT_TO" ] || [ -z "$ALERT_FROM" ]; then
+          echo "::error::Alert secrets are not configured, so no email was sent"
+          exit 1
+        fi
+        text="The \"$WORKFLOW_NAME\" workflow failed at $(date -u +%Y-%m-%dT%H:%MZ). Details: $RUN_URL"
+        payload="$(jq -n \
+          --arg from "$ALERT_FROM" \
+          --arg to "$ALERT_TO" \
+          --arg subject "$ALERT_SUBJECT" \
+          --arg text "$text" \
+          '{from: $from, to: ($to | split(",") | map(gsub("^\\s+|\\s+$"; ""))), subject: $subject, text: $text}')"
+        status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \
+          --max-time 30 --retry 3 --retry-delay 5 \
+          -X POST https://api.resend.com/emails \
+          -H "Authorization: Bearer $RESEND_API_KEY" \
+          -H "Content-Type: application/json" \
+          -d "$payload" || true)"
+        echo "Alert email request: HTTP $status"
+        [ "$status" = "200" ]
