@@ -122,20 +122,29 @@ Done once by the Platform Admin. Keep every secret out of the repo.
 
 ### Cloudflare
 
-Create the Worker by running `npm run deploy` once (or connect the repo with Workers Builds).
-`NEXT_PUBLIC_*` values are inlined at build time, so set them as **build** variables:
-`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL`.
-The app never uses the service-role key.
+`deploy.yml` builds and deploys on every push to `main` (or run it by hand). Build on Linux:
+OpenNext builds made on Windows can produce a Worker that hangs on every request, so don't run
+`npm run deploy` from a Windows machine. `NEXT_PUBLIC_*` values are inlined at build time; the
+workflow takes them from the secrets and the `SITE_URL` variable below. The app never uses the
+service-role key.
 
-### GitHub Actions secrets
+Create the API token in the Cloudflare dashboard: **My Profile → API Tokens → Create Token →
+"Edit Cloudflare Workers" template**, limited to the IFC account.
 
-| Secret                     | Used by        | Notes                                     |
-| -------------------------- | -------------- | ----------------------------------------- |
-| `SUPABASE_URL`             | keep-alive     | Hosted project API URL                    |
-| `SUPABASE_PUBLISHABLE_KEY` | keep-alive     | Publishable key; RLS protects data        |
-| `RESEND_API_KEY`           | failure alerts | Sending-only key                          |
-| `ALERT_EMAILS`             | failure alerts | Comma-separated: G and the Platform Admin |
-| `ALERT_FROM`               | failure alerts | Sender on the verified Resend domain      |
+### GitHub Actions secrets and variables
+
+| Secret                     | Used by            | Notes                                        |
+| -------------------------- | ------------------ | -------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`     | deploy             | "Edit Cloudflare Workers" token, IFC account |
+| `CLOUDFLARE_ACCOUNT_ID`    | deploy             | Cloudflare account that owns the Worker      |
+| `SUPABASE_URL`             | keep-alive, deploy | Hosted project API URL                       |
+| `SUPABASE_PUBLISHABLE_KEY` | keep-alive, deploy | Publishable key; RLS protects data           |
+| `RESEND_API_KEY`           | failure alerts     | Sending-only key                             |
+| `ALERT_EMAILS`             | failure alerts     | Comma-separated: G and the Platform Admin    |
+| `ALERT_FROM`               | failure alerts     | Sender on the verified Resend domain         |
+
+Variable (not secret): `SITE_URL`, the app's public address, for example
+`https://ifc-production-academy.<subdomain>.workers.dev`.
 
 The backup job (`backup.yml`) is a skeleton until the Google service account and the
 "IFC Academy Backups" Shared Drive exist; its planned secrets are listed in the workflow file.
