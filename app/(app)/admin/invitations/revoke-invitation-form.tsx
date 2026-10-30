@@ -17,7 +17,7 @@ export function RevokeInvitationForm({
   const errorId = useId();
   return (
     <details>
-      <summary className="flex min-h-11 cursor-pointer items-center text-small font-medium text-text-secondary hover:text-text">
+      <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-text-secondary hover:text-text">
         Revoke<span className="sr-only"> {label}</span>
       </summary>
       <form action={formAction} className="mt-2 flex flex-col gap-2">

@@ -30,12 +30,12 @@ const icons: Record<StatusTone, ReactNode> = {
 export function StatusBadge({ tone, children }: { tone: StatusTone; children: ReactNode }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-pill border border-border bg-surface px-3 py-1 text-small font-medium ${tones[tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded-pill border border-border px-2.5 py-0.5 text-small ${tones[tone]}`}
     >
       <svg
         aria-hidden="true"
         viewBox="0 0 24 24"
-        className="size-4"
+        className="size-3.5"
         fill="none"
         stroke="currentColor"
         strokeWidth="2"

@@ -17,10 +17,6 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
       className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-12"
     >
       {/* Placeholder for the full-bleed team photo (SPEC §8) until IFC photography is ready. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_60%)]"
-      />
       <div className="relative w-full max-w-md rounded-card border border-border bg-card p-8">
         <Wordmark />
         <h1 className="mt-6 text-heading font-semibold">Sign in to keep learning</h1>

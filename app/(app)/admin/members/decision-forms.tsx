@@ -34,18 +34,19 @@ export function RequestDecisionForm({
   const resultId = useId();
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-2 md:flex-row md:items-center">
       <input type="hidden" name="membershipId" value={membershipId} />
-      <label htmlFor={noteId} className="text-small text-text-secondary">
+      <label htmlFor={noteId} className="sr-only">
         Note (optional)
       </label>
       <input
         id={noteId}
         name="reason"
         maxLength={500}
-        className="min-h-11 rounded-button border border-border bg-surface px-4 text-body text-text"
+        placeholder="Note (optional)"
+        className="min-h-control rounded-button border border-border bg-surface px-3 text-body text-text placeholder:text-text-muted md:w-56"
       />
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-2">
         <Button
           type="submit"
           name="decision"
@@ -84,7 +85,7 @@ export function RemoveMemberForm({
 
   return (
     <details className="group">
-      <summary className="flex min-h-11 cursor-pointer items-center text-small font-medium text-text-secondary hover:text-text">
+      <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-text-secondary hover:text-text">
         Remove<span className="sr-only"> {personName}</span>
       </summary>
       <form action={formAction} className="mt-3 flex flex-col gap-3">
@@ -97,7 +98,7 @@ export function RemoveMemberForm({
           id={reasonId}
           name="reason"
           maxLength={500}
-          className="min-h-11 rounded-button border border-border bg-surface px-4 text-body text-text"
+          className="min-h-control rounded-button border border-border bg-surface px-3 text-body text-text"
         />
         <p className="text-small text-text-muted">
           They lose access to this department&apos;s training. Their progress and history are kept.

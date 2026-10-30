@@ -8,7 +8,7 @@ import { updateDepartmentAction, type DepartmentFormState } from "./actions";
 const idle: DepartmentFormState = { status: "idle" };
 
 const fieldClasses =
-  "min-h-11 rounded-button border border-border bg-surface px-4 text-body text-text";
+  "min-h-control rounded-button border border-border bg-surface px-3 text-body text-text";
 
 export function DepartmentForm({ department }: { department: DepartmentSettings }) {
   const [state, formAction, pending] = useActionState(updateDepartmentAction, idle);
@@ -80,7 +80,7 @@ export function DepartmentForm({ department }: { department: DepartmentSettings 
           </select>
         </div>
       </div>
-      <label className="flex min-h-11 items-center gap-3">
+      <label className="flex min-h-control items-center gap-3">
         <input
           type="checkbox"
           name="curriculumRequiresReview"

@@ -105,7 +105,10 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
                 className="flex flex-col gap-2 p-5 sm:flex-row sm:items-start sm:justify-between"
               >
                 <div className="flex flex-col gap-1">
-                  <p className="font-semibold">{roleLabel(role)}</p>
+                  <p className="font-medium">{roleLabel(role)}</p>
+                  {role.roleDescription ? (
+                    <p className="text-small text-text-secondary">{role.roleDescription}</p>
+                  ) : null}
                   <p className="text-small text-text-muted">
                     Granted {formatDateTime(role.grantedAt)}
                     {role.grantedBy ? ` by ${role.grantedBy.displayName}` : ""}
@@ -128,7 +131,7 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
 
         {past.length > 0 ? (
           <details className="rounded-card border border-border bg-card p-5">
-            <summary className="flex min-h-11 cursor-pointer items-center font-semibold">
+            <summary className="flex min-h-control cursor-pointer items-center font-semibold">
               Past roles ({past.length})
             </summary>
             <ul className="mt-3 flex flex-col gap-3">

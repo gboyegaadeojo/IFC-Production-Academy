@@ -10,7 +10,7 @@ import { createInvitationAction, type CreateInvitationState } from "./actions";
 const idle: CreateInvitationState = { status: "idle" };
 
 const fieldClasses =
-  "min-h-11 rounded-button border border-border bg-surface px-4 text-body text-text";
+  "min-h-control rounded-button border border-border bg-surface px-3 text-body text-text";
 
 export type DepartmentChoice = { id: string; name: string };
 
@@ -65,7 +65,7 @@ function Form({
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-small font-medium text-text-secondary">Who is it for?</legend>
-        <label className="flex min-h-11 items-center gap-3">
+        <label className="flex min-h-control items-center gap-3">
           <input
             type="radio"
             name="audience"
@@ -76,7 +76,7 @@ function Form({
           />
           One person: send them the link
         </label>
-        <label className="flex min-h-11 items-center gap-3">
+        <label className="flex min-h-control items-center gap-3">
           <input
             type="radio"
             name="audience"
