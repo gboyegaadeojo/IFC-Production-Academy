@@ -25,10 +25,6 @@ export default function InvitePage({ params }: PageProps<"/invite/[token]">) {
       id="main"
       className="relative flex flex-1 items-center justify-center overflow-hidden px-5 py-12"
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,color-mix(in_srgb,var(--accent)_22%,transparent),transparent_60%)]"
-      />
       <div className="relative flex w-full max-w-md flex-col gap-6 rounded-card border border-border bg-card p-8">
         <Wordmark />
         <Suspense

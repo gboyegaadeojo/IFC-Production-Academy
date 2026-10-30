@@ -67,7 +67,7 @@ export function ActionForm({
 }
 
 export const fieldClasses =
-  "min-h-11 rounded-button border border-border bg-surface px-4 text-body text-text";
+  "min-h-control rounded-button border border-border bg-surface px-3 text-body text-text";
 
 /** A label, optional hint (id `${id}-hint`), and one control whose id is `id`. */
 export function Field({

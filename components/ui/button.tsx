@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from "react";
 export type ButtonVariant = "primary" | "secondary" | "tertiary" | "destructive";
 
 const base =
-  "inline-flex min-h-11 items-center justify-center gap-2 rounded-button px-5 text-body font-semibold " +
+  "inline-flex min-h-control items-center justify-center gap-2 rounded-button px-4 text-body font-medium " +
   "transition-colors duration-[var(--duration-fast)] ease-standard " +
   "disabled:cursor-not-allowed disabled:opacity-60";
 

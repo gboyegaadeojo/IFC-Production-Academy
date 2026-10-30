@@ -28,7 +28,7 @@ async function MembersContent() {
   const waiting = departments.reduce((total, d) => total + d.requests.length, 0);
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex max-w-4xl flex-col gap-10">
       <header className="flex flex-col gap-2">
         <h1 className="text-title font-semibold">Membership requests</h1>
         <p className="max-w-2xl text-text-secondary">
@@ -40,55 +40,54 @@ async function MembersContent() {
         </p>
       </header>
 
-      {departments.map((department) => (
-        <section
-          key={department.id}
-          aria-labelledby={`dept-${department.id}`}
-          className="flex flex-col gap-5"
-        >
-          <h2
-            id={`dept-${department.id}`}
-            className="flex items-center gap-3 text-heading font-semibold"
-          >
-            <span style={{ color: departmentHueVar(department.hue) }}>
-              <DepartmentIcon icon={department.icon} />
-            </span>
-            {department.name}
-          </h2>
-
-          <div className="flex flex-col gap-3">
-            <h3 className="text-subheading font-semibold">
-              Waiting ({department.requests.length})
-            </h3>
-            {department.requests.length === 0 ? (
-              <p className="text-text-secondary">No requests waiting.</p>
-            ) : (
-              <ul className="grid gap-4 lg:grid-cols-2">
-                {department.requests.map((request) => (
-                  <li key={request.id} className="rounded-card border border-border bg-card p-5">
-                    <Person row={request} label="Asked" />
-                    <div className="mt-4">
-                      <RequestDecisionForm
-                        membershipId={request.id}
-                        personName={request.person.displayName}
-                      />
-                    </div>
-                  </li>
-                ))}
-              </ul>
+      <section aria-labelledby="waiting-heading" className="flex flex-col gap-3">
+        <h2 id="waiting-heading" className="text-heading font-semibold">
+          Waiting <span className="tabular text-text-muted">{waiting}</span>
+        </h2>
+        {waiting === 0 ? (
+          <p className="text-small text-text-muted">Nothing waiting. New requests appear here.</p>
+        ) : (
+          <ul className="divide-y divide-border border-y border-border">
+            {departments.flatMap((department) =>
+              department.requests.map((request) => (
+                <li
+                  key={request.id}
+                  className="flex flex-col gap-3 py-4 md:flex-row md:items-center md:justify-between"
+                >
+                  <Person row={request} label="Asked" department={department} />
+                  <RequestDecisionForm
+                    membershipId={request.id}
+                    personName={request.person.displayName}
+                  />
+                </li>
+              )),
             )}
-          </div>
+          </ul>
+        )}
+      </section>
 
-          <div className="flex flex-col gap-3">
-            <h3 className="text-subheading font-semibold">Members ({department.members.length})</h3>
-            {department.members.length === 0 ? (
-              <p className="text-text-secondary">No members yet.</p>
-            ) : (
-              <ul className="divide-y divide-border rounded-card border border-border bg-card">
+      <section aria-labelledby="members-heading" className="flex flex-col gap-6">
+        <h2 id="members-heading" className="text-heading font-semibold">
+          Members
+        </h2>
+        {departments
+          .filter((department) => department.members.length > 0)
+          .map((department) => (
+            <div key={department.id} className="flex flex-col gap-2">
+              <h3 className="flex items-center gap-2 font-medium">
+                <span style={{ color: departmentHueVar(department.hue) }}>
+                  <DepartmentIcon icon={department.icon} className="size-4" />
+                </span>
+                {department.name}
+                <span className="tabular text-small text-text-muted">
+                  {department.members.length}
+                </span>
+              </h3>
+              <ul className="divide-y divide-border border-y border-border">
                 {department.members.map((member) => (
                   <li
                     key={member.id}
-                    className="flex flex-col gap-2 p-5 sm:flex-row sm:items-start sm:justify-between"
+                    className="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:justify-between"
                   >
                     <Person row={member} label="Joined" />
                     <RemoveMemberForm
@@ -98,22 +97,41 @@ async function MembersContent() {
                   </li>
                 ))}
               </ul>
-            )}
-          </div>
-        </section>
-      ))}
+            </div>
+          ))}
+        {departments.some((department) => department.members.length === 0) ? (
+          <p className="text-small text-text-muted">
+            No members yet in{" "}
+            {departments
+              .filter((department) => department.members.length === 0)
+              .map((department) => department.name)
+              .join(", ")}
+            .
+          </p>
+        ) : null}
+      </section>
     </div>
   );
 }
 
-function Person({ row, label }: { row: MembershipRow; label: "Asked" | "Joined" }) {
+function Person({
+  row,
+  label,
+  department,
+}: {
+  row: MembershipRow;
+  label: "Asked" | "Joined";
+  department?: { name: string; hue: string; icon: string };
+}) {
   const when = label === "Asked" ? row.requestedAt : (row.decidedAt ?? row.requestedAt);
   return (
-    <div className="flex flex-col gap-1">
-      <p className="font-semibold">{row.person.displayName}</p>
-      {row.person.email ? (
-        <p className="text-small break-all text-text-secondary">{row.person.email}</p>
-      ) : null}
+    <div className="flex min-w-0 flex-col gap-0.5">
+      <p className="font-medium">{row.person.displayName}</p>
+      <p className="text-small break-all text-text-secondary">
+        {[row.person.email, department ? `wants to join ${department.name}` : null]
+          .filter(Boolean)
+          .join(" · ")}
+      </p>
       <p className="text-small text-text-muted">
         {label} {formatDateTime(when)}
       </p>

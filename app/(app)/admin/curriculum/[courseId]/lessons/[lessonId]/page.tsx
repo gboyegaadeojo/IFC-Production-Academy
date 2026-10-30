@@ -123,7 +123,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
                 className={`${fieldClasses} w-32`}
               />
             </Field>
-            <label className="flex min-h-11 items-center gap-3">
+            <label className="flex min-h-control items-center gap-3">
               <input
                 type="checkbox"
                 name="isRequired"
@@ -150,7 +150,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
           </ActionForm>
 
           <details className="rounded-card border border-border bg-card p-5">
-            <summary className="flex min-h-11 cursor-pointer items-center font-semibold">
+            <summary className="flex min-h-control cursor-pointer items-center font-semibold">
               Remove this lesson
             </summary>
             <p className="mt-2 text-text-secondary">

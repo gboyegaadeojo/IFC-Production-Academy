@@ -399,8 +399,8 @@ Your palette is kept, with two contrast fixes I checked against WCAG 2.2 AA (4.5
 
 ### Type, layout, imagery
 
-- **Typeface:** a modern grotesk, such as Inter (Inter Display for headings), with tabular numerals for progress and metrics. Scale 40 / 32 / 24 / 20 / 17 / 15 / 13 px; headings with slightly tight tracking; body at 1.5 line height; nothing under 13 px.
-- **Layout:** 8 px spacing scale; card radius 16, button radius 12, pills fully round; 20 px mobile margins; 12-column desktop grid with a readable max width; restrained borders over heavy shadows.
+- **Typeface:** IBM Plex Sans, a technical grotesk, with IBM Plex Mono for small uppercase labels (levels, versions) and tabular numerals for progress and metrics. Scale 32 / 24 / 18 / 15 / 14 / 13 px (revised 2026-10-30 at G's request: denser and more tool-like); headings with slightly tight tracking; body at 1.5 line height; nothing under 13 px.
+- **Layout:** 8 px spacing scale; card radius 10, button radius 8, pills fully round; controls 36 px tall with a mouse and 44 px on touch screens; 20 px mobile margins; 12-column desktop grid with a readable max width; rows and hairline dividers before boxed cards; restrained borders over heavy shadows.
 - **Imagery:** a consistent photo shoot of IFC volunteers at each position (deep shadows, warm stage light), one cover per department, a matching line-icon set.
 - **Brand:** IFC logo and assets confirmed before high-fidelity design.
 

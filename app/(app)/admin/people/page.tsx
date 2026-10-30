@@ -57,7 +57,7 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
             name="q"
             type="search"
             defaultValue={query}
-            className="min-h-11 rounded-button border border-border bg-surface px-4 text-body text-text"
+            className="min-h-control rounded-button border border-border bg-surface px-3 text-body text-text"
           />
         </div>
         <button type="submit" className={buttonClasses("secondary")}>

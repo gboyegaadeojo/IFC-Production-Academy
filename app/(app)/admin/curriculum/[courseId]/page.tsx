@@ -206,7 +206,7 @@ async function CourseContent({
 
       {canPublish && course.live && !course.archived ? (
         <details className="max-w-2xl rounded-card border border-border bg-card p-5">
-          <summary className="flex min-h-11 cursor-pointer items-center font-semibold">
+          <summary className="flex min-h-control cursor-pointer items-center font-semibold">
             Archive this course
           </summary>
           <p className="mt-2 text-text-secondary">
@@ -462,7 +462,7 @@ function ModuleEditor({
       </ActionForm>
 
       <details>
-        <summary className="flex min-h-11 cursor-pointer items-center text-small font-medium text-text-secondary hover:text-text">
+        <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-text-secondary hover:text-text">
           Edit or remove module<span className="sr-only"> {courseModule.title}</span>
         </summary>
         <div className="mt-3 flex flex-col gap-4">

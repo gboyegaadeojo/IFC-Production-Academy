@@ -49,7 +49,7 @@ function SignInFormInner({ invite, onReset }: { invite?: string; onReset: () => 
         placeholder="name@example.com"
         aria-invalid={state.status === "error"}
         aria-describedby={state.status === "error" ? errorId : undefined}
-        className="min-h-11 rounded-button border border-border bg-surface px-4 text-body text-text placeholder:text-text-muted aria-invalid:border-error"
+        className="min-h-control rounded-button border border-border bg-surface px-3 text-body text-text placeholder:text-text-muted aria-invalid:border-error"
       />
       {state.status === "error" ? (
         <p id={errorId} role="alert" className="text-small text-error">

@@ -9,6 +9,8 @@ export type RoleOption = {
   name: string;
   description: string;
   departmentScoped: boolean;
+  /** What the role lets someone do, from its capabilities (data, not code). */
+  abilities: string[];
 };
 
 export type DepartmentOption = { id: string; name: string };
@@ -17,6 +19,7 @@ export type RoleGrant = {
   id: string;
   roleId: string;
   roleName: string;
+  roleDescription: string;
   departmentId: string | null;
   departmentName: string | null;
   grantedAt: string;
@@ -43,9 +46,11 @@ export type PersonDetail = PersonSummary & {
 async function loadRolesAndDepartments(
   supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
 ) {
-  const [roles, departments] = await Promise.all([
+  const [roles, departments, roleCapabilities, capabilities] = await Promise.all([
     supabase.from("roles").select("id, key, name, description, department_scoped").order("name"),
     supabase.from("departments").select("id, name, sort_order").order("sort_order"),
+    supabase.from("role_capabilities").select("role_id, capability_id"),
+    supabase.from("capabilities").select("id, key, description").order("key"),
   ]);
   if (roles.error) {
     throw new Error("Could not load roles", { cause: roles.error.code });
@@ -53,14 +58,31 @@ async function loadRolesAndDepartments(
   if (departments.error) {
     throw new Error("Could not load departments", { cause: departments.error.code });
   }
+  if (roleCapabilities.error || capabilities.error) {
+    throw new Error("Could not load capabilities", {
+      cause: (roleCapabilities.error ?? capabilities.error)?.code,
+    });
+  }
+  const capabilityById = new Map(capabilities.data.map((row) => [row.id, row]));
   return {
-    roles: roles.data.map((row): RoleOption => ({
-      id: row.id,
-      key: row.key,
-      name: row.name,
-      description: row.description,
-      departmentScoped: row.department_scoped,
-    })),
+    roles: roles.data
+      .map((row): RoleOption => ({
+        id: row.id,
+        key: row.key,
+        name: row.name,
+        description: row.description,
+        departmentScoped: row.department_scoped,
+        abilities: roleCapabilities.data
+          .filter((grant) => grant.role_id === row.id)
+          .flatMap((grant) => {
+            const capability = capabilityById.get(grant.capability_id);
+            return capability ? [capability] : [];
+          })
+          .toSorted((a, b) => a.key.localeCompare(b.key))
+          .map((capability) => capability.description),
+      }))
+      // Fewest abilities first, so the list reads from Volunteer up.
+      .toSorted((a, b) => a.abilities.length - b.abilities.length || a.name.localeCompare(b.name)),
     departments: departments.data.map((row): DepartmentOption => ({ id: row.id, name: row.name })),
   };
 }
@@ -155,6 +177,7 @@ export async function getPerson(userId: string): Promise<{
         id: grant.id,
         roleId: grant.role_id,
         roleName: roleName.get(grant.role_id) ?? "Unknown role",
+        roleDescription: lookups.roles.find((role) => role.id === grant.role_id)?.description ?? "",
         departmentId: grant.department_id,
         departmentName: grant.department_id
           ? (departmentName.get(grant.department_id) ?? "Unknown department")

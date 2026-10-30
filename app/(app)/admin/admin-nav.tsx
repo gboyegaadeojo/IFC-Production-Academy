@@ -7,8 +7,11 @@ import type { AdminSection } from "@/lib/domain/admin";
 export function AdminNav({ sections }: { sections: AdminSection[] }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Admin">
-      <ul className="flex gap-2 overflow-x-auto md:flex-col md:overflow-visible">
+    <nav aria-label="Admin" className="flex flex-col gap-2">
+      <p aria-hidden="true" className="hidden px-3 eyebrow md:block">
+        Admin
+      </p>
+      <ul className="flex gap-1 overflow-x-auto border-b border-border md:flex-col md:overflow-visible md:border-b-0">
         {sections.map((section) => {
           const current = pathname === section.href || pathname.startsWith(`${section.href}/`);
           return (
@@ -16,10 +19,10 @@ export function AdminNav({ sections }: { sections: AdminSection[] }) {
               <Link
                 href={section.href}
                 aria-current={current ? "page" : undefined}
-                className={`flex min-h-11 items-center rounded-button px-4 text-small font-medium ${
+                className={`flex min-h-control items-center border-b-2 px-3 text-small md:border-b-0 md:border-l-2 ${
                   current
-                    ? "bg-hover text-text"
-                    : "text-text-secondary hover:bg-hover hover:text-text"
+                    ? "border-accent font-medium text-text"
+                    : "border-transparent text-text-secondary hover:text-text"
                 }`}
               >
                 {section.label}
