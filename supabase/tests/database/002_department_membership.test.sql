@@ -197,7 +197,7 @@ select results_eq(
   $$ select from_status::text, to_status::text, actor_id
        from public.department_membership_events
       where membership_id = current_setting('tests.v1_camera')::uuid
-      order by created_at, to_status $$,
+      order by from_status nulls first $$,
   $$ values (null::text, 'requested'::text, '10000000-0000-4000-8000-000000000001'::uuid),
             ('requested', 'active', '10000000-0000-4000-8000-000000000003'::uuid) $$,
   'membership history keeps the request and the approval with their actors'
