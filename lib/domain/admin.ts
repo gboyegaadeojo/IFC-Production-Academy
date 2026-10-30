@@ -5,13 +5,15 @@
  */
 import { hasCapability, hasCapabilityAnywhere, type CapabilityGrant } from "./capabilities";
 
-export type AdminSectionKey = "members" | "invitations" | "people" | "departments" | "audit";
+export type AdminSectionKey =
+  "members" | "invitations" | "curriculum" | "people" | "departments" | "audit";
 
 export type AdminSection = { key: AdminSectionKey; href: string; label: string };
 
 const SECTIONS: readonly AdminSection[] = [
   { key: "members", href: "/admin/members", label: "Membership requests" },
   { key: "invitations", href: "/admin/invitations", label: "Invitations" },
+  { key: "curriculum", href: "/admin/curriculum", label: "Curriculum" },
   { key: "people", href: "/admin/people", label: "People and roles" },
   { key: "departments", href: "/admin/departments", label: "Departments" },
   { key: "audit", href: "/admin/audit", label: "Audit log" },
@@ -27,6 +29,11 @@ export function canOpenAdminSection(
       return hasCapabilityAnywhere(grants, "member.approve");
     case "invitations":
       return hasCapabilityAnywhere(grants, "member.invite");
+    case "curriculum":
+      return (
+        hasCapabilityAnywhere(grants, "course.draft") ||
+        hasCapabilityAnywhere(grants, "course.publish")
+      );
     case "people":
       return hasCapability(grants, "user.manage") || hasCapability(grants, "role.assign");
     case "departments":
@@ -195,6 +202,14 @@ function changedFields(metadata: unknown): string[] {
     : [];
 }
 
+function versionNumber(metadata: unknown): number | null {
+  if (typeof metadata !== "object" || metadata === null) {
+    return null;
+  }
+  const value = (metadata as { version_number?: unknown }).version_number;
+  return typeof value === "number" ? value : null;
+}
+
 const STATUS_WORDS: Record<string, string> = {
   active: "active",
   coming_soon: "coming soon",
@@ -251,6 +266,35 @@ export function describeAuditEvent(event: AuditEventSummary): string {
         : "Updated an invitation";
     case "invitation_acceptance.created":
       return "Accepted an invitation";
+    case "course.created":
+      return "Created a course";
+    case "course.updated":
+      return changedFields(event.metadata).includes("archived_at")
+        ? "Archived or brought back a course"
+        : "Updated a course";
+    case "course_version.created":
+      return "Started editing a course";
+    case "course_version.updated": {
+      const number = versionNumber(event.metadata);
+      switch (status?.to) {
+        case "published":
+          return number ? `Published version ${number} of a course` : "Published a course";
+        case "pending_review":
+          return "Submitted a course for review";
+        case "draft":
+          return "Returned a course for changes";
+        case "superseded":
+          return number
+            ? `Version ${number} of a course was replaced`
+            : "A course version was replaced";
+        case "archived":
+          return "Archived a course";
+        default:
+          return "Updated a course version";
+      }
+    }
+    case "level.updated":
+      return "Edited a level";
     case "department.created":
       return "Created a department";
     case "department.updated":

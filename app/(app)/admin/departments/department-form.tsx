@@ -80,6 +80,15 @@ export function DepartmentForm({ department }: { department: DepartmentSettings 
           </select>
         </div>
       </div>
+      <label className="flex min-h-11 items-center gap-3">
+        <input
+          type="checkbox"
+          name="curriculumRequiresReview"
+          defaultChecked={department.curriculumRequiresReview}
+          className="size-5 accent-[var(--accent)]"
+        />
+        A second person publishes curriculum changes
+      </label>
       <div className="flex flex-wrap items-center gap-4">
         <Button
           type="submit"

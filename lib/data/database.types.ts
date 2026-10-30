@@ -59,6 +59,7 @@ export type Database = {
           icon: string;
           cover_image_path: string | null;
           sort_order: number;
+          curriculum_requires_review: boolean;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -83,6 +84,7 @@ export type Database = {
           icon?: string;
           cover_image_path?: string | null;
           sort_order?: number;
+          curriculum_requires_review?: boolean;
         };
         Relationships: [];
       };
@@ -173,6 +175,108 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      levels: {
+        Row: {
+          id: string;
+          department_id: string;
+          number: number;
+          name: string;
+          summary: string;
+        } & Timestamps;
+        Insert: never;
+        Update: { name?: string; summary?: string };
+        Relationships: [];
+      };
+      courses: {
+        Row: {
+          id: string;
+          department_id: string;
+          level_id: string;
+          sort_order: number;
+          created_by: string | null;
+          archived_at: string | null;
+        } & Timestamps;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      course_versions: {
+        Row: {
+          id: string;
+          course_id: string;
+          version_number: number | null;
+          status: Database["public"]["Enums"]["course_version_status"];
+          title: string;
+          summary: string;
+          objectives: string[];
+          estimated_minutes: number | null;
+          change_note: string | null;
+          based_on_version_id: string | null;
+          created_by: string | null;
+          submitted_at: string | null;
+          submitted_by: string | null;
+          published_at: string | null;
+          published_by: string | null;
+        } & Timestamps;
+        Insert: never;
+        Update: {
+          title?: string;
+          summary?: string;
+          objectives?: string[];
+          estimated_minutes?: number | null;
+        };
+        Relationships: [];
+      };
+      course_modules: {
+        Row: {
+          id: string;
+          course_version_id: string;
+          module_key: string;
+          title: string;
+          summary: string;
+          sort_order: number;
+        } & Timestamps;
+        Insert: { course_version_id: string; title: string; summary?: string; sort_order?: number };
+        Update: { title?: string; summary?: string; sort_order?: number };
+        Relationships: [];
+      };
+      lessons: {
+        Row: {
+          id: string;
+          course_version_id: string;
+          module_id: string;
+          lesson_key: string;
+          title: string;
+          summary: string;
+          objectives: string[];
+          estimated_minutes: number | null;
+          is_required: boolean;
+          body: string;
+          sort_order: number;
+        } & Timestamps;
+        Insert: {
+          course_version_id: string;
+          module_id: string;
+          title: string;
+          summary?: string;
+          objectives?: string[];
+          estimated_minutes?: number | null;
+          is_required?: boolean;
+          body?: string;
+          sort_order?: number;
+        };
+        Update: {
+          module_id?: string;
+          title?: string;
+          summary?: string;
+          objectives?: string[];
+          estimated_minutes?: number | null;
+          is_required?: boolean;
+          body?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -222,6 +326,24 @@ export type Database = {
         Args: never;
         Returns: { capability: string; department_id: string | null }[];
       };
+      create_course: { Args: { p_level_id: string; p_title: string }; Returns: string };
+      start_course_draft: { Args: { p_course_id: string }; Returns: string };
+      restore_course_version: { Args: { p_version_id: string }; Returns: string };
+      submit_course_version: {
+        Args: { p_version_id: string; p_change_note: string };
+        Returns: undefined;
+      };
+      return_course_version: {
+        Args: { p_version_id: string; p_reason: string };
+        Returns: undefined;
+      };
+      publish_course_version: {
+        Args: { p_version_id: string; p_change_note?: string | null };
+        Returns: number;
+      };
+      archive_course: { Args: { p_course_id: string }; Returns: undefined };
+      delete_course_module: { Args: { p_module_id: string }; Returns: undefined };
+      delete_lesson: { Args: { p_lesson_id: string }; Returns: undefined };
       create_invitation: {
         Args: {
           p_department_id: string | null;
@@ -272,6 +394,7 @@ export type Database = {
       department_status: "active" | "coming_soon" | "inactive";
       enrolment_mode: "request" | "invite_only";
       membership_status: "requested" | "active" | "declined" | "removed";
+      course_version_status: "draft" | "pending_review" | "published" | "superseded" | "archived";
     };
     CompositeTypes: { [_ in never]: never };
   };

@@ -83,6 +83,9 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   await clearMailFor(email);
   await guest.getByLabel("Email address").fill(email);
   await guest.getByRole("button", { name: "Email me a sign-in link" }).click();
+  // Wait for the request to finish (it also sets the pending-invitation cookie) before using the
+  // link; the email can arrive a moment before the sign-in token is saved.
+  await expect(guest.getByRole("heading", { name: "Check your email" })).toBeVisible();
   await guest.goto(await signInLinkFor(email));
 
   // The email link returns them to the invitation.
@@ -106,6 +109,51 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   ).toContainText("All places used");
 
   await Promise.all([leaderContext.close(), guestContext.close(), otherContext.close()]);
+});
+
+test("a leader builds, publishes, and revises a course", async ({ page }) => {
+  // Casey leads Camera Operations (seed data). Workflow C (SPEC §3), decided 2026-10-30.
+  const title = `E2E framing ${Date.now()}`;
+  await signInByEmail(page, "casey.leader@example.com");
+  await page.goto("/admin/curriculum");
+  await expect(page.getByRole("heading", { level: 1, name: "Curriculum" })).toBeVisible();
+
+  await page.getByText("New course in Level 1, Camera Operations").click();
+  await page.getByLabel("Course title").first().fill(title);
+  await page.getByRole("button", { name: "Create course" }).first().click();
+  await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
+  await expect(page.getByText("Not published yet")).toBeVisible();
+
+  await page.getByLabel("New module title").fill("Getting started");
+  await page.getByRole("button", { name: "Add module" }).click();
+  await expect(page.getByRole("heading", { level: 3, name: "Getting started" })).toBeVisible();
+
+  await page.getByLabel("New lesson title").fill("Rule of thirds");
+  await page.getByRole("button", { name: /^Add lesson/ }).click();
+  await page.getByRole("link", { name: "Rule of thirds" }).click();
+  await page.getByLabel("Lesson text").fill("Place the speaker's eyes on the top third line.");
+  await page.getByRole("button", { name: "Save lesson" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Saved to the draft." })).toBeVisible();
+  await page.getByRole("link", { name: "Back to the course" }).click();
+
+  await page.getByLabel("What changed?").fill("First version");
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Version 1 is live")).toBeVisible();
+
+  // Published content is locked; editing starts a draft and keeps version 1 live.
+  await page.getByRole("button", { name: "Edit course" }).click();
+  await expect(page.getByText("You're editing a draft")).toBeVisible();
+  await page.getByLabel("Title", { exact: true }).fill(`${title} (revised)`);
+  await page.getByRole("button", { name: "Save details" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Saved to the draft." })).toBeVisible();
+  await page.getByLabel("What changed?").fill("Renamed the course");
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Version 2 is live")).toBeVisible();
+
+  const history = page.getByRole("region", { name: "Version history" });
+  await expect(history.getByText(`Version 1: ${title}`, { exact: true })).toBeVisible();
+  await expect(history.getByText("First version")).toBeVisible();
+  await expect(history.getByRole("button", { name: "Restore as draft version 1" })).toBeVisible();
 });
 
 test("a Platform Admin manages people and departments but not memberships", async ({ page }) => {
@@ -138,6 +186,7 @@ test("a volunteer can't open the admin area", async ({ page }) => {
   for (const path of [
     "/admin",
     "/admin/invitations",
+    "/admin/curriculum",
     "/admin/people",
     "/admin/departments",
     "/admin/audit",
