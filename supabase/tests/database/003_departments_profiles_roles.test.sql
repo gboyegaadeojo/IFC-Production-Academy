@@ -154,8 +154,13 @@ select results_eq(
   'a department leader''s capabilities are scoped to their department'
 );
 select is_empty(
-  $$ select 1 from public.my_capabilities() where capability in ('course.publish', 'audit.view', 'role.assign') $$,
-  'a department leader cannot publish, read the audit log, or assign roles by default'
+  $$ select 1 from public.my_capabilities() where capability in ('audit.view', 'role.assign') $$,
+  'a department leader cannot read the audit log or assign roles by default'
+);
+select results_eq(
+  $$ select department_id from public.my_capabilities() where capability = 'course.publish' $$,
+  $$ values ('b7ba9dae-cab5-43e0-a996-8ae9d2436855'::uuid) $$,
+  'a department leader publishes curriculum for their own department only (decided 2026-10-30)'
 );
 reset role;
 

@@ -38,6 +38,11 @@ describe("adminSections", () => {
     expect(adminSections(cameraLeader).map((s) => s.key)).toEqual(["members", "invitations"]);
   });
 
+  it("shows Curriculum to anyone who drafts or publishes for a department", () => {
+    const drafter: CapabilityGrant[] = [{ capability: "course.draft", departmentId: CAMERA }];
+    expect(adminSections(drafter).map((s) => s.key)).toEqual(["curriculum"]);
+  });
+
   it("shows the Production Director members, people, and the audit log", () => {
     expect(adminSections(director).map((s) => s.key)).toEqual(["members", "people", "audit"]);
   });
@@ -158,6 +163,15 @@ describe("describeAuditEvent", () => {
     expect(describeAuditEvent({ action: "invitation_acceptance.created", metadata: {} })).toBe(
       "Accepted an invitation",
     );
+  });
+
+  it("describes publishing with the version number", () => {
+    expect(
+      describeAuditEvent({
+        action: "course_version.updated",
+        metadata: { status: { from: "draft", to: "published" }, version_number: 2 },
+      }),
+    ).toBe("Published version 2 of a course");
   });
 
   it("falls back to readable words for unknown actions", () => {
