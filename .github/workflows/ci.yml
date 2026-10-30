@@ -39,6 +39,28 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
           NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder-publishable-key
           NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      - name: Smoke test the Worker in local workerd
+        # A build can succeed and still produce a Worker that hangs on every request.
+        run: |
+          set -euo pipefail
+          npx wrangler dev --local --port 8799 > /tmp/wrangler-dev.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -s -o /dev/null --max-time 2 http://127.0.0.1:8799/favicon.ico && break
+            sleep 2
+          done
+          failed=0
+          for path in /sign-in /dev/tokens; do
+            code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "http://127.0.0.1:8799$path" || true)"
+            echo "$path -> $code"
+            case "$path:$code" in
+              /sign-in:200 | /dev/tokens:404) ;;
+              *) failed=1 ;;
+            esac
+          done
+          if [ "$failed" -ne 0 ]; then
+            grep -E 'ERROR|hung|is not a function' /tmp/wrangler-dev.log | head -20 || true
+            exit 1
+          fi
 
   database-and-e2e:
     name: RLS tests and end-to-end tests
