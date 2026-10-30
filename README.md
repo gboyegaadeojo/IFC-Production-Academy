@@ -122,11 +122,12 @@ Done once by the Platform Admin. Keep every secret out of the repo.
 
 ### Cloudflare
 
-`deploy.yml` builds and deploys on every push to `main` (or run it by hand). Build on Linux:
-OpenNext builds made on Windows can produce a Worker that hangs on every request, so don't run
-`npm run deploy` from a Windows machine. `NEXT_PUBLIC_*` values are inlined at build time; the
-workflow takes them from the secrets and the `SITE_URL` variable below. The app never uses the
-service-role key.
+`deploy.yml` builds and deploys on every push to `main` (or run it by hand). `NEXT_PUBLIC_*`
+values are inlined at build time; the workflow takes them from the secrets and the `SITE_URL`
+variable below. The app never uses the service-role key.
+
+Keep `cacheComponents` off in `next.config.ts`: with it on, the Worker hangs on every request.
+CI runs the built Worker in local workerd to catch this.
 
 Create the API token in the Cloudflare dashboard: **My Profile → API Tokens → Create Token →
 "Edit Cloudflare Workers" template**, limited to the IFC account.

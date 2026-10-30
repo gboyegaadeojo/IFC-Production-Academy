@@ -1,5 +1,4 @@
 # Deploy to Cloudflare Workers from main.
-# Builds on Linux: OpenNext builds made on Windows can produce a Worker that hangs on every request.
 # NEXT_PUBLIC_* values are inlined at build time. They are public by design (RLS protects the
 # data), but still come from secrets and variables so nothing environment-specific is committed.
 # Logs only build output and the deploy result, never secret values.

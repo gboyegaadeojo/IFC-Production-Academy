@@ -8,8 +8,9 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
+  // Cache Components stays off: on the Workers runtime its staged rendering relies on Node's
+  // setTimeout behaviour and every request hangs. CI smoke tests the built Worker to catch this.
+  cacheComponents: false,
   turbopack: {
     rules: {
       "*.css": {
