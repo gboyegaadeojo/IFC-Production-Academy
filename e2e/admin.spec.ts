@@ -69,7 +69,7 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
     leader.getByRole("heading", { name: "Your invitation link is ready" }),
   ).toBeVisible();
   await expect(leader.getByRole("img", { name: "QR code for the invitation link" })).toBeVisible();
-  const link = await leader.getByLabel("Invitation link").inputValue();
+  const link = await leader.getByLabel("Invitation link", { exact: true }).inputValue();
   expect(link).toMatch(/\/invite\/[A-Za-z0-9_-]{32}$/);
   const path = new URL(link).pathname;
 
