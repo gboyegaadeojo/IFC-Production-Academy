@@ -173,6 +173,36 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      invitations: {
+        // token_hash is deliberately absent: it is not readable through the API.
+        Row: {
+          id: string;
+          organization_id: string;
+          department_id: string | null;
+          note: string | null;
+          max_uses: number;
+          use_count: number;
+          expires_at: string;
+          created_by: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
+        } & Timestamps;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      invitation_acceptances: {
+        Row: {
+          id: string;
+          invitation_id: string;
+          user_id: string;
+          membership_id: string | null;
+          accepted_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -191,6 +221,34 @@ export type Database = {
       my_capabilities: {
         Args: never;
         Returns: { capability: string; department_id: string | null }[];
+      };
+      create_invitation: {
+        Args: {
+          p_department_id: string | null;
+          p_max_uses: number;
+          p_valid_days: number;
+          p_note?: string | null;
+        };
+        Returns: { invitation_id: string; token: string; expires_at: string }[];
+      };
+      revoke_invitation: {
+        Args: { p_invitation_id: string };
+        Returns: undefined;
+      };
+      invitation_preview: {
+        Args: { p_token: string };
+        Returns: {
+          status: string;
+          department_id: string | null;
+          department_name: string | null;
+          department_hue: string | null;
+          department_icon: string | null;
+          expires_at: string | null;
+        }[];
+      };
+      accept_invitation: {
+        Args: { p_token: string };
+        Returns: { outcome: string; department_id: string | null }[];
       };
       profile_emails: {
         Args: { p_user_ids: string[] };

@@ -6,13 +6,14 @@ import { requestMagicLink, type MagicLinkState } from "./actions";
 
 const initialState: MagicLinkState = { status: "idle" };
 
-export function SignInForm() {
+/** `invite` carries an invitation token through sign-in, so the person lands back on it. */
+export function SignInForm({ invite }: { invite?: string }) {
   // Changing the key resets the email form after "Use a different email".
   const [attempt, setAttempt] = useState(0);
-  return <SignInFormInner key={attempt} onReset={() => setAttempt((n) => n + 1)} />;
+  return <SignInFormInner key={attempt} invite={invite} onReset={() => setAttempt((n) => n + 1)} />;
 }
 
-function SignInFormInner({ onReset }: { onReset: () => void }) {
+function SignInFormInner({ invite, onReset }: { invite?: string; onReset: () => void }) {
   const [state, formAction, pending] = useActionState(requestMagicLink, initialState);
   const emailId = useId();
   const errorId = useId();
@@ -34,6 +35,7 @@ function SignInFormInner({ onReset }: { onReset: () => void }) {
 
   return (
     <form action={formAction} className="flex flex-col gap-3" noValidate>
+      {invite ? <input type="hidden" name="invite" value={invite} /> : null}
       <label htmlFor={emailId} className="text-small font-medium text-text-secondary">
         Email address
       </label>

@@ -34,8 +34,8 @@ describe("adminSections", () => {
     expect(adminSections(volunteer)).toEqual([]);
   });
 
-  it("shows a department leader only membership requests", () => {
-    expect(adminSections(cameraLeader).map((s) => s.key)).toEqual(["members"]);
+  it("shows a department leader membership requests and invitations", () => {
+    expect(adminSections(cameraLeader).map((s) => s.key)).toEqual(["members", "invitations"]);
   });
 
   it("shows the Production Director members, people, and the audit log", () => {
@@ -143,6 +143,21 @@ describe("describeAuditEvent", () => {
         metadata: { status: { from: "active", to: "suspended" } },
       }),
     ).toBe("Changed account status from active to suspended");
+  });
+
+  it("describes invitations", () => {
+    expect(describeAuditEvent({ action: "invitation.created", metadata: {} })).toBe(
+      "Created an invitation",
+    );
+    expect(
+      describeAuditEvent({
+        action: "invitation.updated",
+        metadata: { changed: ["revoked_at", "revoked_by"], revoked: true },
+      }),
+    ).toBe("Revoked an invitation");
+    expect(describeAuditEvent({ action: "invitation_acceptance.created", metadata: {} })).toBe(
+      "Accepted an invitation",
+    );
   });
 
   it("falls back to readable words for unknown actions", () => {
