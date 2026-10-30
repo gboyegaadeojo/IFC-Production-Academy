@@ -8,9 +8,9 @@ test("a signed-out visitor is sent to sign-in", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Sign in to keep learning" })).toBeVisible();
 });
 
-test("the sign-in page offers Google and an email link", async ({ page }) => {
+test("the sign-in page offers an email link only", async ({ page }) => {
   await page.goto("/sign-in");
-  await expect(page.getByRole("button", { name: "Continue with Google" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /Google/ })).toHaveCount(0);
   await expect(page.getByLabel("Email address")).toBeVisible();
   await expect(page.getByRole("button", { name: "Email me a sign-in link" })).toBeVisible();
 });
@@ -28,16 +28,9 @@ test("an expired or reused link explains what happened", async ({ page }) => {
   await expect(page.getByRole("main").getByRole("alert")).toHaveText(/expired or was already used/);
 });
 
-test("a bad code from an email link is reported as a link problem, not Google", async ({
-  page,
-}) => {
-  await page.goto("/auth/callback?code=not-a-real-code&next=/home&via=email");
+test("a bad code from an email link explains what happened", async ({ page }) => {
+  await page.goto("/auth/callback?code=not-a-real-code&next=/home");
   await expect(page).toHaveURL(/error=link_invalid/);
-});
-
-test("a bad code from Google is reported as a Google problem", async ({ page }) => {
-  await page.goto("/auth/callback?code=not-a-real-code");
-  await expect(page).toHaveURL(/error=oauth_failed/);
 });
 
 test("an unknown error code is ignored rather than shown", async ({ page }) => {

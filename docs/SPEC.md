@@ -21,7 +21,7 @@ The biggest change from my draft is adopting your rule that completing a course 
 | Scheduling and mentoring | Basic scheduling and mentoring in MVP | Out of scope for v1 | **In MVP** as you specified; advanced rotations later |
 | Quiz attempts | 80% pass, 3 attempts, then review or coaching | 80% pass, unlimited retries | **80%, 3 attempts**, configurable per course |
 | Video completion | Never claim full watch verification | Auto-complete at 90% watched | **Mark complete by learner**; watch percentage from the YouTube player recorded as an informal signal only, never as proof |
-| Sign-in | Google + email (password or passwordless, TBD) | Apple, Google, magic link | **Google + email magic link** for the PWA; Sign in with Apple added when native iOS ships (Apple requires it) |
+| Sign-in | Google + email (password or passwordless, TBD) | Apple, Google, magic link | **Email magic link only** (decided 2026-10-30: membership is approved by a leader, so one simple sign-in path is enough). Revisit Apple and Google sign-in when native iOS ships |
 | Roles | Volunteer, Trainer/Evaluator, Department Leader, Production Director, Platform Admin | Volunteer, Lead, Content editor, Super admin | **Your five roles**; content authoring is a permission, not a separate role |
 | Content governance | Draft, pending review, published, archived, superseded; approver publishes; versioned | Draft and published only | **Your versioned workflow** |
 | Accent colour | Single purple accent (#7C3AED) | Church brand colour plus one accent per department | **Purple stays the action colour**; department hues used only for covers, icons, and progress rings |
@@ -108,7 +108,7 @@ IDs come from your package. Rows marked **ADD-** are additions from my draft tha
 | ID | Requirement | Level |
 | --- | --- | --- |
 | SRS-AUTH-001 | Secure sign-in through the selected identity provider | M |
-| SRS-AUTH-002 | Google sign-in and email sign-in (recommended: passwordless magic link) | S |
+| SRS-AUTH-002 | Email sign-in by passwordless magic link only (decided 2026-10-30; Google sign-in dropped) | S |
 | SRS-AUTH-003 | Leaders invite volunteers to the platform and optionally a department | M |
 | SRS-AUTH-004 | Suspend or deactivate accounts without erasing training history | M |
 | SRS-AUTH-005 | Secure sessions with expiry and revocation | M |
@@ -479,7 +479,7 @@ A custom build on managed services fits your "balanced" budget: premium design a
 | --- | --- | --- |
 | Web app and PWA | Next.js (or a similar React framework) on Cloudflare Pages / Workers, with the design tokens as shared code | $0 |
 | Database | Supabase Free Postgres with row-level security, kept awake by a daily job | $0 |
-| Sign-in | Supabase Auth: Google and email magic-link sign-in | $0 |
+| Sign-in | Supabase Auth: email magic-link sign-in | $0 |
 | Files | Supabase Storage, private bucket with signed links | $0 |
 | Video | Unlisted YouTube via the official embedded player; a VideoSource record allows Vimeo or Mux later | $0 |
 | Email | Resend (confirmed) | $0 |
@@ -496,7 +496,7 @@ On 2026-10-29 IFC chose **Supabase Free**, with a daily keep-alive job so the pr
 | Layer | Service | Free limit (Oct 2026) | Notes |
 | --- | --- | --- | --- |
 | Web app and PWA | Cloudflare Pages / Workers | 500 builds a month | Vercel's free Hobby plan is for "non-commercial, personal use" only, so it is not used |
-| Database, sign-in, files | Supabase Free | 500 MB database, 1 GB files, 5 GB egress, 50,000 monthly active users, 2 projects ([Supabase pricing](https://supabase.com/pricing)) | One product for Postgres, Google and magic-link sign-in, file storage for SOPs, and row-level security |
+| Database, sign-in, files | Supabase Free | 500 MB database, 1 GB files, 5 GB egress, 50,000 monthly active users, 2 projects ([Supabase pricing](https://supabase.com/pricing)) | One product for Postgres, magic-link sign-in, file storage for SOPs, and row-level security |
 | Email | Resend (also Supabase's sign-in email sender) | 3,000 a month, 100 a day | Confirmed by IFC |
 | Video | Unlisted YouTube | Free | Unchanged |
 | Keep-alive and backups | GitHub Actions scheduled jobs | 2,000 free minutes a month on a private repo | See below |
@@ -607,7 +607,7 @@ Measure baselines during the pilot before setting targets: share of enrolled vol
 
 | # | Decision | Recommendation |
 | --- | --- | --- |
-| 1 | Email sign-in: password or passwordless? | Passwordless magic link, fewer support issues for volunteers |
+| 1 | Email sign-in: password or passwordless? | Decided 2026-10-30: passwordless magic link, and no Google sign-in |
 | 2 | Hosting, database, identity, email vendors | Decided: Supabase Free with daily keep-alive, Cloudflare Pages, Resend, Google Drive backups |
 | 3 | Who builds and maintains it, and the budget and launch date | Needed in Phase 0 |
 | 4 | IFC brand assets and whether light theme ships at launch | Dark at launch, light theme in Phase 5 |

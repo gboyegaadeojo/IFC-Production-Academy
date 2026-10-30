@@ -25,7 +25,7 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
         <Wordmark />
         <h1 className="mt-6 text-heading font-semibold">Sign in to keep learning</h1>
         <p className="mt-2 text-text-secondary">
-          Use your Google account, or we&apos;ll email you a link. No password needed.
+          Enter your email and we&apos;ll send you a link. No password needed.
         </p>
         <div className="mt-8">
           {/* A non-interactive placeholder, so nobody types into a form that is about to be replaced. */}
@@ -40,12 +40,10 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
 
 function SignInSkeleton() {
   return (
-    <div aria-busy="true" className="flex flex-col gap-6">
+    <div aria-busy="true">
       <p role="status" className="sr-only">
-        Loading sign-in options…
+        Loading sign-in…
       </p>
-      <div className="h-11 rounded-button bg-hover motion-safe:animate-pulse" />
-      <div className="h-px bg-border" />
       <div className="h-[7.5rem] rounded-button bg-hover motion-safe:animate-pulse" />
     </div>
   );
@@ -80,7 +78,7 @@ async function SignInContent({ searchParams }: Pick<PageProps<"/sign-in">, "sear
           </button>
         </form>
       ) : (
-        <SignInForm next={next} />
+        <SignInForm />
       )}
     </>
   );

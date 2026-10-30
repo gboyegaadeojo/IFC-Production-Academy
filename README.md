@@ -50,9 +50,7 @@ The seed has six obviously fake people you can sign in as:
 | `emery.director@example.com`  | Production Director                    |
 | `frankie.admin@example.com`   | Platform Administrator                 |
 
-Any other address creates a new volunteer. Google sign-in is off locally unless you add OAuth
-credentials to `supabase/.env` (gitignored) and enable `[auth.external.google]` in
-`supabase/config.toml`.
+Any other address creates a new volunteer. Sign-in is by email link only (decided 2026-10-30).
 
 Other local tools: Supabase Studio at <http://127.0.0.1:54323>, and `/dev/tokens` for the design
 token preview (development only).
@@ -113,12 +111,14 @@ Done once by the Platform Admin. Keep every secret out of the repo.
    Never run `seed.sql` against production.
 2. **Authentication → URL configuration:** set Site URL to the app's address and add
    `https://<app>/auth/callback` and `https://<app>/auth/confirm` as redirect URLs.
-3. **Authentication → Email templates → Magic link** (and Confirm signup): use
+3. **Authentication → SMTP:** host `smtp.resend.com`, port 465, user `resend`, password = a
+   Resend API key, sender on a domain verified in Resend. Do this before step 4: the Free plan
+   rejects template changes while it uses Supabase's built-in mailer.
+4. **Authentication → Email templates → Magic link** (and Confirm signup): use
    [supabase/templates/magic-link.html](supabase/templates/magic-link.html).
-4. **Authentication → SMTP:** host `smtp.resend.com`, port 465, user `resend`, password = a
-   Resend API key, sender on a domain verified in Resend.
-5. **Authentication → Providers → Google:** add the OAuth client ID and secret from Google Cloud,
-   with `https://<project>.supabase.co/auth/v1/callback` as the authorized redirect URI.
+5. **First Platform Admin:** sign in once, then grant the `platform_admin` role to that account
+   with SQL (an insert into `public.user_roles` with `department_id` null). Everyone after that is
+   granted roles in the app.
 
 ### Cloudflare
 

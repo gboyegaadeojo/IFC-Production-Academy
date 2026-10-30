@@ -18,7 +18,7 @@ A volunteer learning and competency platform for the production ministry at Imma
 | --- | --- |
 | App | Next.js (App Router) + TypeScript (strict), responsive and an installable PWA |
 | Hosting | Cloudflare Workers / Pages via `@opennextjs/cloudflare` (not Vercel: Hobby is personal-use only) |
-| Database, auth, files | Supabase Free: Postgres with row-level security, Supabase Auth (Google and email magic link), Supabase Storage (private buckets, signed URLs) |
+| Database, auth, files | Supabase Free: Postgres with row-level security, Supabase Auth (email magic link only, decided 2026-10-30), Supabase Storage (private buckets, signed URLs) |
 | Email | Resend, server-side only; also set as Supabase Auth's SMTP sender |
 | Video | Unlisted YouTube via the official IFrame Player API, behind a `VideoSource` abstraction so Vimeo or Mux can be added later |
 | Styling | Tailwind CSS driven by the design tokens in SPEC §7 (CSS variables, dark theme first) |
@@ -93,7 +93,7 @@ Do this first, as one PR:
 2. Add the design tokens from SPEC §7 as CSS variables (dark theme), with a token preview page at `/dev/tokens` that is only available in development.
 3. Set up local Supabase with `supabase init`. Write the first migration: `organizations`, `profiles` (linked to `auth.users`), `departments` (status: active, coming_soon, inactive; hue, icon, order), `department_memberships` (requested, active, declined, removed, with history), `roles`, `capabilities`, `role_capabilities`, `user_roles` (optionally department-scoped), and `audit_events`. Enable RLS on all of them, with tests.
 4. Seed the five departments from SPEC §1, with Lighting Operations as `coming_soon`. Seed data must be fake people only.
-5. Add sign-in with Google and email magic link through Supabase Auth, using Resend as SMTP. Include sign-out and a protected `/home` route.
+5. Add sign-in with an email magic link through Supabase Auth, using Resend as SMTP. Include sign-out and a protected `/home` route.
 6. Add `.env.example`, a README with local setup steps, a GitHub Actions CI workflow (lint, typecheck, unit, RLS tests; no secrets needed), and `keepalive.yml`.
 7. Leave `backup.yml` as a skeleton and finish it once the Google service account and Shared Drive exist.
 
