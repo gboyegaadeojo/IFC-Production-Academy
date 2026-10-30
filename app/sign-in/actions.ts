@@ -1,16 +1,10 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { sendMagicLink, startGoogleSignIn } from "@/lib/data/auth";
-import { magicLinkRequestSchema, safeNextPath } from "@/lib/domain/auth";
+import { sendMagicLink } from "@/lib/data/auth";
+import { magicLinkRequestSchema } from "@/lib/domain/auth";
 
 export type MagicLinkState =
   { status: "idle" } | { status: "sent"; email: string } | { status: "error"; message: string };
-
-function nextFrom(formData: FormData): string {
-  const next = formData.get("next");
-  return safeNextPath(typeof next === "string" ? next : null);
-}
 
 export async function requestMagicLink(
   _previous: MagicLinkState,
@@ -32,9 +26,4 @@ export async function requestMagicLink(
     };
   }
   return { status: "sent", email: parsed.data.email };
-}
-
-export async function signInWithGoogle(formData: FormData): Promise<void> {
-  const url = await startGoogleSignIn(nextFrom(formData));
-  redirect(url ?? "/sign-in?error=oauth_failed");
 }

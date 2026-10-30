@@ -50,7 +50,7 @@ export const authConfirmParamsSchema = z.object({
 });
 
 /** Sign-in error codes we put in the URL. Never put provider messages in a URL. */
-export const signInErrorSchema = z.enum(["link_invalid", "oauth_failed", "account_inactive"]);
+export const signInErrorSchema = z.enum(["link_invalid", "account_inactive"]);
 export type SignInError = z.infer<typeof signInErrorSchema>;
 
 export function signInErrorMessage(code: string | null | undefined): string | null {
@@ -61,8 +61,6 @@ export function signInErrorMessage(code: string | null | undefined): string | nu
   switch (parsed.data) {
     case "link_invalid":
       return "That sign-in link has expired or was already used. Ask for a new one below.";
-    case "oauth_failed":
-      return "Google sign-in didn't finish. Try again, or use an email link instead.";
     case "account_inactive":
       return "Your account isn't active right now. Talk to your department leader or the Production Director.";
   }
