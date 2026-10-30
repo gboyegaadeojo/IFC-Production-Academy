@@ -28,12 +28,26 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
           Use your Google account, or we&apos;ll email you a link. No password needed.
         </p>
         <div className="mt-8">
-          <Suspense fallback={<SignInForm next="/home" />}>
+          {/* A non-interactive placeholder, so nobody types into a form that is about to be replaced. */}
+          <Suspense fallback={<SignInSkeleton />}>
             <SignInContent searchParams={searchParams} />
           </Suspense>
         </div>
       </div>
     </main>
+  );
+}
+
+function SignInSkeleton() {
+  return (
+    <div aria-busy="true" className="flex flex-col gap-6">
+      <p role="status" className="sr-only">
+        Loading sign-in options…
+      </p>
+      <div className="h-11 rounded-button bg-hover motion-safe:animate-pulse" />
+      <div className="h-px bg-border" />
+      <div className="h-[7.5rem] rounded-button bg-hover motion-safe:animate-pulse" />
+    </div>
   );
 }
 
