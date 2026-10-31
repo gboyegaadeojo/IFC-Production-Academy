@@ -4,6 +4,7 @@
  * version with a change note, and old versions can be restored. Review is optional per department.
  */
 import { z } from "zod";
+import { parseVideo, type VideoRef } from "@/lib/domain/video";
 
 export type CourseVersionStatus =
   "draft" | "pending_review" | "published" | "superseded" | "archived";
@@ -132,6 +133,33 @@ export const moduleSchema = z.object({
   summary: z.string().trim().max(1000, "Keep the summary under 1,000 characters."),
 });
 
+/**
+ * A lesson's video: the source and what the leader typed (SRS-LESSON-003). An empty value means no
+ * video. Stored as provider + reference, never as pasted embed code.
+ */
+export const videoField = z
+  .object({
+    provider: z.enum(["youtube", "nas"]).default("youtube"),
+    input: z.string().trim().max(500, "That's too long. Paste the video's link or file path."),
+  })
+  .transform((value, context): VideoRef | null => {
+    if (value.input === "") {
+      return null;
+    }
+    const video = parseVideo(value.provider, value.input);
+    if (!video) {
+      context.addIssue({
+        code: "custom",
+        message:
+          value.provider === "youtube"
+            ? "That doesn't look like a YouTube video link. Paste the link from YouTube's Share button."
+            : "Use the file's path inside the training videos folder, like camera/level-1/framing.mp4. MP4 and WebM files only.",
+      });
+      return z.NEVER;
+    }
+    return video;
+  });
+
 export const lessonSchema = z.object({
   moduleId: z.uuid(),
   title: titleField,
@@ -140,6 +168,7 @@ export const lessonSchema = z.object({
   estimatedMinutes: minutesField(600),
   isRequired: z.boolean(),
   body: z.string().max(20000, "Keep the lesson text under 20,000 characters."),
+  video: videoField,
 });
 
 export const changeNoteSchema = z

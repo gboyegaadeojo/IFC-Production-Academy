@@ -6,9 +6,11 @@ import { Suspense } from "react";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
 import { ArrowRightIcon, LockIcon } from "@/components/ui/icons";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
-import { getLearnerCourse } from "@/lib/data/pathway";
+import { getLearnerCourse, isActiveMember } from "@/lib/data/pathway";
+import { getCourseProgress } from "@/lib/data/progress";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
   courseTotals,
@@ -16,6 +18,7 @@ import {
   formatMinutes,
   lessonCountLabel,
 } from "@/lib/domain/learning";
+import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
 import { CourseOutline } from "./course-outline";
 
 export const metadata: Metadata = { title: "Course" };
@@ -36,7 +39,7 @@ export default function CoursePage({ params }: PageProps<"/courses/[courseId]">)
  * see the lessons; anyone else sees what the course is and how to get access (SRS-MEM-005).
  */
 async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, "params">) {
-  await requireActiveUser();
+  const user = await requireActiveUser();
   const { courseId } = await params;
   if (!UUID.test(courseId)) {
     notFound();
@@ -47,6 +50,9 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
   }
   const totals = courseTotals(course.modules);
   const first = flattenLessons(course.modules)[0];
+  const member = course.canOpen && (await isActiveMember(user.id, course.department.id));
+  const lessonProgress = member ? await getCourseProgress(user.id, course.id) : null;
+  const summary = lessonProgress ? courseProgress(course.modules, lessonProgress) : null;
   const minutes = totals.estimatedMinutes ?? course.estimatedMinutes;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
   const facts = course.canOpen
@@ -108,13 +114,37 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
               <h2 id="outline-heading" className="text-heading font-semibold">
                 Lessons
               </h2>
-              <CourseOutline courseId={course.id} modules={course.modules} />
+              <CourseOutline
+                courseId={course.id}
+                modules={course.modules}
+                progress={lessonProgress ?? undefined}
+              />
             </section>
           ) : null}
         </div>
 
         <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
-          {course.canOpen && first ? (
+          {summary && summary.state !== "not_started" ? (
+            <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
+              <p className="font-medium">
+                {summary.state === "completed" ? "You've finished this course" : "Your progress"}
+              </p>
+              <ProgressBar percent={summary.percent} label="Course progress" />
+              <p className="text-small text-text-secondary">
+                {courseProgressLabel(summary, totals.required > 0)}
+              </p>
+              {summary.next ? (
+                <Link
+                  href={`/courses/${course.id}/lessons/${summary.next.key}`}
+                  className={buttonClasses("primary", "w-full")}
+                >
+                  Continue
+                  <span className="sr-only">: {summary.next.title}</span>
+                  <ArrowRightIcon className="size-4" />
+                </Link>
+              ) : null}
+            </div>
+          ) : course.canOpen && first ? (
             <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
               <p className="font-medium">Ready when you are</p>
               <p className="text-small text-text-secondary">
@@ -147,8 +177,8 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
             </div>
           )}
           <p className="px-1 text-small text-text-muted">
-            Lesson progress isn&apos;t tracked yet, so nothing here is marked complete. Finishing a
-            course never approves you to serve on its own.
+            You mark each lesson complete yourself. Finishing a course never approves you to serve
+            on its own: that comes from assessments with a trainer.
           </p>
         </aside>
       </div>

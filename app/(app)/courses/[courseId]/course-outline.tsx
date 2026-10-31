@@ -1,18 +1,24 @@
 import Link from "next/link";
+import { CheckIcon, ClockIcon } from "@/components/ui/icons";
 import { flattenLessons, formatMinutes, type OutlineModule } from "@/lib/domain/learning";
+import { progressFor, type LessonProgress } from "@/lib/domain/progress";
 
 /**
  * Course outline (DESIGN §4.4 LessonList, §6.4–6.5): modules and lessons in teaching order. In the
- * lesson view the current lesson is marked with aria-current and a rule, never colour alone.
+ * lesson view the current lesson is marked with aria-current and a rule, never colour alone; each
+ * lesson's progress is an icon with words for screen readers.
  */
 export function CourseOutline({
   courseId,
   modules,
+  progress,
   currentKey,
   compact = false,
 }: {
   courseId: string;
   modules: OutlineModule[];
+  /** The learner's progress by lesson key. Omitted when progress isn't tracked for them. */
+  progress?: ReadonlyMap<string, LessonProgress>;
   currentKey?: string;
   compact?: boolean;
 }) {
@@ -70,6 +76,9 @@ export function CourseOutline({
                     {compact && !lesson.isRequired ? (
                       <span className="text-small text-text-muted">Optional</span>
                     ) : null}
+                    {progress ? (
+                      <LessonMarker state={progressFor(progress, lesson.key).state} />
+                    ) : null}
                   </Link>
                 </li>
               );
@@ -79,4 +88,25 @@ export function CourseOutline({
       ))}
     </div>
   );
+}
+
+function LessonMarker({ state }: { state: LessonProgress["state"] }) {
+  switch (state) {
+    case "completed":
+      return (
+        <span className="flex shrink-0 items-center self-center text-success">
+          <CheckIcon className="size-4" />
+          <span className="sr-only">, completed</span>
+        </span>
+      );
+    case "in_progress":
+      return (
+        <span className="flex shrink-0 items-center self-center text-text-muted">
+          <ClockIcon className="size-4" />
+          <span className="sr-only">, in progress</span>
+        </span>
+      );
+    case "not_started":
+      return null;
+  }
 }

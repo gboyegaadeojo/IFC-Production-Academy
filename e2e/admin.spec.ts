@@ -146,8 +146,18 @@ test("a leader builds, publishes, and revises a course", async ({ page }) => {
   await page.getByRole("button", { name: /^Add lesson/ }).click();
   await page.getByRole("link", { name: "Rule of thirds" }).click();
   await page.getByLabel("Lesson text").fill("Place the speaker's eyes on the top third line.");
+  // A link that isn't a YouTube video is explained, not saved (SRS-LESSON-003).
+  await page.getByLabel("YouTube video (optional)").fill("https://example.com/not-a-video");
+  await page.getByRole("button", { name: "Save lesson" }).click();
+  await expect(page.getByText("That doesn't look like a YouTube video link.")).toBeVisible();
+  // A fake id: real unlisted links never go in the repo (SRS-LESSON-007).
+  await page.getByLabel("YouTube video (optional)").fill("https://youtu.be/AbC_dEf-123?si=x");
   await page.getByRole("button", { name: "Save lesson" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Saved to the draft." })).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("YouTube video (optional)")).toHaveValue(
+    "https://www.youtube.com/watch?v=AbC_dEf-123",
+  );
   await page.getByRole("link", { name: "Back to the course" }).click();
 
   const sections = page.getByRole("navigation", { name: "Course sections" });

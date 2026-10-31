@@ -2,6 +2,7 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { peopleById, personFor, type PersonSummary } from "@/lib/data/admin/shared";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
+import { storedVideo, type VideoRef } from "@/lib/domain/video";
 import {
   courseState,
   nextSortOrder,
@@ -317,6 +318,7 @@ export type LessonDetail = {
   estimatedMinutes: number | null;
   isRequired: boolean;
   body: string;
+  video: VideoRef | null;
   modules: { id: string; title: string }[];
 };
 
@@ -325,7 +327,7 @@ export async function getLesson(lessonId: string): Promise<LessonDetail | null> 
   const lesson = await supabase
     .from("lessons")
     .select(
-      "id, course_version_id, module_id, title, summary, objectives, estimated_minutes, is_required, body",
+      "id, course_version_id, module_id, title, summary, objectives, estimated_minutes, is_required, body, video_provider, video_ref",
     )
     .eq("id", lessonId)
     .maybeSingle();
@@ -362,6 +364,7 @@ export async function getLesson(lessonId: string): Promise<LessonDetail | null> 
     estimatedMinutes: lesson.data.estimated_minutes,
     isRequired: lesson.data.is_required,
     body: lesson.data.body,
+    video: storedVideo(lesson.data.video_provider, lesson.data.video_ref),
     modules: modules.data,
   };
 }
@@ -558,6 +561,7 @@ export async function updateLesson(
     estimatedMinutes?: number;
     isRequired: boolean;
     body: string;
+    video: VideoRef | null;
   },
 ): Promise<CurriculumResult> {
   const supabase = await createSupabaseServerClient();
@@ -572,6 +576,8 @@ export async function updateLesson(
         estimated_minutes: lesson.estimatedMinutes ?? null,
         is_required: lesson.isRequired,
         body: lesson.body,
+        video_provider: lesson.video?.provider ?? null,
+        video_ref: lesson.video?.id ?? null,
       })
       .eq("id", lessonId)
       .select("id"),

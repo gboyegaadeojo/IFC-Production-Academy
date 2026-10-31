@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getLesson } from "@/lib/data/curriculum";
+import { videoInputValue, videoSource } from "@/lib/domain/video";
 import { AccessDenied } from "../../../../access-denied";
 import { PageSkeleton } from "../../../../page-skeleton";
 import { deleteLessonAction, updateLessonAction } from "../../../actions";
@@ -133,9 +134,26 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               Required to complete the course
             </label>
             <Field
+              id="lesson-video"
+              label="YouTube video (optional)"
+              hint="Paste the link from YouTube's Share button. Use Unlisted, not Private: Private videos won't play for volunteers. Anyone with an unlisted link can watch it, so keep sensitive material out of videos."
+            >
+              <input
+                id="lesson-video"
+                name="video"
+                type="text"
+                inputMode="url"
+                maxLength={500}
+                placeholder="https://youtu.be/…"
+                defaultValue={lesson.video ? videoInputValue(lesson.video) : ""}
+                aria-describedby="lesson-video-hint"
+                className={fieldClasses}
+              />
+            </Field>
+            <Field
               id="lesson-body"
               label="Lesson text"
-              hint="Steps, tips, and notes. Video and SOP attachments come in the next update."
+              hint="Steps, tips, and notes. SOP attachments come in a later update."
             >
               <textarea
                 id="lesson-body"
@@ -170,6 +188,11 @@ async function LessonContent({ params }: Pick<Props, "params">) {
       ) : (
         <article className="flex flex-col gap-4 rounded-card border border-border bg-card p-5">
           {lesson.summary ? <p className="text-text-secondary">{lesson.summary}</p> : null}
+          {lesson.video ? (
+            <p className="text-small text-text-muted">
+              Has a {videoSource(lesson.video.provider).label} video.
+            </p>
+          ) : null}
           {lesson.objectives.length > 0 ? (
             <ul className="list-disc pl-5">
               {lesson.objectives.map((objective) => (

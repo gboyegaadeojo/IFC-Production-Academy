@@ -65,7 +65,8 @@ test("learner pages are accessible and keyboard friendly", async ({ page }) => {
   await page.goto(`/courses/${SAMPLE_COURSE}`);
   await expectAccessible(page, "course (member)");
 
-  await page.getByRole("link", { name: "Start the course" }).click();
+  // Avery may already have opened the lesson in another test, so either button may show.
+  await page.getByRole("link", { name: /^(Start the course|Continue)/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
   await expectAccessible(page, "lesson");
 

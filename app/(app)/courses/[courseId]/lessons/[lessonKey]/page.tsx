@@ -3,15 +3,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
+import { RecordView } from "@/components/lesson/record-view";
+import { VideoPlayer } from "@/components/lesson/video-player";
+import { ActionForm } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
-import { ArrowLeftIcon, ArrowRightIcon, ChevronDownIcon } from "@/components/ui/icons";
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, ChevronDownIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
-import { getLearnerCourse, getLearnerLesson } from "@/lib/data/pathway";
+import { getLearnerCourse, getLearnerLesson, isActiveMember } from "@/lib/data/pathway";
+import { getCourseProgress } from "@/lib/data/progress";
+import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { formatMinutes, lessonPosition, paragraphs } from "@/lib/domain/learning";
+import { progressFor } from "@/lib/domain/progress";
 import { CourseOutline } from "../../course-outline";
+import { completeLessonAction, recordLessonViewAction, reopenLessonAction } from "./actions";
 
 export const metadata: Metadata = { title: "Lesson" };
 
@@ -28,13 +35,13 @@ export default function LessonPage({ params }: Props) {
 }
 
 /**
- * Lesson view (DESIGN §6.5). The lesson's content leads; the outline sits alongside on desktop and
- * in a disclosure on phones. Video and "Mark lesson complete" arrive with the lesson player and
- * progress tracking (SPEC Phase 2); until then nothing pretends to track or verify viewing
- * (SRS-LESSON-006).
+ * Lesson view (DESIGN §6.5). Video first, then the lesson's content; the outline sits alongside on
+ * desktop and in a disclosure on phones. Members mark the lesson complete themselves: nothing
+ * checks or claims the video was watched (SRS-LESSON-006), and completing lessons never approves
+ * anyone to serve (SRS-PROG-007).
  */
 async function LessonContent({ params }: Pick<Props, "params">) {
-  await requireActiveUser();
+  const user = await requireActiveUser();
   const { courseId, lessonKey } = await params;
   if (!UUID.test(courseId) || !UUID.test(lessonKey)) {
     notFound();
@@ -48,11 +55,20 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     redirect(`/courses/${course.id}`);
   }
   const position = lessonPosition(course.modules, lessonKey);
-  const lesson = position ? await getLearnerLesson(course.versionId, lessonKey) : null;
+  const [lesson, member, courseProgress] = position
+    ? await Promise.all([
+        getLearnerLesson(course.versionId, lessonKey),
+        isActiveMember(user.id, course.department.id),
+        getCourseProgress(user.id, course.id),
+      ])
+    : [null, false, new Map()];
   if (!position || !lesson) {
     // Not in the live version (for example removed in a newer version).
     notFound();
   }
+  const progress = progressFor(courseProgress, lessonKey);
+  const record = member ? recordLessonViewAction.bind(null, course.id, lessonKey) : null;
+  const ids = { courseId: course.id, lessonKey };
   const moduleTitle = course.modules.find((m) => m.lessons.some((l) => l.key === lessonKey))?.title;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
   const body = paragraphs(lesson.body);
@@ -88,6 +104,16 @@ async function LessonContent({ params }: Pick<Props, "params">) {
             ) : null}
           </header>
 
+          {record ? <RecordView record={record} /> : null}
+          {lesson.video ? (
+            <VideoPlayer
+              video={lesson.video}
+              title={lesson.title}
+              startSeconds={progress.positionSeconds}
+              onPosition={record ?? undefined}
+            />
+          ) : null}
+
           {/* Phone: the outline is one tap away, above the content. */}
           <details className="group rounded-card border border-border lg:hidden">
             <summary className="flex min-h-touch cursor-pointer list-none items-center justify-between gap-3 px-4 [&::-webkit-details-marker]:hidden">
@@ -100,6 +126,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               <CourseOutline
                 courseId={course.id}
                 modules={course.modules}
+                progress={courseProgress}
                 currentKey={lessonKey}
                 compact
               />
@@ -140,9 +167,47 @@ async function LessonContent({ params }: Pick<Props, "params">) {
             )}
           </div>
 
-          <p className="reading-width border-t border-border pt-4 text-small text-text-muted">
-            Marking lessons complete isn&apos;t switched on yet, so your place isn&apos;t saved.
-          </p>
+          <section
+            aria-labelledby="lesson-progress-heading"
+            className="flex reading-width flex-col gap-3 border-t border-border pt-6"
+          >
+            <h2 id="lesson-progress-heading" className="sr-only">
+              Your progress
+            </h2>
+            {!member ? (
+              <p className="text-small text-text-muted">
+                Progress is saved for members of {course.department.name}. You&apos;re seeing this
+                lesson as someone who looks after its training.
+              </p>
+            ) : progress.state === "completed" && progress.completedAt ? (
+              <>
+                <p className="flex items-center gap-2 font-medium">
+                  <CheckIcon className="size-5 text-success" />
+                  You marked this lesson complete on {formatDate(progress.completedAt)}.
+                </p>
+                <ActionForm
+                  action={reopenLessonAction}
+                  submitLabel="Mark as not complete"
+                  pendingLabel="Saving…"
+                  variant="secondary"
+                  hidden={ids}
+                />
+              </>
+            ) : (
+              <>
+                <p className="text-small text-text-secondary">
+                  When you&apos;ve worked through this lesson, mark it complete. It&apos;s your
+                  call: nothing checks how much of the video you watched.
+                </p>
+                <ActionForm
+                  action={completeLessonAction}
+                  submitLabel="Mark lesson complete"
+                  pendingLabel="Saving…"
+                  hidden={ids}
+                />
+              </>
+            )}
+          </section>
 
           <nav aria-label="Lessons" className="flex flex-col gap-3 sm:flex-row sm:justify-between">
             {position.previous ? (
@@ -199,6 +264,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
             <CourseOutline
               courseId={course.id}
               modules={course.modules}
+              progress={courseProgress}
               currentKey={lessonKey}
               compact
             />
