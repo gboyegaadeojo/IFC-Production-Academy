@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ActionForm } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
 import { ArrowRightIcon, LockIcon } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
+import { getMyCertificateForCourse } from "@/lib/data/certificates";
 import { getLearnerCourse, isActiveMember } from "@/lib/data/pathway";
 import { getCourseProgress } from "@/lib/data/progress";
 import { getPassedPracticalKeys } from "@/lib/data/practicals";
@@ -22,6 +24,7 @@ import {
   stepHref,
 } from "@/lib/domain/learning";
 import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
+import { issueCertificateAction } from "./actions";
 import { CourseOutline } from "./course-outline";
 
 export const metadata: Metadata = { title: "Course" };
@@ -71,6 +74,8 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
         practicalsPassed,
       )
     : null;
+  const certificate =
+    summary?.state === "completed" ? await getMyCertificateForCourse(user.id, course.id) : null;
   const minutes = totals.estimatedMinutes ?? course.estimatedMinutes;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
   const facts = course.canOpen
@@ -169,6 +174,25 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
               <p className="text-small text-text-secondary">
                 {courseProgressLabel(summary, totals.required > 0)}
               </p>
+              {summary.state === "completed" ? (
+                certificate && !certificate.revoked ? (
+                  <Link
+                    href={`/certificates/${certificate.reference}`}
+                    className={buttonClasses("secondary", "w-full")}
+                  >
+                    View your certificate
+                  </Link>
+                ) : certificate ? null : (
+                  <ActionForm
+                    action={issueCertificateAction}
+                    submitLabel="Get your certificate"
+                    pendingLabel="Checking…"
+                    variant="secondary"
+                    hidden={{ courseId: course.id }}
+                    className="flex flex-col gap-2"
+                  />
+                )
+              ) : null}
               {summary.next ? (
                 <Link
                   href={stepHref(course.id, summary.next)}

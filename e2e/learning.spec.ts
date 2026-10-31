@@ -238,6 +238,19 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
     volunteer.getByRole("link", { name: /Quiz: Sample quiz \(seed data\).*passed/ }),
   ).toBeAttached();
 
+  // The certificate is issued only now, and says the course was finished, not that they can serve
+  // (SRS-CERT-001..004).
+  await volunteer.getByRole("button", { name: "Get your certificate" }).click();
+  await expect(volunteer.getByRole("heading", { level: 1, name })).toBeVisible();
+  await expect(volunteer.getByText("Valid certificate")).toBeVisible();
+  await expect(
+    volunteer.getByText(/Reference IFC-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}/),
+  ).toBeVisible();
+  await volunteer.goto("/profile");
+  await expect(
+    volunteer.getByRole("region", { name: "Certificates" }).getByText("Sample course (seed data)"),
+  ).toBeVisible();
+
   // Approved to Serve is its own record, shown with the department (SRS-COMP-004).
   await volunteer.goto("/departments/camera-operations");
   const readiness = volunteer.getByRole("region", { name: "Practical skills and serving" });

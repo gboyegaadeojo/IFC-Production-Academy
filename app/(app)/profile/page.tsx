@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
+import Link from "next/link";
 import { requireActiveUser } from "@/lib/data/auth";
+import { getMyCertificates } from "@/lib/data/certificates";
+import { formatDate } from "@/lib/domain/dates";
 import { getMyProfile } from "@/lib/data/profile";
 import { formatDateTime } from "@/lib/domain/admin";
 import { membershipLabel } from "@/lib/domain/profile";
@@ -20,7 +23,10 @@ export default function ProfilePage() {
 
 async function ProfileContent() {
   const user = await requireActiveUser();
-  const profile = await getMyProfile(user.id);
+  const [profile, certificates] = await Promise.all([
+    getMyProfile(user.id),
+    getMyCertificates(user.id),
+  ]);
   if (!profile) {
     notFound();
   }
@@ -37,6 +43,39 @@ async function ProfileContent() {
           ) : null}
           <p className="text-small text-text-muted">Joined {formatDateTime(profile.joinedAt)}</p>
         </header>
+
+        <section aria-labelledby="certificates-heading" className="flex flex-col gap-3">
+          <h2 id="certificates-heading" className="text-heading font-semibold">
+            Certificates
+          </h2>
+          {certificates.length === 0 ? (
+            <p className="text-small text-text-secondary">
+              When you finish a course, you can get its certificate from the course page.
+            </p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-border rounded-card border border-border">
+              {certificates.map((certificate) => (
+                <li key={certificate.reference}>
+                  <Link
+                    href={`/certificates/${certificate.reference}`}
+                    className="flex min-h-touch flex-wrap items-center justify-between gap-2 px-4 py-3 hover:bg-card"
+                  >
+                    <span className="flex flex-col">
+                      <span className="font-medium text-text">{certificate.courseTitle}</span>
+                      <span className="text-small text-text-muted">
+                        {certificate.departmentName} · Level {certificate.levelNumber} · issued{" "}
+                        {formatDate(certificate.issuedAt)}
+                      </span>
+                    </span>
+                    {certificate.revoked ? (
+                      <StatusBadge tone="neutral">Withdrawn</StatusBadge>
+                    ) : null}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         <section aria-labelledby="name-heading" className="flex flex-col gap-4">
           <h2 id="name-heading" className="text-heading font-semibold">
