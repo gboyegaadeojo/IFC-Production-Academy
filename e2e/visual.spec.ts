@@ -153,3 +153,43 @@ for (const viewport of VIEWPORTS) {
     await expect(drawer).toBeHidden();
   });
 }
+
+// Tablet and small-laptop widths (DESIGN §8, §12): 768px and 1024px for the main screens. One
+// sign-in per account; the viewport changes between captures.
+const TABLET_VIEWPORTS = [
+  { name: "768", width: 768, height: 1024 },
+  { name: "1024", width: 1024, height: 768 },
+] as const;
+
+test("learner screens at 768px and 1024px", async ({ page }) => {
+  await signInByEmail(page, "avery.volunteer@example.com");
+  for (const viewport of TABLET_VIEWPORTS) {
+    await page.setViewportSize(viewport);
+    for (const [path, name] of [
+      ["/home", "home-member"],
+      ["/departments/camera-operations", "department-member"],
+      ["/courses/cccccccc-0000-4000-8000-000000000001", "course-member"],
+    ] as const) {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await capture(page, `${name}-${viewport.name}`);
+    }
+  }
+});
+
+test("admin screens at 768px and 1024px", async ({ page }) => {
+  await signInByEmail(page, "emery.director@example.com");
+  for (const viewport of TABLET_VIEWPORTS) {
+    await page.setViewportSize(viewport);
+    for (const [path, name] of [
+      ["/admin", "admin-dashboard"],
+      ["/admin/members", "admin-members"],
+      ["/admin/curriculum", "admin-curriculum"],
+      ["/admin/people", "admin-people"],
+    ] as const) {
+      await page.goto(path);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await capture(page, `${name}-${viewport.name}`);
+    }
+  }
+});
