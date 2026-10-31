@@ -66,7 +66,8 @@ for (const viewport of VIEWPORTS) {
     // Avery is a fake seed member of Camera Operations, which has one fake published course.
     await signInByEmail(page, "avery.volunteer@example.com");
     await expect(page.getByRole("heading", { name: "Your departments" })).toBeVisible();
-    await expect(page.getByText(/1 course published/).first()).toBeVisible();
+    // Other tests may publish more Camera courses in the same run, so match any real count.
+    await expect(page.getByText(/\d+ courses? published/).first()).toBeVisible();
     // Membership is never shown as approval to serve.
     await expect(page.getByText("Approved to serve", { exact: true })).toHaveCount(1);
     await capture(page, `home-member-${viewport.name}`);
@@ -88,7 +89,11 @@ for (const viewport of VIEWPORTS) {
       await trigger.click();
       const drawer = page.getByRole("dialog", { name: "Admin" });
       await expect(drawer).toBeVisible();
+      // Wait for the opening transition to finish before capturing.
+      await expect(drawer).toHaveCSS("opacity", "1");
       await expect(drawer.getByRole("link", { name: "Back to Academy" })).toBeVisible();
+      // Focus moves into the drawer, to its first control.
+      await expect(drawer.getByRole("button", { name: "Close admin" })).toBeFocused();
       await page.screenshot({ path: `${DIR}/admin-drawer-${viewport.name}.png` });
       await page.keyboard.press("Escape");
       await expect(drawer).toBeHidden();
