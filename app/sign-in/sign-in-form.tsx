@@ -47,6 +47,7 @@ function SignInFormInner({ invite, onReset }: { invite?: string; onReset: () => 
         inputMode="email"
         required
         placeholder="name@example.com"
+        defaultValue={state.status === "error" ? state.email : ""}
         aria-invalid={state.status === "error"}
         aria-describedby={state.status === "error" ? errorId : undefined}
         className="min-h-control rounded-button border border-border-strong bg-surface px-3 text-body text-text placeholder:text-text-muted aria-invalid:border-error"
