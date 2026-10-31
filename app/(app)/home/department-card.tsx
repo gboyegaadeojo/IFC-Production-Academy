@@ -76,11 +76,14 @@ export function MembershipStatus({
       return (
         <>
           <StatusBadge tone="success">You&apos;re a member</StatusBadge>
-          <p className="text-small text-text-muted">
-            {publishedCourses
-              ? `${courseCountLabel(publishedCourses)} published.`
-              : "Courses are being prepared. They'll appear here when they're published."}
-          </p>
+          {/* The department page shows its own course count in the header. */}
+          {hideOpenLink ? null : (
+            <p className="text-small text-text-muted">
+              {publishedCourses
+                ? `${courseCountLabel(publishedCourses)} published.`
+                : "Courses are being prepared. They'll appear here when they're published."}
+            </p>
+          )}
           {hideOpenLink ? null : (
             <Link
               href={`/departments/${department.slug}`}
