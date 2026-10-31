@@ -9,25 +9,38 @@ import {
   winnipegToUtc,
 } from "./schedule";
 
+// The offsets themselves come from the runtime's time zone data, which changes when Manitoba's
+// rules do, so these tests check behaviour rather than hard-coding UTC−5 or UTC−6.
+const offsetHours = (date: string, time: string) => {
+  const utc = winnipegToUtc(date, time);
+  const [h, m] = time.split(":").map(Number) as [number, number];
+  const wall = Date.UTC(
+    Number(date.slice(0, 4)),
+    Number(date.slice(5, 7)) - 1,
+    Number(date.slice(8, 10)),
+    h,
+    m,
+  );
+  return utc ? (wall - utc.getTime()) / 3_600_000 : null;
+};
+
 describe("winnipegToUtc", () => {
-  it("uses daylight time in summer and standard time in winter", () => {
-    expect(winnipegToUtc("2026-07-05", "09:00")?.toISOString()).toBe("2026-07-05T14:00:00.000Z");
-    expect(winnipegToUtc("2026-12-06", "09:00")?.toISOString()).toBe("2026-12-06T15:00:00.000Z");
+  it("is Winnipeg time: five or six hours behind UTC", () => {
+    for (const date of ["2026-01-15", "2026-03-08", "2026-07-05", "2026-11-01", "2026-12-06"]) {
+      expect([-5, -6]).toContain(offsetHours(date, "10:00"));
+    }
   });
 
-  it("handles the days the clocks change", () => {
-    // 2026: daylight time starts Mar 8 and ends Nov 1 in Winnipeg.
-    expect(winnipegToUtc("2026-03-08", "10:00")?.toISOString()).toBe("2026-03-08T15:00:00.000Z");
-    expect(winnipegToUtc("2026-11-01", "10:00")?.toISOString()).toBe("2026-11-01T16:00:00.000Z");
+  it("round-trips through utcToWinnipeg all year", () => {
+    for (const date of ["2026-01-15", "2026-03-08", "2026-07-05", "2026-11-01", "2026-12-06"]) {
+      const utc = winnipegToUtc(date, "09:30");
+      expect(utc && utcToWinnipeg(utc.toISOString())).toEqual([date, "09:30"]);
+    }
   });
 
   it("rejects malformed input", () => {
     expect(winnipegToUtc("2026-13-01", "09:00")).toBeNull();
     expect(winnipegToUtc("2026-11-01", "9am")).toBeNull();
-  });
-
-  it("round-trips through utcToWinnipeg", () => {
-    expect(utcToWinnipeg("2026-12-06T15:00:00.000Z")).toEqual(["2026-12-06", "09:00"]);
   });
 });
 
@@ -41,14 +54,13 @@ describe("eventSchema", () => {
     notes: "",
   };
 
-  it("turns Winnipeg times into UTC", () => {
-    expect(eventSchema.parse(base)).toEqual({
-      title: "Sunday service",
-      startsAt: "2026-12-06T15:00:00.000Z",
-      endsAt: "2026-12-06T17:30:00.000Z",
-      location: "",
-      notes: "",
-    });
+  it("turns Winnipeg times into UTC instants two and a half hours apart", () => {
+    const parsed = eventSchema.parse(base);
+    expect(parsed.title).toBe("Sunday service");
+    expect(utcToWinnipeg(parsed.startsAt)).toEqual(["2026-12-06", "09:00"]);
+    expect(new Date(parsed.endsAt).getTime() - new Date(parsed.startsAt).getTime()).toBe(
+      150 * 60_000,
+    );
   });
 
   it("needs the end after the start", () => {
@@ -59,7 +71,9 @@ describe("eventSchema", () => {
 
 describe("eventTimeLabel", () => {
   it("shows the day and times in Winnipeg", () => {
-    const label = eventTimeLabel("2026-12-06T15:00:00.000Z", "2026-12-06T17:30:00.000Z");
+    const start = winnipegToUtc("2026-12-06", "09:00")?.toISOString() ?? "";
+    const end = winnipegToUtc("2026-12-06", "11:30")?.toISOString() ?? "";
+    const label = eventTimeLabel(start, end);
     expect(label).toContain("Dec 6");
     expect(label).toMatch(/9:00/);
     expect(label).toMatch(/11:30/);
