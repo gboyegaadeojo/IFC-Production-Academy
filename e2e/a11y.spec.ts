@@ -48,7 +48,7 @@ test("learner pages are accessible and keyboard friendly", async ({ page }) => {
   await expectAccessible(page, "home (member)");
 
   // Account menu by keyboard: opens with Enter, closes with Escape, focus returns.
-  const account = page.getByRole("button", { name: /, account menu$/ });
+  const account = page.getByRole("button", { name: /\s*, account menu$/ });
   await account.focus();
   await page.keyboard.press("Enter");
   await expect(account).toHaveAttribute("aria-expanded", "true");
@@ -113,12 +113,14 @@ test("department settings are accessible, including the edit drawer", async ({ p
   await signInByEmail(page, "frankie.admin@example.com");
   await page.goto("/admin/departments");
   await expectAccessible(page, "departments");
-  await page.getByRole("button", { name: "Edit Camera Operations" }).click();
+  await page.getByRole("button", { name: "Edit Camera Operations", exact: true }).click();
   const drawer = page.getByRole("dialog", { name: "Edit Camera Operations" });
   await expect(drawer).toHaveCSS("opacity", "1");
   await expectAccessible(page, "department edit drawer");
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: "Edit Camera Operations" })).toBeFocused();
+  await expect(
+    page.getByRole("button", { name: "Edit Camera Operations", exact: true }),
+  ).toBeFocused();
 });
 
 test.describe("with reduced motion", () => {

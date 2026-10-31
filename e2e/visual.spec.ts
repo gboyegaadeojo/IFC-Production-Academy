@@ -144,7 +144,7 @@ for (const viewport of VIEWPORTS) {
     await capture(page, `admin-departments-${viewport.name}`);
 
     // Editing opens in a focused drawer that explains each status (DESIGN §7.7).
-    await page.getByRole("button", { name: "Edit Lighting Operations" }).click();
+    await page.getByRole("button", { name: "Edit Lighting Operations", exact: true }).click();
     const drawer = page.getByRole("dialog", { name: "Edit Lighting Operations" });
     await expect(drawer).toHaveCSS("opacity", "1");
     await expect(drawer.getByText(/can't join yet/)).toBeVisible();

@@ -28,7 +28,7 @@ test("a volunteer changes the name leaders see", async ({ page }, testInfo) => {
   await expect(
     page.getByRole("main").getByRole("status").filter({ hasText: "Saved." }),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Sam Example, account menu" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Sam Example\s*, account menu$/ })).toBeVisible();
 
   await page.goto("/home");
   await expect(page.getByRole("heading", { level: 1, name: "Welcome, Sam Example" })).toBeVisible();
