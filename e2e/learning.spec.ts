@@ -271,6 +271,36 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await expect(achievements.getByText("Sample role (seed data)")).toBeVisible();
   await expect(achievements.getByText("Sample course (seed data)")).toBeVisible();
 
+  // Workflow D (SPEC §3): now that they're approved, a leader schedules them and they confirm. The
+  // candidate list shows the competency check before anyone is scheduled.
+  const service = `E2E service ${Date.now()}`;
+  const nextWeek = new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10);
+  const schedulerContext = await browser.newContext();
+  const scheduler = await schedulerContext.newPage();
+  await signInByEmail(scheduler, "casey.leader@example.com");
+  await scheduler.goto("/admin/schedule");
+  await scheduler.getByLabel("Name").fill(service);
+  await scheduler.getByLabel("Date").fill(nextWeek);
+  await scheduler.getByLabel("Starts").fill("09:00");
+  await scheduler.getByLabel("Ends").fill("11:00");
+  await scheduler.getByRole("button", { name: "Add event" }).click();
+  await expect(scheduler.getByRole("heading", { level: 1, name: service })).toBeVisible();
+  await scheduler
+    .getByLabel("Role")
+    .selectOption({ label: "Sample role (seed data) (Camera Operations)" });
+  await scheduler.getByRole("button", { name: "Add position" }).click();
+  await scheduler.getByText("Schedule someone").click();
+  await scheduler.getByLabel("Volunteer").selectOption({ label: `${name} (approved)` });
+  await scheduler.getByRole("button", { name: "Schedule", exact: true }).click();
+  await expect(scheduler.getByText(/Scheduled \(approved to serve\)/)).toBeVisible();
+  await schedulerContext.close();
+
+  await volunteer.goto("/schedule");
+  const upcoming = volunteer.getByRole("region", { name: "Coming up" });
+  await expect(upcoming.getByText(service)).toBeVisible();
+  await upcoming.getByRole("button", { name: `Confirm ${service}` }).click();
+  await expect(volunteer.getByText("Confirmed. Thank you!")).toBeVisible();
+
   // Undo, for a mis-tap.
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
   await volunteer

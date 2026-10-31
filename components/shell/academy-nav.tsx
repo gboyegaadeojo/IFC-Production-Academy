@@ -12,6 +12,7 @@ export function AcademyNav() {
   const inAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
   const links = [
     { href: "/home", label: "Home" },
+    { href: "/schedule", label: "Schedule" },
     { href: "/sops", label: "SOPs" },
   ];
 

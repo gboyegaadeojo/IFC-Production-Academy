@@ -690,6 +690,82 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      events: {
+        Row: {
+          id: string;
+          organization_id: string;
+          title: string;
+          starts_at: string;
+          ends_at: string;
+          location: string;
+          notes: string;
+          cancelled_at: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        Insert: {
+          title: string;
+          starts_at: string;
+          ends_at: string;
+          location?: string;
+          notes?: string;
+        };
+        Update: {
+          title?: string;
+          starts_at?: string;
+          ends_at?: string;
+          location?: string;
+          notes?: string;
+        };
+        Relationships: [];
+      };
+      event_positions: {
+        Row: {
+          id: string;
+          event_id: string;
+          department_id: string;
+          role_id: string;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      event_assignments: {
+        Row: {
+          id: string;
+          position_id: string;
+          event_id: string;
+          department_id: string;
+          role_id: string;
+          user_id: string;
+          status: Database["public"]["Enums"]["assignment_status"];
+          readiness: Database["public"]["Enums"]["assignment_readiness"];
+          supervisor_id: string | null;
+          override_reason: string | null;
+          assigned_by: string;
+          assigned_at: string;
+          responded_at: string | null;
+          cancelled_at: string | null;
+        } & Timestamps;
+        // Written only through the scheduling functions, which run the checks.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      unavailability: {
+        Row: {
+          id: string;
+          user_id: string;
+          starts_on: string;
+          ends_on: string;
+          note: string;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -869,6 +945,41 @@ export type Database = {
           certificates: number;
         }[];
       };
+      schedule_candidates: {
+        Args: { p_position_id: string };
+        Returns: {
+          user_id: string;
+          display_name: string;
+          approved: boolean;
+          conflict: boolean;
+          unavailable: boolean;
+        }[];
+      };
+      add_event_position: { Args: { p_event_id: string; p_role_id: string }; Returns: string };
+      remove_event_position: { Args: { p_position_id: string }; Returns: undefined };
+      assign_to_position: {
+        Args: {
+          p_position_id: string;
+          p_user_id: string;
+          p_supervisor_id?: string | null;
+          p_override_reason?: string | null;
+        };
+        Returns: Database["public"]["Enums"]["assignment_readiness"];
+      };
+      cancel_assignment: { Args: { p_assignment_id: string }; Returns: undefined };
+      cancel_event: { Args: { p_event_id: string }; Returns: undefined };
+      respond_to_assignment: {
+        Args: {
+          p_assignment_id: string;
+          p_response: Database["public"]["Enums"]["assignment_status"];
+        };
+        Returns: undefined;
+      };
+      add_unavailability: {
+        Args: { p_starts_on: string; p_ends_on: string; p_note?: string };
+        Returns: string;
+      };
+      remove_unavailability: { Args: { p_id: string }; Returns: undefined };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
@@ -932,6 +1043,8 @@ export type Database = {
       competency_status: "approved" | "suspended";
       serving_approval_status: "approved" | "withdrawn";
       practical_outcome: "pass" | "further_practice";
+      assignment_status: "pending" | "confirmed" | "declined" | "cancelled";
+      assignment_readiness: "approved" | "supervised" | "override";
     };
     CompositeTypes: { [_ in never]: never };
   };
