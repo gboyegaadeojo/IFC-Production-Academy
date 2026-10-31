@@ -38,6 +38,7 @@ jobs:
           sparse-checkout: |
             .github/actions
             lib/domain/backup.ts
+            lib/domain/supabase-keys.ts
             scripts/backup
           sparse-checkout-cone-mode: false
 

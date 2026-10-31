@@ -27,6 +27,7 @@ jobs:
           sparse-checkout: |
             .github/actions
             lib/domain/notifications.ts
+            lib/domain/supabase-keys.ts
             scripts/send-notifications.ts
           sparse-checkout-cone-mode: false
 
