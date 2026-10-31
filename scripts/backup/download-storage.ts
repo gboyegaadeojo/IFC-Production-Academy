@@ -5,6 +5,7 @@
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { supabaseKeyHeaders } from "../../lib/domain/supabase-keys.ts";
 
 const url = (process.env.SUPABASE_URL ?? "").replace(/\/+$/, "");
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
@@ -15,7 +16,7 @@ if (!url || !key || !out) {
   );
   process.exit(1);
 }
-const headers = { apikey: key, Authorization: `Bearer ${key}` };
+const headers = supabaseKeyHeaders(key);
 
 async function json<T>(response: Response, step: string): Promise<T> {
   if (!response.ok) {
