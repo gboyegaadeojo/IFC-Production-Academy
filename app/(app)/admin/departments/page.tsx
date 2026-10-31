@@ -55,7 +55,7 @@ async function DepartmentsContent() {
         title="Departments"
         description="Open, pause, or rename a department. Changes take effect straight away and are recorded in the audit log. Nobody's training history changes."
       />
-      <div className="overflow-x-auto rounded-card border border-border">
+      <div className="relative overflow-x-auto rounded-card border border-border">
         <table className="w-full min-w-[40rem] text-left text-small">
           <caption className="sr-only">Departments in display order</caption>
           <thead className="border-b border-border text-text-muted">

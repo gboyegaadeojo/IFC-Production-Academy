@@ -8,7 +8,7 @@ export type TabLink = { href: string; label: string; current: boolean; count?: n
  */
 export function Tabs({ label, tabs }: { label: string; tabs: TabLink[] }) {
   return (
-    <nav aria-label={label} className="-mx-1 overflow-x-auto border-b border-border">
+    <nav aria-label={label} className="relative -mx-1 overflow-x-auto border-b border-border">
       <ul className="flex min-w-max gap-1 px-1">
         {tabs.map((tab) => (
           <li key={tab.href}>

@@ -50,7 +50,7 @@ async function AuditContent({ searchParams }: Pick<PageProps<"/admin/audit">, "s
             : "Role changes, membership decisions, account changes, and publishing appear here."}
         </EmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-card border border-border">
+        <div className="relative overflow-x-auto rounded-card border border-border">
           <table className="w-full min-w-[48rem] text-left text-small">
             <caption className="sr-only">Audit events, newest first</caption>
             <thead className="border-b border-border text-text-muted">

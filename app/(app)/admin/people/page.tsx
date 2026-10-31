@@ -78,7 +78,7 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
             : "People appear here after they sign in for the first time."}
         </EmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-card border border-border">
+        <div className="relative overflow-x-auto rounded-card border border-border">
           <table className="w-full min-w-[46rem] text-left text-small">
             <caption className="sr-only">People, sorted by name</caption>
             <thead className="border-b border-border text-text-muted">

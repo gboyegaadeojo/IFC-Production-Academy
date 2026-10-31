@@ -54,7 +54,10 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   await request.getByLabel("Note (optional)").fill("Welcome to the audio team");
   await request.getByRole("button", { name: /^Approve/ }).click();
   // The card moves from Waiting to Members.
-  await leader.getByRole("link", { name: /^Members/ }).click();
+  await leader
+    .getByRole("navigation", { name: "Membership views" })
+    .getByRole("link", { name: /^Members/ })
+    .click();
   await expect(leader.getByRole("listitem").filter({ hasText: email })).toContainText("Joined");
 
   // The volunteer is now a member. Membership is not approval to serve.

@@ -74,7 +74,7 @@ async function InvitationsContent() {
             a way to revoke them.
           </EmptyState>
         ) : (
-          <div className="overflow-x-auto rounded-card border border-border">
+          <div className="relative overflow-x-auto rounded-card border border-border">
             <table className="w-full min-w-[44rem] text-left text-small">
               <caption className="sr-only">Recent invitations, newest first</caption>
               <thead className="border-b border-border text-text-muted">

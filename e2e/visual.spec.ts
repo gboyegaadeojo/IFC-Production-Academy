@@ -105,10 +105,11 @@ for (const viewport of VIEWPORTS) {
     await capture(page, `admin-dashboard-${viewport.name}`);
 
     await page.goto("/admin/members?view=members");
-    await expect(page.getByRole("link", { name: /^Members/ })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    await expect(
+      page
+        .getByRole("navigation", { name: "Membership views" })
+        .getByRole("link", { name: /^Members/ }),
+    ).toHaveAttribute("aria-current", "page");
     await capture(page, `admin-members-list-${viewport.name}`);
 
     await page.goto("/admin/invitations");
