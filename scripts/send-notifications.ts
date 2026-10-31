@@ -7,6 +7,7 @@
  * (CLAUDE.md "Actions logs must never contain data"). With no Resend key it does nothing.
  */
 import { notificationEmail } from "../lib/domain/notifications.ts";
+import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
 
 type Claimed = { id: string; email: string; title: string; body: string; link: string | null };
 
@@ -15,11 +16,7 @@ const env = (name: string) => process.env[name]?.trim() ?? "";
 async function rpc<T>(url: string, key: string, name: string, body: object): Promise<T> {
   const response = await fetch(`${url}/rest/v1/rpc/${name}`, {
     method: "POST",
-    headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
+    headers: { ...supabaseKeyHeaders(key), "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
   if (!response.ok) {
