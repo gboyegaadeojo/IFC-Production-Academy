@@ -316,6 +316,11 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
       .getByText("Confirmed", { exact: true }),
   ).toBeVisible();
 
+  // Their serving goes into their own calendar (SPEC §9 Phase 5 "calendar").
+  const ics = await volunteer.request.get("/schedule/calendar");
+  expect(ics.headers()["content-type"]).toContain("text/calendar");
+  expect(await ics.text()).toContain("STATUS:CONFIRMED");
+
   // Undo, for a mis-tap.
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
   await volunteer

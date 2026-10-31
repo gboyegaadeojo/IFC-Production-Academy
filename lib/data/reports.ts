@@ -94,6 +94,30 @@ export async function getReadinessReport(departmentId: string): Promise<Readines
   }));
 }
 
+export type MatrixRow = {
+  departmentId: string;
+  departmentName: string;
+  roleId: string;
+  roleName: string;
+  approved: number;
+};
+
+/** Approved to Serve per role, for every department the person can report on (ADD-REPORT-01). */
+export async function getReadinessMatrix(): Promise<MatrixRow[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("readiness_matrix");
+  if (error) {
+    throw new Error("Could not load the readiness matrix", { cause: error.code });
+  }
+  return data.map((row) => ({
+    departmentId: row.department_id,
+    departmentName: row.department_name,
+    roleId: row.role_id,
+    roleName: row.role_name,
+    approved: row.approved,
+  }));
+}
+
 /** Audits an export before it's sent (SRS-REPORT-006). False if not allowed. */
 export async function logReportExport(
   departmentId: string,

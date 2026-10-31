@@ -1139,6 +1139,16 @@ export type Database = {
         };
         Returns: undefined;
       };
+      readiness_matrix: {
+        Args: never;
+        Returns: {
+          department_id: string;
+          department_name: string;
+          role_id: string;
+          role_name: string;
+          approved: number;
+        }[];
+      };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
