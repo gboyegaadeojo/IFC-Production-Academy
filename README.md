@@ -132,6 +132,10 @@ CI runs the built Worker in local workerd to catch this.
 Create the API token in the Cloudflare dashboard: **My Profile → API Tokens → Create Token →
 "Edit Cloudflare Workers" template**, limited to the IFC account.
 
+The church video library (videos on the UniFi NAS) is optional and off until three Worker secrets
+are set: `MEDIA_ORIGIN_URL`, `MEDIA_ACCESS_CLIENT_ID`, and `MEDIA_ACCESS_CLIENT_SECRET`. Setup is
+in [docs/runbooks/nas-media.md](docs/runbooks/nas-media.md).
+
 ### GitHub Actions secrets and variables
 
 | Secret                     | Used by            | Notes                                        |

@@ -97,7 +97,7 @@ Level names, required lessons, prerequisites, quiz rules, rubrics, and approval 
 
 **Later phase:** recurring rotations and auto-balancing; shift swaps; native iOS and Android apps; calendar integrations; advanced analytics; wider offline access; automated recertification; Planning Center or other church-system integration; further ministry departments.
 
-**Out of scope unless approved:** hosting video on the platform, replacing YouTube, public social features or open messaging, payroll or finance, full church management, authorization from video watching alone, offline YouTube playback.
+**Out of scope unless approved:** uploading or transcoding video on the platform, replacing YouTube (the church video library on IFC's own NAS was approved as a second source on 2026-10-30, see SRS-LESSON-002), public social features or open messaging, payroll or finance, full church management, authorization from video watching alone, offline YouTube playback.
 
 ## 2. Functional requirements
 
@@ -161,7 +161,7 @@ IDs come from your package. Rows marked **ADD-** are additions from my draft tha
 | ID | Requirement | Level |
 | --- | --- | --- |
 | SRS-LESSON-001 | Title, description, objectives, duration, order, completion rule | M |
-| SRS-LESSON-002 | Reference an unlisted YouTube video or playlist | Y |
+| SRS-LESSON-002 | Reference an unlisted YouTube video or playlist, or a file in the church video library (UniFi NAS, streamed through the app with a per-person access check; added 2026-10-30) | Y |
 | SRS-LESSON-003 | Validate and safely store YouTube URLs or IDs | M |
 | SRS-LESSON-004 | Useful fallback when an embed is unavailable | M |
 | SRS-LESSON-005 | Documents, links, checklists, diagrams, captions, transcripts | Y |
@@ -172,7 +172,7 @@ IDs come from your package. Rows marked **ADD-** are additions from my draft tha
 | ADD-LESSON-02 | Branded in-app player; raw YouTube link not shown to volunteers | S |
 | ADD-LESSON-03 | Resume at the last playback position on any device; watch percentage stored as an informal signal | S |
 
-YouTube note: **Private** videos cannot be embedded for volunteers, so lessons must use **Unlisted** videos, as your package decided. Truly sensitive material belongs in authenticated storage (SRS-SOP-006).
+YouTube note: **Private** videos cannot be embedded for volunteers, so lessons must use **Unlisted** videos, as your package decided. Truly sensitive material belongs in authenticated storage (SRS-SOP-006), such as the church video library, which plays only for signed-in people who may read the lesson. Setup: [docs/runbooks/nas-media.md](runbooks/nas-media.md).
 
 ### Progress
 
@@ -321,7 +321,7 @@ Everything a volunteer sees is configuration, so Lighting Operations goes live b
 | Identity and access | User, Role, UserRole (optionally department-scoped), Organization and Campus (**added**) | Campus is optional now, ready for multi-site |
 | Departments | Department (name, status incl. Coming Soon, order, **added:** icon, hue, cover image, enrolment mode), DepartmentMembership | Membership keeps request and invitation history |
 | Curriculum | Course, CourseVersion, Module, Lesson, Resource, Enrollment | Lesson type-specific content in a structured field so new lesson types can be added |
-| Video (**added**) | VideoSource: provider (YouTube now; Vimeo or Mux later), external ID, duration, thumbnail | Swapping hosts later keeps lesson IDs and progress |
+| Video (**added**) | VideoSource: provider (YouTube or church video library now; Vimeo or Mux later), external ID or library path, duration, thumbnail | Swapping hosts later keeps lesson IDs and progress |
 | Progress | LessonProgress (per lesson version, **added:** last playback position, informal watch %) | Idempotent writes |
 | Assessment | Quiz, QuizQuestion, QuizAttempt, PracticalRubric, PracticalAssessment | All linked to the version used |
 | Competency | Competency, CompetencyRecord | Separate from completion |
@@ -483,7 +483,7 @@ A custom build on managed services fits your "balanced" budget: premium design a
 | Database | Supabase Free Postgres with row-level security, kept awake by a daily job | $0 |
 | Sign-in | Supabase Auth: email magic-link sign-in | $0 |
 | Files | Supabase Storage, private bucket with signed links | $0 |
-| Video | Unlisted YouTube via the official embedded player; a VideoSource record allows Vimeo or Mux later | $0 |
+| Video | Unlisted YouTube via the official embedded player, and the church video library (UniFi NAS behind a Cloudflare Tunnel and Access service token, streamed by the Worker after an RLS check); a VideoSource record allows Vimeo or Mux later | $0 |
 | Email | Resend (confirmed) | $0 |
 | Backups | Nightly encrypted backup to IFC's Google Drive (confirmed) | $0 |
 | Monitoring | Sentry (errors), PostHog (usage) | $0 |
@@ -500,7 +500,7 @@ On 2026-10-29 IFC chose **Supabase Free**, with a daily keep-alive job so the pr
 | Web app and PWA | Cloudflare Pages / Workers | 500 builds a month | Vercel's free Hobby plan is for "non-commercial, personal use" only, so it is not used |
 | Database, sign-in, files | Supabase Free | 500 MB database, 1 GB files, 5 GB egress, 50,000 monthly active users, 2 projects ([Supabase pricing](https://supabase.com/pricing)) | One product for Postgres, magic-link sign-in, file storage for SOPs, and row-level security |
 | Email | Resend (also Supabase's sign-in email sender) | 3,000 a month, 100 a day | Confirmed by IFC |
-| Video | Unlisted YouTube | Free | Unchanged |
+| Video | Unlisted YouTube; church NAS through Cloudflare Tunnel | Free | Unchanged; NAS needs an always-on device at church and enough upload bandwidth |
 | Keep-alive and backups | GitHub Actions scheduled jobs | 2,000 free minutes a month on a private repo | See below |
 | Errors and analytics | Sentry Developer, PostHog Free | Free tiers |  |
 | Domain | Free `*.pages.dev` address, or a custom domain | About $10 to $20 a year | The only likely cost |
@@ -588,7 +588,7 @@ Measure baselines during the pilot before setting targets: share of enrolled vol
 - [ ] Volunteers request membership and accept invitations
 - [ ] Leaders draft and publish curriculum, with version history and rollback
 - [ ] Three configurable levels per department
-- [ ] Lessons embed unlisted YouTube videos and include SOPs and resources
+- [ ] Lessons embed unlisted YouTube videos or church video library files, and include SOPs and resources
 - [ ] Progress persists across sessions and devices
 - [ ] Quizzes enforce scoring and attempt rules
 - [ ] Practical records include evaluator, rubric, outcome, feedback

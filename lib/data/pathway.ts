@@ -218,6 +218,8 @@ export async function getLearnerCourse(courseId: string): Promise<LearnerCourse 
 }
 
 export type LearnerLesson = {
+  /** This version's lesson row; keys stay stable across versions, ids don't. */
+  id: string;
   key: string;
   title: string;
   summary: string;
@@ -237,7 +239,7 @@ export async function getLearnerLesson(
   const { data, error } = await supabase
     .from("lessons")
     .select(
-      "lesson_key, title, summary, objectives, body, is_required, estimated_minutes, video_provider, video_ref",
+      "id, lesson_key, title, summary, objectives, body, is_required, estimated_minutes, video_provider, video_ref",
     )
     .eq("course_version_id", versionId)
     .eq("lesson_key", lessonKey)
@@ -247,6 +249,7 @@ export async function getLearnerLesson(
   }
   return data
     ? {
+        id: data.id,
         key: data.lesson_key,
         title: data.title,
         summary: data.summary,

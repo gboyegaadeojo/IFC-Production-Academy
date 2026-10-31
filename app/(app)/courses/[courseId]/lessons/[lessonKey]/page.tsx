@@ -12,6 +12,7 @@ import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, ChevronDownIcon } from "@/com
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getLearnerCourse, getLearnerLesson, isActiveMember } from "@/lib/data/pathway";
+import { mediaLibraryEnabled } from "@/lib/data/media";
 import { getCourseProgress } from "@/lib/data/progress";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
@@ -108,6 +109,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
           {lesson.video ? (
             <VideoPlayer
               video={lesson.video}
+              fileUrl={mediaLibraryEnabled() ? `/media/lessons/${lesson.id}` : undefined}
               title={lesson.title}
               startSeconds={progress.positionSeconds}
               onPosition={record ?? undefined}

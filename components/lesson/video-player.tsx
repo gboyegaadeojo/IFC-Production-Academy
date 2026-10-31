@@ -11,11 +11,14 @@ import { resumeFrom, youtubeWatchUrl, type VideoRef } from "@/lib/domain/video";
  */
 export function VideoPlayer({
   video,
+  fileUrl,
   title,
   startSeconds,
   onPosition,
 }: {
   video: VideoRef;
+  /** For library files: the app's streaming address. Absent when the library isn't connected. */
+  fileUrl?: string;
   title: string;
   startSeconds: number;
   /** A server action bound to the lesson; absent when progress isn't saved. Failures are ignored. */
@@ -32,13 +35,106 @@ export function VideoPlayer({
         />
       );
     case "nas":
-      return (
+      return fileUrl ? (
+        <FilePlayer
+          src={fileUrl}
+          title={title}
+          startSeconds={startSeconds}
+          onPosition={onPosition}
+        />
+      ) : (
         <VideoFallback>
           The church video library isn&apos;t connected yet, so this video can&apos;t play here. The
           lesson text is below.
         </VideoFallback>
       );
   }
+}
+
+/**
+ * A church video library file, streamed through the app (app/media/lessons). Native controls, so
+ * keyboard, captions, and full screen work as the browser provides them.
+ */
+function FilePlayer({
+  src,
+  title,
+  startSeconds,
+  onPosition,
+}: {
+  src: string;
+  title: string;
+  startSeconds: number;
+  onPosition?: (positionSeconds: number | null) => Promise<void>;
+}) {
+  const element = useRef<HTMLVideoElement>(null);
+  const [failed, setFailed] = useState(false);
+  const report = useRef(onPosition);
+  const start = useRef(startSeconds);
+  useEffect(() => {
+    report.current = onPosition;
+  }, [onPosition]);
+
+  useEffect(() => {
+    const video = element.current;
+    if (!video) {
+      return;
+    }
+    let lastSaved = 0;
+    const save = () => {
+      if (Number.isFinite(video.currentTime) && video.currentTime > 0) {
+        lastSaved = Date.now();
+        void report.current?.(Math.floor(video.currentTime)).catch(() => undefined);
+      }
+    };
+    const onLoaded = () => {
+      const resume = resumeFrom(start.current);
+      if (resume > 0 && resume < video.duration) {
+        video.currentTime = resume;
+      }
+    };
+    const onTime = () => {
+      if (!video.paused && Date.now() - lastSaved >= SAVE_EVERY_MS) {
+        save();
+      }
+    };
+    video.addEventListener("loadedmetadata", onLoaded, { once: true });
+    video.addEventListener("timeupdate", onTime);
+    video.addEventListener("pause", save);
+    video.addEventListener("ended", save);
+    window.addEventListener("pagehide", save);
+    return () => {
+      save();
+      video.removeEventListener("loadedmetadata", onLoaded);
+      video.removeEventListener("timeupdate", onTime);
+      video.removeEventListener("pause", save);
+      video.removeEventListener("ended", save);
+      window.removeEventListener("pagehide", save);
+    };
+  }, [src]);
+
+  if (failed) {
+    return (
+      <VideoFallback>
+        The church video library isn&apos;t reachable right now. Try again later; the lesson text is
+        below.
+      </VideoFallback>
+    );
+  }
+  return (
+    <div className="aspect-video w-full overflow-hidden rounded-card border border-border bg-card">
+      <video
+        ref={element}
+        src={src}
+        controls
+        playsInline
+        preload="metadata"
+        controlsList="nodownload"
+        aria-label={`Video: ${title}`}
+        onError={() => setFailed(true)}
+        className="size-full"
+      />
+    </div>
+  );
 }
 
 /** How often to save the position while playing. */

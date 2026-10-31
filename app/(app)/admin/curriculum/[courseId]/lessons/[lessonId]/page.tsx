@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getLesson } from "@/lib/data/curriculum";
+import { mediaLibraryEnabled } from "@/lib/data/media";
 import { videoInputValue, videoSource } from "@/lib/domain/video";
 import { AccessDenied } from "../../../../access-denied";
 import { PageSkeleton } from "../../../../page-skeleton";
@@ -37,6 +38,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
   if (!lesson || lesson.courseId !== courseId) {
     notFound();
   }
+  const libraryConnected = mediaLibraryEnabled();
 
   return (
     <div className="flex max-w-3xl flex-col gap-8">
@@ -133,23 +135,46 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               />
               Required to complete the course
             </label>
-            <Field
-              id="lesson-video"
-              label="YouTube video (optional)"
-              hint="Paste the link from YouTube's Share button. Use Unlisted, not Private: Private videos won't play for volunteers. Anyone with an unlisted link can watch it, so keep sensitive material out of videos."
-            >
-              <input
+            <fieldset className="flex flex-col gap-4 rounded-card border border-border p-4">
+              <legend className="px-1 text-small font-medium text-text-secondary">
+                Video (optional)
+              </legend>
+              <Field id="lesson-video-source" label="Where the video lives">
+                <select
+                  id="lesson-video-source"
+                  name="videoProvider"
+                  defaultValue={lesson.video?.provider ?? "youtube"}
+                  className={fieldClasses}
+                >
+                  <option value="youtube">YouTube (unlisted)</option>
+                  <option value="nas">
+                    Church video library{libraryConnected ? "" : " (not connected yet)"}
+                  </option>
+                </select>
+              </Field>
+              <Field
                 id="lesson-video"
-                name="video"
-                type="text"
-                inputMode="url"
-                maxLength={500}
-                placeholder="https://youtu.be/…"
-                defaultValue={lesson.video ? videoInputValue(lesson.video) : ""}
-                aria-describedby="lesson-video-hint"
-                className={fieldClasses}
-              />
-            </Field>
+                label="Video link or file"
+                hint="YouTube: paste the link from the Share button. Use Unlisted, not Private, because Private videos won't play for volunteers. Anyone with an unlisted link can watch it, so keep sensitive material out of YouTube. Church video library: the file's path inside the training videos folder, like camera/level-1/framing.mp4. Library videos play only for signed-in members."
+              >
+                <input
+                  id="lesson-video"
+                  name="video"
+                  type="text"
+                  inputMode="url"
+                  maxLength={500}
+                  defaultValue={lesson.video ? videoInputValue(lesson.video) : ""}
+                  aria-describedby="lesson-video-hint"
+                  className={fieldClasses}
+                />
+              </Field>
+              {libraryConnected ? null : (
+                <p className="text-small text-text-muted">
+                  The church video library isn&apos;t connected yet. You can add library files now;
+                  lessons will say the video isn&apos;t available until it&apos;s connected.
+                </p>
+              )}
+            </fieldset>
             <Field
               id="lesson-body"
               label="Lesson text"
