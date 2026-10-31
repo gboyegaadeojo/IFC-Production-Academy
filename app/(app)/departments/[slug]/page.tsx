@@ -8,7 +8,11 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { ChevronRightIcon, LockIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { getMyReadiness, type MyReadiness } from "@/lib/data/competency";
 import { getDepartmentPathway, type PathwayLevel } from "@/lib/data/pathway";
+import { COMPETENCY_STATE_LABELS, competencyState, missingLabel } from "@/lib/domain/competency";
+import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { courseCountLabel } from "@/lib/domain/home";
 import { formatMinutes, lessonCountLabel } from "@/lib/domain/learning";
@@ -99,7 +103,12 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
         </ol>
       </section>
 
-      <Readiness departmentName={department.name} />
+      <Readiness
+        departmentName={department.name}
+        readiness={
+          department.state.kind === "member" ? await getMyReadiness(user.id, department.id) : null
+        }
+      />
     </div>
   );
 }
@@ -180,38 +189,114 @@ function LevelStage({
 
 /**
  * Practical skills and serving, kept apart from course progress (DESIGN §6.3, §10; SPEC §3).
- * Practical assessments and competency records aren't built yet, so this states how it will work
- * instead of showing a status that doesn't exist.
+ * Members see each competency's state and whether they're Approved to Serve in each role, as the
+ * system worked it out (SRS-COMP-001..004). Others see how it works.
  */
-function Readiness({ departmentName }: { departmentName: string }) {
+function Readiness({
+  departmentName,
+  readiness,
+}: {
+  departmentName: string;
+  readiness: MyReadiness | null;
+}) {
+  const now = new Date();
+  const intro = (
+    <div className="flex flex-col gap-1">
+      <p className="eyebrow">Readiness</p>
+      <h2 id="readiness-heading" className="text-heading font-semibold">
+        Practical skills and serving
+      </h2>
+      <p className="reading-width text-small text-text-secondary">
+        Finishing courses isn&apos;t the same as being approved to serve. These are recorded
+        separately.
+      </p>
+    </div>
+  );
+  const configured =
+    readiness !== null && (readiness.competencies.length > 0 || readiness.roles.length > 0);
+
+  if (!configured) {
+    return (
+      <section aria-labelledby="readiness-heading" className="flex flex-col gap-5">
+        {intro}
+        <dl className="grid gap-px overflow-hidden rounded-card border border-border bg-border md:grid-cols-2">
+          <div className="flex flex-col gap-1.5 bg-bg p-5">
+            <dt className="font-medium">Practical skills</dt>
+            <dd className="text-small text-text-secondary">
+              A trainer watches you work and ticks a checklist; the Academy works out the result.
+              {readiness === null
+                ? " Your skills show here once you're a member."
+                : ` Hands-on checks for ${departmentName} aren't set up yet.`}
+            </dd>
+          </div>
+          <div className="flex flex-col gap-1.5 bg-bg p-5">
+            <dt className="font-medium">Approved to serve</dt>
+            <dd className="text-small text-text-secondary">
+              Granted automatically once you&apos;ve passed every practical skill a role needs. It
+              will show here when it applies to you.
+            </dd>
+          </div>
+        </dl>
+      </section>
+    );
+  }
+
   return (
     <section aria-labelledby="readiness-heading" className="flex flex-col gap-5">
-      <div className="flex flex-col gap-1">
-        <p className="eyebrow">Readiness</p>
-        <h2 id="readiness-heading" className="text-heading font-semibold">
-          Practical skills and serving
-        </h2>
-        <p className="reading-width text-small text-text-secondary">
-          Finishing courses isn&apos;t the same as being approved to serve. These are recorded
-          separately.
-        </p>
+      {intro}
+      <div className="grid gap-px overflow-hidden rounded-card border border-border bg-border md:grid-cols-2">
+        <div className="flex flex-col gap-3 bg-bg p-5">
+          <h3 className="font-medium">Practical skills</h3>
+          {readiness.competencies.length === 0 ? (
+            <p className="text-small text-text-secondary">None set up yet.</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {readiness.competencies.map((competency) => {
+                const state = competencyState(competency.record, now);
+                return (
+                  <li key={competency.id} className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <span className="text-small">{competency.name}</span>
+                    <StatusBadge tone={state === "approved" ? "success" : "neutral"}>
+                      {COMPETENCY_STATE_LABELS[state]}
+                    </StatusBadge>
+                    {state === "approved" && competency.record ? (
+                      <span className="text-small text-text-muted">
+                        since {formatDate(competency.record.grantedAt)}
+                      </span>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+        <div className="flex flex-col gap-3 bg-bg p-5">
+          <h3 className="font-medium">Approved to serve</h3>
+          {readiness.roles.length === 0 ? (
+            <p className="text-small text-text-secondary">No serving roles set up yet.</p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {readiness.roles.map((role) => (
+                <li key={role.id} className="flex flex-col gap-0.5">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="text-small">{role.name}</span>
+                    <StatusBadge tone={role.readiness.approved ? "success" : "neutral"}>
+                      {role.readiness.approved ? "Approved to serve" : "Not yet"}
+                    </StatusBadge>
+                  </span>
+                  <span className="text-small text-text-muted">
+                    {role.readiness.approved && role.approvedAt
+                      ? `Since ${formatDate(role.approvedAt)}`
+                      : role.readiness.unconfigured
+                        ? "Its requirements aren't set up yet"
+                        : missingLabel(role.readiness.missing)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
-      <dl className="grid gap-px overflow-hidden rounded-card border border-border bg-border md:grid-cols-2">
-        <div className="flex flex-col gap-1.5 bg-bg p-5">
-          <dt className="font-medium">Practical skills</dt>
-          <dd className="text-small text-text-secondary">
-            A trainer watches you work and ticks a checklist; the Academy works out the result.
-            Hands-on checks for {departmentName} aren&apos;t set up yet.
-          </dd>
-        </div>
-        <div className="flex flex-col gap-1.5 bg-bg p-5">
-          <dt className="font-medium">Approved to serve</dt>
-          <dd className="text-small text-text-secondary">
-            Granted automatically once you&apos;ve passed every practical skill a role needs. It
-            will show here when it applies to you.
-          </dd>
-        </div>
-      </dl>
     </section>
   );
 }
