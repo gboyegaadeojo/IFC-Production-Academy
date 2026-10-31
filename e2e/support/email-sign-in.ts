@@ -58,7 +58,10 @@ export async function signInByEmail(page: Page, email: string) {
   // Local Supabase sends at most one link per address per second (supabase/config.toml), and
   // seeded accounts sign in from several tests, so a refused send is retried briefly.
   for (let attempt = 1; ; attempt += 1) {
-    // Filled on every attempt: the form may have been redrawn by the previous one.
+    if (attempt > 1) {
+      // Start each retry from a fresh sign-in page: a refused send can leave an error screen.
+      await page.goto("/sign-in");
+    }
     await page.getByLabel("Email address").fill(email);
     await page.getByRole("button", { name: "Email me a sign-in link" }).click();
     await expect(sent.or(problem)).toBeVisible();

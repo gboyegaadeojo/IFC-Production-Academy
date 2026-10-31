@@ -292,7 +292,13 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await scheduler.getByText("Schedule someone").click();
   await scheduler.getByLabel("Volunteer").selectOption({ label: `${name} (approved)` });
   await scheduler.getByRole("button", { name: "Schedule", exact: true }).click();
-  await expect(scheduler.getByText(/Scheduled \(approved to serve\)/)).toBeVisible();
+  // The position now shows who's in it and the check result.
+  const position = scheduler
+    .getByRole("region", { name: "Positions" })
+    .getByRole("listitem")
+    .filter({ hasText: name });
+  await expect(position.getByText("Waiting for a reply")).toBeVisible();
+  await expect(position.getByText("Approved to serve")).toBeVisible();
   await schedulerContext.close();
 
   await volunteer.goto("/schedule");
