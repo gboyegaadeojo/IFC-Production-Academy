@@ -41,7 +41,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
 const WINNIPEG_HOUR = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/Winnipeg",
   hour: "numeric",
-  hourCycle: "h23",
+  hour12: false,
 });
 
 /**
