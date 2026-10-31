@@ -5,7 +5,11 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ChevronRightIcon } from "@/components/ui/icons";
 import { PageHeader } from "@/components/ui/page-header";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { getAdminOverview, type AdminOverview } from "@/lib/data/admin/overview";
+import {
+  getAdminOverview,
+  type AdminOverview,
+  type TrainingSummary,
+} from "@/lib/data/admin/overview";
 import { formatDateTime } from "@/lib/domain/admin";
 import { AccessDenied } from "./access-denied";
 import { PageSkeleton } from "./page-skeleton";
@@ -25,6 +29,18 @@ type QueueItem = { label: string; count: number; detail: string; href: string };
 /** What needs someone's attention, from real counts only (DESIGN §7.1). */
 function queue(overview: AdminOverview): QueueItem[] {
   const items: QueueItem[] = [];
+  const awaiting = (overview.training ?? []).reduce((sum, d) => sum + d.awaitingAssessment, 0);
+  if (awaiting > 0) {
+    items.push({
+      label: "Waiting for a practical assessment",
+      count: awaiting,
+      detail:
+        awaiting === 1
+          ? "1 volunteer asked to be assessed"
+          : `${awaiting} volunteers asked to be assessed`,
+      href: "/admin/assessments",
+    });
+  }
   if (overview.pendingRequests) {
     items.push({
       label: "Membership requests",
@@ -141,6 +157,23 @@ async function DashboardContent() {
         )}
       </section>
 
+      {overview.training && overview.training.length > 0 ? (
+        <section aria-labelledby="training-heading" className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 id="training-heading" className="text-heading font-semibold">
+              Training
+            </h2>
+            <p className="text-small text-text-secondary">
+              Where your volunteers are. Finishing courses and being approved to serve are counted
+              separately.
+            </p>
+          </div>
+          {overview.training.map((department) => (
+            <TrainingRow key={department.departmentId} department={department} />
+          ))}
+        </section>
+      ) : null}
+
       {metrics.length > 0 ? (
         <section aria-labelledby="metrics-heading" className="flex flex-col gap-3">
           <h2 id="metrics-heading" className="text-heading font-semibold">
@@ -205,6 +238,81 @@ async function DashboardContent() {
           )}
         </section>
       ) : null}
+    </div>
+  );
+}
+
+/** One department's training figures (SPEC §7 "Leader dashboard"); each links to its records. */
+function TrainingRow({ department }: { department: TrainingSummary }) {
+  const figures: { label: string; value: number; note: string; href: string | null }[] = [
+    {
+      label: "Active members",
+      value: department.activeMembers,
+      note: "People who can take the department's training",
+      href: "/admin/members?view=members",
+    },
+    {
+      label: "In progress",
+      value: department.inProgress,
+      note: "Started a course they haven't finished",
+      href: null,
+    },
+    {
+      label: "Awaiting assessment",
+      value: department.awaitingAssessment,
+      note: "Asked a trainer to assess them",
+      href: "/admin/assessments",
+    },
+    {
+      label: "Further practice",
+      value: department.furtherPractice,
+      note: "Last practical needs another go",
+      href: "/admin/assessments",
+    },
+    {
+      label: "Approved to serve",
+      value: department.approvedToServe,
+      note: "In at least one role",
+      href: "/admin/competencies",
+    },
+    {
+      label: "Certificates",
+      value: department.certificates,
+      note: "Courses finished and certified",
+      href: null,
+    },
+  ];
+  return (
+    <div className="flex flex-col gap-2">
+      <h3 className="text-subheading font-semibold">{department.departmentName}</h3>
+      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {figures.map((figure) => {
+          const body = (
+            <>
+              <span className="text-small text-text-secondary">{figure.label}</span>
+              <span className="tabular text-title font-semibold">{figure.value}</span>
+              <span className="text-small text-text-muted">{figure.note}</span>
+            </>
+          );
+          return (
+            <li key={figure.label}>
+              {figure.href ? (
+                <Link
+                  href={figure.href}
+                  className="flex h-full flex-col gap-1 rounded-card border border-border bg-card p-5 transition-surface hover:border-border-strong"
+                >
+                  {body}
+                  <span className="sr-only"> in {department.departmentName}</span>
+                </Link>
+              ) : (
+                <div className="flex h-full flex-col gap-1 rounded-card border border-border bg-card p-5">
+                  {body}
+                </div>
+              )}
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

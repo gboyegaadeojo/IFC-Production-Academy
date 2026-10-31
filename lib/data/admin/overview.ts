@@ -17,6 +17,19 @@ export type AdminOverview = {
   people: { total: number; notActive: number } | null;
   departments: { active: number; comingSoon: number; inactive: number } | null;
   recentActivity: AuditEntry[] | null;
+  /** Training figures per department (SPEC §7 "Leader dashboard"), for readiness viewers. */
+  training: TrainingSummary[] | null;
+};
+
+export type TrainingSummary = {
+  departmentId: string;
+  departmentName: string;
+  activeMembers: number;
+  inProgress: number;
+  awaitingAssessment: number;
+  furtherPractice: number;
+  approvedToServe: number;
+  certificates: number;
 };
 
 type Counted = { count: number | null; error: { code?: string } | null };
@@ -33,7 +46,7 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
   const can = (key: Parameters<typeof canOpenAdminSection>[1]) => canOpenAdminSection(grants, key);
   const nowIso = new Date().toISOString();
 
-  const [requests, drafts, review, invitations, people, notActive, departments, audit] =
+  const [requests, drafts, review, invitations, people, notActive, departments, audit, training] =
     await Promise.all([
       can("members")
         ? supabase
@@ -69,10 +82,14 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
         : null,
       can("departments") ? supabase.from("departments").select("status") : null,
       can("audit") ? listAuditEntries(null) : null,
+      can("competencies") ? supabase.rpc("department_training_summary") : null,
     ]);
 
   if (invitations?.error) {
     throw new Error("Could not count invitations", { cause: invitations.error.code });
+  }
+  if (training?.error) {
+    throw new Error("Could not load training figures", { cause: training.error.code });
   }
   if (departments?.error) {
     throw new Error("Could not count departments", { cause: departments.error.code });
@@ -97,5 +114,17 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
         }
       : null,
     recentActivity: audit ? audit.entries.slice(0, 6) : null,
+    training: training
+      ? training.data.map((row) => ({
+          departmentId: row.department_id,
+          departmentName: row.department_name,
+          activeMembers: row.active_members,
+          inProgress: row.in_progress,
+          awaitingAssessment: row.awaiting_assessment,
+          furtherPractice: row.further_practice,
+          approvedToServe: row.approved_to_serve,
+          certificates: row.certificates,
+        }))
+      : null,
   };
 }

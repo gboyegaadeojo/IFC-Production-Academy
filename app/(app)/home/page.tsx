@@ -8,11 +8,13 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { getMyAchievements, type Achievements } from "@/lib/data/achievements";
 import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards, type DepartmentCard as CardData } from "@/lib/data/departments";
 import { getDepartmentLearning } from "@/lib/data/learning";
 import { getContinueLearning } from "@/lib/data/progress";
 import { formatDateTime } from "@/lib/domain/admin";
+import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
   courseCountLabel,
@@ -45,12 +47,13 @@ async function HomeContent() {
   const state = homeState(departments);
   const memberOf = departments.filter((d) => d.state.kind === "member");
   const requested = departments.filter((d) => d.state.kind === "requested");
-  const [learning, continuing] = await Promise.all([
+  const [learning, continuing, achievements] = await Promise.all([
     getDepartmentLearning(memberOf.map((d) => d.id)),
     getContinueLearning(
       user.id,
       memberOf.map((d) => d.id),
     ),
+    memberOf.length > 0 ? getMyAchievements(user.id) : null,
   ]);
   const learningFor = new Map(learning.map((entry) => [entry.departmentId, entry]));
 
@@ -64,6 +67,11 @@ async function HomeContent() {
       />
 
       {continuing.length > 0 ? <ContinueLearning courses={continuing} /> : null}
+
+      {achievements &&
+      (achievements.approvedRoles.length > 0 || achievements.certificates.length > 0) ? (
+        <AchievementsSection achievements={achievements} />
+      ) : null}
 
       {requested.length > 0 ? <RequestStatus requests={requested} /> : null}
 
@@ -285,6 +293,65 @@ function MyDepartment({
 }
 
 /** Keeps membership, completion, and approval to serve visibly separate (SPEC §3, DESIGN §10). */
+/**
+ * Recent achievements (SPEC §7 "Home dashboard"): roles the person is Approved to Serve in, and
+ * certificates. Shown side by side but never merged: a certificate is not approval to serve.
+ */
+function AchievementsSection({ achievements }: { achievements: Achievements }) {
+  return (
+    <section aria-labelledby="achievements-heading" className="flex flex-col gap-4">
+      <SectionHeading id="achievements-heading" eyebrow="Your achievements">
+        What you&apos;ve earned
+      </SectionHeading>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
+          <h3 className="font-medium">Approved to serve</h3>
+          {achievements.approvedRoles.length === 0 ? (
+            <p className="text-small text-text-secondary">
+              Not yet. Pass a role&apos;s practical assessments and it shows here.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {achievements.approvedRoles.map((role) => (
+                <li key={role.roleId} className="flex flex-col">
+                  <span className="font-medium">{role.roleName}</span>
+                  <span className="text-small text-text-muted">
+                    {role.departmentName} · since {formatDate(role.approvedAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
+          <h3 className="font-medium">Certificates</h3>
+          {achievements.certificates.length === 0 ? (
+            <p className="text-small text-text-secondary">
+              Finish a course and get its certificate from the course page.
+            </p>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {achievements.certificates.slice(0, 3).map((certificate) => (
+                <li key={certificate.reference}>
+                  <Link
+                    href={`/certificates/${certificate.reference}`}
+                    className="flex flex-col rounded-button underline-offset-4 hover:underline"
+                  >
+                    <span className="font-medium text-accent-light">{certificate.courseTitle}</span>
+                    <span className="text-small text-text-muted">
+                      {certificate.departmentName} · {formatDate(certificate.issuedAt)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function HowTrainingWorks() {
   const steps = [
     {

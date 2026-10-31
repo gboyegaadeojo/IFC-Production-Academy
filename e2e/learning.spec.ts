@@ -205,7 +205,11 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   const assessorContext = await browser.newContext();
   const assessor = await assessorContext.newPage();
   await signInByEmail(assessor, "casey.leader@example.com");
-  await assessor.goto("/admin/assessments");
+  // The leader dashboard puts the request first and counts training per department.
+  await assessor.goto("/admin");
+  await expect(assessor.getByRole("heading", { name: "Training" })).toBeVisible();
+  await assessor.getByRole("link", { name: /Waiting for a practical assessment/ }).click();
+  await expect(assessor.getByRole("heading", { level: 1, name: "Assessments" })).toBeVisible();
   await assessor
     .getByRole("region", { name: "Waiting for assessment" })
     .getByRole("listitem")
@@ -260,6 +264,12 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await expect(
     readiness.getByRole("listitem").filter({ hasText: "Sample skill (seed data)" }),
   ).toContainText("Approved");
+
+  // Home shows what they've earned: approval to serve and the certificate, kept apart.
+  await volunteer.goto("/home");
+  const achievements = volunteer.getByRole("region", { name: "What you've earned" });
+  await expect(achievements.getByText("Sample role (seed data)")).toBeVisible();
+  await expect(achievements.getByText("Sample course (seed data)")).toBeVisible();
 
   // Undo, for a mis-tap.
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);

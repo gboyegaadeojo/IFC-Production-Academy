@@ -856,6 +856,19 @@ export type Database = {
         }[];
       };
       revoke_certificate: { Args: { p_reference: string; p_reason: string }; Returns: undefined };
+      department_training_summary: {
+        Args: never;
+        Returns: {
+          department_id: string;
+          department_name: string;
+          active_members: number;
+          in_progress: number;
+          awaiting_assessment: number;
+          further_practice: number;
+          approved_to_serve: number;
+          certificates: number;
+        }[];
+      };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
