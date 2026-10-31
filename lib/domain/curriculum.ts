@@ -231,6 +231,7 @@ export type CurriculumError =
   | "version_not_in_review"
   | "version_not_restorable"
   | "draft_exists"
+  | "quiz_has_no_questions"
   | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<CurriculumError>([
@@ -244,6 +245,7 @@ const KNOWN: ReadonlySet<string> = new Set<CurriculumError>([
   "version_not_in_review",
   "version_not_restorable",
   "draft_exists",
+  "quiz_has_no_questions",
 ]);
 
 export function toCurriculumError(
@@ -280,6 +282,8 @@ export function curriculumErrorMessage(error: CurriculumError): string {
       return "Only versions that were published can be restored.";
     case "draft_exists":
       return "There are unpublished changes already. Publish or finish them before restoring an older version.";
+    case "quiz_has_no_questions":
+      return "A quiz in this course has no questions yet. Add questions or remove the quiz first.";
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }

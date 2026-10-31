@@ -201,6 +201,8 @@ YouTube note: **Private** videos cannot be embedded for volunteers, so lessons m
 | SRS-QUIZ-007 | Leaders review results for their department | M |
 | ADD-QUIZ-01 | Image-based questions (for example "which fader is muted?") | S |
 
+Quiz behaviour (built 2026-10-31): a course can hold several quizzes, each placed after a module or at the end. Leaders set each quiz's pass mark (default 80%), attempts (default 3, or unlimited), question order (as listed or shuffled), when correct answers are shown (default: once the learner passes or uses every attempt), and whether it must be passed to finish the course (default yes). The database scores every attempt; learners never receive the correct answers before the policy allows. Attempts count across versions of a quiz, and a pass on an earlier version still counts. After the last failed attempt the learner is pointed to the lessons and to their trainer or leader, who can give one more attempt (`assessment.record`, audited).
+
 ### Practical assessments and competency
 
 | ID | Requirement | Level |

@@ -1,7 +1,7 @@
 import "server-only";
 import { listDepartmentCards, type DepartmentCard } from "@/lib/data/departments";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
-import { orderedOutline, type OutlineModule } from "@/lib/domain/learning";
+import { orderedOutline, type CourseQuiz, type OutlineModule } from "@/lib/domain/learning";
 import { storedVideo, type VideoRef } from "@/lib/domain/video";
 
 // Learner pages (DESIGN §6.3–6.5). Read-only. Row-level security decides what each person sees:
@@ -140,6 +140,8 @@ export type LearnerCourse = {
   level: { number: number; name: string };
   /** Empty when the person may not read the lessons (not a member). */
   modules: OutlineModule[];
+  /** The live version's quizzes, in placement order. Empty when lessons aren't readable. */
+  quizzes: CourseQuiz[];
   canOpen: boolean;
 };
 
@@ -161,7 +163,7 @@ export async function getLearnerCourse(courseId: string): Promise<LearnerCourse 
   if (!version || version.version_number === null) {
     return null;
   }
-  const [department, level, modules, lessons] = await Promise.all([
+  const [department, level, modules, lessons, quizzes] = await Promise.all([
     supabase
       .from("departments")
       .select("id, slug, name, hue, icon")
@@ -170,18 +172,25 @@ export async function getLearnerCourse(courseId: string): Promise<LearnerCourse 
     supabase.from("levels").select("number, name").eq("id", course.data.level_id).maybeSingle(),
     supabase
       .from("course_modules")
-      .select("id, title, summary, sort_order")
+      .select("id, module_key, title, summary, sort_order")
       .eq("course_version_id", version.id),
     supabase
       .from("lessons")
       .select("lesson_key, module_id, title, is_required, estimated_minutes, sort_order")
       .eq("course_version_id", version.id),
+    supabase
+      .from("quizzes")
+      .select("quiz_key, title, is_required, after_module_key")
+      .eq("course_version_id", version.id)
+      .order("sort_order"),
   ]);
-  if (department.error || level.error || modules.error || lessons.error) {
+  if (department.error || level.error || modules.error || lessons.error || quizzes.error) {
     throw new Error("Could not load the course", {
-      cause: (department.error ?? level.error ?? modules.error ?? lessons.error)?.code,
+      cause: (department.error ?? level.error ?? modules.error ?? lessons.error ?? quizzes.error)
+        ?.code,
     });
   }
+  const moduleIdByKey = new Map(modules.data.map((m) => [m.module_key, m.id]));
   if (!department.data || !level.data) {
     return null;
   }
@@ -197,6 +206,14 @@ export async function getLearnerCourse(courseId: string): Promise<LearnerCourse 
     department: department.data,
     level: level.data,
     canOpen: lessons.data.length > 0,
+    quizzes: quizzes.data.map((quiz) => ({
+      key: quiz.quiz_key,
+      title: quiz.title,
+      isRequired: quiz.is_required,
+      afterModuleId: quiz.after_module_key
+        ? (moduleIdByKey.get(quiz.after_module_key) ?? null)
+        : null,
+    })),
     modules: orderedOutline(
       modules.data.map((courseModule) => ({
         id: courseModule.id,

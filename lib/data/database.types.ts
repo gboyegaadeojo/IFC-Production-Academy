@@ -301,6 +301,122 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      quizzes: {
+        Row: {
+          id: string;
+          course_version_id: string;
+          quiz_key: string;
+          title: string;
+          intro: string;
+          after_module_key: string | null;
+          pass_percent: number;
+          max_attempts: number | null;
+          shuffle_questions: boolean;
+          answer_policy: Database["public"]["Enums"]["quiz_answer_policy"];
+          is_required: boolean;
+          sort_order: number;
+        } & Timestamps;
+        Insert: {
+          course_version_id: string;
+          title: string;
+          intro?: string;
+          after_module_key?: string | null;
+          pass_percent?: number;
+          max_attempts?: number | null;
+          shuffle_questions?: boolean;
+          answer_policy?: Database["public"]["Enums"]["quiz_answer_policy"];
+          is_required?: boolean;
+          sort_order?: number;
+        };
+        Update: {
+          title?: string;
+          intro?: string;
+          after_module_key?: string | null;
+          pass_percent?: number;
+          max_attempts?: number | null;
+          shuffle_questions?: boolean;
+          answer_policy?: Database["public"]["Enums"]["quiz_answer_policy"];
+          is_required?: boolean;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      quiz_questions: {
+        // Readable only by curriculum staff: options include which answers are correct.
+        Row: {
+          id: string;
+          quiz_id: string;
+          course_version_id: string;
+          question_key: string;
+          kind: Database["public"]["Enums"]["quiz_question_kind"];
+          prompt: string;
+          scenario: string;
+          explanation: string;
+          options: Json;
+          sort_order: number;
+        } & Timestamps;
+        Insert: {
+          quiz_id: string;
+          course_version_id: string;
+          kind: Database["public"]["Enums"]["quiz_question_kind"];
+          prompt: string;
+          scenario?: string;
+          explanation?: string;
+          options: Json;
+          sort_order?: number;
+        };
+        Update: {
+          kind?: Database["public"]["Enums"]["quiz_question_kind"];
+          prompt?: string;
+          scenario?: string;
+          explanation?: string;
+          options?: Json;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      quiz_attempts: {
+        Row: {
+          id: string;
+          user_id: string;
+          quiz_id: string;
+          quiz_key: string;
+          course_id: string;
+          course_version_id: string;
+          department_id: string;
+          attempt_number: number;
+          question_ids: string[];
+          question_count: number;
+          pass_percent: number;
+          started_at: string;
+          submitted_at: string | null;
+          answers: Json | null;
+          correct_count: number | null;
+          score_percent: number | null;
+          passed: boolean | null;
+        } & Timestamps;
+        // Written only through start_quiz_attempt and submit_quiz_attempt.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      quiz_attempt_allowances: {
+        Row: {
+          id: string;
+          user_id: string;
+          course_id: string;
+          quiz_key: string;
+          department_id: string;
+          extra_attempts: number;
+          reason: string;
+          granted_by: string | null;
+          created_at: string;
+        };
+        // Written only through grant_quiz_attempt.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -374,6 +490,37 @@ export type Database = {
       };
       complete_lesson: { Args: { p_course_id: string; p_lesson_key: string }; Returns: string };
       reopen_lesson: { Args: { p_course_id: string; p_lesson_key: string }; Returns: undefined };
+      delete_quiz: { Args: { p_quiz_id: string }; Returns: undefined };
+      delete_quiz_question: { Args: { p_question_id: string }; Returns: undefined };
+      start_quiz_attempt: { Args: { p_course_id: string; p_quiz_key: string }; Returns: string };
+      quiz_attempt_questions: {
+        Args: { p_attempt_id: string };
+        Returns: {
+          question_id: string;
+          kind: Database["public"]["Enums"]["quiz_question_kind"];
+          prompt: string;
+          scenario: string;
+          options: Json;
+        }[];
+      };
+      submit_quiz_attempt: { Args: { p_attempt_id: string; p_answers: Json }; Returns: boolean };
+      quiz_attempt_review: {
+        Args: { p_attempt_id: string };
+        Returns: {
+          question_id: string;
+          kind: Database["public"]["Enums"]["quiz_question_kind"];
+          prompt: string;
+          scenario: string;
+          options: Json;
+          selected: Json;
+          is_correct: boolean | null;
+          explanation: string;
+        }[];
+      };
+      grant_quiz_attempt: {
+        Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
+        Returns: undefined;
+      };
       create_invitation: {
         Args: {
           p_department_id: string | null;
@@ -427,6 +574,8 @@ export type Database = {
       course_version_status: "draft" | "pending_review" | "published" | "superseded" | "archived";
       video_provider: "youtube" | "nas";
       lesson_progress_status: "in_progress" | "completed";
+      quiz_question_kind: "single" | "multiple" | "true_false" | "scenario";
+      quiz_answer_policy: "after_each_attempt" | "after_pass" | "after_final_attempt" | "never";
     };
     CompositeTypes: { [_ in never]: never };
   };

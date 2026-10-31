@@ -77,8 +77,10 @@ describe("courseProgress", () => {
       state: "not_started",
       countedTotal: 3,
       countedCompleted: 0,
+      quizzesTotal: 0,
+      quizzesPassed: 0,
       percent: 0,
-      next: { key: "a", title: "Lesson a", started: false },
+      next: { kind: "lesson", key: "a", title: "Lesson a", started: false },
     });
   });
 
@@ -90,14 +92,14 @@ describe("courseProgress", () => {
     expect(course.state).toBe("in_progress");
     expect(course.countedCompleted).toBe(1);
     expect(course.percent).toBe(33);
-    expect(course.next).toEqual({ key: "b", title: "Lesson b", started: true });
+    expect(course.next).toEqual({ kind: "lesson", key: "b", title: "Lesson b", started: true });
   });
 
   it("is completed when every required lesson is, even with optional ones left", () => {
     const course = courseProgress(modules, lessonProgressByKey([done("a"), done("b"), done("c")]));
     expect(course.state).toBe("completed");
     expect(course.percent).toBe(100);
-    expect(course.next).toEqual({ key: "x", title: "Lesson x", started: false });
+    expect(course.next).toEqual({ kind: "lesson", key: "x", title: "Lesson x", started: false });
   });
 
   it("counts every lesson when none is required", () => {
@@ -114,6 +116,52 @@ describe("courseProgress", () => {
 
   it("is never completed when the course has no lessons", () => {
     expect(courseProgress([], new Map()).state).toBe("not_started");
+  });
+});
+
+describe("courseProgress with quizzes", () => {
+  const quizzes = [
+    { key: "q1", title: "Module quiz", isRequired: true, afterModuleId: "m1" },
+    { key: "q2", title: "Practice", isRequired: false, afterModuleId: null },
+  ];
+  const allLessons = lessonProgressByKey([done("a"), done("b"), done("c"), done("x")]);
+
+  it("isn't finished until required quizzes are passed", () => {
+    const course = courseProgress(modules, allLessons, quizzes, new Set());
+    expect(course.state).toBe("in_progress");
+    expect(course.percent).toBe(75);
+    expect(course.next).toEqual({ kind: "quiz", key: "q1", title: "Module quiz", started: false });
+  });
+
+  it("is finished once required quizzes pass, with optional ones left", () => {
+    const course = courseProgress(modules, allLessons, quizzes, new Set(["q1"]));
+    expect(course.state).toBe("completed");
+    expect(course.percent).toBe(100);
+    expect(course.next?.key).toBe("q2");
+  });
+
+  it("puts a module's quiz after its lessons, before the next module", () => {
+    const course = courseProgress(modules, lessonProgressByKey([done("a"), done("b")]), quizzes);
+    expect(course.next?.key).toBe("x");
+    const skipped = courseProgress(
+      modules,
+      lessonProgressByKey([done("a"), done("b"), done("x")]),
+      quizzes,
+    );
+    expect(skipped.next?.key).toBe("q1");
+  });
+
+  it("never finishes on a passed quiz alone", () => {
+    expect(courseProgress(modules, new Map(), quizzes, new Set(["q1"])).state).toBe("in_progress");
+  });
+
+  it("adds the quiz to the label", () => {
+    const course = courseProgress(modules, allLessons, quizzes, new Set());
+    expect(courseProgressLabel(course, true)).toBe(
+      "All required lessons done · quiz not passed yet",
+    );
+    const passed = courseProgress(modules, allLessons, quizzes, new Set(["q1"]));
+    expect(courseProgressLabel(passed, true)).toBe("All required lessons done · quiz passed");
   });
 });
 
