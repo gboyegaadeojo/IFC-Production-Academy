@@ -766,6 +766,57 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      mentor_relationships: {
+        Row: {
+          id: string;
+          department_id: string;
+          mentor_id: string;
+          mentee_id: string;
+          started_at: string;
+          ended_at: string | null;
+          end_reason: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      mentoring_goals: {
+        Row: {
+          id: string;
+          relationship_id: string;
+          title: string;
+          due_on: string | null;
+          status: Database["public"]["Enums"]["mentoring_goal_status"];
+          completed_at: string | null;
+          created_by: string;
+        } & Timestamps;
+        Insert: { relationship_id: string; title: string; due_on?: string | null };
+        Update: {
+          title?: string;
+          due_on?: string | null;
+          status?: Database["public"]["Enums"]["mentoring_goal_status"];
+          completed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      mentoring_notes: {
+        Row: {
+          id: string;
+          relationship_id: string;
+          author_id: string;
+          visibility: Database["public"]["Enums"]["mentoring_note_visibility"];
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          relationship_id: string;
+          visibility: Database["public"]["Enums"]["mentoring_note_visibility"];
+          body: string;
+        };
+        Update: never;
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -1009,6 +1060,47 @@ export type Database = {
         Args: { p_department_id: string; p_report: string; p_rows: number };
         Returns: undefined;
       };
+      my_mentoring: {
+        Args: never;
+        Returns: {
+          relationship_id: string;
+          department_id: string;
+          department_name: string;
+          mentor_id: string;
+          mentor_name: string;
+          mentee_id: string;
+          mentee_name: string;
+          my_part: string;
+          started_at: string;
+          ended_at: string | null;
+        }[];
+      };
+      department_mentoring: {
+        Args: { p_department_id: string };
+        Returns: {
+          relationship_id: string;
+          mentor_id: string;
+          mentor_name: string;
+          mentee_id: string;
+          mentee_name: string;
+          started_at: string;
+          ended_at: string | null;
+        }[];
+      };
+      mentoring_people: {
+        Args: { p_department_id: string };
+        Returns: {
+          user_id: string;
+          display_name: string;
+          can_mentor: boolean;
+          is_member: boolean;
+        }[];
+      };
+      assign_mentor: {
+        Args: { p_department_id: string; p_mentor_id: string; p_mentee_id: string };
+        Returns: string;
+      };
+      end_mentoring: { Args: { p_relationship_id: string; p_reason?: string }; Returns: undefined };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
@@ -1074,6 +1166,8 @@ export type Database = {
       practical_outcome: "pass" | "further_practice";
       assignment_status: "pending" | "confirmed" | "declined" | "cancelled";
       assignment_readiness: "approved" | "supervised" | "override";
+      mentoring_note_visibility: "shared" | "private";
+      mentoring_goal_status: "open" | "done";
     };
     CompositeTypes: { [_ in never]: never };
   };
