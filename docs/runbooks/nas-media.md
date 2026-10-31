@@ -70,9 +70,10 @@ Volunteer's browser
 
 ## Things to know
 
-- **Bandwidth.** Every viewer streams from the church's internet connection. At about 2.5 Mbit/s
-  per viewer, a 20 Mbit/s upload serves roughly 6–8 people at once. Measure the church's upload
-  speed before the pilot, and keep popular, non-sensitive videos on unlisted YouTube if needed.
+- **Bandwidth.** Every viewer streams from the church's internet connection, at about 2.5 Mbit/s
+  per viewer. The church has a 1 Gbit/s upload (confirmed 2026-10-31), so the line is not the
+  limit: the small computer is. Use wired Ethernet (gigabit), not Wi-Fi, between it, the NAS, and
+  the router. If the connection changes, keep popular, non-sensitive videos on unlisted YouTube.
 - **Downtime.** If the small computer, the NAS, or the church internet is down, library videos
   show "The church video library isn't reachable right now" and the lesson text still works.
 - **Cloudflare's terms.** Check Cloudflare's current terms for serving video through Workers and
