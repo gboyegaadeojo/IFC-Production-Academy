@@ -252,7 +252,7 @@ async function CourseContent({
           {!course.open ? (
             <EmptyState title="Nothing waiting to publish">
               {course.live
-                ? `Version ${course.live.versionNumber} is live. Choose Edit course to start the next version.`
+                ? "The live version is up to date. Choose Edit course to start the next one."
                 : "Add content, then publish the first version."}
             </EmptyState>
           ) : null}
