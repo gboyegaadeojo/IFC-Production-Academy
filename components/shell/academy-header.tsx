@@ -4,6 +4,7 @@ import { signOutAction } from "@/app/auth/actions";
 import { Wordmark } from "@/components/brand";
 import { getCurrentUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
+import { getUnreadCount } from "@/lib/data/notifications";
 import { adminSections } from "@/lib/domain/admin";
 import { initials } from "@/lib/domain/people";
 import { AccountMenu } from "./account-menu";
@@ -34,12 +35,17 @@ async function Account() {
     return null;
   }
   // Only areas a person may use are offered (SPEC §8); each admin page checks again on the server.
-  const showAdmin = user.status === "active" && adminSections(await getMyCapabilities()).length > 0;
+  const active = user.status === "active";
+  const [grants, unread] = active
+    ? await Promise.all([getMyCapabilities(), getUnreadCount(user.id)])
+    : [[], 0];
+  const showAdmin = active && adminSections(grants).length > 0;
   return (
     <AccountMenu
       displayName={user.displayName}
       initials={initials(user.displayName)}
       showAdmin={showAdmin}
+      unread={unread}
       signOut={signOutAction}
     />
   );

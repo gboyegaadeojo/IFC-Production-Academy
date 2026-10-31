@@ -14,11 +14,14 @@ export function AccountMenu({
   displayName,
   initials,
   showAdmin,
+  unread = 0,
   signOut,
 }: {
   displayName: string;
   initials: string;
   showAdmin: boolean;
+  /** Unread notifications, shown on the button and the Notifications link. */
+  unread?: number;
   signOut: () => Promise<void>;
 }) {
   const pathname = usePathname();
@@ -77,7 +80,20 @@ export function AccountMenu({
         <span className="sr-only text-small sm:not-sr-only sm:max-w-40 sm:truncate">
           {displayName}
         </span>
-        <span className="sr-only">, account menu</span>
+        {unread > 0 ? (
+          <span
+            aria-hidden="true"
+            className="tabular rounded-pill bg-accent px-1.5 text-small font-medium text-on-accent"
+          >
+            {unread > 99 ? "99+" : unread}
+          </span>
+        ) : null}
+        <span className="sr-only">
+          {unread > 0
+            ? `, ${unread} unread ${unread === 1 ? "notification" : "notifications"}`
+            : ""}
+          , account menu
+        </span>
         <ChevronDownIcon className="hidden size-4 sm:block" />
       </button>
       {open ? (
@@ -92,6 +108,19 @@ export function AccountMenu({
             <li>
               <Link href="/profile" className={item}>
                 Your profile
+              </Link>
+            </li>
+            <li>
+              <Link href="/notifications" className={`${item} justify-between`}>
+                Notifications
+                {unread > 0 ? (
+                  <span className="tabular text-small text-text-muted">{unread} unread</span>
+                ) : null}
+              </Link>
+            </li>
+            <li>
+              <Link href="/mentoring" className={item}>
+                Mentoring
               </Link>
             </li>
             {showAdmin ? (

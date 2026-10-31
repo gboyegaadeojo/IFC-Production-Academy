@@ -63,6 +63,7 @@ Anyone can read the code, the commit history, and **the GitHub Actions logs**.
 | `keepalive.yml` | Daily, 18:00 UTC | Real read through the Supabase API so the free project never hits the 7-day inactivity pause. Fails loudly |
 | `backup.yml` | Nightly, 08:00 UTC | `pg_dump` (custom format, version matched to Supabase Postgres) plus Storage files → `age` encrypt → upload to the "IFC Academy Backups" Shared Drive via a service account. Retention: 30 daily, 12 weekly, 12 monthly |
 | `restore-test.yml` | Monthly | Restore the latest backup into the second (scratch) Supabase project and check row counts. Results go in the log as pass/fail only |
+| `notifications.yml` | Every 15 minutes | Queue SOP review reminders, then send pending notification emails through Resend with the service role (Actions secret only). Logs counts only. Sends nothing until `RESEND_API_KEY` and `NOTIFY_FROM` are set; see `docs/runbooks/notifications.md` |
 | `weekly-summary.yml` | Weekly | Email G and the Platform Admin via Resend with the last successful runs, then commit `status/last-run.json`, which keeps scheduled workflows enabled (GitHub disables them after 60 days of repo inactivity) |
 
 Any failed job emails G and the Platform Admin via Resend. Details are in SPEC §9.

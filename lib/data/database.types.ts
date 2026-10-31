@@ -817,6 +817,36 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          kind: Database["public"]["Enums"]["notification_kind"];
+          title: string;
+          body: string;
+          link: string | null;
+          dedupe_key: string;
+          created_at: string;
+          read_at: string | null;
+          email_status: Database["public"]["Enums"]["email_status"];
+          email_attempts: number;
+          emailed_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      notification_preferences: {
+        Row: {
+          user_id: string;
+          kind: Database["public"]["Enums"]["notification_kind"];
+          email: boolean;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -1101,6 +1131,14 @@ export type Database = {
         Returns: string;
       };
       end_mentoring: { Args: { p_relationship_id: string; p_reason?: string }; Returns: undefined };
+      mark_notifications_read: { Args: { p_ids?: string[] | null }; Returns: undefined };
+      set_notification_email: {
+        Args: {
+          p_kind: Database["public"]["Enums"]["notification_kind"];
+          p_email: boolean;
+        };
+        Returns: undefined;
+      };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
@@ -1168,6 +1206,13 @@ export type Database = {
       assignment_readiness: "approved" | "supervised" | "override";
       mentoring_note_visibility: "shared" | "private";
       mentoring_goal_status: "open" | "done";
+      notification_kind:
+        | "membership_approved"
+        | "assignment_scheduled"
+        | "assessment_recorded"
+        | "mentoring_paired"
+        | "sop_review_due";
+      email_status: "pending" | "sent" | "skipped" | "failed";
     };
     CompositeTypes: { [_ in never]: never };
   };
