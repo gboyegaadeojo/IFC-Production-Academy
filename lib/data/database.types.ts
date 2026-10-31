@@ -667,6 +667,29 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      certificates: {
+        Row: {
+          id: string;
+          reference: string;
+          user_id: string;
+          course_id: string;
+          course_version_id: string;
+          department_id: string;
+          recipient_name: string;
+          course_title: string;
+          department_name: string;
+          level_number: number;
+          version_number: number;
+          issued_at: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          revoke_reason: string | null;
+        } & Timestamps;
+        // Issued and revoked only through the functions below.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -814,6 +837,25 @@ export type Database = {
         Args: { p_assessment_id: string; p_reason: string };
         Returns: undefined;
       };
+      issue_certificate: { Args: { p_course_id: string }; Returns: string };
+      verify_certificate: {
+        Args: { p_reference: string };
+        Returns: {
+          reference: string;
+          recipient_name: string;
+          course_title: string;
+          department_name: string;
+          level_number: number;
+          version_number: number;
+          issued_at: string;
+          revoked: boolean;
+          is_mine: boolean;
+          can_revoke: boolean;
+          department_id: string;
+          course_id: string;
+        }[];
+      };
+      revoke_certificate: { Args: { p_reference: string; p_reason: string }; Returns: undefined };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
