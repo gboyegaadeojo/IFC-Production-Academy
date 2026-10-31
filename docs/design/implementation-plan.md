@@ -1,6 +1,6 @@
 # Design implementation plan (DESIGN-REQUIREMENTS §0, §11, §13)
 
-Status (2026-10-30): Milestones A, B, and C merged; Milestone D in review (PR #18). Milestone E (polish) waits for approval.
+Status (2026-10-31): Milestones A to E are done (PRs #16 to #19). Remaining design work waits on IFC photography and brand assets (SPEC open decision 4) and on the features still to be built (video, progress, assessments).
 
 `docs/DESIGN-REQUIREMENTS.md` is the contract for the user interface. `docs/SPEC.md` and `CLAUDE.md` are the contract for product behaviour and security. The redesign changes no schema, RLS, permission check, domain rule, audit event, or publishing rule. One read-only query is added for the learner home page (counts of published courses in a volunteer's departments).
 
