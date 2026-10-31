@@ -15,6 +15,7 @@ import { getLearnerCourse, getLearnerLesson, isActiveMember } from "@/lib/data/p
 import { mediaLibraryEnabled } from "@/lib/data/media";
 import { getCourseProgress } from "@/lib/data/progress";
 import { getPassedQuizKeys } from "@/lib/data/quizzes";
+import { getLessonResources } from "@/lib/data/sops";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
@@ -25,6 +26,7 @@ import {
   stepHref,
 } from "@/lib/domain/learning";
 import { progressFor } from "@/lib/domain/progress";
+import { SOP_STATE_LABELS } from "@/lib/domain/sops";
 import { CourseOutline } from "../../course-outline";
 import { completeLessonAction, recordLessonViewAction, reopenLessonAction } from "./actions";
 
@@ -76,6 +78,9 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     notFound();
   }
   const progress = progressFor(courseProgress, lessonKey);
+  const resources = (await getLessonResources(lesson.id)).filter(
+    (resource) => resource.state !== "archived" && resource.state !== "not_published",
+  );
   // The next lesson, or the quiz that follows this module.
   const steps = courseSteps(course.modules, course.quizzes);
   const nextStep =
@@ -182,6 +187,35 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               <p className="text-text-secondary">This lesson doesn&apos;t have any text yet.</p>
             )}
           </div>
+
+          {resources.length > 0 ? (
+            <section
+              aria-labelledby="lesson-resources-heading"
+              className="flex reading-width flex-col gap-3"
+            >
+              <h2 id="lesson-resources-heading" className="text-subheading font-semibold">
+                Resources
+              </h2>
+              <ul className="flex flex-col divide-y divide-border rounded-card border border-border">
+                {resources.map((resource) => (
+                  <li key={resource.id}>
+                    <Link
+                      href={`/sops/${resource.sopId}`}
+                      className="flex min-h-touch flex-wrap items-center justify-between gap-2 px-4 py-3 hover:bg-card"
+                    >
+                      <span className="flex flex-col">
+                        <span className="text-small text-text-muted">SOP</span>
+                        <span className="font-medium text-text">{resource.title}</span>
+                      </span>
+                      <span className="text-small text-text-muted">
+                        {SOP_STATE_LABELS[resource.state]}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
           <section
             aria-labelledby="lesson-progress-heading"

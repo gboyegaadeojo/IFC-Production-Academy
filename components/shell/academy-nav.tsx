@@ -4,13 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 /**
- * Learner navigation (DESIGN §3.1). Only destinations that exist are listed: Explore, My Learning,
- * and Resources join this list when their pages ship. In the admin workspace it shows that context.
+ * Learner navigation (DESIGN §3.1). Only destinations that exist are listed: Explore and My
+ * Learning join this list when their pages ship. In the admin workspace it shows that context.
  */
 export function AcademyNav() {
   const pathname = usePathname();
   const inAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
-  const links = [{ href: "/home", label: "Home" }];
+  const links = [
+    { href: "/home", label: "Home" },
+    { href: "/sops", label: "SOPs" },
+  ];
 
   if (inAdmin) {
     return (
@@ -27,7 +30,7 @@ export function AcademyNav() {
     <nav aria-label="Academy">
       <ul className="flex items-center gap-1">
         {links.map((link) => {
-          const current = pathname === link.href;
+          const current = pathname === link.href || pathname.startsWith(`${link.href}/`);
           return (
             <li key={link.href}>
               <Link

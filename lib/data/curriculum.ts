@@ -316,6 +316,7 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
 export type LessonDetail = {
   id: string;
   courseId: string;
+  departmentId: string;
   courseVersionId: string;
   editable: boolean;
   moduleId: string;
@@ -359,9 +360,18 @@ export async function getLesson(lessonId: string): Promise<LessonDetail | null> 
   if (version.error || modules.error) {
     throw new Error("Could not load the lesson", { cause: (version.error ?? modules.error)?.code });
   }
+  const course = await supabase
+    .from("courses")
+    .select("department_id")
+    .eq("id", version.data.course_id)
+    .single();
+  if (course.error) {
+    throw new Error("Could not load the lesson", { cause: course.error.code });
+  }
   return {
     id: lesson.data.id,
     courseId: version.data.course_id,
+    departmentId: course.data.department_id,
     courseVersionId: lesson.data.course_version_id,
     editable: version.data.status === "draft",
     moduleId: lesson.data.module_id,

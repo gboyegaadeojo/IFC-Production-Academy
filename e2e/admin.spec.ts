@@ -217,6 +217,102 @@ test("a leader builds, publishes, and revises a course", async ({ page }) => {
   await expect(history.getByRole("button", { name: "Restore as draft version 1" })).toBeVisible();
 });
 
+test("a leader publishes an SOP, attaches it to a lesson, and a member opens it", async ({
+  browser,
+}) => {
+  // Workflow E (SPEC §3) and SRS-LESSON-005. The file is a few fake bytes, not a real SOP.
+  const stamp = Date.now();
+  const sopName = `E2E power-up ${stamp}`;
+  const leaderContext = await browser.newContext();
+  const leader = await leaderContext.newPage();
+  await signInByEmail(leader, "casey.leader@example.com");
+  await leader.goto("/admin/sops");
+  await leader.getByLabel("SOP title").fill(sopName);
+  await leader.getByRole("button", { name: "Create SOP" }).click();
+  await expect(leader.getByRole("heading", { level: 1, name: sopName })).toBeVisible();
+  await expect(leader.getByText("Not published yet").first()).toBeVisible();
+
+  // Only real PDFs and images are stored, whatever the file is called.
+  await leader.getByLabel("SOP file").setInputFiles({
+    name: "not-really.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("<html>not a pdf</html>"),
+  });
+  await leader.getByRole("button", { name: "Upload file" }).click();
+  await expect(leader.getByText("Upload a PDF, PNG, or JPEG file.")).toBeVisible();
+  await leader.getByLabel("SOP file").setInputFiles({
+    name: "fake-sop.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4 fake SOP for end-to-end tests %%EOF"),
+  });
+  await leader.getByRole("button", { name: "Upload file" }).click();
+  await expect(leader.getByText("fake-sop.pdf").first()).toBeVisible();
+  await leader.getByLabel("What changed?").fill("First version");
+  await leader.getByRole("button", { name: "Publish" }).click();
+  await expect(leader.getByText("Version 1 is current")).toBeVisible();
+
+  // Attach it to a lesson in a new course, then publish the course.
+  await leader.goto("/admin/curriculum");
+  await leader.getByText("Add course to Level 1, Camera Operations").click();
+  await leader.getByLabel("Course title").first().fill(`E2E SOP course ${stamp}`);
+  await leader.getByRole("button", { name: "Create course" }).first().click();
+  await expect(
+    leader.getByRole("heading", { level: 1, name: `E2E SOP course ${stamp}` }),
+  ).toBeVisible();
+  const courseId = new URL(leader.url()).pathname.split("/").pop() ?? "";
+  await leader.getByLabel("New module title").fill("Before the service");
+  await leader.getByRole("button", { name: "Add module" }).click();
+  await leader.getByLabel("New lesson title").fill("Powering up");
+  await leader.getByRole("button", { name: /^Add lesson/ }).click();
+  await leader.getByRole("link", { name: "Powering up" }).click();
+  await leader.getByLabel("SOP to attach").selectOption({ label: sopName });
+  await leader.getByRole("button", { name: "Attach SOP" }).click();
+  await expect(
+    leader.getByRole("region", { name: "Resources" }).getByRole("link", { name: sopName }),
+  ).toBeVisible();
+  await leader.getByRole("link", { name: "Back to the course" }).click();
+  const sections = leader.getByRole("navigation", { name: "Course sections" });
+  await sections.getByRole("link", { name: "Publish" }).click();
+  await leader.getByLabel("What changed?").fill("First version");
+  await leader.getByRole("button", { name: "Publish" }).click();
+  await expect(leader.getByText("Version 1 is live")).toBeVisible();
+  await leaderContext.close();
+
+  // Avery (a fake Camera Operations member) finds it in the library and from the lesson.
+  const memberContext = await browser.newContext();
+  const member = await memberContext.newPage();
+  await signInByEmail(member, "avery.volunteer@example.com");
+  await member
+    .getByRole("navigation", { name: "Academy" })
+    .getByRole("link", { name: "SOPs" })
+    .click();
+  await member.getByLabel("Search").fill(`power-up ${stamp}`);
+  await member.getByRole("button", { name: "Search" }).click();
+  await member.getByRole("link", { name: new RegExp(sopName) }).click();
+  await expect(member.getByRole("heading", { level: 1, name: sopName })).toBeVisible();
+  await expect(member.getByText("Current", { exact: true }).first()).toBeVisible();
+
+  // The file opens through a one-minute signed link, never a public address (SRS-SOP-006).
+  const href = await member.getByRole("link", { name: /Open the PDF/ }).getAttribute("href");
+  const redirect = await member.request.get(href ?? "", { maxRedirects: 0 });
+  expect(redirect.status()).toBe(303);
+  const signed = redirect.headers()["location"] ?? "";
+  expect(signed).toContain("/storage/v1/object/sign/sops/");
+  const file = await member.request.get(signed);
+  expect(file.status()).toBe(200);
+  expect((await file.body()).subarray(0, 5).toString()).toBe("%PDF-");
+
+  await member.goto(`/courses/${courseId}`);
+  await member.getByRole("link", { name: /^(Start the course|Continue)/ }).click();
+  await expect(member.getByRole("heading", { level: 1, name: "Powering up" })).toBeVisible();
+  await expect(
+    member
+      .getByRole("region", { name: "Resources" })
+      .getByRole("link", { name: new RegExp(sopName) }),
+  ).toBeVisible();
+  await memberContext.close();
+});
+
 test("a Platform Admin manages people and departments but not memberships", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
   await openAccountMenu(page);

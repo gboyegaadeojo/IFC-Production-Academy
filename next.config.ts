@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
   // Cache Components stays off: on the Workers runtime its staged rendering relies on Node's
   // setTimeout behaviour and every request hangs. CI smoke tests the built Worker to catch this.
   cacheComponents: false,
+  experimental: {
+    // SOP uploads (up to 10 MB, lib/domain/sops.ts) go through a server action and the proxy.
+    serverActions: { bodySizeLimit: "11mb" },
+    proxyClientMaxBodySize: "11mb",
+  },
   turbopack: {
     rules: {
       "*.css": {

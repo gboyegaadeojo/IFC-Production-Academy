@@ -78,6 +78,10 @@ test("learner pages are accessible and keyboard friendly", async ({ page }) => {
   ).toBeVisible();
   await expectAccessible(page, "quiz");
 
+  await page.goto("/sops");
+  await expect(page.getByRole("heading", { level: 1, name: "SOP library" })).toBeVisible();
+  await expectAccessible(page, "SOP library");
+
   await openAccountMenu(page);
   await page.getByRole("link", { name: "Your profile" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Your profile" })).toBeVisible();
@@ -107,6 +111,7 @@ test("admin pages are accessible", async ({ page }) => {
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=details`, "course editor: details"],
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=publish`, "course editor: publish"],
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=history`, "course editor: history"],
+    ["/admin/sops", "SOP library (admin)"],
     ["/admin/people", "people"],
     ["/admin/audit", "audit log"],
   ] as const) {
