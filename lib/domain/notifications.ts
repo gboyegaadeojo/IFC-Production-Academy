@@ -8,23 +8,50 @@ export type NotificationKind =
   | "assignment_scheduled"
   | "assessment_recorded"
   | "mentoring_paired"
-  | "sop_review_due";
+  | "sop_review_due"
+  | "serving_reminder"
+  | "learning_nudge"
+  | "assessment_requested"
+  | "competency_expiring";
 
 export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "assignment_scheduled",
+  "serving_reminder",
+  "learning_nudge",
   "assessment_recorded",
+  "competency_expiring",
   "membership_approved",
   "mentoring_paired",
+  "assessment_requested",
   "sop_review_due",
 ];
 
 export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   assignment_scheduled: "When I'm scheduled to serve",
+  serving_reminder: "Reminders to confirm, and two days before I serve",
+  learning_nudge: "A nudge when a course I started has gone quiet",
   assessment_recorded: "When a practical assessment is recorded for me",
+  competency_expiring: "When an approval is about to expire",
   membership_approved: "When I join a department",
   mentoring_paired: "When I'm paired for mentoring",
-  sop_review_due: "When an SOP I own is due for review",
+  assessment_requested: "When someone is ready for an assessment I can record",
+  sop_review_due: "When an SOP I own is due or overdue for review",
 };
+
+const WINNIPEG_HOUR = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Winnipeg",
+  hour: "numeric",
+  hourCycle: "h23",
+});
+
+/**
+ * Quiet hours (decision 8): no notification email between 20:00 and 08:00 Winnipeg time. Anything
+ * queued overnight goes out at 08:00. Sign-in links aren't affected: Supabase sends them directly.
+ */
+export function isQuietHours(now: Date): boolean {
+  const hour = Number(WINNIPEG_HOUR.format(now));
+  return hour >= 20 || hour < 8;
+}
 
 export function isNotificationKind(value: string): value is NotificationKind {
   return Object.hasOwn(NOTIFICATION_KIND_LABELS, value);

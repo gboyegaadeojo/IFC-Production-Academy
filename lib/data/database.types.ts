@@ -1234,7 +1234,11 @@ export type Database = {
         | "assignment_scheduled"
         | "assessment_recorded"
         | "mentoring_paired"
-        | "sop_review_due";
+        | "sop_review_due"
+        | "serving_reminder"
+        | "learning_nudge"
+        | "assessment_requested"
+        | "competency_expiring";
       email_status: "pending" | "sent" | "skipped" | "failed";
     };
     CompositeTypes: { [_ in never]: never };

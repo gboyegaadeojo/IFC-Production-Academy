@@ -212,9 +212,9 @@ them. Every reminder can be turned off per person in Notification settings (buil
 | Reminder | When | To |
 | --- | --- | --- |
 | You've been scheduled | Straight away (built) | Volunteer |
-| Please confirm | 48 hours after being scheduled, if still unconfirmed and the event is 3 or more days away | Volunteer |
+| Please confirm | 48 hours after being scheduled, if still unconfirmed and the event is more than a day away | Volunteer |
 | Serving soon | **2 days before at 10:00**, with the SOPs for their role (ADD-SCHED-01) | Confirmed volunteer, and their supervisor |
-| Keep going | **7 days** with no progress on a course they've started; once more at **21 days**; then never again for that course | Volunteer, naming the next lesson |
+| Keep going | **7 days** with no progress on a course they've started; once more at **21 days**; nothing after 60 days. Starts again only if they make progress and then stall | Volunteer, naming the next lesson |
 | Assessment requested | Straight away | Everyone who can record practicals for that department |
 | Assessment waiting | Request still open after **7 days** | Department leaders |
 | SOP review due | 7 days before (built), and once more 7 days after if still not reviewed | SOP owner |
@@ -224,8 +224,9 @@ them. Every reminder can be turned off per person in Notification settings (buil
 overnight goes at 08:00. Sign-in links ignore quiet hours, because Supabase sends them straight
 away.
 
-**If IFC already sends serving reminders from Planning Center**, leaders turn off the Academy's
-"Serving soon" reminder for that department, so nobody gets two.
+**No double reminders with Planning Center:** the Academy only reminds people about assignments made
+in the Academy. A department that schedules in Planning Center has no Academy assignments, so
+nobody gets two reminders (decision 9).
 
 **Certificate.**
 

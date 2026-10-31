@@ -23,11 +23,22 @@ deploy workflow already uses.
 
 ## What the job does
 
-1. Queues SOP review reminders (`queue_sop_review_reminders`): once per SOP and due date, a week
-   before the review is due.
-2. Claims up to 50 pending emails at a time (`claim_email_notifications`), skipping kinds the
+1. Queues reminders (`queue_sop_review_reminders` and `queue_reminders`), each once:
+   - SOP review due a week before the review date, and overdue a week after it;
+   - "Please confirm" 48 hours after someone is scheduled, if they haven't answered;
+   - "Serving soon" from 10:00 two days before an event, to the confirmed volunteer and their
+     supervisor;
+   - "Keep going" 7 and 21 days after someone last worked on a course they started;
+   - a practical assessment request still open after 7 days, to the department's leaders;
+   - a competency expiring within 30 days, where expiry is on.
+
+   An assessment request also notifies the department's trainers the moment it's made.
+   Times follow decision 8 in `docs/decisions/2026-10-31-open-decisions.md`.
+2. Holds email during quiet hours, 20:00 to 08:00 Winnipeg time; it goes out at 08:00. Sign-in
+   links aren't affected, because Supabase sends them.
+3. Claims up to 50 pending emails at a time (`claim_email_notifications`), skipping kinds the
    person turned off and accounts that aren't active.
-3. Sends each through Resend and records the result (`complete_email_notification`). A failed
+4. Sends each through Resend and records the result (`complete_email_notification`). A failed
    send is retried on the next runs, up to three attempts.
 
 The job logs counts only: no addresses, names, or content. If every send in a run fails, the job

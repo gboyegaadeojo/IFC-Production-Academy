@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { notificationEmail, notificationUrl } from "./notifications";
+import {
+  isQuietHours,
+  NOTIFICATION_KIND_LABELS,
+  NOTIFICATION_KINDS,
+  notificationEmail,
+  notificationUrl,
+} from "./notifications";
 
 describe("notificationUrl", () => {
   it("only links inside the Academy", () => {
@@ -30,5 +36,26 @@ describe("notificationEmail", () => {
     expect(email.html).not.toContain("<Camera 2>");
     expect(email.text).toContain("https://academy.example.org/schedule");
     expect(email.text).toContain("https://academy.example.org/notifications");
+  });
+});
+
+describe("isQuietHours", () => {
+  it("holds email from 20:00 to 08:00 Winnipeg time, across daylight saving", () => {
+    // Winter (CST, UTC-6).
+    expect(isQuietHours(new Date("2027-01-10T13:59:00Z"))).toBe(true); // 07:59
+    expect(isQuietHours(new Date("2027-01-10T14:00:00Z"))).toBe(false); // 08:00
+    expect(isQuietHours(new Date("2027-01-11T01:59:00Z"))).toBe(false); // 19:59
+    expect(isQuietHours(new Date("2027-01-11T02:00:00Z"))).toBe(true); // 20:00
+    // Summer (CDT, UTC-5).
+    expect(isQuietHours(new Date("2027-07-10T12:59:00Z"))).toBe(true); // 07:59
+    expect(isQuietHours(new Date("2027-07-10T13:00:00Z"))).toBe(false); // 08:00
+    expect(isQuietHours(new Date("2027-07-11T05:00:00Z"))).toBe(true); // 00:00
+  });
+});
+
+describe("notification kinds", () => {
+  it("lists every kind once, each with a label for the settings page", () => {
+    expect(new Set(NOTIFICATION_KINDS).size).toBe(NOTIFICATION_KINDS.length);
+    expect([...NOTIFICATION_KINDS].sort()).toEqual(Object.keys(NOTIFICATION_KIND_LABELS).sort());
   });
 });
