@@ -12,6 +12,11 @@ export function normaliseReference(input: string): string | null {
   return CERTIFICATE_REFERENCE.test(value) ? value : null;
 }
 
+/** The public check page a certificate's QR code opens (decision 8). */
+export function certificateCheckUrl(siteUrl: string, reference: string): string {
+  return new URL(`/verify/${encodeURIComponent(reference)}`, siteUrl).toString();
+}
+
 export type CertificateError =
   "not_authorized" | "requirements_not_met" | "certificate_revoked" | "reason_required" | "unknown";
 

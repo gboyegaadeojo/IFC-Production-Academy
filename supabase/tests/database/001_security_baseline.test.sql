@@ -45,11 +45,12 @@ select is_empty(
     join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public'
       and has_function_privilege('anon', p.oid, 'EXECUTE')
-      and p.proname <> 'keepalive'
+      -- The keep-alive read, and the public certificate check behind the QR code (initials only).
+      and p.proname not in ('keepalive', 'check_certificate')
       -- Ignore functions owned by extensions such as pgTAP itself.
       and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
   $$,
-  'anon can execute only the keep-alive function'
+  'anon can execute only the keep-alive function and the certificate check'
 );
 
 set local role anon;

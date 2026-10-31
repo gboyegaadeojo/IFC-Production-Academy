@@ -1010,6 +1010,19 @@ export type Database = {
           can_revoke: boolean;
           department_id: string;
           course_id: string;
+          department_hue: string;
+        }[];
+      };
+      check_certificate: {
+        Args: { p_reference: string };
+        Returns: {
+          reference: string;
+          recipient_initials: string;
+          course_title: string;
+          department_name: string;
+          level_number: number;
+          issued_at: string;
+          revoked: boolean;
         }[];
       };
       revoke_certificate: { Args: { p_reference: string; p_reason: string }; Returns: undefined };

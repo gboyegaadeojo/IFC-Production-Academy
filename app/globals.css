@@ -46,6 +46,15 @@
   --dept-coral: #ff6b57;
   --dept-amber: #ffc23d;
 
+  /*
+   * Paper: printed documents such as certificates (decision 8). Light so they print without
+   * wasting ink, and the same in every theme. Ink on paper 17.2:1; muted 6.5:1.
+   */
+  --paper: #fbfaf7;
+  --paper-ink: #16171d;
+  --paper-muted: #575a66;
+  --paper-rule: #d8d5cd;
+
   /* Motion (DESIGN §5): explains change, never decorates. Zeroed for reduced motion below. */
   --duration-fast: 150ms;
   --duration-base: 200ms;
@@ -104,9 +113,15 @@
   --color-dept-violet: var(--dept-violet);
   --color-dept-coral: var(--dept-coral);
   --color-dept-amber: var(--dept-amber);
+  --color-paper: var(--paper);
+  --color-paper-ink: var(--paper-ink);
+  --color-paper-muted: var(--paper-muted);
+  --color-paper-rule: var(--paper-rule);
 
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
+  /* Literata, the serif on ifcwpg.com: certificates only (decision 4). */
+  --font-serif: var(--font-literata), ui-serif, Georgia, serif;
 
   /*
    * Type (DESIGN §4.2). Sizes scale between mobile and desktop:
@@ -217,4 +232,23 @@ body {
   transition-property: background-color, border-color, color, opacity, transform;
   transition-duration: var(--duration-fast);
   transition-timing-function: var(--ease-standard);
+}
+
+/*
+ * Printing a certificate (decision 8): one landscape sheet, the page itself white, nothing but the
+ * certificate. Elements opt out with print:hidden.
+ */
+@page certificate {
+  size: landscape;
+  margin: 10mm;
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  html,
+  body {
+    background: white !important;
+  }
 }

@@ -31,7 +31,7 @@ insert into public.department_memberships (department_id, user_id, status, decid
   ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'c0000000-0000-4000-8000-000000000002', 'active', now());
 
 create temporary table ctx (key text primary key, id uuid, value text);
-grant all on ctx to authenticated;
+grant all on ctx to authenticated, anon;
 
 -- A course with one required lesson, one optional lesson, and a required practical.
 select pg_temp.act_as('c0000000-0000-4000-8000-000000000004');
@@ -108,6 +108,25 @@ select results_eq(
   'anyone signed in can check a certificate by its reference'
 );
 select is_empty($$ select 1 from public.verify_certificate('IFC-0000-0000-0000') $$, 'an unknown reference finds nothing');
+select is((select department_hue from public.verify_certificate((select value from ctx where key = 'ref'))), 'blue',
+  'the certificate carries its department''s hue for the colour band');
+reset role;
+
+-- The public check behind the QR code: anyone, signed in or not, sees initials only (decision 8).
+set local role anon;
+select results_eq(
+  $$ select recipient_initials, course_title, level_number, revoked
+       from public.check_certificate(lower((select value from ctx where key = 'ref'))) $$,
+  $$ values ('T. C. M.'::text, 'Certificate test course'::text, 1, false) $$,
+  'signed out, a reference shows initials, course, level, and validity'
+);
+select is_empty($$ select 1 from public.check_certificate('IFC-0000-0000-0000') $$,
+  'signed out, an unknown reference finds nothing');
+select throws_ok($$ select * from public.verify_certificate((select value from ctx where key = 'ref')) $$,
+  '42501', null, 'signed out, the full-name check is refused');
+select throws_ok($$ select * from public.certificates $$, '42501', null, 'signed out, the table stays closed');
+reset role;
+select pg_temp.act_as('c0000000-0000-4000-8000-000000000002');
 select throws_ok(
   $$ select public.issue_certificate((select id from ctx where key = 'course')) $$,
   'P0001', 'requirements_not_met', 'another member has not met the requirements'

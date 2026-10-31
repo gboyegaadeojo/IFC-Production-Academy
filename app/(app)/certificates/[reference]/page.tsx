@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { PrintButton } from "@/components/certificate/print-button";
-import { Wordmark } from "@/components/brand";
+import { CertificateSheet } from "@/components/certificate/certificate-sheet";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { InfoIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
 import { verifyCertificate } from "@/lib/data/certificates";
-import { normaliseReference } from "@/lib/domain/certificates";
-import { formatDate } from "@/lib/domain/dates";
+import { certificateCheckUrl, normaliseReference } from "@/lib/domain/certificates";
+import { publicEnv } from "@/lib/env";
 import { revokeCertificateAction } from "./actions";
 
 export const metadata: Metadata = { title: "Certificate" };
@@ -27,8 +27,8 @@ export default function CertificatePage({ params }: Props) {
 
 /**
  * A certificate and its verification (SRS-CERT-002..005). Anyone signed in with the reference can
- * check it's genuine and still valid; it shows only what's printed on it. The design is a simple
- * placeholder until IFC's certificate template is decided (SPEC §9 open decisions).
+ * check it's genuine and still valid; it shows only what's printed on it. The printed sheet's QR code
+ * opens the public check at /verify, which shows initials only (decision 8).
  */
 async function CertificateContent({ params }: Pick<Props, "params">) {
   await requireActiveUser();
@@ -42,49 +42,36 @@ async function CertificateContent({ params }: Pick<Props, "params">) {
   }
 
   return (
-    <div className="page-container flex flex-col gap-6 py-8 lg:py-12">
-      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+    <div className="page-container flex flex-col gap-6 py-8 lg:py-12 print:p-0">
+      <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center justify-between gap-3 print:hidden">
         <StatusBadge tone={certificate.revoked ? "neutral" : "success"}>
           {certificate.revoked ? "Withdrawn: no longer valid" : "Valid certificate"}
         </StatusBadge>
         {certificate.isMine && !certificate.revoked ? <PrintButton /> : null}
       </div>
 
-      <article
-        aria-labelledby="certificate-heading"
-        className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 rounded-card border border-border-strong bg-card px-6 py-12 text-center sm:px-12 print:border-0 print:bg-transparent"
-      >
-        <Wordmark />
-        <p className="eyebrow">Certificate of completion</p>
-        <div className="flex flex-col gap-2">
-          <p className="text-text-secondary">This certifies that</p>
-          <h1 id="certificate-heading" className="text-display font-semibold text-balance">
-            {certificate.recipientName}
-          </h1>
-          <p className="text-text-secondary">completed</p>
-          <p className="text-title font-semibold text-balance">{certificate.courseTitle}</p>
-          <p className="text-text-secondary">
-            {certificate.departmentName} · Level {certificate.levelNumber} · course version{" "}
-            {certificate.versionNumber}
-          </p>
-        </div>
-        <p>Issued {formatDate(certificate.issuedAt)}</p>
-        <p className="font-mono text-small text-text-muted">Reference {certificate.reference}</p>
-        <p className="reading-width text-small text-text-muted">
-          A course certificate shows the training was finished. Serving in a role is approved
-          separately, through practical assessments.
-        </p>
-      </article>
+      <CertificateSheet
+        recipientName={certificate.recipientName}
+        courseTitle={certificate.courseTitle}
+        departmentName={certificate.departmentName}
+        levelNumber={certificate.levelNumber}
+        versionNumber={certificate.versionNumber}
+        issuedAt={certificate.issuedAt}
+        reference={certificate.reference}
+        departmentHue={certificate.departmentHue}
+        checkUrl={certificateCheckUrl(publicEnv().NEXT_PUBLIC_SITE_URL, certificate.reference)}
+        revoked={certificate.revoked}
+      />
 
       {certificate.revoked ? (
-        <p className="mx-auto flex max-w-3xl gap-2 text-text-secondary">
+        <p className="mx-auto flex max-w-4xl gap-2 text-text-secondary print:hidden">
           <InfoIcon className="mt-0.5 size-5 shrink-0" />
           This certificate was withdrawn by a leader and is no longer valid.
         </p>
       ) : null}
 
       {certificate.canRevoke && !certificate.revoked ? (
-        <details className="mx-auto w-full max-w-3xl rounded-card border border-border p-5 print:hidden">
+        <details className="mx-auto w-full max-w-4xl rounded-card border border-border p-5 print:hidden">
           <summary className="flex min-h-control cursor-pointer items-center font-medium">
             Withdraw this certificate
           </summary>
@@ -120,7 +107,7 @@ function CertificateSkeleton() {
   return (
     <div className="page-container flex flex-col gap-6 py-8 lg:py-12" aria-busy="true">
       <LoadingStatus label="Loading the certificate…" />
-      <Skeleton className="mx-auto h-96 w-full max-w-3xl" />
+      <Skeleton className="mx-auto aspect-[11/8.5] w-full max-w-4xl" />
     </div>
   );
 }
