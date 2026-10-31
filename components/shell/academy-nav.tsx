@@ -12,6 +12,7 @@ export function AcademyNav() {
   const inAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
   const links = [
     { href: "/home", label: "Home" },
+    { href: "/schedule", label: "Schedule" },
     { href: "/sops", label: "SOPs" },
   ];
 
@@ -27,8 +28,8 @@ export function AcademyNav() {
   }
 
   return (
-    <nav aria-label="Academy">
-      <ul className="flex items-center gap-1">
+    <nav aria-label="Academy" className="min-w-0 overflow-x-auto">
+      <ul className="flex items-center sm:gap-1">
         {links.map((link) => {
           const current = pathname === link.href || pathname.startsWith(`${link.href}/`);
           return (
@@ -36,9 +37,9 @@ export function AcademyNav() {
               <Link
                 href={link.href}
                 aria-current={current ? "page" : undefined}
-                className={`relative flex min-h-touch items-center rounded-button px-3 text-small transition-surface hover:text-text ${
+                className={`relative flex min-h-touch items-center rounded-button px-2 text-small whitespace-nowrap transition-surface hover:text-text sm:px-3 ${
                   current
-                    ? "font-medium text-text after:absolute after:inset-x-3 after:bottom-1.5 after:h-0.5 after:rounded-pill after:bg-accent"
+                    ? "font-medium text-text after:absolute after:inset-x-2 after:bottom-1.5 after:h-0.5 after:rounded-pill after:bg-accent sm:after:inset-x-3"
                     : "text-text-secondary"
                 }`}
               >
