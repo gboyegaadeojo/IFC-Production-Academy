@@ -62,7 +62,7 @@ Anyone can read the code, the commit history, and **the GitHub Actions logs**.
 | --- | --- | --- |
 | `keepalive.yml` | Daily, 18:00 UTC | Real read through the Supabase API so the free project never hits the 7-day inactivity pause. Fails loudly |
 | `backup.yml` | Nightly, 08:00 UTC | `pg_dump` (custom format, version matched to Supabase Postgres) plus Storage files → `age` encrypt → upload to the "IFC Academy Backups" Shared Drive via a service account. Retention: 30 daily, 12 weekly, 12 monthly |
-| `restore-test.yml` | Monthly | Restore the latest backup into the second (scratch) Supabase project and check row counts. Results go in the log as pass/fail only |
+| `restore-test.yml` | Monthly | Restore the latest backup into a throwaway Postgres 17 container (Supabase's image) and compare row counts with those taken at backup time. Results go in the log as pass/fail only |
 | `notifications.yml` | Every 15 minutes | Queue SOP review reminders, then send pending notification emails through Resend with the service role (Actions secret only). Logs counts only. Sends nothing until `RESEND_API_KEY` and `NOTIFY_FROM` are set; see `docs/runbooks/notifications.md` |
 | `weekly-summary.yml` | Weekly | Email G and the Platform Admin via Resend with the last successful runs, then commit `status/last-run.json`, which keeps scheduled workflows enabled (GitHub disables them after 60 days of repo inactivity) |
 
@@ -99,7 +99,7 @@ Do this first, as one PR:
 4. Seed the five departments from SPEC §1, with Lighting Operations as `coming_soon`. Seed data must be fake people only.
 5. Add sign-in with an email magic link through Supabase Auth, using Resend as SMTP. Include sign-out and a protected `/home` route.
 6. Add `.env.example`, a README with local setup steps, a GitHub Actions CI workflow (lint, typecheck, unit, RLS tests; no secrets needed), and `keepalive.yml`.
-7. Leave `backup.yml` as a skeleton and finish it once the Google service account and Shared Drive exist.
+7. Leave `backup.yml` as a skeleton and finish it once the Google service account and Shared Drive exist. (Done 2026-10-31: off until `BACKUPS_ENABLED`; setup in `docs/runbooks/backups.md`.)
 
 **Done when:** a fake user can sign in, see the five department cards, and request membership; RLS tests prove a volunteer cannot read another department's restricted rows; CI is green.
 

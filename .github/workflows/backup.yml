@@ -1,25 +1,22 @@
 # Nightly encrypted backup to Google Drive (CLAUDE.md "Scheduled jobs", SPEC §9 "Backup design").
 #
-# SKELETON: not configured yet. It waits on the Google service account and the
-# "IFC Academy Backups" Shared Drive. Until then it runs only by hand and fails on purpose, so
-# nobody mistakes it for a working backup ("no false success messages", SPEC §6).
+# 1. pg_dump (custom format, pg_dump 17 to match Supabase's Postgres 17) of the whole database,
+#    including auth users.
+# 2. Every Supabase Storage file, zipped, with row counts for the restore test (numbers only).
+# 3. Both encrypted with `age` on the runner, to every key in AGE_RECIPIENTS. Plain copies are
+#    deleted before upload. The private key that decrypts them is kept offline.
+# 4. Uploaded with SHA-256 checksums to the "IFC Academy Backups" Shared Drive by a service
+#    account, then old copies deleted: 30 daily, 12 weekly (Sundays), 12 monthly (1st).
 #
-# Planned steps once the Drive exists:
-#   1. pg_dump --format=custom, with pg_dump's major version matched to the Supabase Postgres
-#      version, using the SUPABASE_DB_URL secret (connection string masked, never echoed).
-#   2. Download every Supabase Storage object and zip it.
-#   3. Encrypt both with `age` to the AGE_RECIPIENT public key. The private key stays offline.
-#   4. Upload academy-db-<UTC>.dump.age, academy-files-<UTC>.zip.age, and SHA-256 checksums to the
-#      Shared Drive with the service account (GDRIVE_SERVICE_ACCOUNT_JSON secret).
-#   5. Apply retention: 30 daily, 12 weekly (Sundays), 12 monthly (1st of the month).
-#   6. Log only status, timings, and file sizes. Never upload dumps as workflow artifacts.
-#   7. On failure, email G and the Platform Admin (./.github/actions/notify-failure).
+# Off until the repository variable BACKUPS_ENABLED is "true" (scheduled runs are skipped, never
+# shown as a success). Logs only status, timings, sizes, and counts of files. Never uploads
+# anything as a workflow artifact. Setup: docs/runbooks/backups.md.
 name: Backup
 
 on:
-  # Enable once configured: nightly at 08:00 UTC (2 am Winnipeg in winter).
-  # schedule:
-  #   - cron: "0 8 * * *"
+  schedule:
+    # 08:00 UTC: 2 am Winnipeg in winter, 3 am in summer.
+    - cron: "0 8 * * *"
   workflow_dispatch:
 
 permissions:
@@ -31,10 +28,114 @@ concurrency:
 
 jobs:
   backup:
+    if: vars.BACKUPS_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
-      - name: Backup is not configured yet
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions
+            lib/domain/backup.ts
+            scripts/backup
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Check the backup is configured
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          AGE_RECIPIENTS: ${{ secrets.AGE_RECIPIENTS }}
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: |
-          echo "::error::Backups are not set up yet. See the comments at the top of .github/workflows/backup.yml."
-          exit 1
+          set -euo pipefail
+          missing=""
+          for name in SUPABASE_DB_URL SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY AGE_RECIPIENTS GDRIVE_SERVICE_ACCOUNT_JSON GDRIVE_FOLDER_ID; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Backups are not set up. Missing secrets:$missing. See docs/runbooks/backups.md."
+            exit 1
+          fi
+
+      - name: Install pg_dump 17, age, and zip
+        run: |
+          set -euo pipefail
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age zip >/dev/null
+          /usr/lib/postgresql/17/bin/pg_dump --version
+
+      - name: Dump the database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          umask 077
+          mkdir -p "$RUNNER_TEMP/plain" "$RUNNER_TEMP/out"
+          started="$(date +%s)"
+          /usr/lib/postgresql/17/bin/pg_dump --format=custom --compress=9 \
+            --file="$RUNNER_TEMP/plain/db.dump" "$SUPABASE_DB_URL"
+          # Row counts for the restore test to compare against: numbers only, stored encrypted.
+          /usr/lib/postgresql/17/bin/psql "$SUPABASE_DB_URL" -At -v ON_ERROR_STOP=1 -c "
+            select json_build_object(
+              'profiles', (select count(*) from public.profiles),
+              'lesson_progress', (select count(*) from public.lesson_progress),
+              'competency_records', (select count(*) from public.competency_records),
+              'audit_events', (select count(*) from public.audit_events))" > "$RUNNER_TEMP/plain/counts.json"
+          echo "Database dump: $(stat -c%s "$RUNNER_TEMP/plain/db.dump") bytes in $(( $(date +%s) - started )) s"
+
+      - name: Copy the stored files
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/backup/download-storage.ts "$RUNNER_TEMP/plain/storage"
+          cp "$RUNNER_TEMP/plain/counts.json" "$RUNNER_TEMP/plain/storage/counts.json"
+          (cd "$RUNNER_TEMP/plain/storage" && zip -q -r -9 "$RUNNER_TEMP/plain/files.zip" .)
+          echo "Files archive: $(stat -c%s "$RUNNER_TEMP/plain/files.zip") bytes"
+
+      - name: Encrypt, then delete the plain copies
+        id: encrypt
+        env:
+          AGE_RECIPIENTS: ${{ secrets.AGE_RECIPIENTS }}
+        run: |
+          set -euo pipefail
+          stamp="$(date -u +%Y-%m-%dT%H%MZ)"
+          echo "stamp=$stamp" >> "$GITHUB_OUTPUT"
+          recipients=()
+          for key in $AGE_RECIPIENTS; do recipients+=(-r "$key"); done
+          age "${recipients[@]}" -o "$RUNNER_TEMP/out/academy-db-$stamp.dump.age" "$RUNNER_TEMP/plain/db.dump"
+          age "${recipients[@]}" -o "$RUNNER_TEMP/out/academy-files-$stamp.zip.age" "$RUNNER_TEMP/plain/files.zip"
+          rm -rf "$RUNNER_TEMP/plain"
+          (cd "$RUNNER_TEMP/out" && sha256sum academy-db-$stamp.dump.age academy-files-$stamp.zip.age > "academy-$stamp.sha256")
+          echo "Encrypted: $(stat -c%s "$RUNNER_TEMP/out/academy-db-$stamp.dump.age") + $(stat -c%s "$RUNNER_TEMP/out/academy-files-$stamp.zip.age") bytes"
+
+      - name: Upload to the Shared Drive and apply retention
+        env:
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: node scripts/backup/upload.ts "$RUNNER_TEMP/out" "${{ steps.encrypt.outputs.stamp }}"
+
+      - name: Remove local copies
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/plain" "$RUNNER_TEMP/out"
+
+      - name: Email the admins
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          resend-api-key: ${{ secrets.RESEND_API_KEY }}
+          to: ${{ secrets.ALERT_EMAILS }}
+          from: ${{ secrets.ALERT_FROM }}
+          subject: "IFC Academy: nightly backup failed"
