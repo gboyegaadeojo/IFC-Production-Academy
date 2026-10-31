@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { peopleById, personFor, type PersonSummary } from "@/lib/data/admin/shared";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import { storedVideo, type VideoRef } from "@/lib/domain/video";
+import { getVersionPracticals, type PracticalDetail } from "@/lib/data/practicals";
 import { getVersionQuizzes, type QuizOutline } from "@/lib/data/quizzes";
 import {
   courseState,
@@ -159,6 +160,7 @@ export type VersionDetail = {
   submittedBy: string | null;
   modules: ModuleOutline[];
   quizzes: QuizOutline[];
+  practicals: PracticalDetail[];
 };
 
 export type VersionHistoryEntry = {
@@ -199,7 +201,7 @@ async function loadVersionDetail(
     submitted_by: string | null;
   },
 ): Promise<VersionDetail> {
-  const [modules, lessons, quizzes] = await Promise.all([
+  const [modules, lessons, quizzes, practicals] = await Promise.all([
     supabase
       .from("course_modules")
       .select("id, module_key, title, summary, sort_order")
@@ -211,6 +213,7 @@ async function loadVersionDetail(
       .eq("course_version_id", version.id)
       .order("sort_order"),
     getVersionQuizzes(version.id),
+    getVersionPracticals(version.id),
   ]);
   if (modules.error || lessons.error) {
     throw new Error("Could not load course content", {
@@ -228,6 +231,7 @@ async function loadVersionDetail(
     changeNote: version.change_note,
     submittedBy: version.submitted_by,
     quizzes,
+    practicals,
     modules: modules.data.map((module) => ({
       id: module.id,
       key: module.module_key,

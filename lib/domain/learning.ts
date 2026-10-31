@@ -121,25 +121,34 @@ export type CourseQuiz = {
   afterModuleId: string | null;
 };
 
-export type CourseStep =
-  | { kind: "lesson"; key: string; title: string; isRequired: boolean }
-  | { kind: "quiz"; key: string; title: string; isRequired: boolean };
+/** A practical assessment in the live course, placed like a quiz. */
+export type CoursePractical = CourseQuiz;
+
+export type StepKind = "lesson" | "quiz" | "practical";
+
+export type CourseStep = { kind: StepKind; key: string; title: string; isRequired: boolean };
 
 /**
- * Lessons and quizzes in teaching order: each module's lessons, then the quizzes placed after it;
- * quizzes for the end of the course (or a module that isn't there any more) come last.
+ * Lessons, quizzes, and practicals in teaching order: each module's lessons, then the quizzes and
+ * practicals placed after it; those for the end of the course (or a module that isn't there any
+ * more) come last.
  */
 export function courseSteps(
   modules: readonly OutlineModule[],
   quizzes: readonly CourseQuiz[],
+  practicals: readonly CoursePractical[] = [],
 ): CourseStep[] {
   const ordered = orderedOutline(modules);
   const moduleIds = new Set(ordered.map((module) => module.id));
-  const quizStep = (quiz: CourseQuiz): CourseStep => ({
-    kind: "quiz",
-    key: quiz.key,
-    title: quiz.title,
-    isRequired: quiz.isRequired,
+  const checks = [
+    ...quizzes.map((quiz) => ({ ...quiz, kind: "quiz" as const })),
+    ...practicals.map((practical) => ({ ...practical, kind: "practical" as const })),
+  ];
+  const step = (check: (typeof checks)[number]): CourseStep => ({
+    kind: check.kind,
+    key: check.key,
+    title: check.title,
+    isRequired: check.isRequired,
   });
   return [
     ...ordered.flatMap((module) => [
@@ -149,17 +158,22 @@ export function courseSteps(
         title: lesson.title,
         isRequired: lesson.isRequired,
       })),
-      ...quizzes.filter((quiz) => quiz.afterModuleId === module.id).map(quizStep),
+      ...checks.filter((check) => check.afterModuleId === module.id).map(step),
     ]),
-    ...quizzes
-      .filter((quiz) => quiz.afterModuleId === null || !moduleIds.has(quiz.afterModuleId))
-      .map(quizStep),
+    ...checks
+      .filter((check) => check.afterModuleId === null || !moduleIds.has(check.afterModuleId))
+      .map(step),
   ];
 }
 
 /** Where a step lives in the app. */
-export function stepHref(courseId: string, step: { kind: "lesson" | "quiz"; key: string }): string {
-  return step.kind === "quiz"
-    ? `/courses/${courseId}/quizzes/${step.key}`
-    : `/courses/${courseId}/lessons/${step.key}`;
+export function stepHref(courseId: string, step: { kind: StepKind; key: string }): string {
+  switch (step.kind) {
+    case "quiz":
+      return `/courses/${courseId}/quizzes/${step.key}`;
+    case "practical":
+      return `/courses/${courseId}/practicals/${step.key}`;
+    case "lesson":
+      return `/courses/${courseId}/lessons/${step.key}`;
+  }
 }

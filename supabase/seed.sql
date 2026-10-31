@@ -86,3 +86,25 @@ values
   ('cccccccc-0000-4000-8000-000000000031', 'cccccccc-0000-4000-8000-000000000011', 'true_false',
    'Seed data is fake.', '',
    '[{"key":"a","label":"True","correct":true},{"key":"b","label":"False","correct":false}]', 20);
+
+-- A fake competency, serving role, and practical assessment on the sample course, so workflow B
+-- (SPEC §3) runs end to end: a pass grants the competency and Approved to Serve follows.
+insert into public.competencies (id, department_id, name, description)
+values ('cccccccc-0000-4000-8000-000000000041', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855',
+        'Sample skill (seed data)', 'Fake competency for local development and tests.');
+insert into public.serving_roles (id, department_id, name, description)
+values ('cccccccc-0000-4000-8000-000000000042', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855',
+        'Sample role (seed data)', 'Fake serving role for local development and tests.');
+insert into public.serving_role_competencies (role_id, competency_id, department_id)
+values ('cccccccc-0000-4000-8000-000000000042', 'cccccccc-0000-4000-8000-000000000041',
+        'b7ba9dae-cab5-43e0-a996-8ae9d2436855');
+
+insert into public.practicals (id, course_version_id, practical_key, title, intro, competency_id, sort_order)
+values ('cccccccc-0000-4000-8000-000000000043', 'cccccccc-0000-4000-8000-000000000011',
+        'cccccccc-0000-4000-8000-000000000044', 'Sample practical (seed data)',
+        'Fake practical assessment for local development and tests.',
+        'cccccccc-0000-4000-8000-000000000041', 10);
+insert into public.practical_criteria (practical_id, course_version_id, label, is_required, sort_order)
+values
+  ('cccccccc-0000-4000-8000-000000000043', 'cccccccc-0000-4000-8000-000000000011', 'Fake required step', true, 10),
+  ('cccccccc-0000-4000-8000-000000000043', 'cccccccc-0000-4000-8000-000000000011', 'Fake optional step', false, 20);

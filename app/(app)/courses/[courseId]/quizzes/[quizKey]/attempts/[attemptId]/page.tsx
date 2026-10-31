@@ -99,7 +99,7 @@ async function AttemptContent({ params }: Pick<Props, "params">) {
   ]);
   const status = quizStatus(live?.maxAttempts ?? null, mine.attempts, mine.extraAttempts);
   const answersShown = review.some((question) => question.isCorrect !== null);
-  const steps = courseSteps(course.modules, course.quizzes);
+  const steps = courseSteps(course.modules, course.quizzes, course.practicals);
   const nextStep =
     steps[steps.findIndex((step) => step.kind === "quiz" && step.key === quizKey) + 1] ?? null;
 

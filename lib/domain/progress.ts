@@ -3,7 +3,9 @@
  *
  * Completion is something the learner marks; it is never inferred from watching (SRS-LESSON-006).
  * A completed course is not a competency and not Approved to Serve: those are separate records
- * decided by assessments (SPEC §3, SRS-PROG-007). Required quizzes must be passed as well.
+ * decided by assessments (SPEC §3, SRS-PROG-007). Required quizzes and practicals must be passed
+ * as well; with everything else done, a course waiting on its practical is "Awaiting assessment"
+ * (SRS-PROG-006).
  *
  * Revised courses (SRS-PROG-008): rows are kept per lesson version, and progress carries over to a
  * newer version by the lesson's stable key. This is the "keep" policy; "review" and "retrain" are
@@ -12,8 +14,10 @@
 import {
   courseSteps,
   flattenLessons,
+  type CoursePractical,
   type CourseQuiz,
   type OutlineModule,
+  type StepKind,
 } from "@/lib/domain/learning";
 
 export type ProgressRow = {
@@ -70,7 +74,7 @@ export function progressFor(
   return progress.get(lessonKey) ?? NOT_STARTED;
 }
 
-export type CourseState = "not_started" | "in_progress" | "completed";
+export type CourseState = "not_started" | "in_progress" | "awaiting_assessment" | "completed";
 
 export type CourseProgress = {
   state: CourseState;
@@ -80,10 +84,13 @@ export type CourseProgress = {
   /** Required quizzes, and how many of them are passed. */
   quizzesTotal: number;
   quizzesPassed: number;
+  /** Required practicals, and how many of them are passed. */
+  practicalsTotal: number;
+  practicalsPassed: number;
   /** 0–100, whole numbers, from counted lessons and required quizzes only. */
   percent: number;
   /** The first lesson or quiz in teaching order that isn't done; null when all are. */
-  next: { kind: "lesson" | "quiz"; key: string; title: string; started: boolean } | null;
+  next: { kind: StepKind; key: string; title: string; started: boolean } | null;
 };
 
 /**
@@ -95,6 +102,8 @@ export function courseProgress(
   progress: ReadonlyMap<string, LessonProgress>,
   quizzes: readonly CourseQuiz[] = [],
   passedQuizKeys: ReadonlySet<string> = new Set(),
+  practicals: readonly CoursePractical[] = [],
+  passedPracticalKeys: ReadonlySet<string> = new Set(),
 ): CourseProgress {
   const lessons = flattenLessons(modules);
   const required = lessons.filter((lesson) => lesson.isRequired);
@@ -104,27 +113,46 @@ export function courseProgress(
   ).length;
   const requiredQuizzes = quizzes.filter((quiz) => quiz.isRequired);
   const quizzesPassed = requiredQuizzes.filter((quiz) => passedQuizKeys.has(quiz.key)).length;
+  const requiredPracticals = practicals.filter((practical) => practical.isRequired);
+  const practicalsPassed = requiredPracticals.filter((practical) =>
+    passedPracticalKeys.has(practical.key),
+  ).length;
   const touched =
     lessons.some((lesson) => progressFor(progress, lesson.key).state !== "not_started") ||
-    quizzes.some((quiz) => passedQuizKeys.has(quiz.key));
-  const nextStep = courseSteps(modules, quizzes).find((step) =>
+    quizzes.some((quiz) => passedQuizKeys.has(quiz.key)) ||
+    practicals.some((practical) => passedPracticalKeys.has(practical.key));
+  const done = (step: { kind: StepKind; key: string }) =>
     step.kind === "quiz"
-      ? !passedQuizKeys.has(step.key)
-      : progressFor(progress, step.key).state !== "completed",
-  );
-  const completed =
+      ? passedQuizKeys.has(step.key)
+      : step.kind === "practical"
+        ? passedPracticalKeys.has(step.key)
+        : progressFor(progress, step.key).state === "completed";
+  const nextStep = courseSteps(modules, quizzes, practicals).find((step) => !done(step));
+  const learningDone =
     counted.length > 0 &&
     countedCompleted === counted.length &&
     quizzesPassed === requiredQuizzes.length;
-  const total = counted.length + requiredQuizzes.length;
+  const completed = learningDone && practicalsPassed === requiredPracticals.length;
+  const total = counted.length + requiredQuizzes.length + requiredPracticals.length;
 
   return {
-    state: completed ? "completed" : touched ? "in_progress" : "not_started",
+    state: completed
+      ? "completed"
+      : learningDone
+        ? "awaiting_assessment"
+        : touched
+          ? "in_progress"
+          : "not_started",
     countedTotal: counted.length,
     countedCompleted,
     quizzesTotal: requiredQuizzes.length,
     quizzesPassed,
-    percent: total === 0 ? 0 : Math.floor(((countedCompleted + quizzesPassed) / total) * 100),
+    practicalsTotal: requiredPracticals.length,
+    practicalsPassed,
+    percent:
+      total === 0
+        ? 0
+        : Math.floor(((countedCompleted + quizzesPassed + practicalsPassed) / total) * 100),
     next: nextStep
       ? {
           kind: nextStep.kind,
@@ -141,6 +169,7 @@ export function courseProgress(
 export const COURSE_STATE_LABELS: Record<CourseState, string> = {
   not_started: "Not started",
   in_progress: "In progress",
+  awaiting_assessment: "Awaiting assessment",
   completed: "Completed",
 };
 
@@ -155,16 +184,26 @@ export function courseProgressLabel(course: CourseProgress, hasRequired: boolean
   } else {
     lessons = `${course.countedCompleted} of ${course.countedTotal} ${noun} done`;
   }
-  if (course.quizzesTotal === 0) {
-    return lessons;
+  const parts = [lessons];
+  if (course.quizzesTotal > 0) {
+    parts.push(
+      course.quizzesTotal === 1
+        ? course.quizzesPassed === 1
+          ? "quiz passed"
+          : "quiz not passed yet"
+        : `${course.quizzesPassed} of ${course.quizzesTotal} quizzes passed`,
+    );
   }
-  const quizzes =
-    course.quizzesTotal === 1
-      ? course.quizzesPassed === 1
-        ? "quiz passed"
-        : "quiz not passed yet"
-      : `${course.quizzesPassed} of ${course.quizzesTotal} quizzes passed`;
-  return `${lessons} · ${quizzes}`;
+  if (course.practicalsTotal > 0) {
+    parts.push(
+      course.practicalsTotal === 1
+        ? course.practicalsPassed === 1
+          ? "practical passed"
+          : "practical not passed yet"
+        : `${course.practicalsPassed} of ${course.practicalsTotal} practicals passed`,
+    );
+  }
+  return parts.join(" · ");
 }
 
 /**

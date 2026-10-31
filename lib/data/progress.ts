@@ -1,5 +1,6 @@
 import "server-only";
 import { getLearnerCourse, type LearnerCourse } from "@/lib/data/pathway";
+import { getPassedPracticalKeys } from "@/lib/data/practicals";
 import { getPassedQuizKeys } from "@/lib/data/quizzes";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import {
@@ -156,9 +157,10 @@ export async function getContinueLearning(
   }
   const activity = await getLearnerActivity(userId);
   const ids = recentCourseIds(activity, memberDepartmentIds, 3);
-  const [courses, passed] = await Promise.all([
+  const [courses, passed, practicalsPassed] = await Promise.all([
     Promise.all(ids.map((id) => getLearnerCourse(id))),
     getPassedQuizKeys(userId, ids),
+    getPassedPracticalKeys(userId, ids),
   ]);
   return courses.flatMap((course) => {
     const entry = course ? activity.get(course.id) : undefined;
@@ -170,6 +172,8 @@ export async function getContinueLearning(
       entry.lessons,
       course.quizzes,
       passed.get(course.id),
+      course.practicals,
+      practicalsPassed.get(course.id),
     );
     if (progress.state === "completed" || !progress.next) {
       return [];

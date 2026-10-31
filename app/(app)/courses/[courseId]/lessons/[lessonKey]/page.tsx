@@ -14,6 +14,7 @@ import { requireActiveUser } from "@/lib/data/auth";
 import { getLearnerCourse, getLearnerLesson, isActiveMember } from "@/lib/data/pathway";
 import { mediaLibraryEnabled } from "@/lib/data/media";
 import { getCourseProgress } from "@/lib/data/progress";
+import { getPassedPracticalKeys } from "@/lib/data/practicals";
 import { getPassedQuizKeys } from "@/lib/data/quizzes";
 import { getLessonResources } from "@/lib/data/sops";
 import { formatDate } from "@/lib/domain/dates";
@@ -65,14 +66,15 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     redirect(`/courses/${course.id}`);
   }
   const position = lessonPosition(course.modules, lessonKey);
-  const [lesson, member, courseProgress, passed] = position
+  const [lesson, member, courseProgress, passed, practicalsPassed] = position
     ? await Promise.all([
         getLearnerLesson(course.versionId, lessonKey),
         isActiveMember(user.id, course.department.id),
         getCourseProgress(user.id, course.id),
         getPassedQuizKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
+        getPassedPracticalKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
       ])
-    : [null, false, new Map(), undefined];
+    : [null, false, new Map(), undefined, undefined];
   if (!position || !lesson) {
     // Not in the live version (for example removed in a newer version).
     notFound();
@@ -82,7 +84,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     (resource) => resource.state !== "archived" && resource.state !== "not_published",
   );
   // The next lesson, or the quiz that follows this module.
-  const steps = courseSteps(course.modules, course.quizzes);
+  const steps = courseSteps(course.modules, course.quizzes, course.practicals);
   const nextStep =
     steps[steps.findIndex((step) => step.kind === "lesson" && step.key === lessonKey) + 1] ?? null;
   const record = member ? recordLessonViewAction.bind(null, course.id, lessonKey) : null;
@@ -146,6 +148,8 @@ async function LessonContent({ params }: Pick<Props, "params">) {
                 courseId={course.id}
                 modules={course.modules}
                 quizzes={course.quizzes}
+                practicals={course.practicals}
+                passedPracticalKeys={practicalsPassed}
                 progress={courseProgress}
                 passedQuizKeys={passed}
                 currentKey={lessonKey}
@@ -287,7 +291,11 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               >
                 <span className="truncate">
                   <span className="sr-only">
-                    {nextStep.kind === "quiz" ? "Next, quiz: " : "Next lesson: "}
+                    {nextStep.kind === "quiz"
+                      ? "Next, quiz: "
+                      : nextStep.kind === "practical"
+                        ? "Next, practical assessment: "
+                        : "Next lesson: "}
                   </span>
                   {nextStep.title}
                 </span>
@@ -317,6 +325,8 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               courseId={course.id}
               modules={course.modules}
               quizzes={course.quizzes}
+              practicals={course.practicals}
+              passedPracticalKeys={practicalsPassed}
               progress={courseProgress}
               passedQuizKeys={passed}
               currentKey={lessonKey}

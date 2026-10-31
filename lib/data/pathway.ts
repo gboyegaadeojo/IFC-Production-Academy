@@ -1,7 +1,12 @@
 import "server-only";
 import { listDepartmentCards, type DepartmentCard } from "@/lib/data/departments";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
-import { orderedOutline, type CourseQuiz, type OutlineModule } from "@/lib/domain/learning";
+import {
+  orderedOutline,
+  type CoursePractical,
+  type CourseQuiz,
+  type OutlineModule,
+} from "@/lib/domain/learning";
 import { storedVideo, type VideoRef } from "@/lib/domain/video";
 
 // Learner pages (DESIGN §6.3–6.5). Read-only. Row-level security decides what each person sees:
@@ -142,6 +147,8 @@ export type LearnerCourse = {
   modules: OutlineModule[];
   /** The live version's quizzes, in placement order. Empty when lessons aren't readable. */
   quizzes: CourseQuiz[];
+  /** The live version's practical assessments. Empty when lessons aren't readable. */
+  practicals: CoursePractical[];
   canOpen: boolean;
 };
 
@@ -163,7 +170,7 @@ export async function getLearnerCourse(courseId: string): Promise<LearnerCourse 
   if (!version || version.version_number === null) {
     return null;
   }
-  const [department, level, modules, lessons, quizzes] = await Promise.all([
+  const [department, level, modules, lessons, quizzes, practicals] = await Promise.all([
     supabase
       .from("departments")
       .select("id, slug, name, hue, icon")
@@ -183,12 +190,28 @@ export async function getLearnerCourse(courseId: string): Promise<LearnerCourse 
       .select("quiz_key, title, is_required, after_module_key")
       .eq("course_version_id", version.id)
       .order("sort_order"),
+    supabase
+      .from("practicals")
+      .select("practical_key, title, is_required, after_module_key")
+      .eq("course_version_id", version.id)
+      .order("sort_order"),
   ]);
-  if (department.error || level.error || modules.error || lessons.error || quizzes.error) {
-    throw new Error("Could not load the course", {
-      cause: (department.error ?? level.error ?? modules.error ?? lessons.error ?? quizzes.error)
-        ?.code,
-    });
+  if (
+    department.error ||
+    level.error ||
+    modules.error ||
+    lessons.error ||
+    quizzes.error ||
+    practicals.error
+  ) {
+    const failed =
+      department.error ??
+      level.error ??
+      modules.error ??
+      lessons.error ??
+      quizzes.error ??
+      practicals.error;
+    throw new Error("Could not load the course", { cause: failed?.code });
   }
   const moduleIdByKey = new Map(modules.data.map((m) => [m.module_key, m.id]));
   if (!department.data || !level.data) {
@@ -206,6 +229,14 @@ export async function getLearnerCourse(courseId: string): Promise<LearnerCourse 
     department: department.data,
     level: level.data,
     canOpen: lessons.data.length > 0,
+    practicals: practicals.data.map((practical) => ({
+      key: practical.practical_key,
+      title: practical.title,
+      isRequired: practical.is_required,
+      afterModuleId: practical.after_module_key
+        ? (moduleIdByKey.get(practical.after_module_key) ?? null)
+        : null,
+    })),
     quizzes: quizzes.data.map((quiz) => ({
       key: quiz.quiz_key,
       title: quiz.title,

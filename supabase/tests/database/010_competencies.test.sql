@@ -81,8 +81,9 @@ select throws_ok(
 reset role;
 
 select pg_temp.act_as('a0000000-0000-4000-8000-000000000001');
-select is((select count(*)::int from public.competencies), 3, 'members read their department''s competencies');
-select is((select count(*)::int from public.serving_role_competencies), 2, 'and what each role needs');
+select is((select count(*)::int from public.competencies where name like 'Fake %'), 3, 'members read their department''s competencies');
+select is((select count(*)::int from public.serving_role_competencies where role_id = (select id from ctx where key = 'role')), 2,
+  'and what each role needs');
 select throws_ok(
   $$ select public.set_role_competencies((select id from ctx where key = 'role'), '{}') $$,
   '42501', 'not_authorized', 'members cannot change roles'

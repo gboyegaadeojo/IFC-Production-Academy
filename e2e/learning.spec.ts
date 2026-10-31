@@ -109,11 +109,12 @@ for (const viewport of VIEWPORTS) {
   });
 }
 
-// Progress (SRS-PROG-001..007) and quizzes (SRS-QUIZ-001..005): a new volunteer joins Camera
-// Operations, marks the sample lesson complete, passes the sample quiz, sees both on the course, and
-// undoes the lesson. A fresh account, so the result
+// Workflow B end to end (SPEC §3): a new volunteer joins Camera Operations, completes the sample
+// lesson, passes the sample quiz, is assessed on the sample practical, and becomes Approved to Serve
+// for the sample role; then undoes the lesson. Progress SRS-PROG-001..007, quizzes SRS-QUIZ-001..005,
+// practicals SRS-ASSESS-001..007, competency SRS-COMP-001..004. A fresh account, so the result
 // doesn't depend on other tests. Casey leads Camera Operations (seed data).
-test("a new member completes a lesson, passes the quiz, and sees their progress", async ({
+test("a new member learns, passes the quiz and practical, and is approved to serve", async ({
   browser,
 }) => {
   const email = `e2e-progress-${Date.now()}@example.com`;
@@ -154,7 +155,9 @@ test("a new member completes a lesson, passes the quiz, and sees their progress"
   // The lessons are done, but the required quiz isn't passed yet.
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
   await expect(
-    volunteer.getByText("All required lessons done · quiz not passed yet"),
+    volunteer.getByText(
+      "All required lessons done · quiz not passed yet · practical not passed yet",
+    ),
   ).toBeVisible();
 
   // The quiz (SRS-QUIZ-001..005): one question at a time, an answer needed to move on, a check
@@ -180,16 +183,73 @@ test("a new member completes a lesson, passes the quiz, and sees their progress"
   // Passed, so the answers and explanations are shown (after_final_attempt).
   await expect(volunteer.getByText("Seed data explanation.")).toBeVisible();
 
+  // Lessons and quiz done: the course waits for its practical (SRS-PROG-006).
+  await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
+  await expect(volunteer.getByText("Awaiting your practical assessment")).toBeVisible();
+  await expect(
+    volunteer.getByText("All required lessons done · quiz passed · practical not passed yet"),
+  ).toBeVisible();
+  await expect(volunteer.getByText(/never approves you to serve/)).toBeVisible();
+
+  // Workflow B (SPEC §3): the volunteer asks to be assessed, a leader ticks what they saw, and the
+  // Academy works out the result. A pass grants the competency; Approved to Serve follows.
+  await volunteer.getByRole("link", { name: /^Continue/ }).click();
+  await expect(
+    volunteer.getByRole("heading", { level: 1, name: "Sample practical (seed data)" }),
+  ).toBeVisible();
+  await expect(volunteer.getByText("Fake required step")).toBeVisible();
+  await volunteer.getByRole("button", { name: "Request assessment" }).click();
+  await expect(volunteer.getByText("Assessment requested")).toBeVisible();
+
+  const name = email.split("@")[0] ?? email;
+  const assessorContext = await browser.newContext();
+  const assessor = await assessorContext.newPage();
+  await signInByEmail(assessor, "casey.leader@example.com");
+  await assessor.goto("/admin/assessments");
+  await assessor
+    .getByRole("region", { name: "Waiting for assessment" })
+    .getByRole("listitem")
+    .filter({ hasText: name })
+    .getByRole("link", { name: /Assess now/ })
+    .click();
+  await expect(
+    assessor.getByRole("heading", { name: `Sample practical (seed data): ${name}` }),
+  ).toBeVisible();
+  // There is nowhere to choose the result: only what was observed.
+  await expect(assessor.getByRole("radio")).toHaveCount(0);
+  await assessor.getByLabel(/Fake required step/).check();
+  await assessor.getByLabel(/Fake optional step/).check();
+  await assessor.getByLabel("Feedback for the volunteer").fill("Fake feedback: steady work.");
+  await assessor.getByRole("button", { name: "Record assessment" }).click();
+  await expect(assessor.getByText(/The result is Pass/)).toBeVisible();
+  await assessorContext.close();
+
+  await volunteer.reload();
+  await expect(volunteer.getByText("Fake feedback: steady work.")).toBeVisible();
+  await expect(volunteer.getByText("Passed", { exact: true }).first()).toBeVisible();
+
   // The course shows real progress, and never says this approves anyone to serve.
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
   await expect(volunteer.getByText("You've finished this course")).toBeVisible();
-  await expect(volunteer.getByText("All required lessons done · quiz passed")).toBeVisible();
-  await expect(volunteer.getByText(/never approves you to serve/)).toBeVisible();
+  await expect(
+    volunteer.getByText("All required lessons done · quiz passed · practical passed"),
+  ).toBeVisible();
   await expect(
     volunteer.getByRole("link", { name: /Quiz: Sample quiz \(seed data\).*passed/ }),
   ).toBeAttached();
 
+  // Approved to Serve is its own record, shown with the department (SRS-COMP-004).
+  await volunteer.goto("/departments/camera-operations");
+  const readiness = volunteer.getByRole("region", { name: "Practical skills and serving" });
+  await expect(
+    readiness.getByRole("listitem").filter({ hasText: "Sample role (seed data)" }),
+  ).toContainText("Approved to serve");
+  await expect(
+    readiness.getByRole("listitem").filter({ hasText: "Sample skill (seed data)" }),
+  ).toContainText("Approved");
+
   // Undo, for a mis-tap.
+  await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
   await volunteer
     .getByRole("link", { name: /Sample lesson/ })
     .first()

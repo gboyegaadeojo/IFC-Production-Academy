@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { CheckIcon, ClockIcon, QuizIcon } from "@/components/ui/icons";
+import { CheckIcon, ClockIcon, QuizIcon, UserCheckIcon } from "@/components/ui/icons";
 import {
   flattenLessons,
   formatMinutes,
   stepHref,
+  type CoursePractical,
   type CourseQuiz,
   type OutlineModule,
 } from "@/lib/domain/learning";
@@ -12,39 +13,55 @@ import { progressFor, type LessonProgress } from "@/lib/domain/progress";
 /**
  * Course outline (DESIGN §4.4 LessonList, §6.4–6.5): modules and lessons in teaching order. In the
  * lesson view the current lesson is marked with aria-current and a rule, never colour alone; each
- * lesson's progress is an icon with words for screen readers. Quizzes follow the module they're
- * placed after, or close the course.
+ * lesson's progress is an icon with words for screen readers. Quizzes and practical assessments
+ * follow the module they're placed after, or close the course.
  */
 export function CourseOutline({
   courseId,
   modules,
   quizzes = [],
+  practicals = [],
   progress,
   passedQuizKeys,
+  passedPracticalKeys,
   currentKey,
   compact = false,
 }: {
   courseId: string;
   modules: OutlineModule[];
   quizzes?: readonly CourseQuiz[];
+  practicals?: readonly CoursePractical[];
   /** The learner's progress by lesson key. Omitted when progress isn't tracked for them. */
   progress?: ReadonlyMap<string, LessonProgress>;
   passedQuizKeys?: ReadonlySet<string>;
-  /** The current lesson or quiz key. */
+  passedPracticalKeys?: ReadonlySet<string>;
+  /** The current lesson, quiz, or practical key. */
   currentKey?: string;
   compact?: boolean;
 }) {
   const numbers = new Map(flattenLessons(modules).map((lesson, index) => [lesson.key, index + 1]));
   const moduleIds = new Set(modules.map((m) => m.id));
-  const endQuizzes = quizzes.filter(
-    (quiz) => quiz.afterModuleId === null || !moduleIds.has(quiz.afterModuleId),
+  const checks: Check[] = [
+    ...quizzes.map((quiz) => ({
+      ...quiz,
+      kind: "quiz" as const,
+      passed: passedQuizKeys?.has(quiz.key) ?? false,
+    })),
+    ...practicals.map((practical) => ({
+      ...practical,
+      kind: "practical" as const,
+      passed: passedPracticalKeys?.has(practical.key) ?? false,
+    })),
+  ];
+  const endChecks = checks.filter(
+    (check) => check.afterModuleId === null || !moduleIds.has(check.afterModuleId),
   );
-  const quizList = (list: readonly CourseQuiz[]) =>
+  const checkList = (list: readonly Check[]) =>
     list.length === 0 ? null : (
-      <QuizList
+      <CheckList
         courseId={courseId}
-        quizzes={list}
-        passedQuizKeys={progress ? (passedQuizKeys ?? new Set()) : undefined}
+        checks={list}
+        showProgress={progress !== undefined}
         currentKey={currentKey}
         compact={compact}
       />
@@ -110,31 +127,35 @@ export function CourseOutline({
               );
             })}
           </ol>
-          {quizList(quizzes.filter((quiz) => quiz.afterModuleId === courseModule.id))}
+          {checkList(checks.filter((check) => check.afterModuleId === courseModule.id))}
         </div>
       ))}
-      {endQuizzes.length > 0 ? (
+      {endChecks.length > 0 ? (
         <div className="flex flex-col gap-2">
           <h3 className={compact ? "eyebrow" : "text-subheading font-semibold"}>
             To finish the course
           </h3>
-          {quizList(endQuizzes)}
+          {checkList(endChecks)}
         </div>
       ) : null}
     </div>
   );
 }
 
-function QuizList({
+type Check = (CourseQuiz | CoursePractical) & { kind: "quiz" | "practical"; passed: boolean };
+
+const CHECK_LABELS = { quiz: "Quiz", practical: "Practical assessment" } as const;
+
+function CheckList({
   courseId,
-  quizzes,
-  passedQuizKeys,
+  checks,
+  showProgress,
   currentKey,
   compact,
 }: {
   courseId: string;
-  quizzes: readonly CourseQuiz[];
-  passedQuizKeys?: ReadonlySet<string>;
+  checks: readonly Check[];
+  showProgress: boolean;
   currentKey?: string;
   compact: boolean;
 }) {
@@ -144,13 +165,13 @@ function QuizList({
         compact ? "flex flex-col" : "flex flex-col divide-y divide-border border-b border-border"
       }
     >
-      {quizzes.map((quiz) => {
-        const current = quiz.key === currentKey;
-        const passed = passedQuizKeys?.has(quiz.key) ?? false;
+      {checks.map((check) => {
+        const current = check.key === currentKey;
+        const Icon = check.kind === "quiz" ? QuizIcon : UserCheckIcon;
         return (
-          <li key={quiz.key}>
+          <li key={`${check.kind}-${check.key}`}>
             <Link
-              href={stepHref(courseId, { kind: "quiz", key: quiz.key })}
+              href={stepHref(courseId, check)}
               aria-current={current ? "page" : undefined}
               className={`relative flex items-baseline gap-3 transition-surface ${
                 compact
@@ -163,23 +184,24 @@ function QuizList({
               }`}
             >
               <span className="flex w-6 shrink-0 self-center text-text-muted">
-                <QuizIcon className="size-4" />
+                <Icon className="size-4" />
               </span>
               <span className="flex flex-1 flex-col">
                 <span className={compact ? "" : "font-medium text-text"}>
-                  <span className="sr-only">Quiz: </span>
-                  {quiz.title}
+                  <span className="sr-only">{CHECK_LABELS[check.kind]}: </span>
+                  {check.title}
                 </span>
                 {!compact ? (
                   <span className="text-small text-text-muted">
-                    {quiz.isRequired ? "Quiz" : "Quiz · Optional"}
+                    {CHECK_LABELS[check.kind]}
+                    {check.isRequired ? "" : " · Optional"}
                   </span>
                 ) : null}
               </span>
-              {compact && !quiz.isRequired ? (
+              {compact && !check.isRequired ? (
                 <span className="text-small text-text-muted">Optional</span>
               ) : null}
-              {passed ? (
+              {showProgress && check.passed ? (
                 <span className="flex shrink-0 items-center self-center text-success">
                   <CheckIcon className="size-4" />
                   <span className="sr-only">, passed</span>
