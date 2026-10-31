@@ -15,11 +15,7 @@ export function AcademyHeader() {
     <header className="sticky top-0 z-30 border-b border-border bg-bg">
       <div className="page-container flex min-h-14 items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3 sm:gap-6">
-          <Link
-            href="/home"
-            className="flex min-h-touch items-center rounded-button"
-            aria-label="IFC Production Academy, home"
-          >
+          <Link href="/home" className="flex min-h-touch items-center rounded-button">
             <Wordmark />
           </Link>
           <AcademyNav />

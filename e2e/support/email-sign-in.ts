@@ -54,13 +54,21 @@ export async function signInByEmail(page: Page, email: string) {
   await clearMailFor(email);
   await page.goto("/sign-in");
   await page.getByLabel("Email address").fill(email);
-  await page.getByRole("button", { name: "Email me a sign-in link" }).click();
   const sent = page.getByRole("heading", { name: "Check your email" });
   const problem = page.getByRole("main").getByRole("alert");
-  await expect(sent.or(problem)).toBeVisible();
-  if (await problem.isVisible()) {
-    // Surface the app's message (for example a rate limit) instead of a bare timeout.
-    throw new Error(`Sign-in for ${email} failed: ${await problem.innerText()}`);
+  // Local Supabase sends at most one link per address per second (supabase/config.toml), and
+  // seeded accounts sign in from several tests, so a refused send is retried briefly.
+  for (let attempt = 1; ; attempt += 1) {
+    await page.getByRole("button", { name: "Email me a sign-in link" }).click();
+    await expect(sent.or(problem)).toBeVisible();
+    if (!(await problem.isVisible())) {
+      break;
+    }
+    if (attempt === 3) {
+      // Surface the app's message instead of a bare timeout.
+      throw new Error(`Sign-in for ${email} failed: ${await problem.innerText()}`);
+    }
+    await page.waitForTimeout(2_000);
   }
   await page.goto(await signInLinkFor(email));
   await expect(page).toHaveURL(/\/home$/);
