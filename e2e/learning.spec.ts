@@ -232,6 +232,10 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await expect(volunteer.getByText("Fake feedback: steady work.")).toBeVisible();
   await expect(volunteer.getByText("Passed", { exact: true }).first()).toBeVisible();
 
+  // The result also arrives as a notification (SRS-NOTIF-001).
+  await volunteer.goto("/notifications");
+  await expect(volunteer.getByText("You passed: Sample practical (seed data)")).toBeVisible();
+
   // The course shows real progress, and never says this approves anyone to serve.
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
   await expect(volunteer.getByText("You've finished this course")).toBeVisible();

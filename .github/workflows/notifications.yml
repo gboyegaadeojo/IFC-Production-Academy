@@ -1,0 +1,53 @@
+# Notification emails and SOP review reminders (SRS-NOTIF-001..006, SRS-SOP-004).
+# Every 15 minutes: queues SOP review reminders, then sends pending notification emails through
+# Resend. The service-role key lives only in this repository's Actions secrets. The script logs
+# counts only, never addresses, names, or content. Without RESEND_API_KEY it sends nothing.
+name: Notifications
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notifications
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions
+            lib/domain/notifications.ts
+            scripts/send-notifications.ts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Send pending notifications
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          NOTIFY_FROM: ${{ secrets.NOTIFY_FROM }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+        run: node scripts/send-notifications.ts
+
+      - name: Email the admins
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          resend-api-key: ${{ secrets.RESEND_API_KEY }}
+          to: ${{ secrets.ALERT_EMAILS }}
+          from: ${{ secrets.ALERT_FROM }}
+          subject: "IFC Academy: notification emails failed"
