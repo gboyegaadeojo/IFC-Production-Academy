@@ -215,6 +215,10 @@ export async function updateLessonAction(_: FormState, formData: FormData): Prom
     estimatedMinutes: formData.get("estimatedMinutes"),
     isRequired: formData.get("isRequired") === "on",
     body: text(formData.get("body")),
+    video: {
+      provider: formData.get("videoProvider") ?? undefined,
+      input: text(formData.get("video")),
+    },
   });
   if (!lessonId.success) {
     return failed("unknown");

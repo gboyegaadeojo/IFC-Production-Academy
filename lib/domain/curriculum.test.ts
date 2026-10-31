@@ -10,6 +10,7 @@ import {
   parseObjectives,
   reorder,
   toCurriculumError,
+  videoField,
   type VersionSummary,
 } from "./curriculum";
 
@@ -113,9 +114,37 @@ describe("lessonSchema", () => {
       objectives: "",
       isRequired: true,
       body: "",
+      video: { input: "" },
     };
     expect(lessonSchema.safeParse({ ...base, estimatedMinutes: "15" }).success).toBe(true);
     expect(lessonSchema.safeParse({ ...base, estimatedMinutes: "601" }).success).toBe(false);
+  });
+});
+
+describe("videoField", () => {
+  it("treats an empty value as no video", () => {
+    expect(videoField.parse({ input: "  " })).toBeNull();
+  });
+
+  it("stores a YouTube link as provider and id (fake id)", () => {
+    expect(videoField.parse({ input: "https://youtu.be/AAAAAAAAAAA?si=x" })).toEqual({
+      provider: "youtube",
+      id: "AAAAAAAAAAA",
+    });
+  });
+
+  it("explains a link it doesn't recognise", () => {
+    const result = videoField.safeParse({ provider: "youtube", input: "https://example.com/v" });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toMatch(/YouTube/);
+  });
+
+  it("accepts a church video library path", () => {
+    expect(videoField.parse({ provider: "nas", input: "camera/level-1/framing.mp4" })).toEqual({
+      provider: "nas",
+      id: "camera/level-1/framing.mp4",
+    });
+    expect(videoField.safeParse({ provider: "nas", input: "../secret.mp4" }).success).toBe(false);
   });
 });
 

@@ -253,6 +253,8 @@ export type Database = {
           is_required: boolean;
           body: string;
           sort_order: number;
+          video_provider: Database["public"]["Enums"]["video_provider"] | null;
+          video_ref: string | null;
         } & Timestamps;
         Insert: {
           course_version_id: string;
@@ -274,7 +276,29 @@ export type Database = {
           is_required?: boolean;
           body?: string;
           sort_order?: number;
+          video_provider?: Database["public"]["Enums"]["video_provider"] | null;
+          video_ref?: string | null;
         };
+        Relationships: [];
+      };
+      lesson_progress: {
+        Row: {
+          id: string;
+          user_id: string;
+          lesson_id: string;
+          lesson_key: string;
+          course_id: string;
+          course_version_id: string;
+          department_id: string;
+          status: Database["public"]["Enums"]["lesson_progress_status"];
+          position_seconds: number;
+          started_at: string;
+          last_viewed_at: string;
+          completed_at: string | null;
+        } & Timestamps;
+        // Written only through record_lesson_view, complete_lesson, and reopen_lesson.
+        Insert: never;
+        Update: never;
         Relationships: [];
       };
       invitations: {
@@ -344,6 +368,12 @@ export type Database = {
       archive_course: { Args: { p_course_id: string }; Returns: undefined };
       delete_course_module: { Args: { p_module_id: string }; Returns: undefined };
       delete_lesson: { Args: { p_lesson_id: string }; Returns: undefined };
+      record_lesson_view: {
+        Args: { p_course_id: string; p_lesson_key: string; p_position_seconds?: number | null };
+        Returns: undefined;
+      };
+      complete_lesson: { Args: { p_course_id: string; p_lesson_key: string }; Returns: string };
+      reopen_lesson: { Args: { p_course_id: string; p_lesson_key: string }; Returns: undefined };
       create_invitation: {
         Args: {
           p_department_id: string | null;
@@ -395,6 +425,8 @@ export type Database = {
       enrolment_mode: "request" | "invite_only";
       membership_status: "requested" | "active" | "declined" | "removed";
       course_version_status: "draft" | "pending_review" | "published" | "superseded" | "archived";
+      video_provider: "youtube" | "nas";
+      lesson_progress_status: "in_progress" | "completed";
     };
     CompositeTypes: { [_ in never]: never };
   };

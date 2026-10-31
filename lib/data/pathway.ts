@@ -2,6 +2,7 @@ import "server-only";
 import { listDepartmentCards, type DepartmentCard } from "@/lib/data/departments";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { orderedOutline, type OutlineModule } from "@/lib/domain/learning";
+import { storedVideo, type VideoRef } from "@/lib/domain/video";
 
 // Learner pages (DESIGN §6.3–6.5). Read-only. Row-level security decides what each person sees:
 // anyone signed in can browse published course titles; lessons are readable only by members of the
@@ -224,6 +225,7 @@ export type LearnerLesson = {
   body: string;
   isRequired: boolean;
   estimatedMinutes: number | null;
+  video: VideoRef | null;
 };
 
 /** One lesson in the course's live version, by its stable key. Null if not readable. */
@@ -234,7 +236,9 @@ export async function getLearnerLesson(
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("lessons")
-    .select("lesson_key, title, summary, objectives, body, is_required, estimated_minutes")
+    .select(
+      "lesson_key, title, summary, objectives, body, is_required, estimated_minutes, video_provider, video_ref",
+    )
     .eq("course_version_id", versionId)
     .eq("lesson_key", lessonKey)
     .maybeSingle();
@@ -250,6 +254,23 @@ export async function getLearnerLesson(
         body: data.body,
         isRequired: data.is_required,
         estimatedMinutes: data.estimated_minutes,
+        video: storedVideo(data.video_provider, data.video_ref),
       }
     : null;
+}
+
+/** Whether the person is an active member: only members' lesson progress is recorded. */
+export async function isActiveMember(userId: string, departmentId: string): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("department_memberships")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("department_id", departmentId)
+    .eq("status", "active")
+    .maybeSingle();
+  if (error) {
+    throw new Error("Could not load membership", { cause: error.code });
+  }
+  return data !== null;
 }

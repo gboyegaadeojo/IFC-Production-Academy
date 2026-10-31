@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards, type DepartmentCard as CardData } from "@/lib/data/departments";
 import { getDepartmentLearning } from "@/lib/data/learning";
+import { getContinueLearning } from "@/lib/data/progress";
 import { formatDateTime } from "@/lib/domain/admin";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
@@ -19,6 +20,7 @@ import {
   type DepartmentLearning,
   type HomeState,
 } from "@/lib/domain/home";
+import { ContinueLearning } from "./continue-learning";
 import { DepartmentCard } from "./department-card";
 
 export const metadata: Metadata = { title: "Home" };
@@ -43,7 +45,13 @@ async function HomeContent() {
   const state = homeState(departments);
   const memberOf = departments.filter((d) => d.state.kind === "member");
   const requested = departments.filter((d) => d.state.kind === "requested");
-  const learning = await getDepartmentLearning(memberOf.map((d) => d.id));
+  const [learning, continuing] = await Promise.all([
+    getDepartmentLearning(memberOf.map((d) => d.id)),
+    getContinueLearning(
+      user.id,
+      memberOf.map((d) => d.id),
+    ),
+  ]);
   const learningFor = new Map(learning.map((entry) => [entry.departmentId, entry]));
 
   return (
@@ -54,6 +62,8 @@ async function HomeContent() {
         memberCount={memberOf.length}
         learning={learning}
       />
+
+      {continuing.length > 0 ? <ContinueLearning courses={continuing} /> : null}
 
       {requested.length > 0 ? <RequestStatus requests={requested} /> : null}
 

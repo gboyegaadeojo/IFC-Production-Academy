@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mailpitAvailable, signInByEmail } from "./support/email-sign-in";
+import { openAccountMenu } from "./support/account-menu";
 import { capture, ensureScreenshotDir, VIEWPORTS } from "./support/screenshots";
 
 // Learning journey (DESIGN-REQUIREMENTS Milestone C, §6.3–6.5; SRS-MEM-005, SRS-MEM-006): a member
@@ -41,12 +42,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.getByText("Version 1")).toBeVisible();
     await capture(page, `course-member-${viewport.name}`);
 
-    await page.getByRole("link", { name: "Start the course" }).click();
+    // Avery may already have opened the lesson (other tests), so either button may show.
+    await page.getByRole("link", { name: /^(Start the course|Continue)/ }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
     await expect(page.getByText("Lesson 1 of 1")).toBeVisible();
     await expect(page.getByText("Fake lesson text for local development.")).toBeVisible();
-    // No completion control exists yet, and nothing claims the lesson was watched.
-    await expect(page.getByRole("button", { name: /complete/i })).toHaveCount(0);
+    // Completion is the learner's call; nothing claims the lesson was watched (SRS-LESSON-006).
+    await expect(page.getByRole("button", { name: "Mark lesson complete" })).toBeVisible();
+    await expect(page.getByText("nothing checks how much of the video you watched")).toBeVisible();
     if (viewport.width >= 1024) {
       await expect(
         page
@@ -94,3 +97,63 @@ for (const viewport of VIEWPORTS) {
     await capture(page, `department-empty-${viewport.name}`);
   });
 }
+
+// Progress (SRS-PROG-001..007): a new volunteer joins Camera Operations, marks the sample lesson
+// complete, sees it in the outline and on the course, and undoes it. A fresh account, so the result
+// doesn't depend on other tests. Casey leads Camera Operations (seed data).
+test("a new member marks a lesson complete and sees their progress", async ({ browser }) => {
+  const email = `e2e-progress-${Date.now()}@example.com`;
+  const volunteerContext = await browser.newContext();
+  const volunteer = await volunteerContext.newPage();
+  await signInByEmail(volunteer, email);
+  const camera = volunteer.getByRole("article", { name: "Camera Operations" });
+  await camera.getByRole("button", { name: "Request to join Camera Operations" }).click();
+  await expect(camera.getByText("Request sent")).toBeVisible();
+
+  const leaderContext = await browser.newContext();
+  const leader = await leaderContext.newPage();
+  await signInByEmail(leader, "casey.leader@example.com");
+  await openAccountMenu(leader);
+  await leader.getByRole("link", { name: "Admin" }).click();
+  await leader.goto("/admin/members");
+  await leader
+    .getByRole("listitem")
+    .filter({ hasText: email })
+    .getByRole("button", { name: /^Approve/ })
+    .click();
+  await leader
+    .getByRole("navigation", { name: "Membership views" })
+    .getByRole("link", { name: /^Members/ })
+    .click();
+  await expect(leader.getByRole("listitem").filter({ hasText: email })).toContainText("Joined");
+  await leaderContext.close();
+
+  await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
+  await volunteer.getByRole("link", { name: "Start the course" }).click();
+  await expect(volunteer.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
+  await volunteer.getByRole("button", { name: "Mark lesson complete" }).click();
+  await expect(volunteer.getByText(/You marked this lesson complete on/)).toBeVisible();
+  await expect(
+    volunteer.getByRole("link", { name: /Sample lesson.*completed/ }).first(),
+  ).toBeAttached();
+
+  // The course shows real progress, and never says this approves anyone to serve.
+  await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
+  await expect(volunteer.getByText("You've finished this course")).toBeVisible();
+  await expect(volunteer.getByText("All required lessons done")).toBeVisible();
+  await expect(volunteer.getByText(/never approves you to serve/)).toBeVisible();
+
+  // Undo, for a mis-tap.
+  await volunteer
+    .getByRole("link", { name: /Sample lesson/ })
+    .first()
+    .click();
+  await volunteer.getByRole("button", { name: "Mark as not complete" }).click();
+  await expect(volunteer.getByRole("button", { name: "Mark lesson complete" })).toBeVisible();
+
+  // Home picks up where they left off.
+  await volunteer.goto("/home");
+  await expect(volunteer.getByRole("heading", { name: "Continue learning" })).toBeVisible();
+  await expect(volunteer.getByRole("link", { name: /Next: Sample lesson/ })).toBeVisible();
+  await volunteerContext.close();
+});
