@@ -49,7 +49,9 @@ const WINNIPEG_HOUR = new Intl.DateTimeFormat("en-CA", {
  * queued overnight goes out at 08:00. Sign-in links aren't affected: Supabase sends them directly.
  */
 export function isQuietHours(now: Date): boolean {
-  const hour = Number(WINNIPEG_HOUR.format(now));
+  // Read the hour field itself: the formatted string differs between runtimes ("07" or "7 a.m.").
+  const part = WINNIPEG_HOUR.formatToParts(now).find((p) => p.type === "hour");
+  const hour = Number(part?.value) % 24;
   return hour >= 20 || hour < 8;
 }
 
