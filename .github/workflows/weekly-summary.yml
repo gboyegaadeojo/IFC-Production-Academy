@@ -1,0 +1,77 @@
+# Weekly summary (CLAUDE.md "Scheduled jobs", SPEC §9 "Keep-alive design").
+# Emails G and the Platform Admin when each scheduled job last succeeded, then commits
+# status/last-run.json. That commit keeps the repository active, so GitHub doesn't disable the
+# scheduled workflows after 60 days. The file holds timestamps, success flags, and backup sizes
+# only: no counts of people, no names. A keep-alive or backup that hasn't succeeded for two days
+# fails this job, which emails the admins.
+name: Weekly summary
+
+on:
+  schedule:
+    # Mondays, 14:00 UTC (8 or 9 am in Winnipeg).
+    - cron: "0 14 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: weekly-summary
+  cancel-in-progress: false
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: |
+            .github/actions
+            lib/domain/backup.ts
+            scripts/backup
+            scripts/weekly-summary.ts
+            status
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Summarise the scheduled jobs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          BACKUPS_ENABLED: ${{ vars.BACKUPS_ENABLED }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAILS: ${{ secrets.ALERT_EMAILS }}
+          ALERT_FROM: ${{ secrets.ALERT_FROM }}
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: node scripts/weekly-summary.ts
+
+      - name: Commit the status file
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ ! -f status/last-run.json ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add status/last-run.json
+          if git diff --cached --quiet; then
+            echo "Status file unchanged."
+            exit 0
+          fi
+          git commit -q -m "Weekly summary: update status/last-run.json"
+          git push -q
+          echo "Status file committed."
+
+      - name: Email the admins
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          resend-api-key: ${{ secrets.RESEND_API_KEY }}
+          to: ${{ secrets.ALERT_EMAILS }}
+          from: ${{ secrets.ALERT_FROM }}
+          subject: "IFC Academy: weekly summary needs attention"

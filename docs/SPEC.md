@@ -544,7 +544,7 @@ Supabase Free has no automatic backups. Every night a scheduled job copies the d
 | File naming | `academy-db-2026-11-02T0800Z.dump.age` and `academy-files-2026-11-02T0800Z.zip.age`, with a SHA-256 checksum alongside |
 | Retention | 30 daily, 12 weekly (Sundays), 12 monthly (1st of month). The job deletes older copies. A year of copies is likely a few gigabytes of the 100 TB |
 | Monitoring | Failure alerts and the weekly summary, as in the keep-alive design |
-| Restore test | Monthly, a second workflow restores the latest backup into the second free Supabase project, checks row counts for users, progress, and competency records, and logs the result. Failures alert the admin |
+| Restore test | Monthly, a second workflow restores the latest backup into a throwaway Postgres 17 container using Supabase's own image (built 2026-10-31; no second Supabase project or extra secrets needed beyond a dedicated restore-test `age` key), checks row counts for users, progress, competency records, and audit events against counts taken at backup time, and logs pass or fail only. Failures alert the admin |
 | Restore runbook | Step by step: create or reset the project, decrypt, `pg_restore`, re-upload files, point the app at it, check sign-in. Target: back online within 4 hours, losing at most 24 hours of data |
 
 This meets the package's reliability requirements: automated backups, documented and tested restoration, and tested database recovery.

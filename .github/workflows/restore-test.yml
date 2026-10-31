@@ -1,0 +1,143 @@
+# Monthly restore test (CLAUDE.md "Scheduled jobs", SPEC §9 "Backup design").
+# Downloads the newest backup from the Shared Drive, checks its checksums, decrypts it, restores
+# the database into a throwaway Postgres 17 container (Supabase's own image, so its roles and
+# schemas exist), and compares row counts with the counts taken at backup time. Logs pass or fail
+# only, never data or the counts themselves. The container and every file are discarded.
+#
+# Decrypting needs an age identity: AGE_RESTORE_IDENTITY is a dedicated restore-test key whose
+# public half is one of the AGE_RECIPIENTS. See docs/runbooks/backups.md for that trade-off.
+# Off until the repository variable BACKUPS_ENABLED is "true".
+name: Restore test
+
+on:
+  schedule:
+    # The 3rd of each month, 10:00 UTC, after the nightly backup.
+    - cron: "0 10 3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: restore-test
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    if: vars.BACKUPS_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      postgres:
+        image: ghcr.io/supabase/postgres:17.11.0.006
+        env:
+          POSTGRES_PASSWORD: restore-test-only
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -h 127.0.0.1"
+          --health-interval 5s --health-timeout 5s --health-retries 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions
+            lib/domain/backup.ts
+            scripts/backup
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Check the restore test is configured
+        env:
+          AGE_RESTORE_IDENTITY: ${{ secrets.AGE_RESTORE_IDENTITY }}
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: |
+          set -euo pipefail
+          missing=""
+          for name in AGE_RESTORE_IDENTITY GDRIVE_SERVICE_ACCOUNT_JSON GDRIVE_FOLDER_ID; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::The restore test is not set up. Missing secrets:$missing. See docs/runbooks/backups.md."
+            exit 1
+          fi
+
+      - name: Install pg_restore 17, age, and unzip
+        run: |
+          set -euo pipefail
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17 age unzip jq >/dev/null
+
+      - name: Download the newest backup
+        id: fetch
+        env:
+          GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: |
+          set -euo pipefail
+          umask 077
+          node scripts/backup/fetch-latest.ts "$RUNNER_TEMP/backup"
+
+      - name: Check, decrypt, and restore
+        env:
+          AGE_RESTORE_IDENTITY: ${{ secrets.AGE_RESTORE_IDENTITY }}
+          STAMP: ${{ steps.fetch.outputs.stamp }}
+          PGPASSWORD: restore-test-only
+        run: |
+          set -euo pipefail
+          umask 077
+          cd "$RUNNER_TEMP/backup"
+          sha256sum --quiet -c "academy-$STAMP.sha256"
+          echo "Checksums: pass"
+          printf '%s\n' "$AGE_RESTORE_IDENTITY" > identity.txt
+          age -d -i identity.txt -o db.dump "academy-db-$STAMP.dump.age"
+          age -d -i identity.txt -o files.zip "academy-files-$STAMP.zip.age"
+          rm -f identity.txt
+          unzip -q files.zip -d files
+          files="$(find files -type f ! -name counts.json | wc -l)"
+          echo "Stored files in the archive: $files"
+          psql -h 127.0.0.1 -U postgres -q -c "create database restore_check"
+          started="$(date +%s)"
+          # Supabase's own objects already exist in its image; those "already exists" notices are
+          # expected, so the check below decides pass or fail, not pg_restore's exit code.
+          /usr/lib/postgresql/17/bin/pg_restore -h 127.0.0.1 -U postgres -d restore_check \
+            --no-owner --no-privileges db.dump > /dev/null 2> restore.log || true
+          echo "Restore finished in $(( $(date +%s) - started )) s with $(grep -c 'error' restore.log || true) notices"
+          failed=0
+          for table in profiles lesson_progress competency_records audit_events; do
+            expected="$(jq -r ".$table" files/counts.json)"
+            actual="$(psql -h 127.0.0.1 -U postgres -d restore_check -At -c "select count(*) from public.$table" 2>/dev/null || echo missing)"
+            if [ "$expected" = "$actual" ]; then
+              echo "$table: pass"
+            else
+              echo "$table: FAIL"
+              failed=1
+            fi
+          done
+          rm -rf "$RUNNER_TEMP/backup"
+          if [ "$failed" -ne 0 ]; then
+            echo "::error::The restored backup doesn't match the counts taken when it was made"
+            exit 1
+          fi
+          echo "Restore test: pass"
+
+      - name: Remove local copies
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/backup"
+
+      - name: Email the admins
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          resend-api-key: ${{ secrets.RESEND_API_KEY }}
+          to: ${{ secrets.ALERT_EMAILS }}
+          from: ${{ secrets.ALERT_FROM }}
+          subject: "IFC Academy: monthly restore test failed"
