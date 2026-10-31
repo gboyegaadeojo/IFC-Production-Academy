@@ -236,6 +236,8 @@ Practicals and competency (built 2026-10-31): leaders define each department's c
 | SRS-CERT-005 | Revocation restricted and audited | M |
 | ADD-CERT-01 | A level badge in the department's hue for each completed level | S |
 
+Certificate template (built 2026-10-31, decision 8): a light, landscape sheet that prints on one page of US Letter or A4, with the IFC mark, the recipient's name in Literata, the course, department, and level badge in the department's hue, the issue date in Winnipeg time, a Production Director signature line, and a QR code. The QR code opens `/verify/<reference>`, a public check that works signed out and shows validity, course, level, date, and the recipient's initials only. Withdrawn certificates are stamped "Withdrawn".
+
 ### SOP library, notifications, scheduling, mentoring, reports, audit
 
 SOP library (built 2026-10-31): each SOP belongs to one department and has an owner (its creator), an optional category, and a review interval (3, 6, 12, or 24 months; default 12). Leaders edit a draft, upload one PDF, PNG, or JPEG file of up to 10 MB, and publish it as the current version; the previous version is kept and marked Superseded. Publishing, or "Mark as reviewed", sets the last review date. Files sit in a private Supabase Storage bucket and open through one-minute signed links: members of the department open only the current version, curriculum staff any version. Lessons attach SOPs as resources and always show the current version. Review reminders are Phase 3.

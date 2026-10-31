@@ -66,6 +66,7 @@ export type VerifiedCertificate = {
   revoked: boolean;
   isMine: boolean;
   canRevoke: boolean;
+  departmentHue: string;
 };
 
 export async function verifyCertificate(reference: string): Promise<VerifiedCertificate | null> {
@@ -87,6 +88,41 @@ export async function verifyCertificate(reference: string): Promise<VerifiedCert
         revoked: row.revoked,
         isMine: row.is_mine,
         canRevoke: row.can_revoke,
+        departmentHue: row.department_hue,
+      }
+    : null;
+}
+
+export type CheckedCertificate = {
+  reference: string;
+  recipientInitials: string;
+  courseTitle: string;
+  departmentName: string;
+  levelNumber: number;
+  issuedAt: string;
+  revoked: boolean;
+};
+
+/**
+ * The public check behind a certificate's QR code (SRS-CERT-004, decision 8). Works signed out and
+ * shows initials only, never the recipient's full name.
+ */
+export async function checkCertificate(reference: string): Promise<CheckedCertificate | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("check_certificate", { p_reference: reference });
+  if (error) {
+    throw new Error("Could not check the certificate", { cause: error.code });
+  }
+  const row = data[0];
+  return row
+    ? {
+        reference: row.reference,
+        recipientInitials: row.recipient_initials,
+        courseTitle: row.course_title,
+        departmentName: row.department_name,
+        levelNumber: row.level_number,
+        issuedAt: row.issued_at,
+        revoked: row.revoked,
       }
     : null;
 }

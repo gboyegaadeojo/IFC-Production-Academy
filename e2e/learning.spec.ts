@@ -251,9 +251,23 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await volunteer.getByRole("button", { name: "Get your certificate" }).click();
   await expect(volunteer.getByRole("heading", { level: 1, name })).toBeVisible();
   await expect(volunteer.getByText("Valid certificate")).toBeVisible();
+  const reference = await volunteer
+    .getByText(/^IFC-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$/)
+    .textContent();
+  expect(reference).toBeTruthy();
+  await expect(volunteer.getByRole("img", { name: /QR code to check certificate/ })).toBeVisible();
+
+  // The QR code's public check works signed out and shows initials, never the name (decision 8).
+  const publicContext = await browser.newContext();
+  const visitor = await publicContext.newPage();
+  await visitor.goto(`/verify/${reference}`);
+  await expect(visitor.getByText("Valid certificate")).toBeVisible();
   await expect(
-    volunteer.getByText(/Reference IFC-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}/),
+    visitor.getByRole("heading", { level: 1, name: "Sample course (seed data)" }),
   ).toBeVisible();
+  await expect(visitor.getByText(/^[A-Z]\.( [A-Z]\.){0,2}$/)).toBeVisible();
+  await expect(visitor.getByText(name, { exact: true })).toHaveCount(0);
+  await publicContext.close();
   await volunteer.goto("/profile");
   await expect(
     volunteer.getByRole("region", { name: "Certificates" }).getByText("Sample course (seed data)"),
