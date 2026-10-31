@@ -111,3 +111,55 @@ export function paragraphs(body: string): string[] {
 export function lessonCountLabel(count: number): string {
   return count === 1 ? "1 lesson" : `${count} lessons`;
 }
+
+/** A quiz in the live course, placed after a module or (afterModuleId null) at the end. */
+export type CourseQuiz = {
+  /** Stable across versions, like a lesson key. */
+  key: string;
+  title: string;
+  isRequired: boolean;
+  afterModuleId: string | null;
+};
+
+export type CourseStep =
+  | { kind: "lesson"; key: string; title: string; isRequired: boolean }
+  | { kind: "quiz"; key: string; title: string; isRequired: boolean };
+
+/**
+ * Lessons and quizzes in teaching order: each module's lessons, then the quizzes placed after it;
+ * quizzes for the end of the course (or a module that isn't there any more) come last.
+ */
+export function courseSteps(
+  modules: readonly OutlineModule[],
+  quizzes: readonly CourseQuiz[],
+): CourseStep[] {
+  const ordered = orderedOutline(modules);
+  const moduleIds = new Set(ordered.map((module) => module.id));
+  const quizStep = (quiz: CourseQuiz): CourseStep => ({
+    kind: "quiz",
+    key: quiz.key,
+    title: quiz.title,
+    isRequired: quiz.isRequired,
+  });
+  return [
+    ...ordered.flatMap((module) => [
+      ...module.lessons.map((lesson): CourseStep => ({
+        kind: "lesson",
+        key: lesson.key,
+        title: lesson.title,
+        isRequired: lesson.isRequired,
+      })),
+      ...quizzes.filter((quiz) => quiz.afterModuleId === module.id).map(quizStep),
+    ]),
+    ...quizzes
+      .filter((quiz) => quiz.afterModuleId === null || !moduleIds.has(quiz.afterModuleId))
+      .map(quizStep),
+  ];
+}
+
+/** Where a step lives in the app. */
+export function stepHref(courseId: string, step: { kind: "lesson" | "quiz"; key: string }): string {
+  return step.kind === "quiz"
+    ? `/courses/${courseId}/quizzes/${step.key}`
+    : `/courses/${courseId}/lessons/${step.key}`;
+}

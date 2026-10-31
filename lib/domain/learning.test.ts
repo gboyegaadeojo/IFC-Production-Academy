@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  courseSteps,
   courseTotals,
   flattenLessons,
   formatMinutes,
@@ -7,6 +8,7 @@ import {
   lessonPosition,
   orderedOutline,
   paragraphs,
+  stepHref,
   type OutlineModule,
 } from "./learning";
 
@@ -104,5 +106,36 @@ describe("formatting", () => {
   it("labels lesson counts", () => {
     expect(lessonCountLabel(1)).toBe("1 lesson");
     expect(lessonCountLabel(3)).toBe("3 lessons");
+  });
+});
+
+describe("courseSteps", () => {
+  const outline = [
+    {
+      id: "m2",
+      title: "Second",
+      summary: "",
+      sortOrder: 20,
+      lessons: [{ key: "c", title: "C", isRequired: true, estimatedMinutes: null, sortOrder: 10 }],
+    },
+    {
+      id: "m1",
+      title: "First",
+      summary: "",
+      sortOrder: 10,
+      lessons: [{ key: "a", title: "A", isRequired: true, estimatedMinutes: null, sortOrder: 10 }],
+    },
+  ];
+
+  it("puts quizzes after their module and the rest at the end", () => {
+    const steps = courseSteps(outline, [
+      { key: "end", title: "Final", isRequired: true, afterModuleId: null },
+      { key: "gone", title: "Orphan", isRequired: true, afterModuleId: "removed" },
+      { key: "q1", title: "After first", isRequired: true, afterModuleId: "m1" },
+    ]);
+    expect(steps.map((step) => step.key)).toEqual(["a", "q1", "c", "end", "gone"]);
+    expect(steps[1]?.kind).toBe("quiz");
+    expect(stepHref("course", { kind: "quiz", key: "q1" })).toBe("/courses/course/quizzes/q1");
+    expect(stepHref("course", { kind: "lesson", key: "a" })).toBe("/courses/course/lessons/a");
   });
 });

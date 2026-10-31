@@ -5,11 +5,12 @@ import { ArrowRightIcon } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import type { ContinueCourse } from "@/lib/data/progress";
 import { departmentHueVar } from "@/lib/domain/departments";
+import { stepHref } from "@/lib/domain/learning";
 import { courseProgressLabel } from "@/lib/domain/progress";
 
 /**
  * "Continue learning" (DESIGN §6.1): real progress only, so it's absent until the learner has
- * opened a lesson. Each card goes straight to the next lesson that isn't complete.
+ * opened a lesson. Each card goes straight to the next lesson or quiz that isn't done.
  */
 export function ContinueLearning({ courses }: { courses: ContinueCourse[] }) {
   return (
@@ -46,7 +47,7 @@ export function ContinueLearning({ courses }: { courses: ContinueCourse[] }) {
               </div>
               {progress.next ? (
                 <Link
-                  href={`/courses/${course.id}/lessons/${progress.next.key}`}
+                  href={stepHref(course.id, progress.next)}
                   className="mt-auto flex min-h-touch items-center justify-between gap-3 rounded-button text-small font-medium text-accent-light underline-offset-4 hover:underline lg:min-h-control"
                 >
                   <span className="truncate">

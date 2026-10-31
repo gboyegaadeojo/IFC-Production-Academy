@@ -172,7 +172,27 @@ test("a leader builds, publishes, and revises a course", async ({ page }) => {
   await expect(page.getByRole("status").filter({ hasText: "Saved to the draft." })).toBeVisible();
   await page.getByRole("link", { name: "Back to the course" }).click();
 
+  // A quiz (SRS-QUIZ-001..003): a question with its correct answer marked, and the pass mark.
   const sections = page.getByRole("navigation", { name: "Course sections" });
+  await sections.getByRole("link", { name: "Quizzes" }).click();
+  await page.getByLabel("New quiz title").fill("Framing check");
+  await page.getByRole("button", { name: "Add quiz" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Framing check" })).toBeVisible();
+  await expect(page.getByText("Pass mark 80% · 3 attempts")).toBeVisible();
+  await page.getByRole("link", { name: "Add question" }).click();
+  await page.getByLabel("Question", { exact: true }).fill("Where do the speaker's eyes go?");
+  await page.getByLabel("Answer 1", { exact: true }).fill("On the top third line");
+  await page.getByLabel("Answer 2", { exact: true }).fill("In the centre");
+  await page.getByLabel("Correct (answer 1)").check();
+  await page.getByRole("button", { name: "Add question" }).click();
+  await expect(page.getByRole("heading", { name: "Questions (1)" })).toBeVisible();
+  await expect(page.getByText("(correct)")).toBeVisible();
+  await page.getByLabel("Pass mark (%)").fill("100");
+  await page.getByRole("button", { name: "Save settings" }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Saved to the draft." })).toBeVisible();
+  await page.getByRole("link", { name: "Course", exact: true }).click();
+  await expect(page.getByText("Pass mark 100% · 3 attempts")).toBeVisible();
+
   await sections.getByRole("link", { name: "Publish" }).click();
   await page.getByLabel("What changed?").fill("First version");
   await page.getByRole("button", { name: "Publish" }).click();

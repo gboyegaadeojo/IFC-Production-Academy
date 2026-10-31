@@ -13,6 +13,7 @@ import { getCourseEditor, type ModuleOutline, type VersionDetail } from "@/lib/d
 import { formatDateTime } from "@/lib/domain/admin";
 import { hasCapability } from "@/lib/domain/capabilities";
 import { VERSION_STATUS_LABELS } from "@/lib/domain/curriculum";
+import { rulesLabel } from "@/lib/domain/quiz";
 import { AccessDenied } from "../../access-denied";
 import { PageSkeleton } from "../../page-skeleton";
 import {
@@ -29,6 +30,7 @@ import {
   updateCourseDetailsAction,
   updateModuleAction,
 } from "../actions";
+import { addQuizAction } from "../quiz-actions";
 
 export const metadata: Metadata = { title: "Course" };
 
@@ -45,10 +47,11 @@ export default function CoursePage({
   );
 }
 
-const TABS = ["lessons", "details", "publish", "history"] as const;
+const TABS = ["lessons", "quizzes", "details", "publish", "history"] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, string> = {
   lessons: "Lessons",
+  quizzes: "Quizzes",
   details: "Details",
   publish: "Publish",
   history: "History",
@@ -56,7 +59,8 @@ const TAB_LABELS: Record<Tab, string> = {
 
 /**
  * Course authoring workspace (DESIGN §7.5): a persistent header with live and draft status, then
- * Lessons, Details, Publish, and History. Assessment and Resources join when those features exist.
+ * Lessons, Quizzes, Details, Publish, and History. Practical assessments and Resources join when
+ * those features exist.
  * Drafting, publishing, review, restore, and archive rules are unchanged (SRS-CUR-001..008).
  */
 async function CourseContent({
@@ -163,6 +167,18 @@ async function CourseContent({
           <ReadOnlyOutline courseId={course.id} version={shown} />
         ) : (
           <EmptyState title="No content yet">Start editing to add modules and lessons.</EmptyState>
+        )
+      ) : null}
+
+      {tab === "quizzes" ? (
+        shown ? (
+          <QuizzesPanel
+            courseId={course.id}
+            version={draft && canDraft ? draft : shown}
+            editable={Boolean(draft && canDraft)}
+          />
+        ) : (
+          <EmptyState title="No content yet">Start editing to add quizzes.</EmptyState>
         )
       ) : null}
 
@@ -706,6 +722,92 @@ function PublishPanel({
           />
         </Field>
       </ActionForm>
+    </section>
+  );
+}
+
+function QuizzesPanel({
+  courseId,
+  version,
+  editable,
+}: {
+  courseId: string;
+  version: VersionDetail;
+  editable: boolean;
+}) {
+  const placement = (key: string | null) => {
+    const courseModule = version.modules.find((m) => m.key === key);
+    return courseModule ? `After “${courseModule.title}”` : "At the end of the course";
+  };
+  return (
+    <section aria-labelledby="quizzes-heading" className="flex flex-col gap-4">
+      <h2 id="quizzes-heading" className="text-heading font-semibold">
+        Quizzes
+      </h2>
+      <p className="max-w-2xl text-text-secondary">
+        Quizzes are scored automatically against the pass mark you set. Passing one counts towards
+        finishing the course; it never approves anyone to serve.
+      </p>
+      {version.quizzes.length === 0 ? (
+        <p className="text-text-secondary">
+          {editable ? "No quizzes yet. Add one below." : "This version has no quizzes."}
+        </p>
+      ) : (
+        <ul className="flex max-w-2xl flex-col divide-y divide-border rounded-card border border-border">
+          {version.quizzes.map((quiz) => (
+            <li key={quiz.id} className="flex flex-col gap-1 p-4">
+              <Link
+                href={`/admin/curriculum/${courseId}/quizzes/${quiz.id}`}
+                className="font-medium text-accent-light underline-offset-4 hover:underline"
+              >
+                {quiz.title}
+                {quiz.isRequired ? null : (
+                  <span className="font-normal text-text-secondary"> (optional)</span>
+                )}
+              </Link>
+              <p className="text-small text-text-secondary">
+                {placement(quiz.afterModuleKey)} · {rulesLabel(quiz.passPercent, quiz.maxAttempts)}
+              </p>
+              <p className="text-small text-text-muted">
+                {quiz.questionCount === 0
+                  ? "No questions yet: add some before publishing"
+                  : `${quiz.questionCount} ${quiz.questionCount === 1 ? "question" : "questions"}`}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+      {editable ? (
+        <div className="max-w-2xl rounded-card border border-dashed border-border p-5">
+          <ActionForm
+            action={addQuizAction}
+            submitLabel="Add quiz"
+            pendingLabel="Adding…"
+            variant="secondary"
+            hidden={{ versionId: version.id, courseId }}
+            className="flex flex-col gap-3"
+          >
+            <Field id="new-quiz" label="New quiz title">
+              <input id="new-quiz" name="title" required maxLength={120} className={fieldClasses} />
+            </Field>
+            <Field id="new-quiz-placement" label="Where it sits">
+              <select
+                id="new-quiz-placement"
+                name="placement"
+                defaultValue="end"
+                className={fieldClasses}
+              >
+                {version.modules.map((courseModule) => (
+                  <option key={courseModule.id} value={courseModule.key}>
+                    After “{courseModule.title}”
+                  </option>
+                ))}
+                <option value="end">At the end of the course</option>
+              </select>
+            </Field>
+          </ActionForm>
+        </div>
+      ) : null}
     </section>
   );
 }

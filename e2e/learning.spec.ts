@@ -62,7 +62,18 @@ for (const viewport of VIEWPORTS) {
     }
     await capture(page, `lesson-member-${viewport.name}`);
 
-    await page.getByRole("link", { name: "Back to the course" }).click();
+    // The quiz follows the last lesson; its rules show before starting (SRS-QUIZ-003).
+    await page
+      .getByRole("navigation", { name: "Lessons" })
+      .getByRole("link", { name: /Sample quiz \(seed data\)/ })
+      .click();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Sample quiz (seed data)" }),
+    ).toBeVisible();
+    await expect(page.getByText("Pass mark 80% · 3 attempts")).toBeVisible();
+    await capture(page, `quiz-member-${viewport.name}`);
+
+    await page.getByRole("link", { name: "Sample course (seed data)" }).click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}$`));
   });
 
@@ -98,10 +109,13 @@ for (const viewport of VIEWPORTS) {
   });
 }
 
-// Progress (SRS-PROG-001..007): a new volunteer joins Camera Operations, marks the sample lesson
-// complete, sees it in the outline and on the course, and undoes it. A fresh account, so the result
+// Progress (SRS-PROG-001..007) and quizzes (SRS-QUIZ-001..005): a new volunteer joins Camera
+// Operations, marks the sample lesson complete, passes the sample quiz, sees both on the course, and
+// undoes the lesson. A fresh account, so the result
 // doesn't depend on other tests. Casey leads Camera Operations (seed data).
-test("a new member marks a lesson complete and sees their progress", async ({ browser }) => {
+test("a new member completes a lesson, passes the quiz, and sees their progress", async ({
+  browser,
+}) => {
   const email = `e2e-progress-${Date.now()}@example.com`;
   const volunteerContext = await browser.newContext();
   const volunteer = await volunteerContext.newPage();
@@ -137,11 +151,43 @@ test("a new member marks a lesson complete and sees their progress", async ({ br
     volunteer.getByRole("link", { name: /Sample lesson.*completed/ }).first(),
   ).toBeAttached();
 
+  // The lessons are done, but the required quiz isn't passed yet.
+  await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
+  await expect(
+    volunteer.getByText("All required lessons done · quiz not passed yet"),
+  ).toBeVisible();
+
+  // The quiz (SRS-QUIZ-001..005): one question at a time, an answer needed to move on, a check
+  // before submitting, and a result the app works out.
+  await volunteer.getByRole("link", { name: /^Continue/ }).click();
+  await expect(
+    volunteer.getByRole("heading", { level: 1, name: "Sample quiz (seed data)" }),
+  ).toBeVisible();
+  await volunteer.getByRole("button", { name: "Start the quiz" }).click();
+  await expect(volunteer.getByRole("heading", { name: "Question 1 of 2" })).toBeVisible();
+  await volunteer.getByRole("button", { name: "Next question" }).click();
+  await expect(volunteer.getByText("Choose an answer.")).toBeVisible();
+  await volunteer.getByLabel("Right answer").check();
+  await volunteer.getByRole("button", { name: "Next question" }).click();
+  await expect(volunteer.getByRole("heading", { name: "Question 2 of 2" })).toBeVisible();
+  await volunteer.getByLabel("True", { exact: true }).check();
+  await volunteer.getByRole("button", { name: "Check your answers" }).click();
+  await expect(volunteer.getByRole("heading", { name: "Check your answers" })).toBeVisible();
+  await expect(volunteer.getByText("Your answer: Right answer")).toBeVisible();
+  await volunteer.getByRole("button", { name: "Submit answers" }).click();
+  await expect(volunteer.getByRole("heading", { name: "You passed" })).toBeVisible();
+  await expect(volunteer.getByText("You scored 100%: 2 of 2 correct.")).toBeVisible();
+  // Passed, so the answers and explanations are shown (after_final_attempt).
+  await expect(volunteer.getByText("Seed data explanation.")).toBeVisible();
+
   // The course shows real progress, and never says this approves anyone to serve.
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
   await expect(volunteer.getByText("You've finished this course")).toBeVisible();
-  await expect(volunteer.getByText("All required lessons done")).toBeVisible();
+  await expect(volunteer.getByText("All required lessons done · quiz passed")).toBeVisible();
   await expect(volunteer.getByText(/never approves you to serve/)).toBeVisible();
+  await expect(
+    volunteer.getByRole("link", { name: /Quiz: Sample quiz \(seed data\).*passed/ }),
+  ).toBeAttached();
 
   // Undo, for a mis-tap.
   await volunteer

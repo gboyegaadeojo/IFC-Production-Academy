@@ -71,3 +71,18 @@ values ('cccccccc-0000-4000-8000-000000000021', 'cccccccc-0000-4000-8000-0000000
 insert into public.lessons (course_version_id, module_id, title, body, sort_order)
 values ('cccccccc-0000-4000-8000-000000000011', 'cccccccc-0000-4000-8000-000000000021',
         'Sample lesson', 'Fake lesson text for local development.', 10);
+
+-- A fake two-question quiz at the end of the sample course (default rules: 80% to pass, 3 attempts).
+insert into public.quizzes (id, course_version_id, quiz_key, title, intro, sort_order)
+values ('cccccccc-0000-4000-8000-000000000031', 'cccccccc-0000-4000-8000-000000000011',
+        'cccccccc-0000-4000-8000-000000000032', 'Sample quiz (seed data)',
+        'Fake questions for local development and tests.', 10);
+
+insert into public.quiz_questions (quiz_id, course_version_id, kind, prompt, explanation, options, sort_order)
+values
+  ('cccccccc-0000-4000-8000-000000000031', 'cccccccc-0000-4000-8000-000000000011', 'single',
+   'This is a fake seed question. Choose "Right answer".', 'Seed data explanation.',
+   '[{"key":"a","label":"Right answer","correct":true},{"key":"b","label":"Wrong answer","correct":false}]', 10),
+  ('cccccccc-0000-4000-8000-000000000031', 'cccccccc-0000-4000-8000-000000000011', 'true_false',
+   'Seed data is fake.', '',
+   '[{"key":"a","label":"True","correct":true},{"key":"b","label":"False","correct":false}]', 20);

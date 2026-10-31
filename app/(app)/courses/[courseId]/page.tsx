@@ -11,12 +11,14 @@ import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getLearnerCourse, isActiveMember } from "@/lib/data/pathway";
 import { getCourseProgress } from "@/lib/data/progress";
+import { getPassedQuizKeys } from "@/lib/data/quizzes";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
   courseTotals,
   flattenLessons,
   formatMinutes,
   lessonCountLabel,
+  stepHref,
 } from "@/lib/domain/learning";
 import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
 import { CourseOutline } from "./course-outline";
@@ -51,14 +53,26 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
   const totals = courseTotals(course.modules);
   const first = flattenLessons(course.modules)[0];
   const member = course.canOpen && (await isActiveMember(user.id, course.department.id));
-  const lessonProgress = member ? await getCourseProgress(user.id, course.id) : null;
-  const summary = lessonProgress ? courseProgress(course.modules, lessonProgress) : null;
+  const [lessonProgress, passed] = member
+    ? await Promise.all([
+        getCourseProgress(user.id, course.id),
+        getPassedQuizKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
+      ])
+    : [null, undefined];
+  const summary = lessonProgress
+    ? courseProgress(course.modules, lessonProgress, course.quizzes, passed)
+    : null;
   const minutes = totals.estimatedMinutes ?? course.estimatedMinutes;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
   const facts = course.canOpen
     ? [
         lessonCountLabel(totals.lessons),
         totals.optional > 0 ? `${totals.optional} optional` : null,
+        course.quizzes.length === 1
+          ? "1 quiz"
+          : course.quizzes.length > 1
+            ? `${course.quizzes.length} quizzes`
+            : null,
         minutes ? `About ${formatMinutes(minutes)}` : null,
         `Version ${course.versionNumber}`,
       ].filter((fact): fact is string => fact !== null)
@@ -117,7 +131,9 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
               <CourseOutline
                 courseId={course.id}
                 modules={course.modules}
+                quizzes={course.quizzes}
                 progress={lessonProgress ?? undefined}
+                passedQuizKeys={passed}
               />
             </section>
           ) : null}
@@ -135,7 +151,7 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
               </p>
               {summary.next ? (
                 <Link
-                  href={`/courses/${course.id}/lessons/${summary.next.key}`}
+                  href={stepHref(course.id, summary.next)}
                   className={buttonClasses("primary", "w-full")}
                 >
                   Continue
@@ -177,8 +193,9 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
             </div>
           )}
           <p className="px-1 text-small text-text-muted">
-            You mark each lesson complete yourself. Finishing a course never approves you to serve
-            on its own: that comes from assessments with a trainer.
+            You mark each lesson complete yourself, and quizzes are scored automatically. Finishing
+            a course never approves you to serve on its own: that comes from assessments with a
+            trainer.
           </p>
         </aside>
       </div>

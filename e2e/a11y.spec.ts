@@ -8,6 +8,8 @@ import { mailpitAvailable, signInByEmail } from "./support/email-sign-in";
 // Fails on serious or critical violations. Fake seed data only.
 
 const SAMPLE_COURSE = "cccccccc-0000-4000-8000-000000000001";
+const SAMPLE_QUIZ = "cccccccc-0000-4000-8000-000000000032";
+const SAMPLE_QUIZ_ID = "cccccccc-0000-4000-8000-000000000031";
 
 test.describe.configure({ mode: "serial" });
 test.skip(({ isMobile }) => isMobile, "Runs once, in the desktop project");
@@ -70,6 +72,12 @@ test("learner pages are accessible and keyboard friendly", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
   await expectAccessible(page, "lesson");
 
+  await page.goto(`/courses/${SAMPLE_COURSE}/quizzes/${SAMPLE_QUIZ}`);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Sample quiz (seed data)" }),
+  ).toBeVisible();
+  await expectAccessible(page, "quiz");
+
   await openAccountMenu(page);
   await page.getByRole("link", { name: "Your profile" }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Your profile" })).toBeVisible();
@@ -94,6 +102,8 @@ test("admin pages are accessible", async ({ page }) => {
     ["/admin/invitations", "invitations"],
     ["/admin/curriculum", "curriculum"],
     [`/admin/curriculum/${SAMPLE_COURSE}`, "course editor: lessons"],
+    [`/admin/curriculum/${SAMPLE_COURSE}?tab=quizzes`, "course editor: quizzes"],
+    [`/admin/curriculum/${SAMPLE_COURSE}/quizzes/${SAMPLE_QUIZ_ID}`, "quiz editor"],
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=details`, "course editor: details"],
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=publish`, "course editor: publish"],
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=history`, "course editor: history"],

@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { peopleById, personFor, type PersonSummary } from "@/lib/data/admin/shared";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import { storedVideo, type VideoRef } from "@/lib/domain/video";
+import { getVersionQuizzes, type QuizOutline } from "@/lib/data/quizzes";
 import {
   courseState,
   nextSortOrder,
@@ -138,6 +139,8 @@ export type LessonOutline = {
 
 export type ModuleOutline = {
   id: string;
+  /** Stable across versions; quizzes are placed after a module by this key. */
+  key: string;
   title: string;
   summary: string;
   sortOrder: number;
@@ -155,6 +158,7 @@ export type VersionDetail = {
   changeNote: string | null;
   submittedBy: string | null;
   modules: ModuleOutline[];
+  quizzes: QuizOutline[];
 };
 
 export type VersionHistoryEntry = {
@@ -195,10 +199,10 @@ async function loadVersionDetail(
     submitted_by: string | null;
   },
 ): Promise<VersionDetail> {
-  const [modules, lessons] = await Promise.all([
+  const [modules, lessons, quizzes] = await Promise.all([
     supabase
       .from("course_modules")
-      .select("id, title, summary, sort_order")
+      .select("id, module_key, title, summary, sort_order")
       .eq("course_version_id", version.id)
       .order("sort_order"),
     supabase
@@ -206,6 +210,7 @@ async function loadVersionDetail(
       .select("id, module_id, title, is_required, estimated_minutes, sort_order")
       .eq("course_version_id", version.id)
       .order("sort_order"),
+    getVersionQuizzes(version.id),
   ]);
   if (modules.error || lessons.error) {
     throw new Error("Could not load course content", {
@@ -222,8 +227,10 @@ async function loadVersionDetail(
     estimatedMinutes: version.estimated_minutes,
     changeNote: version.change_note,
     submittedBy: version.submitted_by,
+    quizzes,
     modules: modules.data.map((module) => ({
       id: module.id,
+      key: module.module_key,
       title: module.title,
       summary: module.summary,
       sortOrder: module.sort_order,

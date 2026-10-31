@@ -3,13 +3,18 @@
  *
  * Completion is something the learner marks; it is never inferred from watching (SRS-LESSON-006).
  * A completed course is not a competency and not Approved to Serve: those are separate records
- * decided by assessments (SPEC §3, SRS-PROG-007).
+ * decided by assessments (SPEC §3, SRS-PROG-007). Required quizzes must be passed as well.
  *
  * Revised courses (SRS-PROG-008): rows are kept per lesson version, and progress carries over to a
  * newer version by the lesson's stable key. This is the "keep" policy; "review" and "retrain" are
  * not offered yet.
  */
-import { flattenLessons, type OutlineModule } from "@/lib/domain/learning";
+import {
+  courseSteps,
+  flattenLessons,
+  type CourseQuiz,
+  type OutlineModule,
+} from "@/lib/domain/learning";
 
 export type ProgressRow = {
   lessonKey: string;
@@ -72,16 +77,24 @@ export type CourseProgress = {
   /** Lessons that count towards completion: the required ones, or all if none are required. */
   countedTotal: number;
   countedCompleted: number;
-  /** 0–100, whole numbers, from counted lessons only. */
+  /** Required quizzes, and how many of them are passed. */
+  quizzesTotal: number;
+  quizzesPassed: number;
+  /** 0–100, whole numbers, from counted lessons and required quizzes only. */
   percent: number;
-  /** The first lesson in teaching order that isn't complete; null when all are. */
-  next: { key: string; title: string; started: boolean } | null;
+  /** The first lesson or quiz in teaching order that isn't done; null when all are. */
+  next: { kind: "lesson" | "quiz"; key: string; title: string; started: boolean } | null;
 };
 
-/** Course progress derived from its live outline and the learner's lesson progress (SRS-PROG-002). */
+/**
+ * Course progress derived from its live outline, its quizzes, and the learner's lesson progress and
+ * quiz passes (SRS-PROG-002). A pass on any version of a quiz counts (the "keep" policy).
+ */
 export function courseProgress(
   modules: readonly OutlineModule[],
   progress: ReadonlyMap<string, LessonProgress>,
+  quizzes: readonly CourseQuiz[] = [],
+  passedQuizKeys: ReadonlySet<string> = new Set(),
 ): CourseProgress {
   const lessons = flattenLessons(modules);
   const required = lessons.filter((lesson) => lesson.isRequired);
@@ -89,24 +102,37 @@ export function courseProgress(
   const countedCompleted = counted.filter(
     (lesson) => progressFor(progress, lesson.key).state === "completed",
   ).length;
-  const touched = lessons.some(
-    (lesson) => progressFor(progress, lesson.key).state !== "not_started",
+  const requiredQuizzes = quizzes.filter((quiz) => quiz.isRequired);
+  const quizzesPassed = requiredQuizzes.filter((quiz) => passedQuizKeys.has(quiz.key)).length;
+  const touched =
+    lessons.some((lesson) => progressFor(progress, lesson.key).state !== "not_started") ||
+    quizzes.some((quiz) => passedQuizKeys.has(quiz.key));
+  const nextStep = courseSteps(modules, quizzes).find((step) =>
+    step.kind === "quiz"
+      ? !passedQuizKeys.has(step.key)
+      : progressFor(progress, step.key).state !== "completed",
   );
-  const nextLesson = lessons.find(
-    (lesson) => progressFor(progress, lesson.key).state !== "completed",
-  );
-  const completed = counted.length > 0 && countedCompleted === counted.length;
+  const completed =
+    counted.length > 0 &&
+    countedCompleted === counted.length &&
+    quizzesPassed === requiredQuizzes.length;
+  const total = counted.length + requiredQuizzes.length;
 
   return {
     state: completed ? "completed" : touched ? "in_progress" : "not_started",
     countedTotal: counted.length,
     countedCompleted,
-    percent: counted.length === 0 ? 0 : Math.floor((countedCompleted / counted.length) * 100),
-    next: nextLesson
+    quizzesTotal: requiredQuizzes.length,
+    quizzesPassed,
+    percent: total === 0 ? 0 : Math.floor(((countedCompleted + quizzesPassed) / total) * 100),
+    next: nextStep
       ? {
-          key: nextLesson.key,
-          title: nextLesson.title,
-          started: progressFor(progress, nextLesson.key).state === "in_progress",
+          kind: nextStep.kind,
+          key: nextStep.key,
+          title: nextStep.title,
+          started:
+            nextStep.kind === "lesson" &&
+            progressFor(progress, nextStep.key).state === "in_progress",
         }
       : null,
   };
@@ -118,16 +144,27 @@ export const COURSE_STATE_LABELS: Record<CourseState, string> = {
   completed: "Completed",
 };
 
-/** "3 of 8 required lessons done", or "All lessons done". */
+/** "3 of 8 required lessons done", "All lessons done", plus " · quiz passed" when there are quizzes. */
 export function courseProgressLabel(course: CourseProgress, hasRequired: boolean): string {
   const noun = hasRequired ? "required lessons" : "lessons";
+  let lessons: string;
   if (course.countedTotal > 0 && course.countedCompleted === course.countedTotal) {
-    return `All ${noun} done`;
+    lessons = `All ${noun} done`;
+  } else if (course.countedTotal === 1) {
+    lessons = `0 of 1 ${noun.slice(0, -1)} done`;
+  } else {
+    lessons = `${course.countedCompleted} of ${course.countedTotal} ${noun} done`;
   }
-  if (course.countedTotal === 1) {
-    return `0 of 1 ${noun.slice(0, -1)} done`;
+  if (course.quizzesTotal === 0) {
+    return lessons;
   }
-  return `${course.countedCompleted} of ${course.countedTotal} ${noun} done`;
+  const quizzes =
+    course.quizzesTotal === 1
+      ? course.quizzesPassed === 1
+        ? "quiz passed"
+        : "quiz not passed yet"
+      : `${course.quizzesPassed} of ${course.quizzesTotal} quizzes passed`;
+  return `${lessons} · ${quizzes}`;
 }
 
 /**

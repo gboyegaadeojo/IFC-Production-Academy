@@ -87,3 +87,9 @@ export const LayersIcon = (props: IconProps) => (
     <path d="M3 13l9 5 9-5" />
   </Icon>
 );
+export const QuizIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="5" y="4" width="14" height="16" rx="2" />
+    <path d="M9 9.5l1.5 1.5L13 8.5M9 15h6" />
+  </Icon>
+);

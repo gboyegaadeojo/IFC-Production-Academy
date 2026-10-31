@@ -14,9 +14,16 @@ import { requireActiveUser } from "@/lib/data/auth";
 import { getLearnerCourse, getLearnerLesson, isActiveMember } from "@/lib/data/pathway";
 import { mediaLibraryEnabled } from "@/lib/data/media";
 import { getCourseProgress } from "@/lib/data/progress";
+import { getPassedQuizKeys } from "@/lib/data/quizzes";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
-import { formatMinutes, lessonPosition, paragraphs } from "@/lib/domain/learning";
+import {
+  courseSteps,
+  formatMinutes,
+  lessonPosition,
+  paragraphs,
+  stepHref,
+} from "@/lib/domain/learning";
 import { progressFor } from "@/lib/domain/progress";
 import { CourseOutline } from "../../course-outline";
 import { completeLessonAction, recordLessonViewAction, reopenLessonAction } from "./actions";
@@ -56,18 +63,23 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     redirect(`/courses/${course.id}`);
   }
   const position = lessonPosition(course.modules, lessonKey);
-  const [lesson, member, courseProgress] = position
+  const [lesson, member, courseProgress, passed] = position
     ? await Promise.all([
         getLearnerLesson(course.versionId, lessonKey),
         isActiveMember(user.id, course.department.id),
         getCourseProgress(user.id, course.id),
+        getPassedQuizKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
       ])
-    : [null, false, new Map()];
+    : [null, false, new Map(), undefined];
   if (!position || !lesson) {
     // Not in the live version (for example removed in a newer version).
     notFound();
   }
   const progress = progressFor(courseProgress, lessonKey);
+  // The next lesson, or the quiz that follows this module.
+  const steps = courseSteps(course.modules, course.quizzes);
+  const nextStep =
+    steps[steps.findIndex((step) => step.kind === "lesson" && step.key === lessonKey) + 1] ?? null;
   const record = member ? recordLessonViewAction.bind(null, course.id, lessonKey) : null;
   const ids = { courseId: course.id, lessonKey };
   const moduleTitle = course.modules.find((m) => m.lessons.some((l) => l.key === lessonKey))?.title;
@@ -128,7 +140,9 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               <CourseOutline
                 courseId={course.id}
                 modules={course.modules}
+                quizzes={course.quizzes}
                 progress={courseProgress}
+                passedQuizKeys={passed}
                 currentKey={lessonKey}
                 compact
               />
@@ -232,14 +246,16 @@ async function LessonContent({ params }: Pick<Props, "params">) {
                 Course overview
               </Link>
             )}
-            {position.next ? (
+            {nextStep ? (
               <Link
-                href={`/courses/${course.id}/lessons/${position.next.key}`}
+                href={stepHref(course.id, nextStep)}
                 className={buttonClasses("primary", "justify-end")}
               >
                 <span className="truncate">
-                  <span className="sr-only">Next lesson: </span>
-                  {position.next.title}
+                  <span className="sr-only">
+                    {nextStep.kind === "quiz" ? "Next, quiz: " : "Next lesson: "}
+                  </span>
+                  {nextStep.title}
                 </span>
                 <ArrowRightIcon className="size-4" />
               </Link>
@@ -266,7 +282,9 @@ async function LessonContent({ params }: Pick<Props, "params">) {
             <CourseOutline
               courseId={course.id}
               modules={course.modules}
+              quizzes={course.quizzes}
               progress={courseProgress}
+              passedQuizKeys={passed}
               currentKey={lessonKey}
               compact
             />
