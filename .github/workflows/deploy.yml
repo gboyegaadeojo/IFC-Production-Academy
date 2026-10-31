@@ -49,6 +49,29 @@ jobs:
 
       - run: npm ci
 
+      # Schema first, then the app that needs it (CLAUDE.md: schema changes only through
+      # migrations). The CLI prints migration file names only; the connection string is a secret
+      # and never echoed. Seed data is never pushed.
+      - name: Apply database migrations
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::warning::SUPABASE_DB_URL is not set, so migrations were not applied. Apply them before using new features (docs/runbooks/backups.md, step 3)."
+            exit 0
+          fi
+          status=0
+          npx supabase db push --db-url "$SUPABASE_DB_URL" --include-all --skip-vault --yes > "$RUNNER_TEMP/push.log" 2>&1 || status=$?
+          # Only migration file names and the outcome, never connection details.
+          grep -oE "Applying migration [0-9A-Za-z_]+\.sql|up to date" "$RUNNER_TEMP/push.log" || true
+          rm -f "$RUNNER_TEMP/push.log"
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Applying migrations failed (exit $status), so the app was not deployed"
+            exit 1
+          fi
+          echo "Migrations: applied"
+
       - name: Build and deploy
         run: npm run deploy
         env:

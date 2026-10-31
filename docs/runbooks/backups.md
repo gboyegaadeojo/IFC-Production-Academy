@@ -51,7 +51,8 @@ Each key file prints its public key (`age1…`). Both public keys go into `AGE_R
 
 In Supabase → Connect → **Session pooler** (IPv4), copy the connection string and put in the
 database password. Use the session pooler: GitHub's runners can't reach Supabase's direct
-(IPv6) address.
+(IPv6) address. The same secret lets every deploy apply new database migrations before the app
+goes live; without it, deploys warn that migrations weren't applied.
 
 ### 4. Secrets and the variable
 
