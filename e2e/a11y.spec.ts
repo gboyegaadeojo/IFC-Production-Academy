@@ -48,7 +48,7 @@ test("learner pages are accessible and keyboard friendly", async ({ page }) => {
   await expectAccessible(page, "home (member)");
 
   // Account menu by keyboard: opens with Enter, closes with Escape, focus returns.
-  const account = page.getByRole("button", { name: /^Account: / });
+  const account = page.getByRole("button", { name: /, account menu$/ });
   await account.focus();
   await page.keyboard.press("Enter");
   await expect(account).toHaveAttribute("aria-expanded", "true");

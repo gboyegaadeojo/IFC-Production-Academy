@@ -64,7 +64,6 @@ export function AccountMenu({
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
-        aria-label={`Account: ${displayName}`}
         onClick={() => setOpen(!open)}
         className="flex min-h-touch items-center gap-2 rounded-button px-1.5 text-text-secondary transition-surface hover:bg-hover hover:text-text sm:px-2"
       >
@@ -74,9 +73,11 @@ export function AccountMenu({
         >
           {initials}
         </span>
-        <span aria-hidden="true" className="hidden max-w-40 truncate text-small sm:inline">
+        {/* Visible from 640px; always part of the name, so the label matches what's shown. */}
+        <span className="sr-only text-small sm:not-sr-only sm:max-w-40 sm:truncate">
           {displayName}
         </span>
+        <span className="sr-only">, account menu</span>
         <ChevronDownIcon className="hidden size-4 sm:block" />
       </button>
       {open ? (
