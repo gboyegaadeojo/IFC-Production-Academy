@@ -305,7 +305,12 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   const upcoming = volunteer.getByRole("region", { name: "Coming up" });
   await expect(upcoming.getByText(service, { exact: true }).first()).toBeVisible();
   await upcoming.getByRole("button", { name: `Confirm ${service}` }).click();
-  await expect(volunteer.getByText("Confirmed. Thank you!")).toBeVisible();
+  await expect(
+    upcoming
+      .getByRole("listitem")
+      .filter({ hasText: service })
+      .getByText("Confirmed", { exact: true }),
+  ).toBeVisible();
 
   // Undo, for a mis-tap.
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
