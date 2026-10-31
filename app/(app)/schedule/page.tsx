@@ -37,9 +37,20 @@ async function ScheduleContent() {
       />
 
       <section aria-labelledby="upcoming-heading" className="flex flex-col gap-3">
-        <h2 id="upcoming-heading" className="text-heading font-semibold">
-          Coming up
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="upcoming-heading" className="text-heading font-semibold">
+            Coming up
+          </h2>
+          {assignments.some((a) => a.status !== "declined") ? (
+            <a
+              href="/schedule/calendar"
+              download
+              className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+            >
+              Add to your calendar (.ics)
+            </a>
+          ) : null}
+        </div>
         {assignments.length === 0 ? (
           <EmptyState title="Nothing scheduled">
             When a leader schedules you for a service, it shows up here for you to confirm.

@@ -7,9 +7,11 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tabs";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import {
+  getReadinessMatrix,
   getReadinessReport,
   getReportDepartments,
   getTrainingReport,
+  type MatrixRow,
   type ReadinessRow,
   type TrainingRow,
 } from "@/lib/data/reports";
@@ -28,7 +30,7 @@ export default function ReportsPage({ searchParams }: PageProps<"/admin/reports"
   );
 }
 
-const REPORTS = ["training", "readiness"] as const;
+const REPORTS = ["training", "readiness", "matrix"] as const;
 type Report = (typeof REPORTS)[number];
 
 /**
@@ -90,7 +92,7 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
             ) : (
               <p className="font-medium">{department.name}</p>
             )}
-            {department.canExport ? (
+            {department.canExport && report !== "matrix" ? (
               <a
                 href={`/admin/reports/export?department=${department.id}&report=${report}`}
                 className={buttonClasses("secondary", "w-fit")}
@@ -105,12 +107,19 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
             tabs={[
               { href: href("training"), label: "Training", current: report === "training" },
               { href: href("readiness"), label: "Readiness", current: report === "readiness" },
+              {
+                href: href("matrix"),
+                label: "Readiness matrix",
+                current: report === "matrix",
+              },
             ]}
           />
           {report === "training" ? (
             <TrainingTable rows={await getTrainingReport(department.id)} />
-          ) : (
+          ) : report === "readiness" ? (
             <ReadinessTable rows={await getReadinessReport(department.id)} />
+          ) : (
+            <MatrixTable rows={await getReadinessMatrix()} />
           )}
           {department.canExport ? (
             <p className="text-small text-text-muted">
@@ -220,6 +229,61 @@ function ReadinessTable({ rows }: { rows: ReadinessRow[] }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+/**
+ * Approved to Serve per role across the departments the person can report on (ADD-REPORT-01).
+ * Roles with fewer than two approved people are marked, SPEC §9's candidate goal.
+ */
+function MatrixTable({ rows }: { rows: MatrixRow[] }) {
+  if (rows.length === 0) {
+    return (
+      <EmptyState title="No serving roles yet">
+        Set up serving roles in Competencies and roles to see who is ready for each.
+      </EmptyState>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="overflow-x-auto rounded-card border border-border">
+        <table className="w-full min-w-[32rem] text-left text-small">
+          <caption className="sr-only">Approved to Serve by department and role</caption>
+          <thead className="border-b border-border text-text-secondary">
+            <tr>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Department
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Serving role
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Approved to serve
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {rows.map((row) => (
+              <tr key={row.roleId}>
+                <td className="px-4 py-3">{row.departmentName}</td>
+                <th scope="row" className="px-4 py-3 font-medium">
+                  {row.roleName}
+                </th>
+                <td className="px-4 py-3">
+                  <span className="tabular">{row.approved}</span>
+                  {row.approved < 2 ? (
+                    <span className="text-text-muted"> · fewer than two</span>
+                  ) : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-small text-text-muted">
+        Aim for at least two approved people in every role, so one absence doesn&apos;t leave a gap.
+      </p>
     </div>
   );
 }

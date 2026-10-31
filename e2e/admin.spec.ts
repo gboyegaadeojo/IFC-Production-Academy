@@ -356,7 +356,7 @@ test("a leader reads department reports and downloads one", async ({ page }) => 
   await page.goto("/admin/reports");
   await expect(page.getByRole("heading", { level: 1, name: "Reports" })).toBeVisible();
   await expect(page.getByRole("table", { name: "Course completion by volunteer" })).toBeVisible();
-  await page.getByRole("link", { name: "Readiness" }).click();
+  await page.getByRole("link", { name: "Readiness", exact: true }).click();
   await expect(
     page.getByRole("table", { name: "Competencies and Approved to Serve by volunteer" }),
   ).toBeVisible();
@@ -365,6 +365,10 @@ test("a leader reads department reports and downloads one", async ({ page }) => 
   expect(csv.status()).toBe(200);
   expect(csv.headers()["content-type"]).toContain("text/csv");
   expect(await csv.text()).toContain("Volunteer,Type,Competency or role,State,Since,Expires");
+  await page.getByRole("link", { name: "Readiness matrix" }).click();
+  await expect(
+    page.getByRole("table", { name: "Approved to Serve by department and role" }),
+  ).toBeVisible();
 });
 
 test("a leader pairs a mentor with a volunteer, and they share notes", async ({ browser }) => {
