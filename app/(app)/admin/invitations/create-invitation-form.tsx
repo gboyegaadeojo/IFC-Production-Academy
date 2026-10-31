@@ -10,7 +10,7 @@ import { createInvitationAction, type CreateInvitationState } from "./actions";
 const idle: CreateInvitationState = { status: "idle" };
 
 const fieldClasses =
-  "min-h-control rounded-button border border-border bg-surface px-3 text-body text-text";
+  "min-h-control rounded-button border border-border-strong bg-surface px-3 text-body text-text";
 
 export type DepartmentChoice = { id: string; name: string };
 
@@ -65,30 +65,33 @@ function Form({
 
       <fieldset className="flex flex-col gap-3">
         <legend className="mb-2 text-small font-medium text-text-secondary">Who is it for?</legend>
-        <label className="flex min-h-control items-center gap-3">
-          <input
-            type="radio"
-            name="audience"
-            value="one"
-            checked={audience === "one"}
-            onChange={() => setAudience("one")}
-            className="size-5 accent-[var(--accent)]"
-          />
-          One person: send them the link
-        </label>
-        <label className="flex min-h-control items-center gap-3">
-          <input
-            type="radio"
-            name="audience"
-            value="group"
-            checked={audience === "group"}
-            onChange={() => setAudience("group")}
-            className="size-5 accent-[var(--accent)]"
-          />
-          A group, such as a QR code at a volunteer night
-        </label>
+        {/* A segmented choice built on real radio buttons, so arrow keys and screen readers work. */}
+        <div className="grid grid-cols-2 gap-1 rounded-button border border-border-strong p-1 sm:max-w-md">
+          {(
+            [
+              { value: "one", label: "One person", hint: "Send them the link" },
+              { value: "group", label: "A group", hint: "QR code at a volunteer night" },
+            ] as const
+          ).map((option) => (
+            <label
+              key={option.value}
+              className="flex min-h-touch cursor-pointer flex-col justify-center rounded-[6px] px-3 py-1.5 text-center text-text-secondary transition-surface hover:text-text has-[:checked]:bg-hover has-[:checked]:text-text has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-light"
+            >
+              <input
+                type="radio"
+                name="audience"
+                value={option.value}
+                checked={audience === option.value}
+                onChange={() => setAudience(option.value)}
+                className="sr-only"
+              />
+              <span className="text-small font-medium">{option.label}</span>
+              <span className="text-[0.75rem] text-text-muted">{option.hint}</span>
+            </label>
+          ))}
+        </div>
         {audience === "group" ? (
-          <div className="flex flex-col gap-2 pl-8">
+          <div className="flex flex-col gap-2">
             <label htmlFor={ids.size} className="text-small font-medium text-text-secondary">
               How many people can use it
             </label>

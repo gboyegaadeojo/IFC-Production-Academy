@@ -1,17 +1,25 @@
 "use client";
 
-import { useActionState, useId } from "react";
+import { useActionState, useId, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { DepartmentSettings } from "@/lib/data/admin/departments";
 import { updateDepartmentAction, type DepartmentFormState } from "./actions";
 
 const idle: DepartmentFormState = { status: "idle" };
 
+/** What each status means for volunteers (DESIGN §7.7). Training history never changes. */
+const STATUS_CONSEQUENCES: Record<DepartmentSettings["status"], string> = {
+  active: "Volunteers can see it, ask to join, and members can open its courses.",
+  coming_soon: "Volunteers can see it and what it will teach, but can't join yet.",
+  inactive: "Hidden from volunteers. Members keep their history but can't open its training.",
+};
+
 const fieldClasses =
-  "min-h-control rounded-button border border-border bg-surface px-3 text-body text-text";
+  "min-h-control rounded-button border border-border-strong bg-surface px-3 text-body text-text";
 
 export function DepartmentForm({ department }: { department: DepartmentSettings }) {
   const [state, formAction, pending] = useActionState(updateDepartmentAction, idle);
+  const [status, setStatus] = useState(department.status);
   const ids = {
     name: useId(),
     summary: useId(),
@@ -49,7 +57,7 @@ export function DepartmentForm({ department }: { department: DepartmentSettings 
           className={`${fieldClasses} py-3`}
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4">
         <div className="flex flex-col gap-2">
           <label htmlFor={ids.status} className="text-small font-medium text-text-secondary">
             Status
@@ -57,13 +65,19 @@ export function DepartmentForm({ department }: { department: DepartmentSettings 
           <select
             id={ids.status}
             name="status"
-            defaultValue={department.status}
+            value={status}
+            onChange={(event) => setStatus(event.target.value as DepartmentSettings["status"])}
+            aria-describedby={`${ids.status}-consequence`}
             className={fieldClasses}
           >
             <option value="active">Active: open to volunteers</option>
             <option value="coming_soon">Coming soon: visible, not joinable</option>
             <option value="inactive">Inactive: hidden from volunteers</option>
           </select>
+          <p id={`${ids.status}-consequence`} className="text-small text-text-secondary">
+            {STATUS_CONSEQUENCES[status]}
+            {status !== department.status ? " This takes effect when you save." : ""}
+          </p>
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor={ids.enrolment} className="text-small font-medium text-text-secondary">

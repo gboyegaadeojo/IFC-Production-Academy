@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { listDepartmentSettings } from "@/lib/data/admin/departments";
@@ -40,82 +42,101 @@ async function InvitationsContent() {
 
   return (
     <div className="flex flex-col gap-10">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-title font-semibold">Invitations</h1>
-        <p className="max-w-2xl text-text-secondary">
-          Invite someone straight into a department. When they accept, they join without waiting for
-          approval, because you&apos;ve already decided. Joining gives them the training; approval
-          to serve still comes after a practical assessment.
-        </p>
-      </header>
+      <PageHeader
+        title="Invitations"
+        description="Invite someone straight into a department. They join when they accept, because you've already decided. Joining gives them the training; approval to serve still comes after the hands-on checks."
+      />
 
       <section
         aria-labelledby="create-heading"
-        className="flex max-w-2xl flex-col gap-5 rounded-card border border-border bg-card p-6"
+        className="flex max-w-2xl flex-col gap-5 rounded-card border border-border bg-card p-5 sm:p-6"
       >
         <h2 id="create-heading" className="text-heading font-semibold">
           New invitation
         </h2>
         {choices.length === 0 && !allowAcademyOnly ? (
-          <p className="text-text-secondary">
-            None of your departments is open yet, so there&apos;s nothing to invite people to.
-          </p>
+          <EmptyState title="Nothing to invite people to yet">
+            None of your departments is open. Once a department is active, you can invite people to
+            it here.
+          </EmptyState>
         ) : (
           <CreateInvitationForm departments={choices} allowAcademyOnly={allowAcademyOnly} />
         )}
       </section>
 
-      <section aria-labelledby="list-heading" className="flex flex-col gap-4">
+      <section aria-labelledby="list-heading" className="flex flex-col gap-3">
         <h2 id="list-heading" className="text-heading font-semibold">
           Recent invitations
         </h2>
         {invitations.length === 0 ? (
-          <p className="text-text-secondary">No invitations yet.</p>
+          <EmptyState title="No invitations yet">
+            Invitations you create appear here with how many places are used, when they expire, and
+            a way to revoke them.
+          </EmptyState>
         ) : (
-          <ul className="divide-y divide-border rounded-card border border-border bg-card">
-            {invitations.map((invitation) => {
-              const state = invitationState(invitation, now);
-              const title = invitation.departmentName ?? "The Academy";
-              return (
-                <li
-                  key={invitation.id}
-                  className="flex flex-col gap-3 p-5 sm:flex-row sm:items-start sm:justify-between"
-                >
-                  <div className="flex flex-col gap-1">
-                    <p className="font-semibold">
-                      {title}
-                      {invitation.note ? (
-                        <span className="font-normal text-text-secondary">
-                          {" "}
-                          · {invitation.note}
-                        </span>
-                      ) : null}
-                    </p>
-                    <p className="text-small text-text-secondary">
-                      {invitation.useCount} of {invitation.maxUses}{" "}
-                      {invitation.maxUses === 1 ? "place" : "places"} used · expires{" "}
-                      {formatDateTime(invitation.expiresAt)}
-                    </p>
-                    <p className="text-small text-text-muted">
-                      Created {formatDateTime(invitation.createdAt)} by{" "}
-                      {invitation.createdBy.displayName}
-                    </p>
-                  </div>
-                  <div className="flex flex-col items-start gap-1 sm:items-end">
-                    <StatusBadge tone={state === "active" ? "success" : "neutral"}>
-                      {INVITATION_STATE_LABELS[state]}
-                    </StatusBadge>
-                    {state === "active" ? (
-                      <RevokeInvitationForm
-                        invitationId={invitation.id}
-                        label={`invitation to ${title}`}
-                      />
-                    ) : null}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="relative overflow-x-auto rounded-card border border-border">
+            <table className="w-full min-w-[44rem] text-left text-small">
+              <caption className="sr-only">Recent invitations, newest first</caption>
+              <thead className="border-b border-border text-text-muted">
+                <tr>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Invitation
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Places used
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Expires
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    Status
+                  </th>
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    <span className="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {invitations.map((invitation) => {
+                  const state = invitationState(invitation, now);
+                  const title = invitation.departmentName ?? "The Academy";
+                  return (
+                    <tr key={invitation.id} className="align-top">
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-text">{title}</p>
+                        {invitation.note ? (
+                          <p className="text-text-secondary">{invitation.note}</p>
+                        ) : null}
+                        <p className="text-text-muted">
+                          Created {formatDateTime(invitation.createdAt)} by{" "}
+                          {invitation.createdBy.displayName}
+                        </p>
+                      </td>
+                      <td className="tabular px-4 py-3 font-mono text-text">
+                        {invitation.useCount} / {invitation.maxUses}
+                      </td>
+                      <td className="px-4 py-3 text-text-secondary">
+                        {formatDateTime(invitation.expiresAt)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge tone={state === "active" ? "success" : "neutral"}>
+                          {INVITATION_STATE_LABELS[state]}
+                        </StatusBadge>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {state === "active" ? (
+                          <RevokeInvitationForm
+                            invitationId={invitation.id}
+                            label={`invitation to ${title}`}
+                          />
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </div>

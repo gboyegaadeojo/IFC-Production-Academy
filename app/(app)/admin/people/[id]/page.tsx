@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Avatar } from "@/components/ui/avatar";
+import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getPerson } from "@/lib/data/admin/people";
@@ -47,17 +48,22 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
 
   return (
     <div className="flex flex-col gap-10">
-      <div className="flex flex-col gap-3">
-        <Link
-          href="/admin/people"
-          className="text-small text-accent-light underline-offset-4 hover:underline"
-        >
-          ← All people
-        </Link>
-        <h1 className="text-title font-semibold">{person.displayName}</h1>
-        {person.email ? <p className="break-all text-text-secondary">{person.email}</p> : null}
-        <p className="text-small text-text-muted">Joined {formatDateTime(person.joinedAt)}</p>
-      </div>
+      <header className="flex flex-col gap-4">
+        <Breadcrumbs
+          items={[
+            { label: "People and roles", href: "/admin/people" },
+            { label: person.displayName },
+          ]}
+        />
+        <div className="flex items-center gap-4">
+          <Avatar name={person.displayName} size="lg" />
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <h1 className="text-title font-semibold">{person.displayName}</h1>
+            {person.email ? <p className="break-all text-text-secondary">{person.email}</p> : null}
+            <p className="text-small text-text-muted">Joined {formatDateTime(person.joinedAt)}</p>
+          </div>
+        </div>
+      </header>
 
       <section aria-labelledby="account-heading" className="flex flex-col gap-4">
         <h2 id="account-heading" className="text-heading font-semibold">
@@ -98,7 +104,7 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
         {current.length === 0 ? (
           <p className="text-text-secondary">No current roles.</p>
         ) : (
-          <ul className="divide-y divide-border rounded-card border border-border bg-card">
+          <ul className="divide-y divide-border rounded-card border border-border">
             {current.map((role) => (
               <li
                 key={role.id}
@@ -106,6 +112,9 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
               >
                 <div className="flex flex-col gap-1">
                   <p className="font-medium">{roleLabel(role)}</p>
+                  <p className="eyebrow">
+                    {role.departmentId ? "One department" : "Whole ministry"}
+                  </p>
                   {role.roleDescription ? (
                     <p className="text-small text-text-secondary">{role.roleDescription}</p>
                   ) : null}

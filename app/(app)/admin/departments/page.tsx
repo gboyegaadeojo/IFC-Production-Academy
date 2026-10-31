@@ -2,6 +2,8 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
+import { Drawer } from "@/components/ui/drawer";
+import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { listDepartmentSettings } from "@/lib/data/admin/departments";
@@ -48,55 +50,82 @@ async function DepartmentsContent() {
   const departments = await listDepartmentSettings();
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-2">
-        <h1 className="text-title font-semibold">Departments</h1>
-        <p className="max-w-2xl text-text-secondary">
-          Open, pause, or rename a department. Changes take effect straight away and are recorded in
-          the audit log. Nobody&apos;s training history changes.
-        </p>
-      </header>
-      <ul className="divide-y divide-border border-y border-border">
-        {departments.map((department) => (
-          <li
-            key={department.id}
-            style={{ "--dept": departmentHueVar(department.hue) } as CSSProperties}
-          >
-            <details className="group">
-              <summary className="flex min-h-14 cursor-pointer list-none items-center gap-3 py-3 hover:bg-hover [&::-webkit-details-marker]:hidden">
-                <span className="text-[var(--dept)]">
-                  <DepartmentIcon icon={department.icon} className="size-5" />
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-4">
-                  <span className="font-medium">{department.name}</span>
-                  <span className="truncate text-small text-text-muted">
-                    {ENROLMENT_LABELS[department.enrolmentMode]}
-                    {department.curriculumRequiresReview ? " · review before publishing" : ""}
-                  </span>
-                </span>
-                <StatusBadge tone={STATUS_TONES[department.status]}>
-                  {STATUS_LABELS[department.status]}
-                </StatusBadge>
-                <span className="w-10 text-right text-small text-accent-light group-open:hidden">
-                  Edit
-                </span>
-                <span className="hidden w-10 text-right text-small text-text-secondary group-open:inline">
-                  Close
-                </span>
-              </summary>
-              <section
-                aria-label={`Edit ${department.name}`}
-                className="flex max-w-2xl flex-col gap-4 pt-2 pb-6 pl-8"
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Departments"
+        description="Open, pause, or rename a department. Changes take effect straight away and are recorded in the audit log. Nobody's training history changes."
+      />
+      <div className="relative overflow-x-auto rounded-card border border-border">
+        <table className="w-full min-w-[40rem] text-left text-small">
+          <caption className="sr-only">Departments in display order</caption>
+          <thead className="border-b border-border text-text-muted">
+            <tr>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Department
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                How people join
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                Status
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium">
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {departments.map((department) => (
+              <tr
+                key={department.id}
+                style={{ "--dept": departmentHueVar(department.hue) } as CSSProperties}
               >
-                <p className="text-small text-text-muted">
-                  Last changed {formatDateTime(department.updatedAt)}
-                </p>
-                <DepartmentForm department={department} />
-              </section>
-            </details>
-          </li>
-        ))}
-      </ul>
+                <td className="px-4 py-3">
+                  <span className="flex items-center gap-3">
+                    <span className="flex size-8 items-center justify-center rounded-button border border-border text-[var(--dept)]">
+                      <DepartmentIcon icon={department.icon} className="size-4" />
+                    </span>
+                    <span className="flex flex-col">
+                      <span className="font-medium text-text">{department.name}</span>
+                      <span className="text-text-muted">
+                        Changed {formatDateTime(department.updatedAt)}
+                      </span>
+                    </span>
+                  </span>
+                </td>
+                <td className="px-4 py-3 text-text-secondary">
+                  {ENROLMENT_LABELS[department.enrolmentMode]}
+                  {department.curriculumRequiresReview ? (
+                    <span className="block text-text-muted">Review before publishing</span>
+                  ) : null}
+                </td>
+                <td className="px-4 py-3">
+                  <StatusBadge tone={STATUS_TONES[department.status]}>
+                    {STATUS_LABELS[department.status]}
+                  </StatusBadge>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <Drawer
+                    title={`Edit ${department.name}`}
+                    triggerLabel={` ${department.name}`}
+                    trigger={<span className="text-small text-text">Edit</span>}
+                    triggerClassName="border border-border-strong"
+                    side="right"
+                    wide
+                  >
+                    <div className="flex flex-col gap-4 p-2">
+                      <p className="text-small text-text-muted">
+                        Last changed {formatDateTime(department.updatedAt)}
+                      </p>
+                      <DepartmentForm department={department} />
+                    </div>
+                  </Drawer>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

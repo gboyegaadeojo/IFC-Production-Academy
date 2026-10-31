@@ -29,7 +29,7 @@ export function DisplayNameForm({ displayName }: { displayName: string }) {
         defaultValue={displayName}
         aria-describedby={state.status === "idle" ? hintId : `${hintId} ${resultId}`}
         aria-invalid={state.status === "error"}
-        className="min-h-control rounded-button border border-border bg-surface px-3 text-body text-text aria-invalid:border-error"
+        className="min-h-control rounded-button border border-border-strong bg-surface px-3 text-body text-text aria-invalid:border-error"
       />
       <div className="flex flex-wrap items-center gap-4">
         <Button type="submit" disabled={pending}>

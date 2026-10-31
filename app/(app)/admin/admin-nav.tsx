@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeftIcon } from "@/components/ui/icons";
-import type { AdminSection, AdminSectionGroup } from "@/lib/domain/admin";
+import { isCurrentSection, type AdminSection, type AdminSectionGroup } from "@/lib/domain/admin";
 
 export type AdminNavGroup = { group: AdminSectionGroup; sections: AdminSection[] };
 
 function currentSection(groups: AdminNavGroup[], pathname: string): AdminSection | null {
   for (const entry of groups) {
     for (const section of entry.sections) {
-      if (pathname === section.href || pathname.startsWith(`${section.href}/`)) {
+      if (isCurrentSection(section, pathname)) {
         return section;
       }
     }

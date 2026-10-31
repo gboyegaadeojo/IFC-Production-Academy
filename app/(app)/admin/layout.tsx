@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { Drawer } from "@/components/ui/drawer";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
-import { adminSections, groupAdminSections } from "@/lib/domain/admin";
+import { adminNavigation } from "@/lib/domain/admin";
 import { AdminCurrentLabel, AdminNav, type AdminNavGroup } from "./admin-nav";
 
 export const metadata: Metadata = { title: { template: "%s · Admin", default: "Admin" } };
@@ -33,7 +33,7 @@ function SidebarPlaceholder() {
 
 async function Navigation() {
   await requireActiveUser();
-  const groups: AdminNavGroup[] = groupAdminSections(adminSections(await getMyCapabilities()));
+  const groups: AdminNavGroup[] = adminNavigation(await getMyCapabilities());
   if (groups.length === 0) {
     return null;
   }
