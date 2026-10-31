@@ -374,6 +374,8 @@ Where IFC goes further: your people, your gear, and your room on every screen; p
 
 ### Colour tokens
 
+> **Superseded for visual values (2026-10-30):** colours, type sizes, geometry, and motion now follow [DESIGN-REQUIREMENTS.md](DESIGN-REQUIREMENTS.md) §4–5, implemented in `app/globals.css`. The principles in this section still apply: one purple action colour, department hues as minor accents only, status never shown by colour alone, and contrast checked before shipping. The table below is the original palette, kept for history.
+
 Your palette is kept, with two contrast fixes I checked against WCAG 2.2 AA (4.5:1 for normal text):
 
 | Token | Dark (primary) | Light (SHOULD) | Use |
@@ -399,8 +401,8 @@ Your palette is kept, with two contrast fixes I checked against WCAG 2.2 AA (4.5
 
 ### Type, layout, imagery
 
-- **Typeface:** IBM Plex Sans, a technical grotesk, with IBM Plex Mono for small uppercase labels (levels, versions) and tabular numerals for progress and metrics. Scale 32 / 24 / 18 / 15 / 14 / 13 px (revised 2026-10-30 at G's request: denser and more tool-like); headings with slightly tight tracking; body at 1.5 line height; nothing under 13 px.
-- **Layout:** 8 px spacing scale; card radius 10, button radius 8, pills fully round; controls 36 px tall with a mouse and 44 px on touch screens; 20 px mobile margins; 12-column desktop grid with a readable max width; rows and hairline dividers before boxed cards; restrained borders over heavy shadows.
+- **Typeface:** IBM Plex Sans, a technical grotesk, with IBM Plex Mono for small uppercase labels (levels, versions) and tabular numerals for progress and metrics. Sizes follow DESIGN-REQUIREMENTS §4.2 (hero, page title, section, card, body 15, metadata 12–13); headings with slightly tight tracking; weights 400, 500, and 600 only.
+- **Layout:** 8 px spacing scale; card radius 12, button and input radius 8, pills fully round (DESIGN-REQUIREMENTS §4.3); controls 36 px tall with a mouse and 44 px on touch screens; 20 px mobile margins; 12-column desktop grid with a readable max width; rows and hairline dividers before boxed cards; restrained borders over heavy shadows.
 - **Imagery:** a consistent photo shoot of IFC volunteers at each position (deep shadows, warm stage light), one cover per department, a matching line-icon set.
 - **Brand:** IFC logo and assets confirmed before high-fidelity design.
 

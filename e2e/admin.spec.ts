@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openAccountMenu } from "./support/account-menu";
 import {
   clearMailFor,
   mailpitAvailable,
@@ -24,7 +25,9 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   const volunteerContext = await browser.newContext();
   const volunteer = await volunteerContext.newPage();
   await signInByEmail(volunteer, email);
+  await openAccountMenu(volunteer);
   await expect(volunteer.getByRole("link", { name: "Admin" })).toHaveCount(0);
+  await volunteer.keyboard.press("Escape");
   const audio = volunteer.getByRole("article", { name: "Audio Engineering" });
   await audio.getByRole("button", { name: "Request to join Audio Engineering" }).click();
   await expect(audio.getByText("Request sent")).toBeVisible();
@@ -33,6 +36,7 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   const leaderContext = await browser.newContext();
   const leader = await leaderContext.newPage();
   await signInByEmail(leader, "devon.leader@example.com");
+  await openAccountMenu(leader);
   await leader.getByRole("link", { name: "Admin" }).click();
   await expect(
     leader.getByRole("heading", { level: 1, name: "Membership requests" }),
@@ -158,6 +162,7 @@ test("a leader builds, publishes, and revises a course", async ({ page }) => {
 
 test("a Platform Admin manages people and departments but not memberships", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
+  await openAccountMenu(page);
   await page.getByRole("link", { name: "Admin" }).click();
 
   const nav = page.getByRole("navigation", { name: "Admin" });
@@ -182,7 +187,9 @@ test("a Platform Admin manages people and departments but not memberships", asyn
 
 test("a volunteer can't open the admin area", async ({ page }) => {
   await signInByEmail(page, `e2e-noadmin-${Date.now()}@example.com`);
+  await openAccountMenu(page);
   await expect(page.getByRole("link", { name: "Admin" })).toHaveCount(0);
+  await page.keyboard.press("Escape");
   for (const path of [
     "/admin",
     "/admin/invitations",
