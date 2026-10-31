@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
 import { buttonClasses } from "@/components/ui/button";
@@ -140,7 +141,7 @@ function Hero({
       "Your request is with a department leader. While you wait, have a look at the other departments.",
     member:
       published > 0
-        ? `${courseCountLabel(published)} published across your ${memberCount === 1 ? "department" : "departments"}. Course pages open here soon.`
+        ? `${courseCountLabel(published)} published across your ${memberCount === 1 ? "department" : "departments"}. Pick up where your pathway starts.`
         : "You're in. Your department's courses are being prepared and will appear here as soon as they're published.",
   };
 
@@ -258,9 +259,17 @@ function MyDepartment({
       ) : null}
       <p className="text-small text-text-secondary">
         {learning?.publishedCourses
-          ? "Course pages open here soon. Membership gives you the training; approval to serve comes later."
-          : "Courses are being prepared. Membership gives you the training; approval to serve comes later."}
+          ? "Membership gives you the training; approval to serve comes later, after the hands-on checks."
+          : "Courses are being prepared. Membership gives you the training; approval to serve comes later, after the hands-on checks."}
       </p>
+      <Link
+        href={`/departments/${department.slug}`}
+        className={buttonClasses("primary", "self-start")}
+      >
+        {learning?.publishedCourses ? "Open your pathway" : "View department"}
+        <span className="sr-only"> for {department.name}</span>
+        <ArrowRightIcon className="size-4" />
+      </Link>
     </div>
   );
 }
