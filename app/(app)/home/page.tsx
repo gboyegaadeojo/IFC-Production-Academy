@@ -12,6 +12,7 @@ import { getMyAchievements, type Achievements } from "@/lib/data/achievements";
 import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards, type DepartmentCard as CardData } from "@/lib/data/departments";
 import { getDepartmentLearning } from "@/lib/data/learning";
+import { getMyPairings } from "@/lib/data/mentoring";
 import { getContinueLearning } from "@/lib/data/progress";
 import { formatDateTime } from "@/lib/domain/admin";
 import { formatDate } from "@/lib/domain/dates";
@@ -47,14 +48,16 @@ async function HomeContent() {
   const state = homeState(departments);
   const memberOf = departments.filter((d) => d.state.kind === "member");
   const requested = departments.filter((d) => d.state.kind === "requested");
-  const [learning, continuing, achievements] = await Promise.all([
+  const [learning, continuing, achievements, pairings] = await Promise.all([
     getDepartmentLearning(memberOf.map((d) => d.id)),
     getContinueLearning(
       user.id,
       memberOf.map((d) => d.id),
     ),
     memberOf.length > 0 ? getMyAchievements(user.id) : null,
+    getMyPairings(),
   ]);
+  const activePairings = pairings.filter((p) => p.endedAt === null);
   const learningFor = new Map(learning.map((entry) => [entry.departmentId, entry]));
 
   return (
@@ -71,6 +74,31 @@ async function HomeContent() {
       {achievements &&
       (achievements.approvedRoles.length > 0 || achievements.certificates.length > 0) ? (
         <AchievementsSection achievements={achievements} />
+      ) : null}
+
+      {activePairings.length > 0 ? (
+        <section aria-labelledby="mentoring-heading" className="flex flex-col gap-3">
+          <SectionHeading id="mentoring-heading" eyebrow="Mentoring">
+            Your mentoring
+          </SectionHeading>
+          <ul className="grid gap-3 lg:grid-cols-2">
+            {activePairings.map((pairing) => (
+              <li key={pairing.id}>
+                <Link
+                  href={`/mentoring/${pairing.id}`}
+                  className="flex h-full flex-col gap-1 rounded-card border border-border bg-card p-5 transition-surface hover:bg-hover"
+                >
+                  <span className="font-medium text-text">
+                    {pairing.myPart === "mentor"
+                      ? `Mentoring ${pairing.mentee.name}`
+                      : `Mentored by ${pairing.mentor.name}`}
+                  </span>
+                  <span className="text-small text-text-muted">{pairing.departmentName}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
       {requested.length > 0 ? <RequestStatus requests={requested} /> : null}

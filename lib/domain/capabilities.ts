@@ -15,6 +15,7 @@ export const CAPABILITIES = [
   "competency.approve",
   "schedule.manage",
   "schedule.override",
+  "mentoring.assign",
   "mentoring.feedback",
   "mentoring.private_notes",
   "report.view",

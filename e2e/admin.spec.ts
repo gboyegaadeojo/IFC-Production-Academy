@@ -367,6 +367,45 @@ test("a leader reads department reports and downloads one", async ({ page }) => 
   expect(await csv.text()).toContain("Volunteer,Type,Competency or role,State,Since,Expires");
 });
 
+test("a leader pairs a mentor with a volunteer, and they share notes", async ({ browser }) => {
+  // SRS-MENTOR-001..004. Casey leads Camera Operations and may mentor; Avery is a member.
+  const stamp = Date.now();
+  const leaderContext = await browser.newContext();
+  const leader = await leaderContext.newPage();
+  await signInByEmail(leader, "casey.leader@example.com");
+  await leader.goto("/admin/mentoring");
+  const camera = leader.getByRole("region", { name: "Camera Operations" });
+  await camera.getByLabel("Mentor").selectOption({ label: "Casey Example" });
+  await camera.getByLabel("Volunteer").selectOption({ label: "Avery Example" });
+  await camera.getByRole("button", { name: "Pair them" }).click();
+  await expect(camera.getByText("Casey Example mentoring Avery Example")).toBeVisible();
+
+  const memberContext = await browser.newContext();
+  const member = await memberContext.newPage();
+  await signInByEmail(member, "avery.volunteer@example.com");
+  await member.goto("/mentoring");
+  await member
+    .getByRole("link", { name: /Mentored by Casey Example/ })
+    .first()
+    .click();
+  await member.getByLabel("New shared note").fill(`Fake question ${stamp}`);
+  await member.getByRole("button", { name: "Share note" }).click();
+  await expect(member.getByText(`Fake question ${stamp}`)).toBeVisible();
+  // Volunteers never get a private-notes area.
+  await expect(member.getByRole("heading", { name: "Your private notes" })).toHaveCount(0);
+  await memberContext.close();
+
+  await leader.goto("/mentoring");
+  await leader
+    .getByRole("link", { name: /Mentoring Avery Example/ })
+    .first()
+    .click();
+  await expect(leader.getByText(`Fake question ${stamp}`)).toBeVisible();
+  // Leaders hold mentoring.feedback but not private notes unless granted (SPEC §4).
+  await expect(leader.getByRole("heading", { name: "Your private notes" })).toHaveCount(0);
+  await leaderContext.close();
+});
+
 test("a Platform Admin manages people and departments but not memberships", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
   await openAccountMenu(page);

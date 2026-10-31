@@ -126,6 +126,7 @@ test("admin pages are accessible", async ({ page }) => {
     ["/admin/assessments", "assessments"],
     ["/admin/schedule", "schedule"],
     ["/admin/reports", "reports"],
+    ["/admin/mentoring", "mentoring (admin)"],
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=practicals`, "course editor: practicals"],
     ["/admin/people", "people"],
     ["/admin/audit", "audit log"],
