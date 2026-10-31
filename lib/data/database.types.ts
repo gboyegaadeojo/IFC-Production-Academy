@@ -475,6 +475,85 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      competencies: {
+        Row: {
+          id: string;
+          department_id: string;
+          name: string;
+          description: string;
+          expiry_months: number | null;
+          archived_at: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        Insert: {
+          department_id: string;
+          name: string;
+          description?: string;
+          expiry_months?: number | null;
+        };
+        Update: {
+          name?: string;
+          description?: string;
+          expiry_months?: number | null;
+          archived_at?: string | null;
+        };
+        Relationships: [];
+      };
+      serving_roles: {
+        Row: {
+          id: string;
+          department_id: string;
+          name: string;
+          description: string;
+          archived_at: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        Insert: { department_id: string; name: string; description?: string };
+        Update: { name?: string; description?: string; archived_at?: string | null };
+        Relationships: [];
+      };
+      serving_role_competencies: {
+        Row: { role_id: string; competency_id: string; department_id: string; created_at: string };
+        // Changed only through set_role_competencies.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      competency_records: {
+        Row: {
+          id: string;
+          user_id: string;
+          competency_id: string;
+          department_id: string;
+          status: Database["public"]["Enums"]["competency_status"];
+          granted_at: string;
+          granted_by_assessment_id: string | null;
+          expires_at: string | null;
+          suspended_at: string | null;
+          suspended_by: string | null;
+          suspend_reason: string | null;
+        } & Timestamps;
+        // Granted by the system on a passed practical; suspended and reinstated through functions.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      serving_approvals: {
+        Row: {
+          id: string;
+          user_id: string;
+          role_id: string;
+          department_id: string;
+          status: Database["public"]["Enums"]["serving_approval_status"];
+          approved_at: string;
+          withdrawn_at: string | null;
+          withdraw_reason: string | null;
+        } & Timestamps;
+        // Worked out by the system.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -588,6 +667,12 @@ export type Database = {
       };
       mark_sop_reviewed: { Args: { p_sop_id: string }; Returns: string };
       archive_sop: { Args: { p_sop_id: string }; Returns: undefined };
+      set_role_competencies: {
+        Args: { p_role_id: string; p_competency_ids: string[] };
+        Returns: undefined;
+      };
+      suspend_competency: { Args: { p_record_id: string; p_reason: string }; Returns: undefined };
+      reinstate_competency: { Args: { p_record_id: string }; Returns: undefined };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
@@ -648,6 +733,8 @@ export type Database = {
       quiz_question_kind: "single" | "multiple" | "true_false" | "scenario";
       quiz_answer_policy: "after_each_attempt" | "after_pass" | "after_final_attempt" | "never";
       sop_version_status: "draft" | "published" | "superseded";
+      competency_status: "approved" | "suspended";
+      serving_approval_status: "approved" | "withdrawn";
     };
     CompositeTypes: { [_ in never]: never };
   };

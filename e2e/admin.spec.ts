@@ -313,6 +313,43 @@ test("a leader publishes an SOP, attaches it to a lesson, and a member opens it"
   await memberContext.close();
 });
 
+test("a leader sets up competencies and a serving role, and a member sees what they need", async ({
+  browser,
+}) => {
+  // SRS-COMP-001..004: competencies and roles are data the leader defines.
+  const stamp = Date.now();
+  const competency = `E2E framing ${stamp}`;
+  const role = `E2E camera ${stamp}`;
+  const leaderContext = await browser.newContext();
+  const leader = await leaderContext.newPage();
+  await signInByEmail(leader, "casey.leader@example.com");
+  await leader.goto("/admin/competencies");
+  const camera = leader.getByRole("region", { name: "Camera Operations" });
+  await camera.getByLabel("New competency name").fill(competency);
+  await camera.getByRole("button", { name: "Add competency" }).click();
+  await expect(camera.getByText(competency, { exact: true }).first()).toBeVisible();
+  await camera.getByLabel("New role name").fill(role);
+  await camera.getByRole("button", { name: "Add role" }).click();
+  const roleItem = camera.getByRole("listitem").filter({ hasText: role });
+  await expect(roleItem.getByText("Needs no competencies yet")).toBeVisible();
+  await roleItem.getByText("Change what it needs").click();
+  await roleItem.getByLabel(competency).check();
+  await roleItem.getByRole("button", { name: "Save requirements" }).click();
+  await expect(roleItem.getByText(`Needs ${competency}`)).toBeVisible();
+  await leaderContext.close();
+
+  const memberContext = await browser.newContext();
+  const member = await memberContext.newPage();
+  await signInByEmail(member, "avery.volunteer@example.com");
+  await member.goto("/departments/camera-operations");
+  const readiness = member.getByRole("region", { name: "Practical skills and serving" });
+  await expect(readiness.getByText(competency).first()).toBeVisible();
+  const roleRow = readiness.getByRole("listitem").filter({ hasText: role });
+  await expect(roleRow.getByText("Not yet")).toBeVisible();
+  await expect(roleRow.getByText(`Needs ${competency}`)).toBeVisible();
+  await memberContext.close();
+});
+
 test("a Platform Admin manages people and departments but not memberships", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
   await openAccountMenu(page);

@@ -112,6 +112,7 @@ test("admin pages are accessible", async ({ page }) => {
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=publish`, "course editor: publish"],
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=history`, "course editor: history"],
     ["/admin/sops", "SOP library (admin)"],
+    ["/admin/competencies", "competencies and roles"],
     ["/admin/people", "people"],
     ["/admin/audit", "audit log"],
   ] as const) {
