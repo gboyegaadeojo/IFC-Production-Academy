@@ -60,9 +60,12 @@ for (const viewport of VIEWPORTS) {
     await capture(page, `home-member-${viewport.name}`);
   });
 
-  test(`admin shell at ${viewport.name}px`, async ({ page }) => {
+  // Emery is the fake seed Production Director. One sign-in per viewport covers the admin shell and
+  // every admin page, so the same address isn't sent links back to back (local rate limit).
+  test(`admin shell and pages for the Production Director at ${viewport.name}px`, async ({
+    page,
+  }) => {
     await page.setViewportSize(viewport);
-    // Emery is the fake seed Production Director.
     await signInByEmail(page, "emery.director@example.com");
     await page.goto("/admin/members");
     await expect(
@@ -92,13 +95,8 @@ for (const viewport of VIEWPORTS) {
         "page",
       );
     }
-  });
 
-  // Milestone D (DESIGN §7): one screenshot per admin page, with fake seed data only.
-  test(`admin pages for the Production Director at ${viewport.name}px`, async ({ page }) => {
-    await page.setViewportSize(viewport);
-    await signInByEmail(page, "emery.director@example.com");
-
+    // Milestone D (DESIGN §7): one screenshot per admin page, with fake seed data only.
     await page.goto("/admin");
     await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
