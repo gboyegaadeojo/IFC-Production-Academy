@@ -1,41 +1,28 @@
-import { mkdirSync } from "node:fs";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { openAccountMenu } from "./support/account-menu";
 import { mailpitAvailable, signInByEmail } from "./support/email-sign-in";
+import {
+  capture,
+  ensureScreenshotDir,
+  SCREENSHOT_DIR as DIR,
+  VIEWPORTS,
+} from "./support/screenshots";
 
 // Visual checkpoints for DESIGN-REQUIREMENTS Milestones A and B (§8, §13, §14): the learner home in
 // its new, pending, and member states and the admin shell, at 390px and 1440px. Screenshots go to
 // SCREENSHOT_DIR (CI uploads them for review). Only fake seed data and generated example.com
 // accounts appear. Also checks there's no horizontal overflow and that the drawer handles focus.
 
-const DIR = process.env.SCREENSHOT_DIR ?? "test-results/screenshots";
-const VIEWPORTS = [
-  { name: "390", width: 390, height: 844 },
-  { name: "1440", width: 1440, height: 900 },
-] as const;
-
 test.describe.configure({ mode: "serial" });
 test.skip(({ isMobile }) => isMobile, "Viewports are set explicitly; runs once, in desktop");
 
 test.beforeAll(() => {
-  mkdirSync(DIR, { recursive: true });
+  ensureScreenshotDir();
 });
 
 test.beforeEach(async () => {
   test.skip(!(await mailpitAvailable()), "Local Supabase is not running (npm run db:start)");
 });
-
-async function expectNoHorizontalOverflow(page: Page) {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow, "page should not scroll sideways").toBeLessThanOrEqual(0);
-}
-
-async function capture(page: Page, name: string) {
-  await expectNoHorizontalOverflow(page);
-  await page.screenshot({ path: `${DIR}/${name}.png`, fullPage: true });
-}
 
 for (const viewport of VIEWPORTS) {
   test(`learner home: new and pending at ${viewport.name}px`, async ({ page }) => {

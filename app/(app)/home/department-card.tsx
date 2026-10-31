@@ -1,4 +1,7 @@
 import type { CSSProperties } from "react";
+import Link from "next/link";
+import { buttonClasses } from "@/components/ui/button";
+import { ArrowRightIcon } from "@/components/ui/icons";
 import { DepartmentCover } from "@/components/department-cover";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { DepartmentCard as DepartmentCardData } from "@/lib/data/departments";
@@ -39,23 +42,33 @@ export function DepartmentCard({
       />
       <div className="flex flex-1 flex-col gap-2 p-5">
         <h3 id={headingId} className="text-subheading font-semibold">
-          {department.name}
+          {/* Department pages are browsable before joining (SRS-MEM-006). */}
+          <Link
+            href={`/departments/${department.slug}`}
+            className="rounded-button underline-offset-4 hover:underline"
+          >
+            {department.name}
+          </Link>
         </h3>
         <p className="text-small text-text-secondary">{department.summary}</p>
         <div className="mt-auto flex flex-col gap-2 pt-3">
-          <CardStatus department={department} publishedCourses={publishedCourses} />
+          <MembershipStatus department={department} publishedCourses={publishedCourses} />
         </div>
       </div>
     </article>
   );
 }
 
-function CardStatus({
+/** Membership status and the one next step, shared by the card and the department page. */
+export function MembershipStatus({
   department,
   publishedCourses,
+  hideOpenLink = false,
 }: {
   department: DepartmentCardData;
   publishedCourses: number | null;
+  /** On the department page itself, there's nowhere to open. */
+  hideOpenLink?: boolean;
 }) {
   const { state } = department;
   switch (state.kind) {
@@ -63,11 +76,23 @@ function CardStatus({
       return (
         <>
           <StatusBadge tone="success">You&apos;re a member</StatusBadge>
-          <p className="text-small text-text-muted">
-            {publishedCourses
-              ? `${courseCountLabel(publishedCourses)} published. Course pages open here soon.`
-              : "Courses are being prepared. They'll appear here when they're published."}
-          </p>
+          {/* The department page shows its own course count in the header. */}
+          {hideOpenLink ? null : (
+            <p className="text-small text-text-muted">
+              {publishedCourses
+                ? `${courseCountLabel(publishedCourses)} published.`
+                : "Courses are being prepared. They'll appear here when they're published."}
+            </p>
+          )}
+          {hideOpenLink ? null : (
+            <Link
+              href={`/departments/${department.slug}`}
+              className={buttonClasses("secondary", "self-start")}
+            >
+              Open department<span className="sr-only"> {department.name}</span>
+              <ArrowRightIcon className="size-4" />
+            </Link>
+          )}
         </>
       );
     case "requested":
