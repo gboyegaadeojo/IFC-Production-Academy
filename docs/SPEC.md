@@ -617,14 +617,16 @@ Measure baselines during the pilot before setting targets: share of enrolled vol
 | --- | --- | --- |
 | 1 | Email sign-in: password or passwordless? | Decided 2026-10-30: passwordless magic link, and no Google sign-in |
 | 2 | Hosting, database, identity, email vendors | Decided: Supabase Free with daily keep-alive, Cloudflare Pages, Resend, Google Drive backups |
-| 3 | Who builds and maintains it, and the budget and launch date | Needed in Phase 0 |
-| 4 | IFC brand assets and whether light theme ships at launch | Dark at launch, light theme in Phase 5 |
-| 5 | Competency names and rubrics per department | Department leaders draft in Phase 0, starting with Camera |
-| 6 | Course content and video inventory | Audit the existing YouTube library in Phase 0 |
-| 7 | Retention periods and privacy notice; under-18 volunteers? | Confirm with church leadership |
-| 8 | Reminder schedule and certificate template | Set during design |
-| 9 | Calendar provider; Planning Center or another church system? | Phase 5 |
-| 10 | Native apps | Decide after measuring PWA adoption |
+| 3 | Who builds and maintains it, and the budget and launch date | Decided 2026-10-31: G owns it; $0 a month plus a CA$400 yearly contingency; Camera pilot 10 Jan to 7 Feb 2027; ministry-wide launch 21 Feb 2027; add a second person as Platform Admin |
+| 4 | IFC brand assets and whether light theme ships at launch | Decided 2026-10-31: IFC pillars-and-dove mark with a "Production Academy" wordmark; dark only at launch; academy.ifcwpg.com before launch |
+| 5 | Competency names and rubrics per department | Decided 2026-10-31 for Camera: four competencies, three serving roles, observed checklists with required items ([curriculum](curriculum/camera-operations.md)); other departments follow the same pattern |
+| 6 | Course content and video inventory | Decided 2026-10-31: IFC films short lessons on its own equipment, unlisted on the church channel; written lessons stand in until each video exists |
+| 7 | Retention periods and privacy notice; under-18 volunteers? | Decided 2026-10-31, pending leadership sign-off: follow PIPEDA's principles; training records kept 7 years after deactivation, then anonymised; volunteers 14 to 17 with recorded guardian consent |
+| 8 | Reminder schedule and certificate template | Decided 2026-10-31: serving reminder 2 days before at 10:00; learning nudges at 7 and 21 days; quiet hours 20:00 to 08:00; print-ready certificate with a QR code to a public check that shows initials only |
+| 9 | Calendar provider; Planning Center or another church system? | Decided 2026-10-31: calendar files (built); Planning Center stays the people database, with a one-way readiness sync in Phase 5; one scheduler per department |
+| 10 | Native apps | Decided 2026-10-31: only if the PWA hits limits set out in the decision record |
+
+Details, reasoning, and sources: [decisions/2026-10-31-open-decisions.md](decisions/2026-10-31-open-decisions.md).
 
 ### Sources
 

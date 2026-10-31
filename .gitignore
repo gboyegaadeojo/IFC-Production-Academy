@@ -62,3 +62,6 @@ Thumbs.db
 
 # Claude Code local settings (shared settings in .claude/settings.json are committed)
 .claude/settings.local.json
+
+# Private working files: quiz answer keys and anything else not for a public repo
+private/

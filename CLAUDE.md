@@ -103,6 +103,6 @@ Do this first, as one PR:
 
 **Done when:** a fake user can sign in, see the five department cards, and request membership; RLS tests prove a volunteer cannot read another department's restricted rows; CI is green.
 
-## Open decisions (ask G, don't assume)
+## Decisions (settled 2026-10-31)
 
-These are listed at the end of SPEC §9: IFC brand assets, competency names and rubrics per department, retention periods, under-18 volunteers, reminder schedule, certificate template, and Planning Center integration.
+SPEC §9's open decisions are settled in [docs/decisions/2026-10-31-open-decisions.md](docs/decisions/2026-10-31-open-decisions.md): ownership and launch dates, brand, Camera competencies and rubrics ([docs/curriculum/camera-operations.md](docs/curriculum/camera-operations.md)), content, privacy and retention, under-18 volunteers, reminders, certificates, Planning Center, and native apps. Follow them. Privacy, retention, and under-18 rules await church leadership's sign-off; ask G before changing them. Quiz answer keys live in the gitignored `private/` folder, never in the repo.
