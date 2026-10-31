@@ -93,3 +93,9 @@ export const QuizIcon = (props: IconProps) => (
     <path d="M9 9.5l1.5 1.5L13 8.5M9 15h6" />
   </Icon>
 );
+export const UserCheckIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M3 19.5c.8-3.2 3.2-5 6-5s5.2 1.8 6 5M15.5 11.5l2 2 3.5-3.5" />
+  </Icon>
+);

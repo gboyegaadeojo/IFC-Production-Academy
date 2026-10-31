@@ -76,3 +76,13 @@ export async function requestMembership(departmentId: string): Promise<RequestMe
   }
   return { ok: true };
 }
+
+/** Every department's id the person can see, in display order. */
+export async function listDepartmentIds(): Promise<string[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("departments").select("id").order("sort_order");
+  if (error) {
+    throw new Error("Could not load departments", { cause: error.code });
+  }
+  return data.map((row) => row.id);
+}

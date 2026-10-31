@@ -554,6 +554,119 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      practicals: {
+        Row: {
+          id: string;
+          course_version_id: string;
+          practical_key: string;
+          title: string;
+          intro: string;
+          after_module_key: string | null;
+          competency_id: string | null;
+          is_required: boolean;
+          require_all_required: boolean;
+          pass_min_percent: number;
+          retry_wait_days: number;
+          sort_order: number;
+        } & Timestamps;
+        Insert: {
+          course_version_id: string;
+          title: string;
+          intro?: string;
+          after_module_key?: string | null;
+          competency_id?: string | null;
+          is_required?: boolean;
+          require_all_required?: boolean;
+          pass_min_percent?: number;
+          retry_wait_days?: number;
+          sort_order?: number;
+        };
+        Update: {
+          title?: string;
+          intro?: string;
+          after_module_key?: string | null;
+          competency_id?: string | null;
+          is_required?: boolean;
+          require_all_required?: boolean;
+          pass_min_percent?: number;
+          retry_wait_days?: number;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      practical_criteria: {
+        Row: {
+          id: string;
+          practical_id: string;
+          course_version_id: string;
+          criterion_key: string;
+          label: string;
+          description: string;
+          is_required: boolean;
+          sort_order: number;
+        } & Timestamps;
+        Insert: {
+          practical_id: string;
+          course_version_id: string;
+          label: string;
+          description?: string;
+          is_required?: boolean;
+          sort_order?: number;
+        };
+        Update: {
+          label?: string;
+          description?: string;
+          is_required?: boolean;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      practical_assessments: {
+        Row: {
+          id: string;
+          user_id: string;
+          observer_id: string;
+          observer_name: string;
+          practical_id: string;
+          practical_key: string;
+          course_id: string;
+          course_version_id: string;
+          department_id: string;
+          competency_id: string | null;
+          observed_criterion_ids: string[];
+          criteria_count: number;
+          required_count: number;
+          required_observed: number;
+          observed_count: number;
+          require_all_required: boolean;
+          pass_min_percent: number;
+          outcome: Database["public"]["Enums"]["practical_outcome"];
+          feedback: string;
+          assessed_at: string;
+          voided_at: string | null;
+          voided_by: string | null;
+          void_reason: string | null;
+        } & Timestamps;
+        // Written only through record_practical_assessment and void_practical_assessment.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      assessment_requests: {
+        Row: {
+          id: string;
+          user_id: string;
+          course_id: string;
+          practical_key: string;
+          department_id: string;
+          requested_at: string;
+          closed_at: string | null;
+          closed_by_assessment_id: string | null;
+        } & Timestamps;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -673,6 +786,34 @@ export type Database = {
       };
       suspend_competency: { Args: { p_record_id: string; p_reason: string }; Returns: undefined };
       reinstate_competency: { Args: { p_record_id: string }; Returns: undefined };
+      delete_practical: { Args: { p_practical_id: string }; Returns: undefined };
+      delete_practical_criterion: { Args: { p_criterion_id: string }; Returns: undefined };
+      request_assessment: {
+        Args: { p_course_id: string; p_practical_key: string };
+        Returns: string;
+      };
+      cancel_assessment_request: { Args: { p_request_id: string }; Returns: undefined };
+      assessable_members: {
+        Args: { p_department_id: string };
+        Returns: { user_id: string; display_name: string }[];
+      };
+      record_practical_assessment: {
+        Args: {
+          p_course_id: string;
+          p_practical_key: string;
+          p_learner_id: string;
+          p_observed_criterion_ids: string[];
+          p_feedback?: string;
+        };
+        Returns: {
+          assessment_id: string;
+          outcome: Database["public"]["Enums"]["practical_outcome"];
+        }[];
+      };
+      void_practical_assessment: {
+        Args: { p_assessment_id: string; p_reason: string };
+        Returns: undefined;
+      };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
@@ -735,6 +876,7 @@ export type Database = {
       sop_version_status: "draft" | "published" | "superseded";
       competency_status: "approved" | "suspended";
       serving_approval_status: "approved" | "withdrawn";
+      practical_outcome: "pass" | "further_practice";
     };
     CompositeTypes: { [_ in never]: never };
   };

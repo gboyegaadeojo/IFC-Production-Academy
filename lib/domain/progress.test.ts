@@ -79,6 +79,8 @@ describe("courseProgress", () => {
       countedCompleted: 0,
       quizzesTotal: 0,
       quizzesPassed: 0,
+      practicalsTotal: 0,
+      practicalsPassed: 0,
       percent: 0,
       next: { kind: "lesson", key: "a", title: "Lesson a", started: false },
     });
@@ -162,6 +164,32 @@ describe("courseProgress with quizzes", () => {
     );
     const passed = courseProgress(modules, allLessons, quizzes, new Set(["q1"]));
     expect(courseProgressLabel(passed, true)).toBe("All required lessons done · quiz passed");
+  });
+});
+
+describe("courseProgress with a practical", () => {
+  const practicals = [{ key: "p1", title: "Camera check", isRequired: true, afterModuleId: null }];
+  const allLessons = lessonProgressByKey([done("a"), done("b"), done("c")]);
+
+  it("awaits assessment once lessons are done, and finishes only on a pass", () => {
+    const waiting = courseProgress(modules, allLessons, [], new Set(), practicals, new Set());
+    expect(waiting.state).toBe("awaiting_assessment");
+    expect(waiting.next).toEqual({
+      kind: "lesson",
+      key: "x",
+      title: "Lesson x",
+      started: false,
+    });
+    expect(courseProgressLabel(waiting, true)).toBe(
+      "All required lessons done · practical not passed yet",
+    );
+    const passed = courseProgress(modules, allLessons, [], new Set(), practicals, new Set(["p1"]));
+    expect(passed.state).toBe("completed");
+  });
+
+  it("is never finished on a passed practical alone", () => {
+    const course = courseProgress(modules, new Map(), [], new Set(), practicals, new Set(["p1"]));
+    expect(course.state).toBe("in_progress");
   });
 });
 

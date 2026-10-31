@@ -223,6 +223,8 @@ Quiz behaviour (built 2026-10-31): a course can hold several quizzes, each place
 | SRS-COMP-009 | Expiry configurable, off by default | M |
 | ADD-ASSESS-01 | Volunteer can tap **Request assessment** when ready, which lands in the trainer's queue | S |
 
+Practicals and competency (built 2026-10-31): leaders define each department's competencies (expiry off by default; 6, 12, 24, or 36 months when set) and serving roles, and tick the competencies each role needs. A course can hold practical assessments, placed like quizzes, each a checklist of required and optional items with a pass rule (default: every required item and at least 80% of all items), an optional wait before reassessment, and the competency a pass grants. Volunteers can request an assessment; anyone with `assessment.record` for the department records what they observed and writes feedback, and the database works out Pass or Further practice required. A pass grants the competency; Approved to Serve is a separate record per person and role, granted when every required competency is approved and current and withdrawn on suspension, expiry, requirement changes, or an archived role. Leaders with `competency.approve` can suspend and reinstate competencies, and withdraw a mistaken assessment with a reason, which suspends the competency it granted. A course with a required practical is "Awaiting assessment" once everything else is done. Expiry is checked whenever a record is read or changed; a scheduled refresh can come with Phase 3 notifications.
+
 ### Certificates and achievements
 
 | ID | Requirement | Level |

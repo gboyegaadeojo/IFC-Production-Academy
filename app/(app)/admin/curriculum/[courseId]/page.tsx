@@ -13,6 +13,7 @@ import { getCourseEditor, type ModuleOutline, type VersionDetail } from "@/lib/d
 import { formatDateTime } from "@/lib/domain/admin";
 import { hasCapability } from "@/lib/domain/capabilities";
 import { VERSION_STATUS_LABELS } from "@/lib/domain/curriculum";
+import { passRuleLabel } from "@/lib/domain/practical";
 import { rulesLabel } from "@/lib/domain/quiz";
 import { AccessDenied } from "../../access-denied";
 import { PageSkeleton } from "../../page-skeleton";
@@ -30,6 +31,7 @@ import {
   updateCourseDetailsAction,
   updateModuleAction,
 } from "../actions";
+import { addPracticalAction } from "../practical-actions";
 import { addQuizAction } from "../quiz-actions";
 
 export const metadata: Metadata = { title: "Course" };
@@ -47,11 +49,12 @@ export default function CoursePage({
   );
 }
 
-const TABS = ["lessons", "quizzes", "details", "publish", "history"] as const;
+const TABS = ["lessons", "quizzes", "practicals", "details", "publish", "history"] as const;
 type Tab = (typeof TABS)[number];
 const TAB_LABELS: Record<Tab, string> = {
   lessons: "Lessons",
   quizzes: "Quizzes",
+  practicals: "Practicals",
   details: "Details",
   publish: "Publish",
   history: "History",
@@ -59,8 +62,7 @@ const TAB_LABELS: Record<Tab, string> = {
 
 /**
  * Course authoring workspace (DESIGN §7.5): a persistent header with live and draft status, then
- * Lessons, Quizzes, Details, Publish, and History. Practical assessments and Resources join when
- * those features exist.
+ * Lessons, Quizzes, Practicals, Details, Publish, and History.
  * Drafting, publishing, review, restore, and archive rules are unchanged (SRS-CUR-001..008).
  */
 async function CourseContent({
@@ -179,6 +181,20 @@ async function CourseContent({
           />
         ) : (
           <EmptyState title="No content yet">Start editing to add quizzes.</EmptyState>
+        )
+      ) : null}
+
+      {tab === "practicals" ? (
+        shown ? (
+          <PracticalsPanel
+            courseId={course.id}
+            version={draft && canDraft ? draft : shown}
+            editable={Boolean(draft && canDraft)}
+          />
+        ) : (
+          <EmptyState title="No content yet">
+            Start editing to add practical assessments.
+          </EmptyState>
         )
       ) : null}
 
@@ -793,6 +809,107 @@ function QuizzesPanel({
             <Field id="new-quiz-placement" label="Where it sits">
               <select
                 id="new-quiz-placement"
+                name="placement"
+                defaultValue="end"
+                className={fieldClasses}
+              >
+                {version.modules.map((courseModule) => (
+                  <option key={courseModule.id} value={courseModule.key}>
+                    After “{courseModule.title}”
+                  </option>
+                ))}
+                <option value="end">At the end of the course</option>
+              </select>
+            </Field>
+          </ActionForm>
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function PracticalsPanel({
+  courseId,
+  version,
+  editable,
+}: {
+  courseId: string;
+  version: VersionDetail;
+  editable: boolean;
+}) {
+  const placement = (key: string | null) => {
+    const courseModule = version.modules.find((m) => m.key === key);
+    return courseModule ? `After “${courseModule.title}”` : "At the end of the course";
+  };
+  return (
+    <section aria-labelledby="practicals-heading" className="flex flex-col gap-4">
+      <h2 id="practicals-heading" className="text-heading font-semibold">
+        Practical assessments
+      </h2>
+      <p className="max-w-2xl text-text-secondary">
+        A trainer watches the volunteer work and ticks a checklist. The Academy works out the result
+        from your pass rule, and a pass grants the competency you choose. That is what leads to
+        Approved to Serve, never finishing lessons.
+      </p>
+      {version.practicals.length === 0 ? (
+        <p className="text-text-secondary">
+          {editable ? "No practicals yet. Add one below." : "This version has no practicals."}
+        </p>
+      ) : (
+        <ul className="flex max-w-2xl flex-col divide-y divide-border rounded-card border border-border">
+          {version.practicals.map((practical) => (
+            <li key={practical.id} className="flex flex-col gap-1 p-4">
+              <Link
+                href={`/admin/curriculum/${courseId}/practicals/${practical.id}`}
+                className="font-medium text-accent-light underline-offset-4 hover:underline"
+              >
+                {practical.title}
+                {practical.isRequired ? null : (
+                  <span className="font-normal text-text-secondary"> (optional)</span>
+                )}
+              </Link>
+              <p className="text-small text-text-secondary">
+                {placement(practical.afterModuleKey)} ·{" "}
+                {passRuleLabel({
+                  requireAllRequired: practical.requireAllRequired,
+                  passMinPercent: practical.passMinPercent,
+                })}
+              </p>
+              <p className="text-small text-text-muted">
+                {practical.criteria.length === 0
+                  ? "No checklist items yet: add some before publishing"
+                  : `${practical.criteria.length} checklist ${practical.criteria.length === 1 ? "item" : "items"}`}
+                {" · "}
+                {practical.competency
+                  ? `Grants ${practical.competency.name}`
+                  : "Grants no competency"}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+      {editable ? (
+        <div className="max-w-2xl rounded-card border border-dashed border-border p-5">
+          <ActionForm
+            action={addPracticalAction}
+            submitLabel="Add practical"
+            pendingLabel="Adding…"
+            variant="secondary"
+            hidden={{ versionId: version.id, courseId }}
+            className="flex flex-col gap-3"
+          >
+            <Field id="new-practical" label="New practical title">
+              <input
+                id="new-practical"
+                name="title"
+                required
+                maxLength={120}
+                className={fieldClasses}
+              />
+            </Field>
+            <Field id="new-practical-placement" label="Where it sits">
+              <select
+                id="new-practical-placement"
                 name="placement"
                 defaultValue="end"
                 className={fieldClasses}

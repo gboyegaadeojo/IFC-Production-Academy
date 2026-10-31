@@ -11,6 +11,7 @@ import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getLearnerCourse, isActiveMember } from "@/lib/data/pathway";
 import { getCourseProgress } from "@/lib/data/progress";
+import { getPassedPracticalKeys } from "@/lib/data/practicals";
 import { getPassedQuizKeys } from "@/lib/data/quizzes";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
@@ -53,14 +54,22 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
   const totals = courseTotals(course.modules);
   const first = flattenLessons(course.modules)[0];
   const member = course.canOpen && (await isActiveMember(user.id, course.department.id));
-  const [lessonProgress, passed] = member
+  const [lessonProgress, passed, practicalsPassed] = member
     ? await Promise.all([
         getCourseProgress(user.id, course.id),
         getPassedQuizKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
+        getPassedPracticalKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
       ])
-    : [null, undefined];
+    : [null, undefined, undefined];
   const summary = lessonProgress
-    ? courseProgress(course.modules, lessonProgress, course.quizzes, passed)
+    ? courseProgress(
+        course.modules,
+        lessonProgress,
+        course.quizzes,
+        passed,
+        course.practicals,
+        practicalsPassed,
+      )
     : null;
   const minutes = totals.estimatedMinutes ?? course.estimatedMinutes;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
@@ -72,6 +81,11 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           ? "1 quiz"
           : course.quizzes.length > 1
             ? `${course.quizzes.length} quizzes`
+            : null,
+        course.practicals.length === 1
+          ? "1 practical assessment"
+          : course.practicals.length > 1
+            ? `${course.practicals.length} practical assessments`
             : null,
         minutes ? `About ${formatMinutes(minutes)}` : null,
         `Version ${course.versionNumber}`,
@@ -132,8 +146,10 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
                 courseId={course.id}
                 modules={course.modules}
                 quizzes={course.quizzes}
+                practicals={course.practicals}
                 progress={lessonProgress ?? undefined}
                 passedQuizKeys={passed}
+                passedPracticalKeys={practicalsPassed}
               />
             </section>
           ) : null}
@@ -143,7 +159,11 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           {summary && summary.state !== "not_started" ? (
             <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
               <p className="font-medium">
-                {summary.state === "completed" ? "You've finished this course" : "Your progress"}
+                {summary.state === "completed"
+                  ? "You've finished this course"
+                  : summary.state === "awaiting_assessment"
+                    ? "Awaiting your practical assessment"
+                    : "Your progress"}
               </p>
               <ProgressBar percent={summary.percent} label="Course progress" />
               <p className="text-small text-text-secondary">
