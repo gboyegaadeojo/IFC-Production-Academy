@@ -6,10 +6,13 @@ import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getLesson } from "@/lib/data/curriculum";
 import { mediaLibraryEnabled } from "@/lib/data/media";
+import { getLessonResources, getSopsForStaff, sopTitle } from "@/lib/data/sops";
+import { SOP_STATE_LABELS } from "@/lib/domain/sops";
 import { videoInputValue, videoSource } from "@/lib/domain/video";
 import { AccessDenied } from "../../../../access-denied";
 import { PageSkeleton } from "../../../../page-skeleton";
 import { deleteLessonAction, updateLessonAction } from "../../../actions";
+import { addLessonResourceAction, removeLessonResourceAction } from "../../../../sops/actions";
 
 export const metadata: Metadata = { title: "Lesson" };
 
@@ -39,6 +42,13 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     notFound();
   }
   const libraryConnected = mediaLibraryEnabled();
+  const [resources, departmentSops] = await Promise.all([
+    getLessonResources(lesson.id),
+    lesson.editable ? getSopsForStaff([lesson.departmentId]) : Promise.resolve([]),
+  ]);
+  const attachable = departmentSops.filter(
+    (sop) => sop.archivedAt === null && !resources.some((r) => r.sopId === sop.id),
+  );
 
   return (
     <div className="flex max-w-3xl flex-col gap-8">
@@ -178,7 +188,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
             <Field
               id="lesson-body"
               label="Lesson text"
-              hint="Steps, tips, and notes. SOP attachments come in a later update."
+              hint="Steps, tips, and notes. Attach SOPs under Resources below."
             >
               <textarea
                 id="lesson-body"
@@ -191,6 +201,92 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               />
             </Field>
           </ActionForm>
+
+          <section
+            aria-labelledby="resources-heading"
+            className="flex flex-col gap-4 rounded-card border border-border bg-card p-5"
+          >
+            <h2 id="resources-heading" className="text-subheading font-semibold">
+              Resources
+            </h2>
+            <p className="text-small text-text-secondary">
+              Attach this department&apos;s SOPs. The lesson always shows each SOP&apos;s current
+              version, and only members can open the files.
+            </p>
+            {resources.length === 0 ? (
+              <p className="text-small text-text-muted">Nothing attached yet.</p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-border rounded-button border border-border">
+                {resources.map((resource) => (
+                  <li
+                    key={resource.id}
+                    className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <span className="flex flex-col">
+                      <Link
+                        href={`/admin/sops/${resource.sopId}`}
+                        className="font-medium text-accent-light underline-offset-4 hover:underline"
+                      >
+                        {resource.title}
+                      </Link>
+                      <span className="text-small text-text-muted">
+                        {SOP_STATE_LABELS[resource.state]}
+                        {resource.state === "not_published"
+                          ? ": members won't see it until it's published"
+                          : ""}
+                      </span>
+                    </span>
+                    <ActionForm
+                      action={removeLessonResourceAction}
+                      submitLabel="Remove"
+                      pendingLabel="Removing…"
+                      variant="tertiary"
+                      hidden={{ resourceId: resource.id }}
+                      srLabel={resource.title}
+                      className="flex"
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+            {attachable.length > 0 ? (
+              <ActionForm
+                action={addLessonResourceAction}
+                submitLabel="Attach SOP"
+                pendingLabel="Attaching…"
+                variant="secondary"
+                hidden={{ lessonId: lesson.id }}
+                className="flex flex-col gap-3"
+              >
+                <Field id="attach-sop" label="SOP to attach">
+                  <select id="attach-sop" name="sopId" className={fieldClasses}>
+                    {attachable.map((sop) => (
+                      <option key={sop.id} value={sop.id}>
+                        {sopTitle(sop)}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              </ActionForm>
+            ) : (
+              <p className="text-small text-text-muted">
+                {departmentSops.length === 0 ? (
+                  <>
+                    This department has no SOPs yet.{" "}
+                    <Link
+                      href="/admin/sops"
+                      className="text-accent-light underline-offset-4 hover:underline"
+                    >
+                      Add one in the SOP library
+                    </Link>
+                    .
+                  </>
+                ) : (
+                  "Every SOP in this department is attached."
+                )}
+              </p>
+            )}
+          </section>
 
           <details className="rounded-card border border-border bg-card p-5">
             <summary className="flex min-h-control cursor-pointer items-center font-semibold">

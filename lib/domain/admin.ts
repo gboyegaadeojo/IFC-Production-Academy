@@ -6,7 +6,14 @@
 import { hasCapability, hasCapabilityAnywhere, type CapabilityGrant } from "./capabilities";
 
 export type AdminSectionKey =
-  "overview" | "members" | "invitations" | "curriculum" | "people" | "departments" | "audit";
+  | "overview"
+  | "members"
+  | "invitations"
+  | "curriculum"
+  | "sops"
+  | "people"
+  | "departments"
+  | "audit";
 
 /** Sidebar groups (DESIGN §3.2). */
 export type AdminSectionGroup = "Overview" | "People" | "Learning" | "System";
@@ -23,6 +30,7 @@ const SECTIONS: readonly AdminSection[] = [
   { key: "people", href: "/admin/people", label: "People and roles", group: "People" },
   { key: "invitations", href: "/admin/invitations", label: "Invitations", group: "People" },
   { key: "curriculum", href: "/admin/curriculum", label: "Curriculum", group: "Learning" },
+  { key: "sops", href: "/admin/sops", label: "SOP library", group: "Learning" },
   { key: "departments", href: "/admin/departments", label: "Departments", group: "Learning" },
   { key: "audit", href: "/admin/audit", label: "Audit log", group: "System" },
 ];
@@ -56,6 +64,7 @@ export function canOpenAdminSection(
     case "invitations":
       return hasCapabilityAnywhere(grants, "member.invite");
     case "curriculum":
+    case "sops":
       return (
         hasCapabilityAnywhere(grants, "course.draft") ||
         hasCapabilityAnywhere(grants, "course.publish")

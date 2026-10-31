@@ -236,6 +236,8 @@ Quiz behaviour (built 2026-10-31): a course can hold several quizzes, each place
 
 ### SOP library, notifications, scheduling, mentoring, reports, audit
 
+SOP library (built 2026-10-31): each SOP belongs to one department and has an owner (its creator), an optional category, and a review interval (3, 6, 12, or 24 months; default 12). Leaders edit a draft, upload one PDF, PNG, or JPEG file of up to 10 MB, and publish it as the current version; the previous version is kept and marked Superseded. Publishing, or "Mark as reviewed", sets the last review date. Files sit in a private Supabase Storage bucket and open through one-minute signed links: members of the department open only the current version, curriculum staff any version. Lessons attach SOPs as resources and always show the current version. Review reminders are Phase 3.
+
 These follow your package unchanged: **SRS-SOP-001–006** (searchable, versioned SOPs with owners and review dates; authenticated access for restricted files), **SRS-NOTIF-001–006** (email first, configurable, PWA push later), **SRS-SCHED-001–011** (events, roles, availability, states, conflict and competency checks, supervisor on supervised practice, personal schedule, reminders), **SRS-MENTOR-001–005** (mentor assignments, goals, private versus shared notes, audited access), **SRS-REPORT-001–007** (department and cross-department reports separating completion, competency, and authorization; exports without mentoring notes), and **SRS-AUDIT-001–004**.
 
 | ID | Addition | Level |

@@ -417,6 +417,64 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      sops: {
+        Row: {
+          id: string;
+          department_id: string;
+          category: string;
+          owner_id: string | null;
+          review_interval_months: number;
+          last_reviewed_at: string | null;
+          archived_at: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        // Created through create_sop; only category and review interval change directly.
+        Insert: never;
+        Update: { category?: string; review_interval_months?: number };
+        Relationships: [];
+      };
+      sop_versions: {
+        Row: {
+          id: string;
+          sop_id: string;
+          department_id: string;
+          version_number: number | null;
+          status: Database["public"]["Enums"]["sop_version_status"];
+          title: string;
+          summary: string;
+          file_path: string | null;
+          file_name: string | null;
+          file_size: number | null;
+          file_type: string | null;
+          change_note: string | null;
+          based_on_version_id: string | null;
+          created_by: string | null;
+          published_at: string | null;
+          published_by: string | null;
+        } & Timestamps;
+        Insert: never;
+        Update: {
+          title?: string;
+          summary?: string;
+          file_path?: string | null;
+          file_name?: string | null;
+          file_size?: number | null;
+          file_type?: string | null;
+        };
+        Relationships: [];
+      };
+      lesson_resources: {
+        Row: {
+          id: string;
+          lesson_id: string;
+          sop_id: string;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: { lesson_id: string; sop_id: string; sort_order?: number };
+        Update: never;
+        Relationships: [];
+      };
       invitations: {
         // token_hash is deliberately absent: it is not readable through the API.
         Row: {
@@ -517,6 +575,19 @@ export type Database = {
           explanation: string;
         }[];
       };
+      sop_owner_names: {
+        Args: { p_sop_ids: string[] };
+        Returns: { sop_id: string; owner_name: string }[];
+      };
+      remove_lesson_resource: { Args: { p_resource_id: string }; Returns: undefined };
+      create_sop: { Args: { p_department_id: string; p_title: string }; Returns: string };
+      start_sop_draft: { Args: { p_sop_id: string }; Returns: string };
+      publish_sop_version: {
+        Args: { p_version_id: string; p_change_note: string };
+        Returns: number;
+      };
+      mark_sop_reviewed: { Args: { p_sop_id: string }; Returns: string };
+      archive_sop: { Args: { p_sop_id: string }; Returns: undefined };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;
@@ -576,6 +647,7 @@ export type Database = {
       lesson_progress_status: "in_progress" | "completed";
       quiz_question_kind: "single" | "multiple" | "true_false" | "scenario";
       quiz_answer_policy: "after_each_attempt" | "after_pass" | "after_final_attempt" | "never";
+      sop_version_status: "draft" | "published" | "superseded";
     };
     CompositeTypes: { [_ in never]: never };
   };

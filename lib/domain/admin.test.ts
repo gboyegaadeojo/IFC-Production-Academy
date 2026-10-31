@@ -43,7 +43,7 @@ describe("adminSections", () => {
 
   it("shows Curriculum to anyone who drafts or publishes for a department", () => {
     const drafter: CapabilityGrant[] = [{ capability: "course.draft", departmentId: CAMERA }];
-    expect(adminSections(drafter).map((s) => s.key)).toEqual(["curriculum"]);
+    expect(adminSections(drafter).map((s) => s.key)).toEqual(["curriculum", "sops"]);
   });
 
   it("shows the Production Director members, people, and the audit log", () => {
