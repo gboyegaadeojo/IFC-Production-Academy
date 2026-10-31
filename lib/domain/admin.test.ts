@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   accountStatusChanges,
   adminErrorMessage,
+  adminNavigation,
   adminSections,
   canOpenAdminSection,
   describeAuditEvent,
   formatDateTime,
   groupAdminSections,
+  isCurrentSection,
   toAdminError,
 } from "./admin";
 import type { CapabilityGrant } from "./capabilities";
@@ -70,6 +72,26 @@ describe("adminSections", () => {
     expect(groupAdminSections(adminSections(cameraLeader)).map((entry) => entry.group)).toEqual([
       "People",
     ]);
+  });
+
+  it("puts the dashboard first for anyone with a section, and nowhere for volunteers", () => {
+    expect(adminNavigation(cameraLeader).map((entry) => entry.group)).toEqual([
+      "Overview",
+      "People",
+    ]);
+    expect(adminNavigation(cameraLeader)[0]?.sections.map((s) => s.href)).toEqual(["/admin"]);
+    expect(adminNavigation(volunteer)).toEqual([]);
+    expect(canOpenAdminSection(volunteer, "overview")).toBe(false);
+    expect(canOpenAdminSection(cameraLeader, "overview")).toBe(true);
+  });
+
+  it("marks the dashboard current only on /admin itself", () => {
+    const [overview] = adminNavigation(platformAdmin);
+    const dashboard = overview?.sections[0];
+    expect(dashboard && isCurrentSection(dashboard, "/admin")).toBe(true);
+    expect(dashboard && isCurrentSection(dashboard, "/admin/people")).toBe(false);
+    const people = adminSections(platformAdmin)[0];
+    expect(people && isCurrentSection(people, "/admin/people/123")).toBe(true);
   });
 
   it("does not let a department-scoped grant open organization-wide sections", () => {

@@ -6,10 +6,10 @@
 import { hasCapability, hasCapabilityAnywhere, type CapabilityGrant } from "./capabilities";
 
 export type AdminSectionKey =
-  "members" | "invitations" | "curriculum" | "people" | "departments" | "audit";
+  "overview" | "members" | "invitations" | "curriculum" | "people" | "departments" | "audit";
 
-/** Sidebar groups (DESIGN §3.2). An "Overview" group arrives with the admin dashboard. */
-export type AdminSectionGroup = "People" | "Learning" | "System";
+/** Sidebar groups (DESIGN §3.2). */
+export type AdminSectionGroup = "Overview" | "People" | "Learning" | "System";
 
 export type AdminSection = {
   key: AdminSectionKey;
@@ -49,6 +49,8 @@ export function canOpenAdminSection(
   key: AdminSectionKey,
 ): boolean {
   switch (key) {
+    case "overview":
+      return SECTIONS.some((section) => canOpenAdminSection(grants, section.key));
     case "members":
       return hasCapabilityAnywhere(grants, "member.approve");
     case "invitations":
@@ -67,8 +69,32 @@ export function canOpenAdminSection(
   }
 }
 
+/** The working sections someone may open (not the dashboard). */
 export function adminSections(grants: readonly CapabilityGrant[]): AdminSection[] {
   return SECTIONS.filter((section) => canOpenAdminSection(grants, section.key));
+}
+
+const DASHBOARD: AdminSection = {
+  key: "overview",
+  href: "/admin",
+  label: "Dashboard",
+  group: "Overview",
+};
+
+/** Sidebar navigation: the dashboard first, then grouped sections. Empty for people with none. */
+export function adminNavigation(
+  grants: readonly CapabilityGrant[],
+): { group: AdminSectionGroup; sections: AdminSection[] }[] {
+  const sections = adminSections(grants);
+  return sections.length === 0 ? [] : groupAdminSections([DASHBOARD, ...sections]);
+}
+
+/** Whether a sidebar link is the current page. The dashboard matches only itself. */
+export function isCurrentSection(section: AdminSection, pathname: string): boolean {
+  if (section.key === "overview") {
+    return pathname === section.href;
+  }
+  return pathname === section.href || pathname.startsWith(`${section.href}/`);
 }
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,10 @@ export type AuditEntry = {
   subject: PersonSummary | null;
   departmentName: string | null;
   roleName: string | null;
+  /** Column names that changed (never their values), for the expandable detail. */
+  changedFields: string[];
+  /** Which kind of record the event is about, for example "courses". */
+  targetTable: string;
 };
 
 export const AUDIT_PAGE_SIZE = 50;
@@ -96,6 +100,14 @@ export async function listAuditEntries(before: AuditCursor | null): Promise<{
         ? (departmentName.get(event.department_id) ?? null)
         : null,
       roleName: roleId ? (roleName.get(roleId) ?? null) : null,
+      changedFields:
+        typeof event.metadata === "object" &&
+        event.metadata !== null &&
+        !Array.isArray(event.metadata) &&
+        Array.isArray(event.metadata.changed)
+          ? event.metadata.changed.filter((key): key is string => typeof key === "string")
+          : [],
+      targetTable: event.target_table,
     };
   });
 

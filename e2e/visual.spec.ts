@@ -93,4 +93,64 @@ for (const viewport of VIEWPORTS) {
       );
     }
   });
+
+  // Milestone D (DESIGN §7): one screenshot per admin page, with fake seed data only.
+  test(`admin pages for the Production Director at ${viewport.name}px`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await signInByEmail(page, "emery.director@example.com");
+
+    await page.goto("/admin");
+    await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
+    await capture(page, `admin-dashboard-${viewport.name}`);
+
+    await page.goto("/admin/members?view=members");
+    await expect(page.getByRole("link", { name: /^Members/ })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await capture(page, `admin-members-list-${viewport.name}`);
+
+    await page.goto("/admin/invitations");
+    await expect(page.getByRole("heading", { level: 1, name: "Invitations" })).toBeVisible();
+    await capture(page, `admin-invitations-${viewport.name}`);
+
+    await page.goto("/admin/curriculum");
+    await expect(page.getByRole("heading", { level: 1, name: "Curriculum" })).toBeVisible();
+    await capture(page, `admin-curriculum-${viewport.name}`);
+
+    // The fake seed course in Camera Operations Level 1.
+    await page.goto("/admin/curriculum/cccccccc-0000-4000-8000-000000000001");
+    await expect(page.getByRole("navigation", { name: "Course sections" })).toBeVisible();
+    await capture(page, `admin-course-${viewport.name}`);
+
+    await page.goto("/admin/people");
+    await expect(page.getByRole("heading", { level: 1, name: "People and roles" })).toBeVisible();
+    await capture(page, `admin-people-${viewport.name}`);
+
+    await page.getByRole("link", { name: /Avery Example/ }).click();
+    await expect(page.getByRole("heading", { level: 1, name: "Avery Example" })).toBeVisible();
+    await capture(page, `admin-person-${viewport.name}`);
+
+    await page.goto("/admin/audit");
+    await expect(page.getByRole("heading", { level: 1, name: "Audit log" })).toBeVisible();
+    await capture(page, `admin-audit-${viewport.name}`);
+  });
+
+  test(`departments for the Platform Admin at ${viewport.name}px`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await signInByEmail(page, "frankie.admin@example.com");
+    await page.goto("/admin/departments");
+    await expect(page.getByRole("heading", { level: 1, name: "Departments" })).toBeVisible();
+    await capture(page, `admin-departments-${viewport.name}`);
+
+    // Editing opens in a focused drawer that explains each status (DESIGN §7.7).
+    await page.getByRole("button", { name: "Edit Lighting Operations" }).click();
+    const drawer = page.getByRole("dialog", { name: "Edit Lighting Operations" });
+    await expect(drawer).toHaveCSS("opacity", "1");
+    await expect(drawer.getByText(/can't join yet/)).toBeVisible();
+    await page.screenshot({ path: `${DIR}/admin-department-edit-${viewport.name}.png` });
+    await page.keyboard.press("Escape");
+    await expect(drawer).toBeHidden();
+  });
 }

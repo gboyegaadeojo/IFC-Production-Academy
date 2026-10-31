@@ -38,6 +38,11 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   await signInByEmail(leader, "devon.leader@example.com");
   await openAccountMenu(leader);
   await leader.getByRole("link", { name: "Admin" }).click();
+  await expect(leader.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
+  await leader
+    .getByRole("navigation", { name: "Admin" })
+    .getByRole("link", { name: "Membership requests" })
+    .click();
   await expect(
     leader.getByRole("heading", { level: 1, name: "Membership requests" }),
   ).toBeVisible();
@@ -45,9 +50,11 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   await expect(leader.getByRole("heading", { level: 2, name: "Camera Operations" })).toHaveCount(0);
 
   const request = leader.getByRole("listitem").filter({ hasText: email });
+  await request.getByText("Add a note").click();
   await request.getByLabel("Note (optional)").fill("Welcome to the audio team");
   await request.getByRole("button", { name: /^Approve/ }).click();
   // The card moves from Waiting to Members.
+  await leader.getByRole("link", { name: /^Members/ }).click();
   await expect(leader.getByRole("listitem").filter({ hasText: email })).toContainText("Joined");
 
   // The volunteer is now a member. Membership is not approval to serve.
@@ -108,9 +115,9 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   await expect(other.getByRole("heading", { name: "This invitation can't be used" })).toBeVisible();
 
   await leader.reload();
-  await expect(
-    leader.getByRole("listitem").filter({ hasText: "E2E invitation" }).first(),
-  ).toContainText("All places used");
+  await expect(leader.getByRole("row").filter({ hasText: "E2E invitation" }).first()).toContainText(
+    "All places used",
+  );
 
   await Promise.all([leaderContext.close(), guestContext.close(), otherContext.close()]);
 });
@@ -122,7 +129,7 @@ test("a leader builds, publishes, and revises a course", async ({ page }) => {
   await page.goto("/admin/curriculum");
   await expect(page.getByRole("heading", { level: 1, name: "Curriculum" })).toBeVisible();
 
-  await page.getByText("New course in Level 1, Camera Operations").click();
+  await page.getByText("Add course to Level 1, Camera Operations").click();
   await page.getByLabel("Course title").first().fill(title);
   await page.getByRole("button", { name: "Create course" }).first().click();
   await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
@@ -140,6 +147,8 @@ test("a leader builds, publishes, and revises a course", async ({ page }) => {
   await expect(page.getByRole("status").filter({ hasText: "Saved to the draft." })).toBeVisible();
   await page.getByRole("link", { name: "Back to the course" }).click();
 
+  const sections = page.getByRole("navigation", { name: "Course sections" });
+  await sections.getByRole("link", { name: "Publish" }).click();
   await page.getByLabel("What changed?").fill("First version");
   await page.getByRole("button", { name: "Publish" }).click();
   await expect(page.getByText("Version 1 is live")).toBeVisible();
@@ -147,13 +156,16 @@ test("a leader builds, publishes, and revises a course", async ({ page }) => {
   // Published content is locked; editing starts a draft and keeps version 1 live.
   await page.getByRole("button", { name: "Edit course" }).click();
   await expect(page.getByText("You're editing a draft")).toBeVisible();
+  await sections.getByRole("link", { name: "Details" }).click();
   await page.getByLabel("Title", { exact: true }).fill(`${title} (revised)`);
   await page.getByRole("button", { name: "Save details" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Saved to the draft." })).toBeVisible();
+  await sections.getByRole("link", { name: "Publish" }).click();
   await page.getByLabel("What changed?").fill("Renamed the course");
   await page.getByRole("button", { name: "Publish" }).click();
   await expect(page.getByText("Version 2 is live")).toBeVisible();
 
+  await sections.getByRole("link", { name: "History" }).click();
   const history = page.getByRole("region", { name: "Version history" });
   await expect(history.getByText(`Version 1: ${title}`, { exact: true })).toBeVisible();
   await expect(history.getByText("First version")).toBeVisible();

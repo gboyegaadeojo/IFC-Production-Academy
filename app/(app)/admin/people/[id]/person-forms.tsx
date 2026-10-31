@@ -14,7 +14,7 @@ import {
 const idle: FormState = { status: "idle" };
 
 const fieldClasses =
-  "min-h-control rounded-button border border-border bg-surface px-3 text-body text-text";
+  "min-h-control rounded-button border border-border-strong bg-surface px-3 text-body text-text";
 
 function Result({ state, id }: { state: FormState; id: string }) {
   if (state.status === "idle") {

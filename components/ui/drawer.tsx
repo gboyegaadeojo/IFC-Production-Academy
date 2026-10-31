@@ -15,12 +15,19 @@ export function Drawer({
   children,
   side = "left",
   triggerClassName = "",
+  trigger,
+  wide = false,
 }: {
   title: string;
+  /** Accessible name for the button (screen-reader text next to any visible trigger). */
   triggerLabel: string;
   children: ReactNode;
   side?: "left" | "right";
   triggerClassName?: string;
+  /** Visible button content; defaults to a menu icon. */
+  trigger?: ReactNode;
+  /** A wider panel for forms. */
+  wide?: boolean;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -43,7 +50,7 @@ export function Drawer({
         aria-haspopup="dialog"
         className={`inline-flex min-h-touch min-w-11 items-center justify-center gap-2 rounded-button px-2 text-text-secondary hover:bg-hover hover:text-text ${triggerClassName}`}
       >
-        <MenuIcon />
+        {trigger ?? <MenuIcon />}
         <span className="sr-only">{triggerLabel}</span>
       </button>
       <dialog
@@ -55,7 +62,7 @@ export function Drawer({
             event.currentTarget.close();
           }
         }}
-        className={`m-0 h-dvh max-h-dvh w-[min(20rem,88vw)] max-w-none border-border bg-surface p-0 text-text opacity-0 transition-[opacity,translate,display,overlay] transition-discrete duration-[var(--duration-slow)] ease-standard backdrop:bg-bg/70 open:translate-x-0 open:opacity-100 starting:open:opacity-0 ${position} ${
+        className={`m-0 h-dvh max-h-dvh max-w-none ${wide ? "w-[min(32rem,100vw)]" : "w-[min(20rem,88vw)]"} border-border bg-surface p-0 text-text opacity-0 transition-[opacity,translate,display,overlay] transition-discrete duration-[var(--duration-slow)] ease-standard backdrop:bg-bg/70 open:translate-x-0 open:opacity-100 starting:open:opacity-0 ${position} ${
           side === "left" ? "border-r" : "border-l"
         }`}
       >

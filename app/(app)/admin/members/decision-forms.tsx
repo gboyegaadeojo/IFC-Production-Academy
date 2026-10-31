@@ -6,6 +6,11 @@ import { decideMembershipAction, type DecisionState } from "./actions";
 
 const initialState: DecisionState = { status: "idle" };
 
+const fieldClasses =
+  "min-h-control w-full rounded-button border border-border-strong bg-surface px-3 text-body text-text placeholder:text-text-muted";
+const disclosure =
+  "flex min-h-control cursor-pointer list-none items-center rounded-button px-2 text-small text-text-secondary transition-surface hover:bg-hover hover:text-text [&::-webkit-details-marker]:hidden";
+
 function Result({ state, id }: { state: DecisionState; id: string }) {
   if (state.status === "idle") {
     return null;
@@ -21,7 +26,11 @@ function Result({ state, id }: { state: DecisionState; id: string }) {
   );
 }
 
-/** Approve or decline a request, with an optional note kept in the membership history. */
+/**
+ * Review actions for one request (DESIGN §7.2). Approve is one step; an optional note sits behind
+ * "Add a note" instead of a box on every row. Declining needs a deliberate second step.
+ * The note is kept in the membership history (SRS-MEM-003).
+ */
 export function RequestDecisionForm({
   membershipId,
   personName,
@@ -29,45 +38,77 @@ export function RequestDecisionForm({
   membershipId: string;
   personName: string;
 }) {
-  const [state, formAction, pending] = useActionState(decideMembershipAction, initialState);
+  const [approveState, approveAction, approving] = useActionState(
+    decideMembershipAction,
+    initialState,
+  );
+  const [declineState, declineAction, declining] = useActionState(
+    decideMembershipAction,
+    initialState,
+  );
   const noteId = useId();
-  const resultId = useId();
+  const reasonId = useId();
+  const approveResultId = useId();
+  const declineResultId = useId();
+  const pending = approving || declining;
 
   return (
-    <form action={formAction} className="flex flex-col gap-2 md:flex-row md:items-center">
-      <input type="hidden" name="membershipId" value={membershipId} />
-      <label htmlFor={noteId} className="sr-only">
-        Note (optional)
-      </label>
-      <input
-        id={noteId}
-        name="reason"
-        maxLength={500}
-        placeholder="Note (optional)"
-        className="min-h-control rounded-button border border-border bg-surface px-3 text-body text-text placeholder:text-text-muted md:w-56"
-      />
-      <div className="flex flex-wrap gap-2">
-        <Button
-          type="submit"
-          name="decision"
-          value="active"
-          disabled={pending}
-          aria-describedby={state.status === "idle" ? undefined : resultId}
-        >
-          Approve<span className="sr-only"> {personName}</span>
-        </Button>
-        <Button
-          type="submit"
-          name="decision"
-          value="declined"
-          variant="secondary"
-          disabled={pending}
-        >
-          Decline<span className="sr-only"> {personName}</span>
-        </Button>
+    <div className="flex flex-col gap-2 md:items-end">
+      <div className="flex flex-wrap items-start gap-2 md:justify-end">
+        <form action={approveAction} className="flex flex-col gap-2">
+          <input type="hidden" name="membershipId" value={membershipId} />
+          <input type="hidden" name="decision" value="active" />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="submit"
+              disabled={pending}
+              aria-describedby={approveState.status === "idle" ? undefined : approveResultId}
+            >
+              {approving ? "Approving…" : "Approve"}
+              <span className="sr-only"> {personName}</span>
+            </Button>
+            <details className="group">
+              <summary className={disclosure}>
+                Add a note<span className="sr-only"> for {personName}</span>
+              </summary>
+              <div className="mt-2 w-64 max-w-full">
+                <label htmlFor={noteId} className="mb-1 block text-small text-text-secondary">
+                  Note (optional)
+                </label>
+                <input id={noteId} name="reason" maxLength={500} className={fieldClasses} />
+              </div>
+            </details>
+          </div>
+        </form>
+        <details className="group">
+          <summary className={`${disclosure} border border-border-strong`}>
+            Decline…<span className="sr-only"> {personName}</span>
+          </summary>
+          <form
+            action={declineAction}
+            className="mt-2 flex w-72 max-w-full flex-col gap-2 rounded-card border border-border bg-surface p-3"
+          >
+            <input type="hidden" name="membershipId" value={membershipId} />
+            <input type="hidden" name="decision" value="declined" />
+            <label htmlFor={reasonId} className="text-small text-text-secondary">
+              Reason (optional, kept in the history)
+            </label>
+            <input id={reasonId} name="reason" maxLength={500} className={fieldClasses} />
+            <Button
+              type="submit"
+              variant="destructive"
+              disabled={pending}
+              aria-describedby={declineState.status === "idle" ? undefined : declineResultId}
+            >
+              {declining ? "Declining…" : "Decline request"}
+              <span className="sr-only"> from {personName}</span>
+            </Button>
+            <Result state={declineState} id={declineResultId} />
+          </form>
+        </details>
       </div>
-      <Result state={state} id={resultId} />
-    </form>
+      <Result state={approveState} id={approveResultId} />
+    </div>
   );
 }
 
@@ -85,21 +126,19 @@ export function RemoveMemberForm({
 
   return (
     <details className="group">
-      <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-text-secondary hover:text-text">
-        Remove<span className="sr-only"> {personName}</span>
+      <summary className={disclosure}>
+        Remove…<span className="sr-only"> {personName}</span>
       </summary>
-      <form action={formAction} className="mt-3 flex flex-col gap-3">
+      <form
+        action={formAction}
+        className="mt-2 flex w-72 max-w-full flex-col gap-2 rounded-card border border-border bg-surface p-3"
+      >
         <input type="hidden" name="membershipId" value={membershipId} />
         <input type="hidden" name="decision" value="removed" />
         <label htmlFor={reasonId} className="text-small text-text-secondary">
           Reason (optional)
         </label>
-        <input
-          id={reasonId}
-          name="reason"
-          maxLength={500}
-          className="min-h-control rounded-button border border-border bg-surface px-3 text-body text-text"
-        />
+        <input id={reasonId} name="reason" maxLength={500} className={fieldClasses} />
         <p className="text-small text-text-muted">
           They lose access to this department&apos;s training. Their progress and history are kept.
         </p>
@@ -107,7 +146,6 @@ export function RemoveMemberForm({
           type="submit"
           variant="destructive"
           disabled={pending}
-          className="self-start"
           aria-describedby={state.status === "idle" ? undefined : resultId}
         >
           Remove {personName}
