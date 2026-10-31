@@ -6,6 +6,7 @@ import {
   canOpenAdminSection,
   describeAuditEvent,
   formatDateTime,
+  groupAdminSections,
   toAdminError,
 } from "./admin";
 import type { CapabilityGrant } from "./capabilities";
@@ -52,6 +53,22 @@ describe("adminSections", () => {
       "people",
       "departments",
       "audit",
+    ]);
+  });
+
+  it("groups visible sections for the sidebar and skips empty groups (DESIGN §3.2)", () => {
+    expect(
+      groupAdminSections(adminSections(platformAdmin)).map((entry) => ({
+        group: entry.group,
+        keys: entry.sections.map((s) => s.key),
+      })),
+    ).toEqual([
+      { group: "People", keys: ["people"] },
+      { group: "Learning", keys: ["departments"] },
+      { group: "System", keys: ["audit"] },
+    ]);
+    expect(groupAdminSections(adminSections(cameraLeader)).map((entry) => entry.group)).toEqual([
+      "People",
     ]);
   });
 

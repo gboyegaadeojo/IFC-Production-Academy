@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openAccountMenu } from "./support/account-menu";
 import { mailpitAvailable, signInByEmail, signInLinkFor } from "./support/email-sign-in";
 
 // Workflow A, first half (SPEC §3): sign in with an email link, see the departments, request to
@@ -49,6 +50,7 @@ test("signing out ends the session", async ({ page }, testInfo) => {
   const email = `e2e-signout-${testInfo.project.name}-${Date.now()}@example.com`;
   await signInByEmail(page, email);
 
+  await openAccountMenu(page);
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/sign-in/);
 

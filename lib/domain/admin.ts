@@ -8,16 +8,40 @@ import { hasCapability, hasCapabilityAnywhere, type CapabilityGrant } from "./ca
 export type AdminSectionKey =
   "members" | "invitations" | "curriculum" | "people" | "departments" | "audit";
 
-export type AdminSection = { key: AdminSectionKey; href: string; label: string };
+/** Sidebar groups (DESIGN §3.2). An "Overview" group arrives with the admin dashboard. */
+export type AdminSectionGroup = "People" | "Learning" | "System";
+
+export type AdminSection = {
+  key: AdminSectionKey;
+  href: string;
+  label: string;
+  group: AdminSectionGroup;
+};
 
 const SECTIONS: readonly AdminSection[] = [
-  { key: "members", href: "/admin/members", label: "Membership requests" },
-  { key: "invitations", href: "/admin/invitations", label: "Invitations" },
-  { key: "curriculum", href: "/admin/curriculum", label: "Curriculum" },
-  { key: "people", href: "/admin/people", label: "People and roles" },
-  { key: "departments", href: "/admin/departments", label: "Departments" },
-  { key: "audit", href: "/admin/audit", label: "Audit log" },
+  { key: "members", href: "/admin/members", label: "Membership requests", group: "People" },
+  { key: "people", href: "/admin/people", label: "People and roles", group: "People" },
+  { key: "invitations", href: "/admin/invitations", label: "Invitations", group: "People" },
+  { key: "curriculum", href: "/admin/curriculum", label: "Curriculum", group: "Learning" },
+  { key: "departments", href: "/admin/departments", label: "Departments", group: "Learning" },
+  { key: "audit", href: "/admin/audit", label: "Audit log", group: "System" },
 ];
+
+/** Visible sections grouped for the sidebar, in order, skipping empty groups. */
+export function groupAdminSections(
+  sections: readonly AdminSection[],
+): { group: AdminSectionGroup; sections: AdminSection[] }[] {
+  const groups: { group: AdminSectionGroup; sections: AdminSection[] }[] = [];
+  for (const section of sections) {
+    const existing = groups.find((entry) => entry.group === section.group);
+    if (existing) {
+      existing.sections.push(section);
+    } else {
+      groups.push({ group: section.group, sections: [section] });
+    }
+  }
+  return groups;
+}
 
 /** Whether someone may open a section. Only authorized areas are shown (SPEC §8). */
 export function canOpenAdminSection(

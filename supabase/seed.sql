@@ -50,3 +50,24 @@ insert into public.user_roles (user_id, role_id, department_id) values
 insert into public.department_memberships (department_id, user_id, status, decided_at, decided_by) values
   ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'aaaaaaaa-0000-4000-8000-000000000001', 'active', now(), 'aaaaaaaa-0000-4000-8000-000000000003'),
   ('8cd57d7d-1aab-4be6-b67b-e9bc606e0d73', 'aaaaaaaa-0000-4000-8000-000000000002', 'requested', null, null);
+
+-- One obviously fake published course in Camera Operations Level 1, so the "member with courses"
+-- home state can be tried locally and in CI. Not real curriculum.
+insert into public.courses (id, department_id, level_id, sort_order, created_by)
+select 'cccccccc-0000-4000-8000-000000000001', l.department_id, l.id, 10, 'aaaaaaaa-0000-4000-8000-000000000003'
+from public.levels l
+where l.department_id = 'b7ba9dae-cab5-43e0-a996-8ae9d2436855' and l.number = 1;
+
+insert into public.course_versions
+  (id, course_id, version_number, status, title, summary, change_note, created_by, published_at, published_by)
+values
+  ('cccccccc-0000-4000-8000-000000000011', 'cccccccc-0000-4000-8000-000000000001', 1, 'published',
+   'Sample course (seed data)', 'Fake content for local development and tests.', 'Seed data',
+   'aaaaaaaa-0000-4000-8000-000000000003', now(), 'aaaaaaaa-0000-4000-8000-000000000003');
+
+insert into public.course_modules (id, course_version_id, title, sort_order)
+values ('cccccccc-0000-4000-8000-000000000021', 'cccccccc-0000-4000-8000-000000000011', 'Sample module', 10);
+
+insert into public.lessons (course_version_id, module_id, title, body, sort_order)
+values ('cccccccc-0000-4000-8000-000000000011', 'cccccccc-0000-4000-8000-000000000021',
+        'Sample lesson', 'Fake lesson text for local development.', 10);

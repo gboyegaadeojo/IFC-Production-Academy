@@ -1,62 +1,71 @@
 @import "tailwindcss";
 
 /*
- * Design tokens (SPEC §7). Components use these through Tailwind utilities such as bg-card,
- * text-text-secondary, or rounded-card. Never hardcode hex values in components.
- * Dark is the primary theme; light is a SHOULD and switches on with data-theme="light".
+ * Design tokens. Visual values follow docs/DESIGN-REQUIREMENTS.md §4 (colour, type, geometry) and
+ * §5 (motion); SPEC §7 points there. Components use them through Tailwind utilities such as
+ * bg-card, text-text-secondary, or rounded-card. Never hardcode hex values in components.
+ * Dark is the signature theme. Light values are defined but not switched on yet (SPEC §9 open
+ * decision 4); they would apply with data-theme="light".
  */
 :root {
   color-scheme: dark;
 
   /* Surfaces */
-  --bg: #080808;
-  --surface: #101010;
-  --card: #151515;
-  --hover: #1c1c1c;
-  --border: #292929;
+  --bg: #0b0c10;
+  --surface: #121318;
+  --card: #191b22;
+  --hover: #252731;
+  /* Decorative dividers. */
+  --border: #30323c;
+  /* Form controls and other UI that must be seen: at least 3:1 on every surface (WCAG 1.4.11). */
+  --border-strong: #666977;
 
-  /* Text. Muted is #8A8A8A, not #737373, to reach 5.29:1 on cards. */
-  --text: #f5f5f5;
-  --text-secondary: #a3a3a3;
-  --text-muted: #8a8a8a;
+  /*
+   * Text, contrast on --bg / --card / --hover:
+   * text 17.9 / 15.8 / 13.7; secondary 9.7 / 8.5 / 7.4; muted 6.4 / 5.6 / 4.9.
+   */
+  --text: #f5f5f7;
+  --text-secondary: #b5b6c1;
+  --text-muted: #9193a1;
 
-  /* Purple is the one action colour. Use --accent for fills, --accent-light for text and links. */
+  /* Purple is the one action colour: --accent for fills (white text 5.7:1), --accent-light for text. */
   --accent: #7c3aed;
-  --accent-light: #a78bfa;
+  --accent-light: #b69bff;
   --on-accent: #ffffff;
 
-  /* Status */
+  /* Status. Always paired with words or an icon, never colour alone. Error text avoids --hover. */
   --success: #22c55e;
   --warning: #f59e0b;
   --error: #ef4444;
   --info: #60a5fa;
 
-  /* Department identity hues: covers, icons, rings, and badges only. Never buttons. */
+  /* Department identity hues: covers, icons, rails, tags, and progress only. Never buttons. */
   --dept-blue: #4f8cff;
   --dept-teal: #2bd4a4;
   --dept-violet: #b07cff;
   --dept-coral: #ff6b57;
   --dept-amber: #ffc23d;
 
-  /* Motion: short and calm. Zeroed for reduced motion below. */
+  /* Motion (DESIGN §5): explains change, never decorates. Zeroed for reduced motion below. */
   --duration-fast: 150ms;
   --duration-base: 200ms;
-  --duration-slow: 250ms;
+  --duration-slow: 240ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 }
 
 [data-theme="light"] {
   color-scheme: light;
-  --bg: #f7f7f8;
+  --bg: #f7f8fa;
   --surface: #ffffff;
   --card: #ffffff;
-  --hover: #f0f0f2;
-  --border: #e4e4e8;
-  --text: #111114;
-  --text-secondary: #5b5b66;
+  --hover: #f0f1f5;
+  --border: #e1e3e9;
+  --border-strong: #8a8e9c;
+  --text: #171820;
+  --text-secondary: #515563;
   --text-muted: #6b6b76;
   --accent: #6d28d9;
-  --accent-light: #7c3aed;
+  --accent-light: #6d28d9;
   --success: #15803d;
   --warning: #b45309;
   --error: #b91c1c;
@@ -79,6 +88,7 @@
   --color-card: var(--card);
   --color-hover: var(--hover);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-text: var(--text);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
@@ -99,32 +109,33 @@
   --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", monospace;
 
   /*
-   * Type scale 32 / 24 / 18 / 15 / 14 / 13 px (revised 2026-10-30: denser, tool-like).
-   * Nothing smaller than 13.
+   * Type (DESIGN §4.2). Sizes scale between mobile and desktop:
+   * display 30→44 (hero), title 25→30 (page), heading 20→22 (section), subheading 17 (card),
+   * lead 17, body 15, small 13. Nothing smaller than 13. Weights 400/500/600 only.
    */
   --text-*: initial;
-  --text-display: 2rem;
-  --text-display--line-height: 1.15;
-  --text-display--letter-spacing: -0.02em;
-  --text-title: 1.5rem;
-  --text-title--line-height: 1.25;
-  --text-title--letter-spacing: -0.015em;
-  --text-heading: 1.125rem;
-  --text-heading--line-height: 1.35;
-  --text-heading--letter-spacing: -0.01em;
-  --text-subheading: 0.9375rem;
-  --text-subheading--line-height: 1.4;
-  --text-subheading--letter-spacing: -0.005em;
-  --text-lead: 0.9375rem;
-  --text-lead--line-height: 1.55;
-  --text-body: 0.875rem;
-  --text-body--line-height: 1.5;
+  --text-display: clamp(1.875rem, 1.35rem + 2.2vw, 2.75rem);
+  --text-display--line-height: 1.12;
+  --text-display--letter-spacing: -0.022em;
+  --text-title: clamp(1.5625rem, 1.35rem + 0.9vw, 1.875rem);
+  --text-title--line-height: 1.2;
+  --text-title--letter-spacing: -0.018em;
+  --text-heading: clamp(1.25rem, 1.15rem + 0.4vw, 1.375rem);
+  --text-heading--line-height: 1.3;
+  --text-heading--letter-spacing: -0.012em;
+  --text-subheading: 1.0625rem;
+  --text-subheading--line-height: 1.35;
+  --text-subheading--letter-spacing: -0.006em;
+  --text-lead: 1.0625rem;
+  --text-lead--line-height: 1.6;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.6;
   --text-small: 0.8125rem;
-  --text-small--line-height: 1.45;
+  --text-small--line-height: 1.5;
 
-  /* Card 10, button 8, pills fully round. Sharper corners read as a tool, not a template. */
+  /* Geometry (DESIGN §4.3): cards 12, buttons and inputs 8, pills fully round. */
   --radius-button: 8px;
-  --radius-card: 10px;
+  --radius-card: 12px;
   --radius-pill: 9999px;
 
   --ease-standard: var(--ease-standard);
@@ -133,6 +144,7 @@
 html {
   background: var(--bg);
   color: var(--text);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -145,9 +157,13 @@ body {
   outline-offset: 2px;
 }
 
+::selection {
+  background: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
 /*
- * Controls are 36px with a mouse and 44px on touch screens (SPEC §6: touch targets of at least
- * 44 by 44 px; WCAG 2.2 AA asks for 24).
+ * Controls are 36px with a mouse and 44px on touch screens (DESIGN §9, SPEC §6: touch targets of
+ * at least 44 by 44 px).
  */
 @utility min-h-control {
   min-height: 2.25rem;
@@ -156,12 +172,37 @@ body {
   }
 }
 
-/* Small uppercase labels in the mono face, such as "Level 1" or "Version 2". */
+/* Always 44px: primary touch controls in navigation. */
+@utility min-h-touch {
+  min-height: 2.75rem;
+}
+
+/* Page width (DESIGN §4.3): up to 1440px, gutters 16 → 32 → 48px. */
+@utility page-container {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  @media (width >= 48rem) {
+    padding-inline: 2rem;
+  }
+  @media (width >= 80rem) {
+    padding-inline: 3rem;
+  }
+}
+
+/* Reading and form width: about 70 characters of body text. */
+@utility reading-width {
+  max-width: 45rem;
+}
+
+/* Small uppercase labels in the mono face: levels, versions, technical identifiers. */
 @utility eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
+  font-weight: 500;
   line-height: 1.4;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -169,4 +210,11 @@ body {
 /* Tabular numerals for progress and metrics. */
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Shared transition for interactive surfaces (DESIGN §5: 120–180ms, no jitter). */
+@utility transition-surface {
+  transition-property: background-color, border-color, color, opacity, transform;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-standard);
 }

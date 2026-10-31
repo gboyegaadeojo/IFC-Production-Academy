@@ -11,7 +11,11 @@ import {
   type RequestMembershipError,
 } from "@/lib/domain/departments";
 
-export type DepartmentCard = Department & { state: DepartmentCardState };
+export type DepartmentCard = Department & {
+  state: DepartmentCardState;
+  /** When the person's membership last changed: the request date, or the join date. */
+  since: string | null;
+};
 
 /** Departments the person may browse, each with what they can do next (SRS-MEM-006). */
 export async function listDepartmentCards(userId: string): Promise<DepartmentCard[]> {
@@ -57,6 +61,7 @@ export async function listDepartmentCards(userId: string): Promise<DepartmentCar
   return browsableDepartments(departments).map((department) => ({
     ...department,
     state: departmentCardState(department, membershipByDepartment.get(department.id)),
+    since: membershipByDepartment.get(department.id)?.updatedAt ?? null,
   }));
 }
 

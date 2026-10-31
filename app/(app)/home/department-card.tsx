@@ -1,70 +1,102 @@
 import type { CSSProperties } from "react";
-import { DepartmentIcon } from "@/components/department-icon";
+import { DepartmentCover } from "@/components/department-cover";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { DepartmentCard as DepartmentCardData } from "@/lib/data/departments";
+import { formatDateTime } from "@/lib/domain/admin";
 import { departmentHueVar } from "@/lib/domain/departments";
+import { courseCountLabel } from "@/lib/domain/home";
 import { RequestMembershipButton } from "./request-membership-button";
 
-export function DepartmentCard({ department }: { department: DepartmentCardData }) {
+/**
+ * Department card (DESIGN §6.2): cover, name, one value line, status, and exactly one next step.
+ * Every membership state stays distinct: member, requested, can request (first time, after a
+ * decline, after removal), coming soon, invite only. Inactive departments never reach here.
+ */
+export function DepartmentCard({
+  department,
+  publishedCourses,
+}: {
+  department: DepartmentCardData;
+  /** Published courses, known only for departments the person belongs to. */
+  publishedCourses: number | null;
+}) {
   const headingId = `department-${department.id}`;
-  // The department hue only tints the cover strip and icon (SPEC §7).
   const style = { "--dept": departmentHueVar(department.hue) } as CSSProperties;
 
   return (
     <article
       aria-labelledby={headingId}
       style={style}
-      className="flex w-full flex-col overflow-hidden rounded-card border border-border bg-card"
+      className="group flex w-full flex-col overflow-hidden rounded-card border border-border bg-card transition-surface hover:border-border-strong/70"
     >
-      <div
-        aria-hidden="true"
-        className="h-20 bg-[linear-gradient(135deg,color-mix(in_srgb,var(--dept)_30%,transparent),transparent_75%)]"
+      {/* The hue rail: identity colour as a minor accent (DESIGN §4.1). */}
+      <span aria-hidden="true" className="h-0.5 bg-[var(--dept)]" />
+      <DepartmentCover
+        hue={department.hue}
+        icon={department.icon}
+        label={department.name}
+        className="border-b border-border"
       />
-      <div className="-mt-7 flex flex-1 flex-col gap-3 px-6 pb-6">
-        <span className="flex size-14 items-center justify-center rounded-card border border-[var(--dept)] bg-surface text-[var(--dept)]">
-          <DepartmentIcon icon={department.icon} className="size-7" />
-        </span>
+      <div className="flex flex-1 flex-col gap-2 p-5">
         <h3 id={headingId} className="text-subheading font-semibold">
           {department.name}
         </h3>
-        <p className="text-text-secondary">{department.summary}</p>
-        <div className="mt-auto pt-2">
-          <CardAction department={department} />
+        <p className="text-small text-text-secondary">{department.summary}</p>
+        <div className="mt-auto flex flex-col gap-2 pt-3">
+          <CardStatus department={department} publishedCourses={publishedCourses} />
         </div>
       </div>
     </article>
   );
 }
 
-function CardAction({ department }: { department: DepartmentCardData }) {
+function CardStatus({
+  department,
+  publishedCourses,
+}: {
+  department: DepartmentCardData;
+  publishedCourses: number | null;
+}) {
   const { state } = department;
   switch (state.kind) {
     case "member":
-      return <StatusBadge tone="success">You&apos;re a member</StatusBadge>;
+      return (
+        <>
+          <StatusBadge tone="success">You&apos;re a member</StatusBadge>
+          <p className="text-small text-text-muted">
+            {publishedCourses
+              ? `${courseCountLabel(publishedCourses)} published. Course pages open here soon.`
+              : "Courses are being prepared. They'll appear here when they're published."}
+          </p>
+        </>
+      );
     case "requested":
       return (
-        <div className="flex flex-col gap-2">
+        <>
           <StatusBadge tone="pending">Request sent</StatusBadge>
-          <p className="text-small text-text-muted">A department leader will review it.</p>
-        </div>
+          <p className="text-small text-text-muted">
+            A department leader will review it
+            {department.since ? ` · asked ${formatDateTime(department.since)}` : ""}.
+          </p>
+        </>
       );
     case "coming_soon":
       return (
-        <div className="flex flex-col gap-2">
+        <>
           <StatusBadge tone="info">Coming soon</StatusBadge>
           <p className="text-small text-text-muted">Training opens when the curriculum is ready.</p>
-        </div>
+        </>
       );
     case "invite_only":
       return (
-        <div className="flex flex-col gap-2">
-          <StatusBadge tone="neutral">By invitation</StatusBadge>
+        <>
+          <StatusBadge tone="locked">By invitation</StatusBadge>
           <p className="text-small text-text-muted">Ask the department leader for an invite.</p>
-        </div>
+        </>
       );
     case "can_request":
       return (
-        <div className="flex flex-col gap-2">
+        <>
           {state.previously === "declined" ? (
             <p className="text-small text-text-muted">
               Your last request wasn&apos;t accepted. You can ask again.
@@ -78,7 +110,7 @@ function CardAction({ department }: { department: DepartmentCardData }) {
             departmentName={department.name}
             again={state.previously !== null}
           />
-        </div>
+        </>
       );
     case "unavailable":
       return null;

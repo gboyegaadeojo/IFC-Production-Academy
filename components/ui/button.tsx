@@ -1,26 +1,44 @@
 import type { ButtonHTMLAttributes } from "react";
 
 export type ButtonVariant = "primary" | "secondary" | "tertiary" | "destructive";
+export type ButtonSize = "md" | "sm";
 
 const base =
-  "inline-flex min-h-control items-center justify-center gap-2 rounded-button px-4 text-body font-medium " +
-  "transition-colors duration-[var(--duration-fast)] ease-standard " +
-  "disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-button font-medium whitespace-nowrap " +
+  "transition-surface disabled:cursor-not-allowed disabled:opacity-55 aria-busy:cursor-progress";
 
-const variants: Record<ButtonVariant, string> = {
-  // Purple is the single action colour (SPEC §7).
-  primary: "bg-accent text-on-accent hover:brightness-110 active:brightness-95",
-  secondary: "border border-border bg-surface text-text hover:bg-hover active:bg-card",
-  tertiary: "px-2 text-accent-light underline-offset-4 hover:underline",
-  destructive: "border border-error text-error hover:bg-hover",
+const sizes: Record<ButtonSize, string> = {
+  md: "min-h-control px-4 text-body",
+  sm: "min-h-control px-3 text-small",
 };
 
-export function buttonClasses(variant: ButtonVariant = "primary", className = ""): string {
-  return `${base} ${variants[variant]} ${className}`.trim();
+const variants: Record<ButtonVariant, string> = {
+  // Purple is the single action colour (SPEC §7, DESIGN §4.1).
+  primary: "bg-accent text-on-accent hover:brightness-110 active:brightness-95",
+  secondary: "border border-border-strong text-text hover:bg-hover active:bg-card",
+  tertiary: "px-1 text-accent-light underline-offset-4 hover:underline",
+  destructive: "border border-error text-error hover:bg-card",
+};
+
+export function buttonClasses(
+  variant: ButtonVariant = "primary",
+  className = "",
+  size: ButtonSize = "md",
+): string {
+  return `${base} ${sizes[size]} ${variants[variant]} ${className}`.trim();
 }
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant };
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+};
 
-export function Button({ variant = "primary", className, type = "button", ...props }: ButtonProps) {
-  return <button type={type} className={buttonClasses(variant, className)} {...props} />;
+export function Button({
+  variant = "primary",
+  size = "md",
+  className,
+  type = "button",
+  ...props
+}: ButtonProps) {
+  return <button type={type} className={buttonClasses(variant, className, size)} {...props} />;
 }

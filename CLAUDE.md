@@ -4,6 +4,8 @@ A volunteer learning and competency platform for the production ministry at Imma
 
 **The full requirements are in [docs/SPEC.md](docs/SPEC.md).** Read the relevant section before building a feature, and cite requirement IDs (`SRS-…`, `ADD-…`) in commits and PRs. If a request conflicts with the spec, say so instead of silently diverging.
 
+**The user interface follows [docs/DESIGN-REQUIREMENTS.md](docs/DESIGN-REQUIREMENTS.md)**: layout, navigation, visual tokens, components, motion, and accessibility. SPEC.md and this file stay authoritative for behaviour, permissions, and security. The working plan for the redesign is in [docs/design/implementation-plan.md](docs/design/implementation-plan.md).
+
 ## Non-negotiable product rules
 
 - **Course completion, competency approval, and Approved to Serve are three separate records.** Watching videos or passing a quiz never makes someone Approved to Serve (SPEC §3, SRS-PROG-007, SRS-COMP-001).
@@ -22,7 +24,7 @@ A volunteer learning and competency platform for the production ministry at Imma
 | Database, auth, files | Supabase Free: Postgres with row-level security, Supabase Auth (email magic link only, decided 2026-10-30), Supabase Storage (private buckets, signed URLs) |
 | Email | Resend, server-side only; also set as Supabase Auth's SMTP sender |
 | Video | Unlisted YouTube via the official IFrame Player API, behind a `VideoSource` abstraction so Vimeo or Mux can be added later |
-| Styling | Tailwind CSS driven by the design tokens in SPEC §7 (CSS variables, dark theme first) |
+| Styling | Tailwind CSS driven by the design tokens in DESIGN-REQUIREMENTS §4 (CSS variables in `app/globals.css`, dark theme first) |
 | Tests | Vitest (unit), Playwright (end-to-end and PWA), pgTAP or SQL tests for RLS policies |
 | Monitoring | Sentry (errors), PostHog (usage), both free tiers |
 | Scheduled jobs | GitHub Actions: daily keep-alive, nightly encrypted backup to Google Drive, monthly restore test, weekly summary |

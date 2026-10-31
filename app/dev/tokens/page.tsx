@@ -15,7 +15,8 @@ const colourGroups: { title: string; tokens: { name: string; use: string }[] }[]
       { name: "surface", use: "Navigation, panels" },
       { name: "card", use: "Course and content cards" },
       { name: "hover", use: "Hover, selected" },
-      { name: "border", use: "Dividers, outlines" },
+      { name: "border", use: "Decorative dividers" },
+      { name: "border-strong", use: "Form controls (3:1 or more)" },
     ],
   },
   {
@@ -53,10 +54,10 @@ const departmentHues = [
 ];
 
 const typeScale = [
-  { className: "text-display", label: "Display 40" },
-  { className: "text-title", label: "Title 32" },
-  { className: "text-heading", label: "Heading 24" },
-  { className: "text-subheading", label: "Subheading 20" },
+  { className: "text-display", label: "Display 30–44 (hero)" },
+  { className: "text-title", label: "Title 25–30 (page)" },
+  { className: "text-heading", label: "Heading 20–22 (section)" },
+  { className: "text-subheading", label: "Subheading 17 (card)" },
   { className: "text-lead", label: "Lead 17" },
   { className: "text-body", label: "Body 15" },
   { className: "text-small", label: "Small 13" },
@@ -69,11 +70,11 @@ export default function TokensPage() {
   }
 
   return (
-    <main id="main" className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-5 py-10">
+    <main id="main" className="page-container flex flex-col gap-12 py-10">
       <header className="flex flex-col gap-2">
         <h1 className="text-title font-semibold">Design tokens</h1>
         <p className="text-text-secondary">
-          SPEC §7. Dark theme first. Only visible in development.
+          docs/DESIGN-REQUIREMENTS.md §4. Dark theme first. Only visible in development.
         </p>
       </header>
 

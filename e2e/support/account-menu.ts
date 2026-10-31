@@ -1,0 +1,8 @@
+import { expect, type Page } from "@playwright/test";
+
+/** Opens the header account menu (Profile, Admin workspace when permitted, Sign out). */
+export async function openAccountMenu(page: Page) {
+  const button = page.getByRole("button", { name: /^Account: / });
+  await button.click();
+  await expect(button).toHaveAttribute("aria-expanded", "true");
+}
