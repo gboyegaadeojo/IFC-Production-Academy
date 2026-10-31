@@ -6,7 +6,7 @@
  * the browser or the app's runtime. Logs counts only, never addresses, names, or content
  * (CLAUDE.md "Actions logs must never contain data"). With no Resend key it does nothing.
  */
-import { notificationEmail } from "../lib/domain/notifications.ts";
+import { isQuietHours, notificationEmail } from "../lib/domain/notifications.ts";
 import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
 
 type Claimed = { id: string; email: string; title: string; body: string; link: string | null };
@@ -37,13 +37,19 @@ async function main(): Promise<void> {
     return;
   }
 
-  const reminders = await rpc<number>(supabaseUrl, serviceKey, "queue_sop_review_reminders", {});
-  console.log(`SOP review reminders checked: ${reminders} due.`);
+  const sopReminders = await rpc<number>(supabaseUrl, serviceKey, "queue_sop_review_reminders", {});
+  const reminders = await rpc<number>(supabaseUrl, serviceKey, "queue_reminders", {});
+  console.log(`Reminders checked: ${sopReminders + reminders} due.`);
 
   if (!resendKey || !from) {
     console.log(
       "Email is off: RESEND_API_KEY or NOTIFY_FROM is not set. In-app notifications only.",
     );
+    return;
+  }
+
+  if (isQuietHours(new Date())) {
+    console.log("Quiet hours (20:00 to 08:00 Winnipeg time): emails wait until 08:00.");
     return;
   }
 
