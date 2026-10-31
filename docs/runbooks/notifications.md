@@ -17,7 +17,9 @@ notifications stay in the app.
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API keys → service role. Only ever an Actions secret: never in the app's runtime, the browser, the repo, or a log |
 | `RESEND_API_KEY` | Already set for failure alerts |
 | `NOTIFY_FROM` | The sender, for example `IFC Production Academy <academy@your-domain>`, on a domain verified in Resend |
-| `SITE_URL` | The Academy's address, for example `https://academy.example.org`, used for links in emails |
+
+The Academy's address for links in emails comes from the `SITE_URL` repository variable the
+deploy workflow already uses.
 
 ## What the job does
 

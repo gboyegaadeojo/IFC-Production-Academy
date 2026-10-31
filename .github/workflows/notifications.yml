@@ -40,7 +40,7 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_FROM: ${{ secrets.NOTIFY_FROM }}
-          SITE_URL: ${{ secrets.SITE_URL }}
+          SITE_URL: ${{ vars.SITE_URL }}
         run: node scripts/send-notifications.ts
 
       - name: Email the admins
