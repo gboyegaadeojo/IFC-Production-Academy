@@ -27,9 +27,8 @@ it, and what you can ask us to do.
 | Your training records: lessons completed, quiz attempts and scores, practical assessments and feedback, certificates, competencies, and approval to serve | To track your progress and keep the team safe and ready. Completing training and being approved to serve are kept separate |
 | Schedules and the days you're unavailable | To plan who serves when |
 | Mentoring goals and notes | To support your growth. Private notes are seen only by the person who wrote them |
-| If you're under 18: your birth month and year, and your parent or guardian's name and email | To record their consent, as IFC's policy requires |
 
-We don't collect phone numbers, home addresses, or photos of you. We don't sell or share your
+We don't collect your age or birth date, phone numbers, home addresses, or photos of you. We don't sell or share your
 information, and we don't use it for advertising.
 
 ### Who can see it
@@ -39,9 +38,7 @@ information, and we don't use it for advertising.
   department.
 - **The Production Director** can see records across departments.
 - **Platform administrators** look after accounts and security. They see what they need for that.
-- **Other volunteers** see only your name where it's needed, for example on a schedule. If you're
-  under 18, they don't see your name at all.
-- **Private mentoring notes** are seen only by their author.
+- **Other volunteers** see only your name where it's needed, for example on a schedule.- **Private mentoring notes** are seen only by their author.
 
 Every sensitive action by a leader or administrator is recorded in an audit log.
 
@@ -60,14 +57,7 @@ outside Canada [confirm the Supabase region].
 | Private mentoring notes | 2 years after the mentoring ends |
 | Schedules and availability | 2 years after the event |
 | Notifications | 12 months |
-| Guardian consent (under 18) | Until you turn 18, then 7 years |
 | Backups | Up to 12 months |
-
-### Volunteers under 18
-
-You can join from age 14 with a parent's or guardian's consent, which a leader records before you
-join a department. Your name is shown only to leaders, trainers, and your mentor. IFC's
-child-safety policy also applies.
 
 ### Your choices and rights
 
