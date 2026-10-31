@@ -303,7 +303,7 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
 
   await volunteer.goto("/schedule");
   const upcoming = volunteer.getByRole("region", { name: "Coming up" });
-  await expect(upcoming.getByText(service)).toBeVisible();
+  await expect(upcoming.getByText(service, { exact: true })).toBeVisible();
   await upcoming.getByRole("button", { name: `Confirm ${service}` }).click();
   await expect(volunteer.getByText("Confirmed. Thank you!")).toBeVisible();
 
