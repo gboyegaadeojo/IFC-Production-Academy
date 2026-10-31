@@ -18,28 +18,7 @@ from public.roles r, public.capabilities c
 where r.key in ('department_leader', 'production_director') and c.key = 'mentoring.assign'
 on conflict do nothing;
 
--- Whether a given person (not the caller) holds a capability for a department.
-create function private.user_has_capability(p_user_id uuid, p_capability text, p_department_id uuid)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.user_roles ur
-    join public.role_capabilities rc on rc.role_id = ur.role_id
-    join public.capabilities c on c.id = rc.capability_id
-    join public.profiles p on p.id = ur.user_id
-    where ur.user_id = p_user_id
-      and ur.revoked_at is null
-      and p.status = 'active'
-      and c.key = p_capability
-      and (ur.department_id is null or ur.department_id = p_department_id)
-  );
-$$;
-revoke all on function private.user_has_capability(uuid, text, uuid) from public, anon, authenticated;
+-- private.user_has_capability (invitations migration) checks another person's capabilities.
 
 create type public.mentoring_note_visibility as enum ('shared', 'private');
 create type public.mentoring_goal_status as enum ('open', 'done');
