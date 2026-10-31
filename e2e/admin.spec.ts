@@ -327,7 +327,7 @@ test("a leader sets up competencies and a serving role, and a member sees what t
   const camera = leader.getByRole("region", { name: "Camera Operations" });
   await camera.getByLabel("New competency name").fill(competency);
   await camera.getByRole("button", { name: "Add competency" }).click();
-  await expect(camera.getByText(competency, { exact: true })).toBeVisible();
+  await expect(camera.getByText(competency, { exact: true }).first()).toBeVisible();
   await camera.getByLabel("New role name").fill(role);
   await camera.getByRole("button", { name: "Add role" }).click();
   const roleItem = camera.getByRole("listitem").filter({ hasText: role });
