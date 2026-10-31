@@ -468,7 +468,11 @@ begin
    where a.user_id = p_learner_id and a.course_id = p_course_id and a.practical_key = p_practical_key
      and a.voided_at is null
    order by a.assessed_at desc limit 1;
-  if v_last.id is not null and v_last.outcome = 'pass' then
+  if exists (
+    select 1 from public.practical_assessments a
+    where a.user_id = p_learner_id and a.course_id = p_course_id
+      and a.practical_key = p_practical_key and a.outcome = 'pass' and a.voided_at is null
+  ) then
     raise exception 'already_passed' using errcode = 'P0001';
   end if;
   if v_last.id is not null and v_practical.retry_wait_days > 0
