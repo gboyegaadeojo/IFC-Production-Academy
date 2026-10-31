@@ -980,6 +980,35 @@ export type Database = {
         Returns: string;
       };
       remove_unavailability: { Args: { p_id: string }; Returns: undefined };
+      department_training_report: {
+        Args: { p_department_id: string };
+        Returns: {
+          user_id: string;
+          display_name: string;
+          joined_at: string;
+          course_id: string;
+          course_title: string;
+          level_number: number;
+          state: string;
+          certificate_reference: string | null;
+        }[];
+      };
+      department_readiness_report: {
+        Args: { p_department_id: string };
+        Returns: {
+          user_id: string;
+          display_name: string;
+          kind: string;
+          name: string;
+          state: string;
+          since: string | null;
+          expires_at: string | null;
+        }[];
+      };
+      log_report_export: {
+        Args: { p_department_id: string; p_report: string; p_rows: number };
+        Returns: undefined;
+      };
       grant_quiz_attempt: {
         Args: { p_user_id: string; p_course_id: string; p_quiz_key: string; p_reason?: string };
         Returns: undefined;

@@ -14,6 +14,7 @@ export type AdminSectionKey =
   | "competencies"
   | "assessments"
   | "schedule"
+  | "reports"
   | "people"
   | "departments"
   | "audit";
@@ -43,6 +44,7 @@ const SECTIONS: readonly AdminSection[] = [
     group: "Learning",
   },
   { key: "departments", href: "/admin/departments", label: "Departments", group: "Learning" },
+  { key: "reports", href: "/admin/reports", label: "Reports", group: "Learning" },
   { key: "audit", href: "/admin/audit", label: "Audit log", group: "System" },
 ];
 
@@ -82,6 +84,8 @@ export function canOpenAdminSection(
       );
     case "schedule":
       return hasCapabilityAnywhere(grants, "schedule.manage");
+    case "reports":
+      return hasCapabilityAnywhere(grants, "report.view");
     case "assessments":
       return (
         hasCapabilityAnywhere(grants, "assessment.record") ||

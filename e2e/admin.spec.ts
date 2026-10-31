@@ -350,6 +350,23 @@ test("a leader sets up competencies and a serving role, and a member sees what t
   await memberContext.close();
 });
 
+test("a leader reads department reports and downloads one", async ({ page }) => {
+  // SRS-REPORT-001..006: completion and readiness are separate reports; exports are CSV.
+  await signInByEmail(page, "casey.leader@example.com");
+  await page.goto("/admin/reports");
+  await expect(page.getByRole("heading", { level: 1, name: "Reports" })).toBeVisible();
+  await expect(page.getByRole("table", { name: "Course completion by volunteer" })).toBeVisible();
+  await page.getByRole("link", { name: "Readiness" }).click();
+  await expect(
+    page.getByRole("table", { name: "Competencies and Approved to Serve by volunteer" }),
+  ).toBeVisible();
+  const href = await page.getByRole("link", { name: /Download CSV/ }).getAttribute("href");
+  const csv = await page.request.get(href ?? "");
+  expect(csv.status()).toBe(200);
+  expect(csv.headers()["content-type"]).toContain("text/csv");
+  expect(await csv.text()).toContain("Volunteer,Type,Competency or role,State,Since,Expires");
+});
+
 test("a Platform Admin manages people and departments but not memberships", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
   await openAccountMenu(page);
