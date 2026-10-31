@@ -43,3 +43,29 @@ test("the design token preview is hidden in production builds", async ({ page })
   const response = await page.goto("/dev/tokens");
   expect(response?.status()).toBe(404);
 });
+
+test("the Academy is installable: manifest, icons, and theme", async ({ page, request }) => {
+  // SPEC §1 and the MVP checklist: responsive and installable as a PWA.
+  await page.goto("/sign-in");
+  const href = await page.locator('link[rel="manifest"]').getAttribute("href");
+  expect(href).toBeTruthy();
+  const manifest = await request.get(href ?? "");
+  expect(manifest.status()).toBe(200);
+  const body = (await manifest.json()) as {
+    name: string;
+    start_url: string;
+    display: string;
+    icons: { src: string; sizes: string }[];
+  };
+  expect(body.name).toBe("IFC Production Academy");
+  expect(body.display).toBe("standalone");
+  expect(body.start_url).toBe("/home");
+  for (const size of ["192x192", "512x512"]) {
+    const icon = body.icons.find((i) => i.sizes === size);
+    expect(icon, `a ${size} icon`).toBeTruthy();
+    const image = await request.get(icon?.src ?? "");
+    expect(image.status()).toBe(200);
+    expect(image.headers()["content-type"]).toContain("image/png");
+  }
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
+});

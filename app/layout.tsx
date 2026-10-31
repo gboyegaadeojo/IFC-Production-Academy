@@ -23,6 +23,12 @@ export const metadata: Metadata = {
   },
   description: "Training and readiness for the IFC production team.",
   robots: { index: false, follow: false },
+  applicationName: "IFC Academy",
+  icons: {
+    icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  appleWebApp: { capable: true, title: "IFC Academy", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {
