@@ -9,12 +9,12 @@ sign-off**: the decision stands as the working default until they confirm or cha
 | # | Decision | In one line |
 | --- | --- | --- |
 | 3 | Ownership, budget, launch | G owns it; $0 a month; Camera pilot 10 Jan to 7 Feb 2027; ministry-wide launch Sunday 21 Feb 2027 |
-| 4 | Brand and theme | "IFC Production Academy" with the IFC pillars-and-dove mark; dark only at launch; academy.ifcwpg.com before launch |
+| 4 | Brand and theme | "IFC Production Academy" with the IFC pillars-and-dove mark; dark only at launch; stays on its workers.dev address |
 | 5 | Camera competencies and rubrics | Four competencies, three serving roles; observed checklists with critical items ([curriculum](../curriculum/camera-operations.md)) |
 | 6 | Content and videos | IFC films its own short lessons on its own cameras; written lessons stand in until each video exists |
-| 7 | Privacy, retention, under-18 | Follow PIPEDA's principles; keep training records 7 years after someone leaves; volunteers 14 to 17 with guardian consent |
+| 7 | Privacy, retention, under-18 | Follow PIPEDA's principles; keep training records 7 years after someone leaves; no age rules in the Academy |
 | 8 | Reminders and certificate | Serving reminder 2 days before at 10:00, learning nudges at 7 and 21 days, quiet hours 20:00 to 08:00; a print-ready certificate with a QR verification check |
-| 9 | Calendar and Planning Center | Calendar files stay (built); Planning Center remains the church database; one-way readiness sync in Phase 5 |
+| 9 | Calendar and Planning Center | Calendar files stay (built); Planning Center remains the church database and where schedulers schedule; one-way readiness sync in Phase 5 |
 | 10 | Native apps | Not until the PWA hits clear limits (criteria below) |
 
 ## 3. Ownership, budget, and launch date
@@ -23,7 +23,8 @@ sign-off**: the decision stands as the working default until they confirm or cha
 Admin. The two Platform Admin accounts are both G's, so if G is unavailable nobody can recover the
 system. **Add a second person** as Platform Admin (a church staff member, for example the
 executive pastor or office administrator). They also hold the second offline copy of the backup
-decryption key (SPEC §9 "Backup design").
+decryption key (SPEC §9 "Backup design"). G will choose this person later; it isn't needed for the
+pilot.
 
 **Maintenance.** G and Claude Code build and maintain it. Routine running is automatic: keep-alive,
 notifications, backups (once on), and the weekly summary email. A human spends about 15 minutes a
@@ -34,7 +35,6 @@ result.
 
 | Item | Cost | When |
 | --- | --- | --- |
-| Custom address academy.ifcwpg.com | $0 (the church already owns the domain) | Before ministry-wide launch |
 | Supabase Pro | US$25 a month | Only if the database nears 500 MB, files near 1 GB, or pausing becomes a problem |
 | Apple developer account | US$99 a year (nonprofit fee waiver available) | Only if native apps are approved (decision 10) |
 
@@ -48,7 +48,7 @@ approval.
 | By Sun 15 Nov 2026 | G and the Camera lead check the [Camera curriculum](../curriculum/camera-operations.md) against IFC's cameras, positions, and director calls |
 | 16 to 29 Nov 2026 | Film the 12 Level 1 lessons (one weekday evening and one Saturday morning); enter the course in the Academy |
 | Dec 2026 | Trainer calibration: two trainers assess the same operator with the checklist and compare (see decision 5) |
-| Sun 10 Jan to Sun 7 Feb 2027 | **Camera Level 1 pilot** with 4 to 6 volunteers: two new, two experienced, and one aged 14 to 17 if any serve |
+| Sun 10 Jan to Sun 7 Feb 2027 | **Camera Level 1 pilot** with 4 to 6 volunteers: at least two new and two experienced |
 | Sun 14 Feb 2027 | Go or no-go review against SPEC §9's exit criteria |
 | **Sun 21 Feb 2027** | **Ministry-wide launch**: Camera Level 1 open to everyone |
 | By Sun 2 May 2027 (after Easter, 28 Mar) | Level 1 published for Audio, Graphics and ProPresenter, and Camera Directing |
@@ -74,11 +74,12 @@ approval.
   position: camera, front of house, ProPresenter, director's desk, lighting console). The light is
   real stage light with deep shadows, and faces are in focus. **Only adults** who have signed IFC's
   photo release appear.
-- **Address:** academy.ifcwpg.com. The domain's DNS is at Squarespace, and a Cloudflare Worker can
-  only answer on a custom domain whose DNS Cloudflare runs. **Whoever manages ifcwpg.com moves its
-  nameservers to Cloudflare's free plan** before 21 Feb 2027, first copying every record (Google
-  Workspace mail, Resend's sending records, and the website). The pilot uses the current
-  workers.dev address.
+- **Address:** the Academy stays on its workers.dev address (G, 2026-10-31). A church address such
+  as academy.ifcwpg.com would mean moving ifcwpg.com's DNS from Squarespace to Cloudflare, because
+  a Cloudflare Worker only answers on a custom domain whose DNS Cloudflare runs, and G doesn't want
+  to move it. Volunteers reach the Academy from a link on the church website or the installed app,
+  so the address rarely shows. If the Worker's name changes, update the `SITE_URL` repository
+  variable and Supabase Auth's redirect URLs at the same time.
 
 ## 5. Camera competencies and rubrics
 
@@ -135,7 +136,8 @@ Why it works this way:
 
 ## 7. Privacy, retention, and under-18 volunteers
 
-**Leadership sign-off** on all of this.
+**Leadership sign-off** on privacy and retention. The under-18 question is settled: no age rules
+in the Academy (below).
 
 **Which law applies.** PIPEDA, Canada's federal private-sector privacy law, covers personal
 information collected in the course of *commercial activity*. A church training its own volunteers
@@ -148,8 +150,8 @@ ready if Manitoba's law starts.
 - **Privacy notice:** a plain-language page in the Academy, linked from sign-in and the profile
   page. It says what is collected and why, who can see what, how long records are kept, and how to
   ask for a copy, a correction, or deletion.
-- **Collect only what's needed:** name, email, departments, training records, and (for minors)
-  birth month and year and a guardian's name and email. No phone numbers, addresses, or photos.
+- **Collect only what's needed:** name, email, departments, and training records. No birth dates,
+  phone numbers, addresses, or photos.
 
 **Retention schedule.** Manitoba's Limitations Act gives a 2-year basic limitation period from
 discovery and a 15-year ultimate limit. Training records aren't safeguarding records, so they don't
@@ -163,7 +165,6 @@ need the decades-long retention that child-safety files do.
 | Shared mentoring feedback and goals | Same as training records | Anonymised |
 | Schedules and availability | **2 years** after the event | Deleted |
 | In-app notifications and email send records | **12 months** | Deleted |
-| Guardian consent records | Until the volunteer turns 18, plus **7 years** | Deleted |
 | Backups | 30 daily, 12 weekly, 12 monthly (SPEC §9) | Rotated out automatically |
 
 The clean-up job (`retention.yml`) has to be built before the first record reaches its limit. The
@@ -172,31 +173,17 @@ earliest is notifications, on 31 Oct 2027.
 - **Deletion requests:** a volunteer can ask the privacy officer to delete their account. The
   Academy anonymises it straight away instead of waiting 7 years, except audit events, which keep
   the record that the deletion happened.
-- **Exports:** CSV exports never include mentoring notes (already built) or a minor's birth date or
-  guardian details.
+- **Exports:** CSV exports never include mentoring notes (already built).
 
-**Under-18 volunteers.** Canadian law sets no minimum age for volunteering. Each organisation sets
-its own policy, and guardian consent for anyone under 18 is the norm. Many church tech teams rely
-on teenagers.
+**Under-18 volunteers: no age rules in the Academy** (G, 2026-10-31). The Academy doesn't ask for
+anyone's age, record guardian consent, or treat younger volunteers differently. Who may join the
+production team, and any consent that needs, stays with IFC's own volunteer and child-safety
+process, outside the app. This sets aside the SPEC §6 privacy addition about guardian consent and
+hidden profiles. Two things still hold, because they don't depend on the app knowing anyone's age:
 
-- **Minimum age: 14.** Under 14 can't hold an account. Ages 14 to 17 can join with **recorded
-  guardian consent**.
-- **At sign-up**, everyone confirms "I'm 18 or older" or gives their birth month and year. A
-  volunteer under 18 can sign in and see departments, but **can't request membership until a
-  leader records guardian consent**: the guardian's name and email, how consent was given (paper
-  form or email), and the date. The leader's action is audited.
-- **Hidden from other volunteers:** a minor's name appears only to leaders, trainers, and their
-  mentor, never on lists other volunteers can see (SPEC §6).
-- **Serving:** a minor may serve, but is never named as anyone's supervisor, and can't hold
-  Trainer or Leader roles.
-- **Mentoring:** a minor's mentor must be an adult who has passed IFC's child-safety screening.
-  Mentoring in the Academy is notes and goals, not private messaging, so nothing in the app creates
+- Mentoring in the Academy is notes and goals, not private messaging, so nothing in the app creates
   a one-to-one private channel.
-- **Photos:** minors never appear in Academy photography or lesson videos without separate written
-  guardian consent under IFC's photo policy.
-- **Turning 18:** the minor flag clears automatically after their birth month. Guardian consent is
-  then kept for the 7 years above.
-- **Defer to IFC's child-safety policy** wherever it is stricter.
+- Academy photography and lesson videos follow IFC's photo-release policy.
 
 **Email law (CASL).** Canada's anti-spam law covers *commercial* electronic messages. The Academy's
 emails, such as sign-in links, assignments, and reminders, are about an existing volunteer
@@ -263,8 +250,12 @@ IFC already uses **Planning Center** (Church Center forms on ifcwpg.com).
 - **One scheduler per department.** If a department already schedules in Planning Center Services,
   it keeps doing so. The Academy's scheduler is then used only for training and supervised-practice
   slots, and its "Serving soon" reminder is off for that department.
-- **One question for G:** which production teams schedule in Planning Center Services today? The
-  answer decides which departments use the Academy scheduler from day one.
+- **Answered (G, 2026-10-31):** IFC's scheduling team does the scheduling. So the schedulers keep
+  their current tool and process, and the Academy's job is to tell them who is Approved to Serve
+  for which role. At launch they read that from the Academy's team readiness view and reports; in
+  Phase 5 the readiness sync puts it into Planning Center for them. The Academy's own scheduler
+  stays available for training and supervised-practice slots, but nobody has to use it, and if it
+  holds no assignments it sends no serving reminders.
 
 ## 10. Native apps
 
