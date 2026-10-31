@@ -5,18 +5,24 @@ import { sendMagicLink } from "@/lib/data/auth";
 import { magicLinkRequestSchema } from "@/lib/domain/auth";
 import { isInvitationToken, PENDING_INVITE_COOKIE } from "@/lib/domain/invitations";
 
+/** On an error the typed address comes back, so the form keeps it for another try. */
 export type MagicLinkState =
-  { status: "idle" } | { status: "sent"; email: string } | { status: "error"; message: string };
+  | { status: "idle" }
+  | { status: "sent"; email: string }
+  | { status: "error"; message: string; email: string };
 
 export async function requestMagicLink(
   _previous: MagicLinkState,
   formData: FormData,
 ): Promise<MagicLinkState> {
-  const parsed = magicLinkRequestSchema.safeParse({ email: formData.get("email") });
+  const typed = formData.get("email");
+  const email = typeof typed === "string" ? typed.slice(0, 320) : "";
+  const parsed = magicLinkRequestSchema.safeParse({ email: typed });
   if (!parsed.success) {
     return {
       status: "error",
       message: parsed.error.issues[0]?.message ?? "Enter a valid email address.",
+      email,
     };
   }
 
@@ -25,6 +31,7 @@ export async function requestMagicLink(
     return {
       status: "error",
       message: "We couldn't send the link just now. Wait a minute, then try again.",
+      email,
     };
   }
 
