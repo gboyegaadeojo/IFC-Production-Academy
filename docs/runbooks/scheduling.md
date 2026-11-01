@@ -21,6 +21,25 @@ Then run the job once by hand: **Actions → Planning Center sync → Run workfl
 counts only, such as "plans 9, scheduled 31, people matched 18". If it says Planning Center refused
 the token, the token is wrong or doesn't include Services and People.
 
+### Refresh on demand (optional)
+
+**Refresh from Planning Center** on the Planning Center page runs the sync straight away instead
+of waiting up to 15 minutes. The Planning Center token stays in Actions secrets: the button asks
+GitHub to run the same job. It needs a GitHub token that can do only that:
+
+1. On GitHub: **Settings → Developer settings → Fine-grained personal access tokens → Generate
+   new token**. Resource owner: you. Repository access: **Only select repositories**, this one.
+   Permissions: **Actions: Read and write**, nothing else. Pick an expiry and note it.
+2. Add it to Cloudflare as a secret (paste when asked; never in a chat or file):
+
+   ```sh
+   npx wrangler secret put GITHUB_DISPATCH_TOKEN
+   ```
+
+Until it's set, the button doesn't show. It can be pressed once every two minutes, and each press
+is in the audit log. When the token expires, the button says it couldn't reach GitHub; make a new
+one and put it again.
+
 ## 2. Link positions
 
 In the Academy, open **Admin → Planning Center**. After the first read it lists each Planning
@@ -31,7 +50,13 @@ Center service type, team, and position, like the checklist app's Team mapping.
    its department.
 2. On the Planning Center page, link each Planning Center position to its Academy position. A team
    can also be linked as a whole; positions without their own link follow it.
-3. Links apply at the next read, within 15 minutes.
+3. Links apply at the next read, within 15 minutes, or straight away with **Refresh from Planning
+   Center**.
+
+**Scheduled in positions not linked yet** lists people on an upcoming service whose Planning
+Center position isn't linked, or whose position name matches nothing in Planning Center. They
+won't see a checklist until it's linked. Pre-service checklists shows the same warning for the
+current service.
 
 **Not in the Academy yet** lists people on a Planning Center team or schedule with no Academy
 account using one of their Planning Center emails. Invite them with that email.

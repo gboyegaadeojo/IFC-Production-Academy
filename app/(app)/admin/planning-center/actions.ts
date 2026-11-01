@@ -4,7 +4,12 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { setPcoLink, setSchedulingSource } from "@/lib/data/planning-center";
+import {
+  requestPcoRefresh,
+  setPcoLink,
+  setSchedulingSource,
+  type RefreshResult,
+} from "@/lib/data/planning-center";
 
 // Planning Center settings (decision record 9, revised). The database checks team.manage for
 // links and schedule.manage (organisation-wide) for who schedules.
@@ -59,5 +64,28 @@ export async function setSourceAction(_: FormState, formData: FormData): Promise
       source.data === "planning_center"
         ? "Planning Center schedules. The Academy shows what it reads from there."
         : "The Academy schedules. Planning Center is no longer read.",
+  };
+}
+
+const REFRESH_MESSAGES: Record<Exclude<RefreshResult, "requested">, string> = {
+  too_soon: "A refresh was asked for in the last two minutes. It's on its way.",
+  not_authorized: "Only people who run the teams can refresh from Planning Center.",
+  not_set_up: "Refreshing on demand isn't set up yet. The next read is within 15 minutes.",
+  failed: "That didn't reach GitHub. The next read is within 15 minutes.",
+};
+
+/** Refresh from Planning Center now (checklist app US-15, C29). */
+export async function refreshAction(): Promise<FormState> {
+  if (!(await getAdminAccess("planning-center")).allowed) {
+    return { status: "error", message: REFRESH_MESSAGES.not_authorized };
+  }
+  const result = await requestPcoRefresh();
+  if (result !== "requested") {
+    return { status: "error", message: REFRESH_MESSAGES[result] };
+  }
+  refresh();
+  return {
+    status: "done",
+    message: "Reading Planning Center now. Reload in a minute or two to see what changed.",
   };
 }

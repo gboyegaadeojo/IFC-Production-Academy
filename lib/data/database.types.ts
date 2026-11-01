@@ -777,6 +777,29 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      pco_unlinked_scheduled: {
+        Row: {
+          id: string;
+          organization_id: string;
+          event_id: string;
+          pco_member_id: string;
+          pco_person_id: string;
+          pco_team_id: string;
+          position_name: string;
+          synced_at: string;
+        };
+        // Written only by the sync.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      pco_refresh_requests: {
+        Row: { id: string; organization_id: string; requested_by: string; requested_at: string };
+        // Written only through request_pco_refresh.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       pco_service_types: {
         Row: { id: string; organization_id: string; name: string; seen_at: string };
         Insert: never;
@@ -1309,6 +1332,18 @@ export type Database = {
         Returns: undefined;
       };
       sync_planning_center: { Args: { p: Json }; Returns: Json };
+      request_pco_refresh: { Args: never; Returns: undefined };
+      pco_unlinked_places: {
+        Args: { p_event_id?: string };
+        Returns: {
+          event_id: string;
+          event_title: string;
+          starts_at: string;
+          person_name: string;
+          team_name: string;
+          position_name: string;
+        }[];
+      };
       set_event_signups: { Args: { p_event_id: string; p_open: boolean }; Returns: undefined };
       set_service_type_signups: { Args: { p_id: string; p_open: boolean }; Returns: undefined };
       my_open_spots: {

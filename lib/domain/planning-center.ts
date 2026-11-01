@@ -28,6 +28,8 @@ export type PcoMember = {
   person_id: string;
   team_id: string;
   position_id: string | null;
+  /** As Planning Center has it, so an admin can see a name that matches nothing (US-15, C39). */
+  position_name: string;
   status: string;
 };
 
@@ -113,6 +115,7 @@ export function mapMembers(members: Resource[], teams: readonly PcoTeam[]): PcoM
         person_id: personId,
         team_id: teamId,
         position_id: position?.id ?? null,
+        position_name: positionName.replace(/\s+/g, " ").trim().slice(0, 120),
         status: text(member.attributes.status) || "U",
       },
     ];

@@ -5,12 +5,19 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { getPcoMapping, getSchedulingSource } from "@/lib/data/planning-center";
+import {
+  getLastRefreshRequest,
+  getPcoMapping,
+  getSchedulingSource,
+  getUnlinkedPlaces,
+  pcoRefreshEnabled,
+  type UnlinkedPlace,
+} from "@/lib/data/planning-center";
 import { getSchedulableRoles } from "@/lib/data/service-types";
 import { formatDateTime } from "@/lib/domain/admin";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
-import { setLinkAction, setSourceAction } from "./actions";
+import { refreshAction, setLinkAction, setSourceAction } from "./actions";
 
 export const metadata: Metadata = { title: "Planning Center" };
 
@@ -42,11 +49,18 @@ async function PlanningCenterContent() {
   if (!allowed) {
     return <AccessDenied />;
   }
-  const [mapping, source, roles] = await Promise.all([
+  const canRefresh = pcoRefreshEnabled();
+  const [mapping, source, roles, unlinked, lastRequest] = await Promise.all([
     getPcoMapping(),
     getSchedulingSource(),
     getSchedulableRoles(grants),
+    getUnlinkedPlaces(),
+    canRefresh ? getLastRefreshRequest() : Promise.resolve(null),
   ]);
+  // Asked for since the last read finished: the run is still under way.
+  const refreshing =
+    lastRequest !== null &&
+    (!mapping.lastRun || Date.parse(lastRequest) > Date.parse(mapping.lastRun.finishedAt));
 
   return (
     <div className="flex flex-col gap-8">
@@ -59,9 +73,25 @@ async function PlanningCenterContent() {
         aria-labelledby="sync-heading"
         className="flex max-w-3xl flex-col gap-3 rounded-card border border-border p-5"
       >
-        <h2 id="sync-heading" className="text-heading font-semibold">
-          Last read
-        </h2>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h2 id="sync-heading" className="text-heading font-semibold">
+            Last read
+          </h2>
+          {canRefresh ? (
+            <ActionForm
+              action={refreshAction}
+              submitLabel="Refresh from Planning Center"
+              pendingLabel="Asking…"
+              variant="secondary"
+            />
+          ) : null}
+        </div>
+        {refreshing ? (
+          <p className="text-small text-text-secondary">
+            A refresh was asked for at {formatDateTime(lastRequest ?? "")}. It usually takes a
+            minute or two; reload to see it.
+          </p>
+        ) : null}
         {mapping.lastRun ? (
           <>
             <p className="text-text-secondary">{formatDateTime(mapping.lastRun.finishedAt)}</p>
@@ -134,6 +164,8 @@ async function PlanningCenterContent() {
         )}
       </section>
 
+      {unlinked.length > 0 ? <UnlinkedPlaces places={unlinked} /> : null}
+
       {mapping.withoutAccount.length > 0 ? (
         <section aria-labelledby="accounts-heading" className="flex max-w-3xl flex-col gap-3">
           <h2 id="accounts-heading" className="text-heading font-semibold">
@@ -185,6 +217,50 @@ async function PlanningCenterContent() {
         </details>
       </section>
     </div>
+  );
+}
+
+/**
+ * Scheduled in a position that isn't linked, or whose name matches nothing in Planning Center
+ * (checklist app US-15, C39): they won't see their checklist until it's linked.
+ */
+function UnlinkedPlaces({ places }: { places: UnlinkedPlace[] }) {
+  const services = [...new Map(places.map((p) => [p.eventId, p])).values()];
+  return (
+    <section aria-labelledby="unlinked-heading" className="flex max-w-3xl flex-col gap-3">
+      <h2 id="unlinked-heading" className="flex items-center gap-2 text-heading font-semibold">
+        Scheduled in positions not linked yet
+        <StatusBadge tone="pending">{places.length} to link</StatusBadge>
+      </h2>
+      <p className="text-small text-text-secondary">
+        These people won&apos;t see their checklist for the service. Link their Planning Center
+        position below; it applies from the next read.
+      </p>
+      {services.map((service) => (
+        <div key={service.eventId} className="flex flex-col gap-2">
+          <h3 className="font-medium">
+            {service.eventTitle}{" "}
+            <span className="text-small font-normal text-text-muted">
+              {formatDateTime(service.startsAt)}
+            </span>
+          </h3>
+          <ul className="flex flex-col divide-y divide-border rounded-card border border-border">
+            {places
+              .filter((place) => place.eventId === service.eventId)
+              .map((place, index) => (
+                <li key={`${place.personName}-${index}`} className="flex flex-col px-4 py-2">
+                  <span className="text-text">{place.personName}</span>
+                  <span className="text-small text-text-muted">
+                    {[place.teamName, place.positionName || "No position"]
+                      .filter(Boolean)
+                      .join(" › ")}
+                  </span>
+                </li>
+              ))}
+          </ul>
+        </div>
+      ))}
+    </section>
   );
 }
 

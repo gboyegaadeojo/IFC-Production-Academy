@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getCurrentServiceList, listChecklists, listTaskLists } from "@/lib/data/checklists";
+import { getUnlinkedPlaces } from "@/lib/data/planning-center";
 import { getTeamDepartments } from "@/lib/data/teams";
 import { hasCapability } from "@/lib/domain/capabilities";
 import {
@@ -59,7 +60,10 @@ async function ChecklistsContent({ searchParams }: Pick<Props, "searchParams">) 
   const hidden = lists.filter((l) => l.hiddenAt);
   const selected =
     visible.find((l) => l.id === list) ?? visible.find((l) => l.isDefault) ?? visible[0];
-  const items = selected ? await listChecklists(grants, selected.id) : [];
+  const [items, unlinked] = await Promise.all([
+    selected ? listChecklists(grants, selected.id) : Promise.resolve([]),
+    current ? getUnlinkedPlaces(current.eventId) : Promise.resolve([]),
+  ]);
   // Lists are church-wide, so only church-wide checklist managers change them.
   const managesLists = hasCapability(grants, "checklist.manage");
 
@@ -135,6 +139,33 @@ async function ChecklistsContent({ searchParams }: Pick<Props, "searchParams">) 
             The current service is {current.title}, {DAY.format(new Date(current.startsAt))}. It
             uses {lists.find((l) => l.id === current.setId)?.name ?? "the default list"}.
           </p>
+        ) : null}
+        {unlinked.length > 0 ? (
+          // Checklist app US-15, C39: scheduled, but their position matches no checklist.
+          <div
+            role="note"
+            className="flex flex-col gap-2 rounded-card border border-border-strong p-4 text-small"
+          >
+            <p className="flex items-center gap-2 font-medium text-text">
+              <StatusBadge tone="pending">
+                {unlinked.length} {unlinked.length === 1 ? "person" : "people"}
+              </StatusBadge>
+              won&apos;t see a checklist for the current service
+            </p>
+            <p className="text-text-secondary">
+              Their Planning Center position isn&apos;t linked:{" "}
+              {unlinked
+                .map((place) => `${place.personName} (${place.positionName || place.teamName})`)
+                .join(", ")}
+              .
+            </p>
+            <Link
+              href="/admin/planning-center"
+              className="w-fit text-accent-light underline-offset-4 hover:underline"
+            >
+              Link positions on the Planning Center page
+            </Link>
+          </div>
         ) : null}
       </section>
 
