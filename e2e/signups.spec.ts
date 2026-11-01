@@ -71,12 +71,17 @@ test("a volunteer signs up for an open spot, asks for cover, and a teammate take
       .getByRole("region", { name: "Open spots" })
       .getByRole("button", { name: `Sign up ${ROLE}, ${service}` })
       .click();
-    // The spot leaves Open spots and joins Coming up.
-    const mine = blake
-      .getByRole("region", { name: "Coming up" })
-      .getByRole("listitem")
+    // The spot leaves Open spots and joins Upcoming assignments; its day shows what to do.
+    const upcoming = blake
+      .getByRole("region", { name: "Upcoming assignments" })
+      .getByRole("link")
       .filter({ hasText: service });
-    await expect(mine).toHaveCount(1);
+    await expect(upcoming).toHaveCount(1);
+    await upcoming.click();
+    const mine = blake
+      .getByRole("complementary", { name: "Day and upcoming" })
+      .locator("article")
+      .filter({ hasText: service });
     await mine.getByText("Can't make it? Ask for cover").click();
     await mine.getByLabel("Note (optional)").fill("Away that weekend");
     await mine.getByRole("button", { name: "Ask for cover" }).click();
@@ -94,7 +99,9 @@ test("a volunteer signs up for an open spot, asks for cover, and a teammate take
     await expect(cover.getByText(/Away that weekend/)).toBeVisible();
     await cover.getByRole("button", { name: `I'll cover it ${ROLE}, ${service}` }).click();
     await expect(
-      devon.getByRole("region", { name: "Coming up" }).getByText(service, { exact: true }),
+      devon
+        .getByRole("region", { name: "Upcoming assignments" })
+        .getByText(service, { exact: true }),
     ).toBeVisible();
     await devonContext.close();
   });

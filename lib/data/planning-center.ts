@@ -241,3 +241,10 @@ async function dispatchSync({ token, repo }: DispatchConfig): Promise<boolean> {
     return false;
   }
 }
+
+/** When Planning Center was last read, for the Schedule page's "Last synced". */
+export async function getPcoLastSynced(): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("pco_last_synced");
+  return error ? null : data;
+}

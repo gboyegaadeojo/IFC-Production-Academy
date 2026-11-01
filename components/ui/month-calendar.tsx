@@ -4,7 +4,7 @@ import { dayLabel, monthGrid, monthLabel, shiftMonth } from "@/lib/domain/month-
 export type DayMark = {
   /** Short text shown in the day, such as "Serving" or a service name. */
   label: string;
-  tone: "serving" | "pending" | "away" | "event";
+  tone: "serving" | "pending" | "declined" | "away" | "event";
 };
 
 const WEEKDAYS = [
@@ -20,6 +20,8 @@ const WEEKDAYS = [
 const DOT: Record<DayMark["tone"], string> = {
   serving: "bg-success",
   pending: "bg-warning",
+  // Hollow: declined isn't a commitment.
+  declined: "ring-[1.5px] ring-warning ring-inset",
   away: "bg-error",
   event: "bg-accent-light",
 };
@@ -36,6 +38,8 @@ export function MonthCalendar({
   marks,
   hrefFor,
   monthHref,
+  variant = "compact",
+  showNav = true,
 }: {
   month: string;
   today: string;
@@ -43,11 +47,16 @@ export function MonthCalendar({
   marks: ReadonlyMap<string, DayMark[]>;
   hrefFor: (date: string) => string;
   monthHref: (month: string) => string;
+  /** "board": large bordered day cells (the Schedule page, redesigned 2026-11-01). */
+  variant?: "compact" | "board";
+  /** The month and its arrows; off where the page shows them itself. */
+  showNav?: boolean;
 }) {
   const weeks = monthGrid(month);
+  const board = variant === "board";
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between gap-3">
+      <div className={showNav ? "flex items-center justify-between gap-3" : "sr-only"}>
         <h2 className="text-heading font-semibold" aria-live="polite">
           {monthLabel(month)}
         </h2>
@@ -61,77 +70,100 @@ export function MonthCalendar({
           </CalendarNav>
         </nav>
       </div>
-      <table className="w-full table-fixed border-collapse">
-        <caption className="sr-only">{monthLabel(month)}</caption>
-        <thead>
-          <tr>
-            {WEEKDAYS.map(([short, long], index) => (
-              <th
-                key={index}
-                scope="col"
-                abbr={long}
-                className="pb-2 text-center text-small font-medium text-text-muted"
-              >
-                {short}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {weeks.map((week) => (
-            <tr key={week[0]}>
-              {week.map((date) => {
-                const dayMarks = marks.get(date) ?? [];
-                const inMonth = date.startsWith(month);
-                const isSelected = date === selected;
-                const isToday = date === today;
-                // Named by its content, not an aria-label, so what's seen is what's announced.
-                const day = [dayLabel(date), isToday ? "today" : null].filter(Boolean).join(", ");
-                return (
-                  <td key={date} className="p-0.5 align-top">
-                    <Link
-                      href={hrefFor(date)}
-                      aria-current={isSelected ? "date" : undefined}
-                      scroll={false}
-                      className={`flex min-h-14 flex-col items-center gap-1 rounded-button border px-0.5 py-1.5 text-small transition-surface sm:min-h-20 sm:items-start sm:px-2 ${
-                        isSelected
-                          ? "border-accent-light bg-hover"
-                          : "border-transparent hover:border-border hover:bg-card"
-                      } ${inMonth ? "text-text" : "text-text-muted"}`}
-                    >
-                      <span className="sr-only">{day}</span>
-                      <span
-                        aria-hidden="true"
-                        className={`tabular flex size-6 items-center justify-center rounded-pill font-mono ${
-                          isToday ? "bg-accent font-semibold text-on-accent" : ""
-                        }`}
-                      >
-                        {Number(date.slice(8))}
-                      </span>
-                      {dayMarks.length > 0 ? (
-                        <span className="flex flex-col items-center gap-0.5 sm:items-start">
-                          {dayMarks.slice(0, 3).map((mark, index) => (
-                            <span key={index} className="flex items-center gap-1">
-                              <span
-                                aria-hidden="true"
-                                className={`size-1.5 shrink-0 rounded-pill ${DOT[mark.tone]}`}
-                              />
-                              <span className="sr-only">, </span>
-                              <span className="sr-only truncate text-small leading-tight text-text-secondary sm:not-sr-only">
-                                {mark.label}
-                              </span>
-                            </span>
-                          ))}
-                        </span>
-                      ) : null}
-                    </Link>
-                  </td>
-                );
-              })}
+      <div className={board ? "overflow-hidden rounded-card border border-border" : ""}>
+        <table className="w-full table-fixed border-collapse">
+          <caption className="sr-only">{monthLabel(month)}</caption>
+          <thead>
+            <tr>
+              {WEEKDAYS.map(([short, long], index) => (
+                <th
+                  key={index}
+                  scope="col"
+                  abbr={long}
+                  className={
+                    board
+                      ? "border-b border-border py-3 text-center font-mono text-[0.7rem] font-medium tracking-[0.12em] text-text-muted"
+                      : "pb-2 text-center text-small font-medium text-text-muted"
+                  }
+                >
+                  {board ? long.slice(0, 3).toUpperCase() : short}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {weeks.map((week) => (
+              <tr key={week[0]}>
+                {week.map((date) => {
+                  const dayMarks = marks.get(date) ?? [];
+                  const inMonth = date.startsWith(month);
+                  const isSelected = date === selected;
+                  const isToday = date === today;
+                  // Named by its content, not an aria-label, so what's seen is what's announced.
+                  const day = [dayLabel(date), isToday ? "today" : null].filter(Boolean).join(", ");
+                  return (
+                    <td
+                      key={date}
+                      className={
+                        board
+                          ? "border-r border-b border-border p-0 align-top last:border-r-0 [tr:last-child_&]:border-b-0"
+                          : "p-0.5 align-top"
+                      }
+                    >
+                      <Link
+                        href={hrefFor(date)}
+                        aria-current={isSelected ? "date" : undefined}
+                        scroll={false}
+                        className={
+                          board
+                            ? `flex min-h-14 flex-col items-center gap-1.5 bg-surface px-1 py-2 text-small transition-surface sm:min-h-24 sm:items-start sm:px-3 sm:py-2.5 ${
+                                isSelected
+                                  ? "relative z-10 rounded-button bg-card ring-[1.5px] ring-accent-light ring-inset"
+                                  : "hover:bg-card"
+                              } ${inMonth ? "text-text" : "text-text-muted/50"}`
+                            : `flex min-h-14 flex-col items-center gap-1 rounded-button border px-0.5 py-1.5 text-small transition-surface sm:min-h-20 sm:items-start sm:px-2 ${
+                                isSelected
+                                  ? "border-accent-light bg-hover"
+                                  : "border-transparent hover:border-border hover:bg-card"
+                              } ${inMonth ? "text-text" : "text-text-muted"}`
+                        }
+                      >
+                        <span className="sr-only">{day}</span>
+                        <span
+                          aria-hidden="true"
+                          className={`tabular flex items-center justify-center rounded-pill ${
+                            board
+                              ? `size-7 text-body font-semibold sm:-ml-1 sm:text-[1.05rem] ${inMonth ? "" : "font-medium"}`
+                              : "size-6 font-mono"
+                          } ${isToday ? "bg-accent font-semibold text-on-accent" : ""}`}
+                        >
+                          {Number(date.slice(8))}
+                        </span>
+                        {dayMarks.length > 0 ? (
+                          <span className="flex flex-col items-center gap-0.5 sm:items-start">
+                            {dayMarks.slice(0, 3).map((mark, index) => (
+                              <span key={index} className="flex items-center gap-1">
+                                <span
+                                  aria-hidden="true"
+                                  className={`size-1.5 shrink-0 rounded-pill ${DOT[mark.tone]}`}
+                                />
+                                <span className="sr-only">, </span>
+                                <span className="sr-only truncate text-small leading-tight text-text-secondary sm:not-sr-only">
+                                  {mark.label}
+                                </span>
+                              </span>
+                            ))}
+                          </span>
+                        ) : null}
+                      </Link>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

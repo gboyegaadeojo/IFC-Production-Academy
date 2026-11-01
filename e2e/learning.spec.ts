@@ -337,15 +337,16 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await schedulerContext.close();
 
   await volunteer.goto("/schedule");
-  const upcoming = volunteer.getByRole("region", { name: "Coming up" });
+  const upcoming = volunteer.getByRole("region", { name: "Upcoming assignments" });
   await expect(upcoming.getByText(service, { exact: true }).first()).toBeVisible();
-  await upcoming.getByRole("button", { name: `Confirm ${service}` }).click();
-  await expect(
-    upcoming
-      .getByRole("listitem")
-      .filter({ hasText: service })
-      .getByText("Confirmed", { exact: true }),
-  ).toBeVisible();
+  // Open its day, then confirm there.
+  await upcoming.getByRole("link").filter({ hasText: service }).first().click();
+  const day = volunteer
+    .getByRole("complementary", { name: "Day and upcoming" })
+    .locator("article")
+    .filter({ hasText: service });
+  await day.getByRole("button", { name: `Confirm ${service}` }).click();
+  await expect(day.getByText("Serving", { exact: true })).toBeVisible();
 
   // Their serving goes into their own calendar (SPEC §9 Phase 5 "calendar").
   const ics = await volunteer.request.get("/schedule/calendar");
