@@ -328,7 +328,7 @@ function ManageList({
             pendingLabel="Saving…"
             hidden={{ listId: list.id }}
           >
-            <Field id={`rename-${list.id}`} label="List name">
+            <Field id={`rename-${list.id}`} label="Rename to">
               <input
                 id={`rename-${list.id}`}
                 name="name"

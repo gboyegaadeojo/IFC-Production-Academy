@@ -93,7 +93,7 @@ test("an admin copies a task list, makes it the default and back, then hides and
   await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
 
   // Names are unique ignoring capitals and extra spaces.
-  await page.getByLabel("List name").last().fill(`  e2e LIST   ${stamp} `);
+  await page.getByLabel("List name").fill(`  e2e LIST   ${stamp} `);
   await page.getByRole("button", { name: "Add list" }).click();
   await expect(page.getByText("Another task list already has that name.")).toBeVisible();
 
