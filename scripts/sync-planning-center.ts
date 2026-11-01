@@ -297,7 +297,18 @@ async function main(): Promise<void> {
     body: JSON.stringify({ p: payload }),
   });
   if (!response.ok) {
-    throw new Error(`sync_planning_center failed with HTTP ${response.status}`);
+    // Postgres's error code and message, with anything quoted blanked out, so no value from the
+    // data can reach the log. PostgREST's details and hint can hold values, so they're dropped.
+    const body = (await response.json().catch(() => ({}))) as { code?: unknown; message?: unknown };
+    const code =
+      typeof body.code === "string" ? body.code.replace(/[^A-Z0-9]/gi, "").slice(0, 8) : "";
+    const message =
+      typeof body.message === "string"
+        ? body.message.replace(/"[^"]*"|'[^']*'|\([^)]*\)/g, "…").slice(0, 200)
+        : "";
+    throw new Error(
+      `sync_planning_center failed with HTTP ${response.status}${code ? ` (${code}: ${message})` : ""}`,
+    );
   }
   // Counts only: no names, emails, or ids.
   const counts = (await response.json()) as Record<string, number>;
