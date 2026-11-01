@@ -73,28 +73,6 @@ async function ChecklistsContent({ searchParams }: Pick<Props, "searchParams">) 
         title="Pre-service checklists"
         description="What each position does before and after a service. People see their own checklist first on the day, and can tick as they go."
       />
-      <nav aria-label="Checklist tools" className="flex flex-wrap gap-4 text-small font-medium">
-        <Link
-          href="/admin/checklists/activity"
-          className="text-accent-light underline-offset-4 hover:underline"
-        >
-          Activity log
-        </Link>
-        <Link
-          href="/admin/checklists/history"
-          className="text-accent-light underline-offset-4 hover:underline"
-        >
-          Service history
-        </Link>
-        {managesLists ? (
-          <Link
-            href="/admin/checklists/settings"
-            className="text-accent-light underline-offset-4 hover:underline"
-          >
-            Settings
-          </Link>
-        ) : null}
-      </nav>
 
       <section aria-labelledby="lists-heading" className="flex max-w-3xl flex-col gap-3">
         <h2 id="lists-heading" className="text-heading font-semibold">

@@ -32,7 +32,7 @@ export function colorScheme(appearance: Appearance): "dark" | "light" | "dark li
 }
 
 /** The browser chrome colour: --bg in each theme (see app/globals.css). */
-export const THEME_COLORS = { dark: "#0b0c10", light: "#f7f8fa" } as const;
+export const THEME_COLORS = { dark: "#000000", light: "#f7f8fa" } as const;
 
 /**
  * Runs in <head> before the first paint, so "System" never flashes the wrong theme, and follows

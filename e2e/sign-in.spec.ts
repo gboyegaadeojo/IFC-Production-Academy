@@ -78,7 +78,7 @@ test("each device chooses Dark, Light or System, and keeps it", async ({ page })
   const appearance = page.getByRole("group", { name: "Appearance" });
   await expect(appearance.getByRole("radio", { name: "Dark" })).toBeChecked();
 
-  await appearance.getByText("Light").click();
+  await appearance.getByTitle("Light").click();
   await expect(html).toHaveAttribute("data-theme", "light");
   await page.reload();
   await expect(html).toHaveAttribute("data-theme", "light");
@@ -86,7 +86,7 @@ test("each device chooses Dark, Light or System, and keeps it", async ({ page })
 
   // System follows the device, before the first paint and when it changes.
   await page.emulateMedia({ colorScheme: "light" });
-  await appearance.getByText("System").click();
+  await appearance.getByTitle("System").click();
   await expect(html).toHaveAttribute("data-theme", "light");
   await page.emulateMedia({ colorScheme: "dark" });
   await expect(html).toHaveAttribute("data-theme", "dark");

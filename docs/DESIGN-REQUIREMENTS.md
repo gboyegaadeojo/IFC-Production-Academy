@@ -99,14 +99,14 @@ Dark is the signature theme; design an equally intentional light theme and respe
 
 | Token | Dark | Usage |
 |---|---|---|
-| `--bg` | `#0B0C10` | Main canvas |
-| `--surface` | `#121318` | Header, navigation |
-| `--card` | `#191B22` | Cards, panels |
-| `--hover` | `#252731` | Hovered interactive surfaces |
-| `--border` | `#30323C` | Separators |
-| `--text` | `#F5F5F7` | Primary text |
-| `--text-secondary` | `#B5B6C1` | Secondary content |
-| `--text-muted` | `#9193A1` | Metadata, never essential information below contrast requirements |
+| `--bg` | `#000000` | Main canvas (true black, G 2026-11-01) |
+| `--surface` | `#0A0A0A` | Header, navigation |
+| `--card` | `#141414` | Cards, panels |
+| `--hover` | `#222222` | Hovered interactive surfaces |
+| `--border` | `#2A2A2A` | Separators |
+| `--text` | `#F5F5F5` | Primary text |
+| `--text-secondary` | `#B4B4B4` | Secondary content |
+| `--text-muted` | `#929292` | Metadata, never essential information below contrast requirements |
 | `--accent` | `#7C3AED` | Primary actions |
 | `--accent-light` | `#B69BFF` | Accessible links and focus accents |
 | `--on-accent` | `#FFFFFF` | Button text |

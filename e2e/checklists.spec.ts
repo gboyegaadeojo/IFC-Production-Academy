@@ -167,7 +167,8 @@ test("an admin moves a task, removes with a confirmation, and restores from Hidd
   await expect(page.getByRole("heading", { level: 3, name: b })).toHaveCount(0);
 
   // Hidden items brings them back.
-  await page.getByRole("link", { name: "Hidden items" }).click();
+  // The page's own link keeps this task list; the sidebar's opens the default one.
+  await page.locator('a[href*="/admin/checklists/hidden?list="]').click();
   const hidden = page.getByRole("list", { name: "Hidden items, newest first" });
   await hidden.getByRole("button", { name: `Restore ${b}` }).click();
   await expect(hidden.getByText(b, { exact: true })).toHaveCount(0);
@@ -188,7 +189,10 @@ test("an admin chooses the service day the checklist opens for, and puts it back
   await signInByEmail(page, "emery.director@example.com");
 
   await page.goto("/admin/checklists");
-  await page.getByRole("link", { name: "Settings" }).click();
+  await page
+    .getByRole("navigation", { name: "Admin" })
+    .getByRole("link", { name: "Checklist settings" })
+    .click();
   await expect(page.getByRole("heading", { level: 1, name: "Checklist settings" })).toBeVisible();
   await expect(page.getByLabel("Service type")).toHaveValue("");
   await expect(page.getByLabel("Service day")).toHaveValue("0");
