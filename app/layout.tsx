@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { getAppearance } from "@/lib/data/appearance";
+import {
+  colorScheme,
+  initialTheme,
+  SYSTEM_THEME_SCRIPT,
+  THEME_COLORS,
+} from "@/lib/domain/appearance";
 import "./globals.css";
 
 // A grotesk with a technical, broadcast-equipment feel (SPEC §7), and its mono for small labels.
@@ -31,14 +38,29 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "IFC Academy", statusBarStyle: "black-translucent" },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#080808",
-  colorScheme: "dark",
-};
+// Each device's appearance (checklist app US-08a): Dark by default, Light, or System.
+export async function generateViewport(): Promise<Viewport> {
+  const appearance = await getAppearance();
+  return {
+    themeColor: appearance === "system" ? THEME_COLORS.dark : THEME_COLORS[appearance],
+    colorScheme: colorScheme(appearance),
+  };
+}
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const appearance = await getAppearance();
   return (
-    <html lang="en-CA" className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}>
+    // The System script may change data-theme before React hydrates.
+    <html
+      lang="en-CA"
+      data-appearance={appearance}
+      data-theme={initialTheme(appearance)}
+      suppressHydrationWarning
+      className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: SYSTEM_THEME_SCRIPT }} />
+      </head>
       <body className="flex min-h-full flex-col bg-bg font-sans text-body text-text">
         <a
           href="#main"

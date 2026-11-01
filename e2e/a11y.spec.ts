@@ -39,6 +39,11 @@ test("signed-out pages are accessible", async ({ page }) => {
   await page.goto("/sign-in");
   await expect(page.getByRole("heading", { name: "Sign in to keep learning" })).toBeVisible();
   await expectAccessible(page, "sign-in");
+  await page.getByRole("group", { name: "Appearance" }).getByText("Light").click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+  await expectAccessible(page, "sign-in (light)");
+  await page.getByRole("group", { name: "Appearance" }).getByText("Dark").click();
+  await page.reload();
 
   // The skip link is the first thing a keyboard reaches.
   await page.keyboard.press("Tab");

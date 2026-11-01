@@ -69,3 +69,29 @@ test("the Academy is installable: manifest, icons, and theme", async ({ page, re
   }
   await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
 });
+
+test("each device chooses Dark, Light or System, and keeps it", async ({ page }) => {
+  // Checklist app US-08a: Dark by default.
+  await page.goto("/sign-in");
+  const html = page.locator("html");
+  await expect(html).toHaveAttribute("data-theme", "dark");
+  const appearance = page.getByRole("group", { name: "Appearance" });
+  await expect(appearance.getByRole("radio", { name: "Dark" })).toBeChecked();
+
+  await appearance.getByText("Light").click();
+  await expect(html).toHaveAttribute("data-theme", "light");
+  await page.reload();
+  await expect(html).toHaveAttribute("data-theme", "light");
+  await expect(appearance.getByRole("radio", { name: "Light" })).toBeChecked();
+
+  // System follows the device, before the first paint and when it changes.
+  await page.emulateMedia({ colorScheme: "light" });
+  await appearance.getByText("System").click();
+  await expect(html).toHaveAttribute("data-theme", "light");
+  await page.emulateMedia({ colorScheme: "dark" });
+  await expect(html).toHaveAttribute("data-theme", "dark");
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.reload();
+  await expect(html).toHaveAttribute("data-theme", "light");
+  await expect(html).toHaveAttribute("data-appearance", "system");
+});
