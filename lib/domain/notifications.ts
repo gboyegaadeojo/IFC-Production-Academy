@@ -12,11 +12,15 @@ export type NotificationKind =
   | "serving_reminder"
   | "learning_nudge"
   | "assessment_requested"
-  | "competency_expiring";
+  | "competency_expiring"
+  | "cover_requested"
+  | "schedule_update";
 
 export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "assignment_scheduled",
   "serving_reminder",
+  "cover_requested",
+  "schedule_update",
   "learning_nudge",
   "assessment_recorded",
   "competency_expiring",
@@ -29,6 +33,8 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
 export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   assignment_scheduled: "When I'm scheduled to serve",
   serving_reminder: "Reminders to confirm, and two days before I serve",
+  cover_requested: "When a teammate asks for someone to cover their spot",
+  schedule_update: "When someone covers for me, or changes a schedule I run",
   learning_nudge: "A nudge when a course I started has gone quiet",
   assessment_recorded: "When a practical assessment is recorded for me",
   competency_expiring: "When an approval is about to expire",

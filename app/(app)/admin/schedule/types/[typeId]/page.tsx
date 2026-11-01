@@ -13,6 +13,7 @@ import {
   archiveServiceTypeAction,
   changePositionsAction,
   createServicesAction,
+  setTypeSignupsAction,
   updateServiceTypeAction,
 } from "../actions";
 import { ServiceTypeFields } from "../service-type-fields";
@@ -72,6 +73,21 @@ async function ServiceTypeContent({ params }: Pick<Props, "params">) {
         <p className="text-small text-text-secondary">
           Each one gets the positions below. Dates that already have this service are skipped.
         </p>
+        <div className="flex flex-wrap items-center gap-3 text-small text-text-secondary">
+          <span>
+            {type.allowSignups
+              ? "New services open sign-ups: team members can take open spots."
+              : "New services keep sign-ups closed: only schedulers fill positions."}
+          </span>
+          <ActionForm
+            action={setTypeSignupsAction}
+            submitLabel={type.allowSignups ? "Keep sign-ups closed" : "Open sign-ups"}
+            pendingLabel="Saving…"
+            variant="tertiary"
+            hidden={{ typeId: type.id, open: type.allowSignups ? "false" : "true" }}
+            className="flex"
+          />
+        </div>
         <ActionForm
           action={createServicesAction}
           submitLabel="Make services"

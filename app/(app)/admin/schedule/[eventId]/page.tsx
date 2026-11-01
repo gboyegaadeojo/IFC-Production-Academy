@@ -6,7 +6,12 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { getCandidates, getEventDetail, type PositionDetail } from "@/lib/data/schedule";
+import {
+  getCandidates,
+  getEventDetail,
+  getOpenCoverRequestsForEvent,
+  type PositionDetail,
+} from "@/lib/data/schedule";
 import { hasCapability } from "@/lib/domain/capabilities";
 import {
   ASSIGNMENT_STATUS_LABELS,
@@ -22,6 +27,7 @@ import {
   cancelAssignmentAction,
   cancelEventAction,
   removePositionAction,
+  setSignupsAction,
 } from "../actions";
 
 export const metadata: Metadata = { title: "Event" };
@@ -58,6 +64,7 @@ async function EventContent({ params }: Pick<Props, "params">) {
     notFound();
   }
   const open = !event.cancelled && new Date(event.endsAt).getTime() > new Date().getTime();
+  const coverRequested = await getOpenCoverRequestsForEvent(event.id);
 
   return (
     <div className="flex flex-col gap-8">
@@ -72,6 +79,23 @@ async function EventContent({ params }: Pick<Props, "params">) {
         </p>
         {event.cancelled ? <StatusBadge tone="neutral">Cancelled</StatusBadge> : null}
         {event.notes ? <p className="max-w-2xl text-small text-text-muted">{event.notes}</p> : null}
+        {open ? (
+          <div className="flex flex-wrap items-center gap-3 text-small text-text-secondary">
+            <span>
+              {event.signupsOpen
+                ? "Sign-ups are open: team members can take open spots."
+                : "Sign-ups are closed: only schedulers fill positions."}
+            </span>
+            <ActionForm
+              action={setSignupsAction}
+              submitLabel={event.signupsOpen ? "Close sign-ups" : "Open sign-ups"}
+              pendingLabel="Saving…"
+              variant="tertiary"
+              hidden={{ eventId: event.id, open: event.signupsOpen ? "false" : "true" }}
+              className="flex"
+            />
+          </div>
+        ) : null}
       </header>
 
       <section aria-labelledby="positions-heading" className="flex flex-col gap-4">
@@ -89,6 +113,7 @@ async function EventContent({ params }: Pick<Props, "params">) {
                 key={position.id}
                 position={position}
                 open={open}
+                coverRequested={coverRequested.has(position.id)}
                 canOverride={hasCapability(grants, "schedule.override", position.departmentId)}
               />
             ))}
@@ -148,10 +173,12 @@ async function EventContent({ params }: Pick<Props, "params">) {
 async function Position({
   position,
   open,
+  coverRequested,
   canOverride,
 }: {
   position: PositionDetail;
   open: boolean;
+  coverRequested: boolean;
   canOverride: boolean;
 }) {
   const active =
@@ -178,6 +205,7 @@ async function Position({
             <StatusBadge tone={active.readiness === "approved" ? "success" : "info"}>
               {READINESS_LABELS[active.readiness]}
             </StatusBadge>
+            {coverRequested ? <StatusBadge tone="pending">Cover requested</StatusBadge> : null}
             {active.supervisorName ? (
               <span className="text-text-muted">Alongside: {active.supervisorName}</span>
             ) : null}

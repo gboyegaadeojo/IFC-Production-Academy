@@ -20,6 +20,7 @@ export type ServiceType = {
   durationMinutes: number;
   location: string;
   notes: string;
+  allowSignups: boolean;
   positions: { roleId: string; roleName: string; departmentName: string }[];
 };
 
@@ -28,7 +29,7 @@ export async function listServiceTypes(): Promise<ServiceType[]> {
   const [types, positions, roles, departments] = await Promise.all([
     supabase
       .from("service_types")
-      .select("id, name, start_time, duration_minutes, location, notes")
+      .select("id, name, start_time, duration_minutes, location, notes, allow_signups")
       .is("archived_at", null)
       .order("name"),
     supabase
@@ -50,6 +51,7 @@ export async function listServiceTypes(): Promise<ServiceType[]> {
     durationMinutes: type.duration_minutes,
     location: type.location,
     notes: type.notes,
+    allowSignups: type.allow_signups,
     positions: positions.data
       .filter((p) => p.service_type_id === type.id)
       .map((p) => ({
@@ -78,6 +80,12 @@ export async function saveServiceType(
     p_notes: input.notes,
   });
   return error ? { ok: false, error: toServiceTypeError(error) } : { ok: true, value: data };
+}
+
+export async function setServiceTypeSignups(id: string, open: boolean): Promise<Result> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_service_type_signups", { p_id: id, p_open: open });
+  return error ? { ok: false, error: toServiceTypeError(error) } : { ok: true, value: undefined };
 }
 
 export async function archiveServiceType(id: string): Promise<Result> {
