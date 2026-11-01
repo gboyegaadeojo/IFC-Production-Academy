@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
+import { getSchedulingSource } from "@/lib/data/planning-center";
 import { MonthCalendar, type DayMark } from "@/components/ui/month-calendar";
 import {
   getCoverRequestsForMe,
@@ -46,6 +47,9 @@ import {
 
 export const metadata: Metadata = { title: "Your schedule" };
 
+/** Where volunteers reply and block out dates while Planning Center schedules. */
+const PLANNING_CENTER_URL = "https://services.planningcenteronline.com";
+
 export default function SchedulePage({ searchParams }: PageProps<"/schedule">) {
   return (
     <Suspense fallback={<ScheduleSkeleton />}>
@@ -65,19 +69,22 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
   const selected = parseDate(params.day);
   const month = parseMonth(params.month, (selected ?? today).slice(0, 7));
   const range = gridRange(month);
-  const [assignments, away, inMonth, coverRequests, openSpots, myRequests] = await Promise.all([
-    getMyUpcomingAssignments(user.id),
-    getMyUnavailability(user.id),
-    getMyAssignmentsBetween(
-      user.id,
-      (winnipegToUtc(range.from, "00:00") ?? new Date()).toISOString(),
-      (winnipegToUtc(addDays(range.to, 1), "00:00") ?? new Date()).toISOString(),
-    ),
-    getCoverRequestsForMe(),
-    getMyOpenSpots(),
-    getMyOpenCoverRequests(user.id),
-  ]);
+  const [source, assignments, away, inMonth, coverRequests, openSpots, myRequests] =
+    await Promise.all([
+      getSchedulingSource(),
+      getMyUpcomingAssignments(user.id),
+      getMyUnavailability(user.id),
+      getMyAssignmentsBetween(
+        user.id,
+        (winnipegToUtc(range.from, "00:00") ?? new Date()).toISOString(),
+        (winnipegToUtc(addDays(range.to, 1), "00:00") ?? new Date()).toISOString(),
+      ),
+      getCoverRequestsForMe(),
+      getMyOpenSpots(),
+      getMyOpenCoverRequests(user.id),
+    ]);
 
+  const pco = source === "planning_center";
   const marks = new Map<string, DayMark[]>();
   for (const assignment of inMonth) {
     if (assignment.status === "declined") {
@@ -112,7 +119,11 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
     <div className="page-container flex flex-col gap-10 py-8 lg:py-12">
       <PageHeader
         title="Your schedule"
-        description="Where you're serving next. Confirm each one, or ask a teammate to cover if you can't make it."
+        description={
+          pco
+            ? "Where you're serving, from Planning Center. Accept, decline, and block out dates there; it shows here within 15 minutes."
+            : "Where you're serving next. Confirm each one, or ask a teammate to cover if you can't make it."
+        }
       />
 
       <section aria-label="Calendar" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -188,7 +199,22 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                     >
                       Checklist<span className="sr-only"> for {assignment.event.title}</span>
                     </Link>
-                    {assignment.status === "pending" ? (
+                    {pco ? (
+                      <a
+                        href={PLANNING_CENTER_URL}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex min-h-control items-center px-1 text-small font-medium text-accent-light underline-offset-4 hover:underline"
+                      >
+                        {assignment.status === "pending" ? "Accept or decline" : "Change"} in
+                        Planning Center
+                        <span className="sr-only">
+                          {" "}
+                          for {assignment.event.title} (opens in a new tab)
+                        </span>
+                      </a>
+                    ) : null}
+                    {!pco && assignment.status === "pending" ? (
                       <ActionForm
                         action={respondAction}
                         submitLabel="Confirm"
@@ -198,7 +224,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                         className="flex"
                       />
                     ) : null}
-                    {assignment.status === "pending" ? (
+                    {!pco && assignment.status === "pending" ? (
                       <ActionForm
                         action={respondAction}
                         submitLabel="Decline"
@@ -211,7 +237,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                     ) : null}
                   </div>
                 ) : null}
-                {assignment.status !== "declined" ? (
+                {!pco && assignment.status !== "declined" ? (
                   <CoverControls
                     assignmentId={assignment.id}
                     title={assignment.event.title}
@@ -224,7 +250,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
         )}
       </section>
 
-      {coverRequests.length > 0 ? (
+      {!pco && coverRequests.length > 0 ? (
         <section aria-labelledby="cover-heading" className="flex flex-col gap-3">
           <h2 id="cover-heading" className="text-heading font-semibold">
             Can you cover?
@@ -262,7 +288,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
         </section>
       ) : null}
 
-      {openSpots.length > 0 ? (
+      {!pco && openSpots.length > 0 ? (
         <section aria-labelledby="spots-heading" className="flex flex-col gap-3">
           <h2 id="spots-heading" className="text-heading font-semibold">
             Open spots
@@ -305,7 +331,23 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
           Days you&apos;re away
         </h2>
         <p className="max-w-3xl text-small text-text-secondary">
-          Leaders won&apos;t be able to schedule you on these days without overriding it.
+          {pco ? (
+            <>
+              Your blockout dates from Planning Center. To add or change one,{" "}
+              <a
+                href={PLANNING_CENTER_URL}
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-accent-light underline-offset-4 hover:underline"
+              >
+                block out dates in Planning Center
+                <span className="sr-only"> (opens in a new tab)</span>
+              </a>
+              .
+            </>
+          ) : (
+            "Leaders won't be able to schedule you on these days without overriding it."
+          )}
         </p>
         {away.length > 0 ? (
           <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
@@ -324,45 +366,49 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                     <span className="text-small text-text-muted">{entry.note}</span>
                   ) : null}
                 </span>
-                <ActionForm
-                  action={removeUnavailabilityAction}
-                  submitLabel="Remove"
-                  pendingLabel="Removing…"
-                  variant="tertiary"
-                  hidden={{ id: entry.id }}
-                  className="flex"
-                />
+                {pco ? null : (
+                  <ActionForm
+                    action={removeUnavailabilityAction}
+                    submitLabel="Remove"
+                    pendingLabel="Removing…"
+                    variant="tertiary"
+                    hidden={{ id: entry.id }}
+                    className="flex"
+                  />
+                )}
               </li>
             ))}
           </ul>
         ) : null}
-        <div className="max-w-3xl rounded-card border border-dashed border-border p-5">
-          <ActionForm
-            action={addUnavailabilityAction}
-            submitLabel="Add days away"
-            pendingLabel="Saving…"
-            variant="secondary"
-            className="flex flex-col gap-3"
-          >
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field id="away-from" label="From">
-                <input
-                  id="away-from"
-                  name="startsOn"
-                  type="date"
-                  required
-                  className={fieldClasses}
-                />
+        {pco ? null : (
+          <div className="max-w-3xl rounded-card border border-dashed border-border p-5">
+            <ActionForm
+              action={addUnavailabilityAction}
+              submitLabel="Add days away"
+              pendingLabel="Saving…"
+              variant="secondary"
+              className="flex flex-col gap-3"
+            >
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field id="away-from" label="From">
+                  <input
+                    id="away-from"
+                    name="startsOn"
+                    type="date"
+                    required
+                    className={fieldClasses}
+                  />
+                </Field>
+                <Field id="away-to" label="To (optional)">
+                  <input id="away-to" name="endsOn" type="date" className={fieldClasses} />
+                </Field>
+              </div>
+              <Field id="away-note" label="Note (optional)">
+                <input id="away-note" name="note" maxLength={200} className={fieldClasses} />
               </Field>
-              <Field id="away-to" label="To (optional)">
-                <input id="away-to" name="endsOn" type="date" className={fieldClasses} />
-              </Field>
-            </div>
-            <Field id="away-note" label="Note (optional)">
-              <input id="away-note" name="note" maxLength={200} className={fieldClasses} />
-            </Field>
-          </ActionForm>
-        </div>
+            </ActionForm>
+          </div>
+        )}
       </section>
     </div>
   );

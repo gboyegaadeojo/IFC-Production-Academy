@@ -12,7 +12,13 @@ export type Database = {
   public: {
     Tables: {
       organizations: {
-        Row: { id: string; slug: string; name: string; time_zone: string } & Timestamps;
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          time_zone: string;
+          scheduling_source: string;
+        } & Timestamps;
         Insert: {
           id?: string;
           slug: string;
@@ -566,6 +572,7 @@ export type Database = {
           added_by: string | null;
           removed_at: string | null;
           removed_by: string | null;
+          source: string;
         } & Timestamps;
         // Changed only through add_to_serving_team and remove_from_serving_team.
         Insert: never;
@@ -721,6 +728,8 @@ export type Database = {
           created_by: string | null;
           service_type_id: string | null;
           signups_open: boolean;
+          source: string;
+          external_id: string | null;
         } & Timestamps;
         Insert: {
           title: string;
@@ -736,6 +745,69 @@ export type Database = {
           location?: string;
           notes?: string;
         };
+        Relationships: [];
+      };
+      pco_service_types: {
+        Row: { id: string; organization_id: string; name: string; seen_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      pco_teams: {
+        Row: {
+          id: string;
+          organization_id: string;
+          service_type_id: string;
+          name: string;
+          seen_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      pco_positions: {
+        Row: {
+          id: string;
+          organization_id: string;
+          team_id: string;
+          name: string;
+          seen_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      pco_people: {
+        Row: {
+          id: string;
+          organization_id: string;
+          display_name: string;
+          user_id: string | null;
+          seen_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      pco_links: {
+        Row: {
+          id: string;
+          organization_id: string;
+          pco_team_id: string;
+          pco_position_id: string | null;
+          role_id: string;
+          created_by: string | null;
+          created_at: string;
+        };
+        // Changed only through set_pco_link.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      pco_sync_runs: {
+        Row: { id: string; organization_id: string; finished_at: string; counts: Json };
+        Insert: never;
+        Update: never;
         Relationships: [];
       };
       cover_requests: {
@@ -843,6 +915,7 @@ export type Database = {
           role_id: string;
           sort_order: number;
           created_at: string;
+          external_id: string | null;
         };
         Insert: never;
         Update: never;
@@ -860,7 +933,8 @@ export type Database = {
           readiness: Database["public"]["Enums"]["assignment_readiness"];
           supervisor_id: string | null;
           override_reason: string | null;
-          assigned_by: string;
+          assigned_by: string | null;
+          external_id: string | null;
           assigned_at: string;
           responded_at: string | null;
           cancelled_at: string | null;
@@ -878,6 +952,8 @@ export type Database = {
           ends_on: string;
           note: string;
           created_at: string;
+          source: string;
+          external_id: string | null;
         };
         Insert: never;
         Update: never;
@@ -1178,6 +1254,13 @@ export type Database = {
         Returns: Database["public"]["Enums"]["assignment_readiness"];
       };
       cancel_assignment: { Args: { p_assignment_id: string }; Returns: undefined };
+      scheduling_source: { Args: never; Returns: string };
+      set_scheduling_source: { Args: { p_source: string }; Returns: undefined };
+      set_pco_link: {
+        Args: { p_team_id: string; p_position_id: string | null; p_role_id: string | null };
+        Returns: undefined;
+      };
+      sync_planning_center: { Args: { p: Json }; Returns: Json };
       set_event_signups: { Args: { p_event_id: string; p_open: boolean }; Returns: undefined };
       set_service_type_signups: { Args: { p_id: string; p_open: boolean }; Returns: undefined };
       my_open_spots: {

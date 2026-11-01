@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
+import { getSchedulingSource } from "@/lib/data/planning-center";
 import { getServingTeam, getTeamDepartments, type TeamDepartment } from "@/lib/data/teams";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
@@ -50,7 +51,7 @@ async function TeamsContent({ searchParams }: Pick<PageProps<"/admin/teams">, "s
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Serving teams"
-        description="Add people to each position they serve in. Schedulers can only fill a position from its team. Training shows beside each name, but it's your call."
+        description="Who serves in each position, with their training beside their name, and what each position sees on the day. While Planning Center schedules, people are added to positions there, and appear here after the next read."
       />
       {departments.length > 1 ? (
         <nav aria-label="Choose a department" className="flex flex-wrap gap-2">
@@ -91,7 +92,11 @@ function DepartmentChip({ department, current }: { department: TeamDepartment; c
 }
 
 async function DepartmentTeams({ department }: { department: TeamDepartment }) {
-  const { positions, people } = await getServingTeam(department.id);
+  const [{ positions, people }, source] = await Promise.all([
+    getServingTeam(department.id),
+    getSchedulingSource(),
+  ]);
+  const fromPlanningCenter = source === "planning_center";
   if (positions.length === 0) {
     return (
       <EmptyState title={`No positions in ${department.name} yet`}>
@@ -138,6 +143,7 @@ async function DepartmentTeams({ department }: { department: TeamDepartment }) {
           position={position}
           people={people}
           departmentName={department.name}
+          fromPlanningCenter={fromPlanningCenter}
         />
       ))}
     </div>
@@ -148,10 +154,12 @@ function PositionTeam({
   position,
   people,
   departmentName,
+  fromPlanningCenter,
 }: {
   position: Position;
   people: TeamPerson[];
   departmentName: string;
+  fromPlanningCenter: boolean;
 }) {
   const team = positionTeam(people, position.id);
   const addable = addableFor(people, position.id);
@@ -218,21 +226,23 @@ function PositionTeam({
                     {trained}
                   </StatusBadge>
                 </span>
-                <ActionForm
-                  action={removeFromTeamAction}
-                  submitLabel="Remove"
-                  pendingLabel="Removing…"
-                  variant="tertiary"
-                  hidden={{ roleId: position.id, userId: person.id }}
-                  srLabel={`${person.name} from ${position.name}`}
-                  className="flex"
-                />
+                {fromPlanningCenter ? null : (
+                  <ActionForm
+                    action={removeFromTeamAction}
+                    submitLabel="Remove"
+                    pendingLabel="Removing…"
+                    variant="tertiary"
+                    hidden={{ roleId: position.id, userId: person.id }}
+                    srLabel={`${person.name} from ${position.name}`}
+                    className="flex"
+                  />
+                )}
               </li>
             );
           })}
         </ul>
       )}
-      {addable.length > 0 ? (
+      {!fromPlanningCenter && addable.length > 0 ? (
         <details className="rounded-card border border-dashed border-border px-5 py-3">
           <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-accent-light">
             Add someone<span className="sr-only"> as {position.name}</span>
