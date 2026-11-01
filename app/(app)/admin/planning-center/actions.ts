@@ -14,30 +14,43 @@ import {
 // Planning Center settings (decision record 9, revised). The database checks team.manage for
 // links and schedule.manage (organisation-wide) for who schedules.
 
-const link = z.object({
+// Every copy of a team or position, across service types (lib/domain/pco-links.ts).
+const target = z.object({
   teamId: z.string().min(1).max(40),
-  positionId: z
+  positionId: z.string().min(1).max(40).nullable(),
+});
+const link = z.object({
+  targets: z
     .string()
-    .max(40)
-    .transform((value) => (value === "" ? null : value)),
+    .max(4000)
+    .transform((value, ctx) => {
+      try {
+        return JSON.parse(value) as unknown;
+      } catch {
+        ctx.addIssue({ code: "custom", message: "Invalid targets" });
+        return z.NEVER;
+      }
+    })
+    .pipe(z.array(target).min(1).max(20)),
   roleId: z.union([z.literal("").transform(() => null), z.uuid()]),
 });
 
 export async function setLinkAction(_: FormState, formData: FormData): Promise<FormState> {
   const parsed = link.safeParse({
-    teamId: formData.get("teamId"),
-    positionId: formData.get("positionId") ?? "",
+    targets: formData.get("targets"),
     roleId: formData.get("roleId") ?? "",
   });
   if (!parsed.success || !(await getAdminAccess("planning-center")).allowed) {
     return { status: "error", message: "Only people who run the teams can change links." };
   }
-  const ok = await setPcoLink(parsed.data.teamId, parsed.data.positionId, parsed.data.roleId);
-  if (!ok) {
-    return {
-      status: "error",
-      message: "That didn't save. You can only link to positions in departments you run.",
-    };
+  for (const { teamId, positionId } of parsed.data.targets) {
+    if (!(await setPcoLink(teamId, positionId, parsed.data.roleId))) {
+      refresh();
+      return {
+        status: "error",
+        message: "That didn't save. You can only link to positions in departments you run.",
+      };
+    }
   }
   refresh();
   return {

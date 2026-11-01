@@ -40,13 +40,17 @@ export type PcoMapping = {
   withoutAccount: string[];
 };
 
-/** Planning Center's service types, teams, and positions as last synced, with their links. */
+/**
+ * Planning Center's service types, teams, and positions as the latest read saw them, with their
+ * links. Anything Planning Center no longer returns drops off (the sync stamps what it sees with
+ * the run's own time).
+ */
 export async function getPcoMapping(): Promise<PcoMapping> {
   const supabase = await createSupabaseServerClient();
   const [types, teams, positions, links, runs, people] = await Promise.all([
-    supabase.from("pco_service_types").select("id, name").order("name"),
-    supabase.from("pco_teams").select("id, service_type_id, name").order("name"),
-    supabase.from("pco_positions").select("id, team_id, name").order("name"),
+    supabase.from("pco_service_types").select("id, name, seen_at").order("name"),
+    supabase.from("pco_teams").select("id, service_type_id, name, seen_at").order("name"),
+    supabase.from("pco_positions").select("id, team_id, name, seen_at").order("name"),
     supabase.from("pco_links").select("pco_team_id, pco_position_id, role_id"),
     supabase
       .from("pco_sync_runs")
@@ -71,18 +75,21 @@ export async function getPcoMapping(): Promise<PcoMapping> {
     links.data.find((l) => l.pco_team_id === teamId && l.pco_position_id === positionId)?.role_id ??
     null;
   const run = runs.data[0];
+  const latest = run ? Date.parse(run.finished_at) : null;
+  const current = (row: { seen_at: string }) =>
+    latest === null || Date.parse(row.seen_at) >= latest;
   return {
-    serviceTypes: types.data.map((type) => ({
+    serviceTypes: types.data.filter(current).map((type) => ({
       id: type.id,
       name: type.name,
       teams: teams.data
-        .filter((team) => team.service_type_id === type.id)
+        .filter((team) => team.service_type_id === type.id && current(team))
         .map((team) => ({
           id: team.id,
           name: team.name,
           roleId: link(team.id, null),
           positions: positions.data
-            .filter((p) => p.team_id === team.id)
+            .filter((p) => p.team_id === team.id && current(p))
             .map((p) => ({ id: p.id, name: p.name, roleId: link(team.id, p.id) })),
         })),
     })),

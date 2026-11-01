@@ -15,6 +15,7 @@ import {
 } from "@/lib/data/planning-center";
 import { getSchedulableRoles } from "@/lib/data/service-types";
 import { formatDateTime } from "@/lib/domain/admin";
+import { groupTeamsByName, type LinkRowGroup } from "@/lib/domain/pco-links";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
 import { refreshAction, setLinkAction, setSourceAction } from "./actions";
@@ -127,41 +128,31 @@ async function PlanningCenterContent() {
             Add Academy positions in Competencies and roles first, then link them here.
           </p>
         ) : (
-          mapping.serviceTypes.map((type) => (
-            <div key={type.id} className="flex flex-col gap-3">
-              <h3 className="font-semibold">{type.name}</h3>
-              {type.teams.length === 0 ? (
-                <p className="text-small text-text-muted">No teams.</p>
-              ) : (
-                type.teams.map((team) => (
-                  <div
-                    key={team.id}
-                    className="flex flex-col divide-y divide-border rounded-card border border-border"
-                  >
-                    <LinkRow
-                      label={team.name}
-                      hint="Whole team: positions without their own link follow this."
-                      teamId={team.id}
-                      positionId=""
-                      roleId={team.roleId}
-                      roles={roles}
-                    />
-                    {team.positions.map((position) => (
-                      <LinkRow
-                        key={position.id}
-                        label={position.name}
-                        teamId={team.id}
-                        positionId={position.id}
-                        roleId={position.roleId}
-                        roles={roles}
-                      />
-                    ))}
-                  </div>
-                ))
-              )}
+          groupTeamsByName(mapping.serviceTypes).map((team) => (
+            <div
+              key={team.name}
+              className="flex flex-col divide-y divide-border rounded-card border border-border"
+            >
+              <LinkRow
+                label={team.name}
+                heading
+                hint={`In ${team.serviceTypes.join(", ")}. Positions without their own link follow the whole team.`}
+                row={team.wholeTeam}
+                roles={roles}
+              />
+              {team.positions.map((position) => (
+                <LinkRow key={position.label} label={position.label} row={position} roles={roles} />
+              ))}
             </div>
           ))
         )}
+        {mapping.serviceTypes.length > 0 ? (
+          <p className="text-small text-text-muted">
+            Planning Center gives each service type its own copy of a team, so a team with the same
+            name is shown once and linked everywhere. To remove a team here, archive or delete it in
+            every service type in Planning Center; it drops off at the next read.
+          </p>
+        ) : null}
       </section>
 
       {unlinked.length > 0 ? <UnlinkedPlaces places={unlinked} /> : null}
@@ -267,25 +258,28 @@ function UnlinkedPlaces({ places }: { places: UnlinkedPlace[] }) {
 function LinkRow({
   label,
   hint,
-  teamId,
-  positionId,
-  roleId,
+  heading = false,
+  row,
   roles,
 }: {
   label: string;
   hint?: string;
-  teamId: string;
-  positionId: string;
-  roleId: string | null;
+  heading?: boolean;
+  row: LinkRowGroup;
   roles: { id: string; name: string; departmentName: string }[];
 }) {
-  const id = `link-${teamId}-${positionId || "team"}`;
+  const id = `link-${row.targets.map((t) => `${t.teamId}-${t.positionId ?? "team"}`).join("_")}`;
   return (
     <div className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="flex flex-col">
-        <span className="font-medium">{label}</span>
+        <span className={heading ? "font-semibold" : "font-medium"}>{label}</span>
         <span className="text-small text-text-muted">
-          {hint ?? (roleId ? "Linked" : "Not linked")}
+          {hint ??
+            (row.mixed
+              ? "Linked differently in some service types. Saving links them all the same way."
+              : row.roleId
+                ? "Linked"
+                : "Not linked")}
         </span>
       </div>
       <ActionForm
@@ -293,14 +287,14 @@ function LinkRow({
         submitLabel="Save"
         pendingLabel="Saving…"
         variant="secondary"
-        hidden={{ teamId, positionId }}
+        hidden={{ targets: JSON.stringify(row.targets) }}
         srLabel={label}
         className="flex flex-wrap items-center gap-2"
       >
         <label htmlFor={id} className="sr-only">
           Academy position for {label}
         </label>
-        <select id={id} name="roleId" defaultValue={roleId ?? ""} className={fieldClasses}>
+        <select id={id} name="roleId" defaultValue={row.roleId ?? ""} className={fieldClasses}>
           <option value="">Not linked</option>
           {roles.map((role) => (
             <option key={role.id} value={role.id}>
