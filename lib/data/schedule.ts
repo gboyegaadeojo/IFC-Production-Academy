@@ -419,3 +419,152 @@ export async function cancelAssignment(assignmentId: string): Promise<ScheduleRe
   const { error } = await supabase.rpc("cancel_assignment", { p_assignment_id: assignmentId });
   return error ? fail(error) : { ok: true };
 }
+
+// ---------------------------------------------------------------------------
+// Calendars (decision record 9, stage 1)
+// ---------------------------------------------------------------------------
+
+/** The volunteer's assignments (not cancelled) for services starting in a UTC range. */
+export async function getMyAssignmentsBetween(
+  userId: string,
+  fromIso: string,
+  toIso: string,
+): Promise<MyAssignment[]> {
+  const supabase = await createSupabaseServerClient();
+  const events = await supabase
+    .from("events")
+    .select("id, title, starts_at, ends_at, location")
+    .gte("starts_at", fromIso)
+    .lt("starts_at", toIso)
+    .is("cancelled_at", null);
+  if (events.error) {
+    throw new Error("Could not load your calendar", { cause: events.error.code });
+  }
+  if (events.data.length === 0) {
+    return [];
+  }
+  const assignments = await supabase
+    .from("event_assignments")
+    .select("id, status, readiness, event_id, role_id, department_id")
+    .eq("user_id", userId)
+    .in("status", ["pending", "confirmed", "declined"])
+    .in(
+      "event_id",
+      events.data.map((e) => e.id),
+    );
+  if (assignments.error) {
+    throw new Error("Could not load your calendar", { cause: assignments.error.code });
+  }
+  const [roles, departments] = await Promise.all([
+    supabase
+      .from("serving_roles")
+      .select("id, name")
+      .in(
+        "id",
+        assignments.data.map((a) => a.role_id),
+      ),
+    supabase
+      .from("departments")
+      .select("id, name")
+      .in("id", [...new Set(assignments.data.map((a) => a.department_id))]),
+  ]);
+  if (roles.error || departments.error) {
+    throw new Error("Could not load your calendar", {
+      cause: (roles.error ?? departments.error)?.code,
+    });
+  }
+  return assignments.data
+    .flatMap((a) => {
+      const event = events.data.find((e) => e.id === a.event_id);
+      return event
+        ? [
+            {
+              id: a.id,
+              status: a.status,
+              readiness: a.readiness,
+              event: {
+                id: event.id,
+                title: event.title,
+                startsAt: event.starts_at,
+                endsAt: event.ends_at,
+                location: event.location,
+              },
+              roleName: roles.data.find((r) => r.id === a.role_id)?.name ?? "A serving role",
+              departmentName: departments.data.find((d) => d.id === a.department_id)?.name ?? "",
+            },
+          ]
+        : [];
+    })
+    .toSorted((a, b) => (a.event.startsAt < b.event.startsAt ? -1 : 1));
+}
+
+export type TeamSlot = {
+  positionId: string;
+  roleName: string;
+  departmentName: string;
+  userId: string | null;
+  name: string | null;
+  status: AssignmentStatus | null;
+};
+
+/** Everyone serving at a service: for the people scheduled at it, and its schedulers. */
+export async function getEventTeam(eventId: string): Promise<TeamSlot[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("event_team", { p_event_id: eventId });
+  if (error) {
+    if (error.code === "42501") {
+      return [];
+    }
+    throw new Error("Could not load the team", { cause: error.code });
+  }
+  return data.map((row) => ({
+    positionId: row.position_id,
+    roleName: row.role_name,
+    departmentName: row.department_name,
+    userId: row.user_id,
+    name: row.display_name,
+    status: row.status,
+  }));
+}
+
+/** Services starting in a UTC range, with how many positions are filled, for the scheduler. */
+export async function getEventsBetween(fromIso: string, toIso: string): Promise<EventSummary[]> {
+  const supabase = await createSupabaseServerClient();
+  const events = await supabase
+    .from("events")
+    .select("id, title, starts_at, ends_at, location, cancelled_at")
+    .gte("starts_at", fromIso)
+    .lt("starts_at", toIso)
+    .order("starts_at")
+    .limit(200);
+  if (events.error) {
+    throw new Error("Could not load events", { cause: events.error.code });
+  }
+  if (events.data.length === 0) {
+    return [];
+  }
+  const ids = events.data.map((e) => e.id);
+  const [positions, assignments] = await Promise.all([
+    supabase.from("event_positions").select("id, event_id").in("event_id", ids),
+    supabase
+      .from("event_assignments")
+      .select("event_id, position_id")
+      .in("event_id", ids)
+      .in("status", ["pending", "confirmed"]),
+  ]);
+  if (positions.error || assignments.error) {
+    throw new Error("Could not load events", {
+      cause: (positions.error ?? assignments.error)?.code,
+    });
+  }
+  return events.data.map((event) => ({
+    id: event.id,
+    title: event.title,
+    startsAt: event.starts_at,
+    endsAt: event.ends_at,
+    location: event.location,
+    cancelled: event.cancelled_at !== null,
+    positions: positions.data.filter((p) => p.event_id === event.id).length,
+    filled: assignments.data.filter((a) => a.event_id === event.id).length,
+  }));
+}

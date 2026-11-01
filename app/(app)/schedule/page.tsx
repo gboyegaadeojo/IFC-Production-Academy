@@ -6,28 +6,92 @@ import { PageHeader } from "@/components/ui/page-header";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
-import { getMyUnavailability, getMyUpcomingAssignments } from "@/lib/data/schedule";
+import { MonthCalendar, type DayMark } from "@/components/ui/month-calendar";
+import {
+  getEventTeam,
+  getMyAssignmentsBetween,
+  getMyUnavailability,
+  getMyUpcomingAssignments,
+  type MyAssignment,
+} from "@/lib/data/schedule";
 import { formatDate } from "@/lib/domain/dates";
-import { ASSIGNMENT_STATUS_LABELS, eventTimeLabel, READINESS_LABELS } from "@/lib/domain/schedule";
+import {
+  addDays,
+  dayLabel,
+  gridRange,
+  isAway,
+  parseDate,
+  parseMonth,
+  winnipegDate,
+} from "@/lib/domain/month-calendar";
+import {
+  ASSIGNMENT_STATUS_LABELS,
+  eventTimeLabel,
+  READINESS_LABELS,
+  winnipegToUtc,
+} from "@/lib/domain/schedule";
 import { addUnavailabilityAction, removeUnavailabilityAction, respondAction } from "./actions";
 
 export const metadata: Metadata = { title: "Your schedule" };
 
-export default function SchedulePage() {
+export default function SchedulePage({ searchParams }: PageProps<"/schedule">) {
   return (
     <Suspense fallback={<ScheduleSkeleton />}>
-      <ScheduleContent />
+      <ScheduleContent searchParams={searchParams} />
     </Suspense>
   );
 }
 
-/** "My Schedule" (SPEC §8): upcoming assignments to confirm or decline, and days you're away. */
-async function ScheduleContent() {
+/**
+ * "My Schedule" (SPEC §8, decision record 9): a month calendar to tap a day and see where you're
+ * serving and who with, upcoming assignments to confirm or decline, and days you're away.
+ */
+async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "searchParams">) {
   const user = await requireActiveUser();
-  const [assignments, away] = await Promise.all([
+  const params = await searchParams;
+  const today = winnipegDate(new Date());
+  const selected = parseDate(params.day);
+  const month = parseMonth(params.month, (selected ?? today).slice(0, 7));
+  const range = gridRange(month);
+  const [assignments, away, inMonth] = await Promise.all([
     getMyUpcomingAssignments(user.id),
     getMyUnavailability(user.id),
+    getMyAssignmentsBetween(
+      user.id,
+      (winnipegToUtc(range.from, "00:00") ?? new Date()).toISOString(),
+      (winnipegToUtc(addDays(range.to, 1), "00:00") ?? new Date()).toISOString(),
+    ),
   ]);
+
+  const marks = new Map<string, DayMark[]>();
+  for (const assignment of inMonth) {
+    if (assignment.status === "declined") {
+      continue;
+    }
+    const date = winnipegDate(assignment.event.startsAt);
+    marks.set(date, [
+      ...(marks.get(date) ?? []),
+      {
+        label:
+          assignment.status === "confirmed"
+            ? `Serving: ${assignment.roleName}`
+            : `Asked to serve: ${assignment.roleName}`,
+        tone: assignment.status === "confirmed" ? "serving" : "pending",
+      },
+    ]);
+  }
+  for (let date = range.from; date <= range.to; date = addDays(date, 1)) {
+    if (isAway(date, away)) {
+      marks.set(date, [...(marks.get(date) ?? []), { label: "Away", tone: "away" }]);
+    }
+  }
+  const query = (next: { month: string; day?: string | null }) => {
+    const search = new URLSearchParams({ month: next.month });
+    if (next.day) {
+      search.set("day", next.day);
+    }
+    return `/schedule?${search.toString()}`;
+  };
 
   return (
     <div className="page-container flex flex-col gap-10 py-8 lg:py-12">
@@ -35,6 +99,30 @@ async function ScheduleContent() {
         title="Your schedule"
         description="Where you're serving next. Confirm each one, or decline in good time so your leader can find someone else."
       />
+
+      <section aria-label="Calendar" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <MonthCalendar
+          month={month}
+          today={today}
+          selected={selected}
+          marks={marks}
+          hrefFor={(date) => query({ month: date.slice(0, 7), day: date })}
+          monthHref={(next) => query({ month: next })}
+        />
+        {selected ? (
+          <DayPanel
+            date={selected}
+            assignments={inMonth.filter(
+              (a) => a.status !== "declined" && winnipegDate(a.event.startsAt) === selected,
+            )}
+            away={isAway(selected, away)}
+          />
+        ) : (
+          <p className="text-small text-text-muted lg:pt-12">
+            Tap a day to see where you&apos;re serving and who&apos;s serving with you.
+          </p>
+        )}
+      </section>
 
       <section aria-labelledby="upcoming-heading" className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -171,6 +259,69 @@ async function ScheduleContent() {
         </div>
       </section>
     </div>
+  );
+}
+
+async function DayPanel({
+  date,
+  assignments,
+  away,
+}: {
+  date: string;
+  assignments: MyAssignment[];
+  away: boolean;
+}) {
+  const teams = await Promise.all(assignments.map((a) => getEventTeam(a.event.id)));
+  return (
+    <section
+      aria-labelledby="day-heading"
+      className="flex flex-col gap-4 rounded-card border border-border p-5 lg:mt-12"
+    >
+      <h2 id="day-heading" className="text-subheading font-semibold">
+        {dayLabel(date)}
+      </h2>
+      {away ? <StatusBadge tone="neutral">You&apos;re away</StatusBadge> : null}
+      {assignments.length === 0 ? (
+        <p className="text-small text-text-secondary">You&apos;re not serving this day.</p>
+      ) : (
+        assignments.map((assignment, index) => (
+          <div key={assignment.id} className="flex flex-col gap-2">
+            <p className="font-medium">{assignment.event.title}</p>
+            <p className="text-small text-text-secondary">
+              {eventTimeLabel(assignment.event.startsAt, assignment.event.endsAt)}
+              {assignment.event.location ? ` · ${assignment.event.location}` : ""}
+            </p>
+            <p className="flex flex-wrap items-center gap-2 text-small">
+              <span>
+                You: {assignment.roleName} · {assignment.departmentName}
+              </span>
+              <StatusBadge tone={assignment.status === "confirmed" ? "success" : "pending"}>
+                {ASSIGNMENT_STATUS_LABELS[assignment.status]}
+              </StatusBadge>
+            </p>
+            {(teams[index] ?? []).length > 0 ? (
+              <div className="flex flex-col gap-1">
+                <h3 className="text-small font-medium text-text-muted">Serving with you</h3>
+                <ul className="flex flex-col divide-y divide-border rounded-card border border-border">
+                  {(teams[index] ?? []).map((slot) => (
+                    <li
+                      key={slot.positionId}
+                      className="flex items-center justify-between gap-2 px-3 py-2 text-small"
+                    >
+                      <span className="text-text-secondary">{slot.roleName}</span>
+                      <span className={slot.name ? "text-text" : "text-text-muted"}>
+                        {slot.name ?? "Open"}
+                        {slot.status === "pending" ? " (not confirmed yet)" : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        ))
+      )}
+    </section>
   );
 }
 

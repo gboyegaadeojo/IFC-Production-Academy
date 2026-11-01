@@ -717,6 +717,7 @@ export type Database = {
           notes: string;
           cancelled_at: string | null;
           created_by: string | null;
+          service_type_id: string | null;
         } & Timestamps;
         Insert: {
           title: string;
@@ -732,6 +733,37 @@ export type Database = {
           location?: string;
           notes?: string;
         };
+        Relationships: [];
+      };
+      service_types: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          start_time: string;
+          duration_minutes: number;
+          location: string;
+          notes: string;
+          archived_at: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        // Changed only through save_service_type and archive_service_type.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      service_type_positions: {
+        Row: {
+          id: string;
+          service_type_id: string;
+          role_id: string;
+          department_id: string;
+          sort_order: number;
+          created_at: string;
+        };
+        // Changed only through set_service_type_positions.
+        Insert: never;
+        Update: never;
         Relationships: [];
       };
       event_positions: {
@@ -1077,6 +1109,37 @@ export type Database = {
         Returns: Database["public"]["Enums"]["assignment_readiness"];
       };
       cancel_assignment: { Args: { p_assignment_id: string }; Returns: undefined };
+      save_service_type: {
+        Args: {
+          p_id: string | null;
+          p_name: string;
+          p_start_time: string;
+          p_duration_minutes: number;
+          p_location: string;
+          p_notes: string;
+        };
+        Returns: string;
+      };
+      archive_service_type: { Args: { p_id: string }; Returns: undefined };
+      set_service_type_positions: {
+        Args: { p_id: string; p_role_ids: string[] };
+        Returns: undefined;
+      };
+      create_services: {
+        Args: { p_service_type_id: string; p_dates: string[] };
+        Returns: number;
+      };
+      event_team: {
+        Args: { p_event_id: string };
+        Returns: {
+          position_id: string;
+          role_name: string;
+          department_name: string;
+          user_id: string | null;
+          display_name: string | null;
+          status: Database["public"]["Enums"]["assignment_status"] | null;
+        }[];
+      };
       add_to_serving_team: {
         Args: { p_role_id: string; p_user_id: string };
         Returns: undefined;
