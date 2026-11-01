@@ -1377,6 +1377,10 @@ export type Database = {
         Returns: undefined;
       };
       run_onboarding: { Args: never; Returns: number };
+      open_departments: {
+        Args: never;
+        Returns: { id: string; name: string; hue: string; icon: string }[];
+      };
       onboarding_leaders: {
         Args: { p_pathway_id: string };
         Returns: { user_id: string; display_name: string }[];

@@ -3,7 +3,9 @@
 import { refresh } from "next/cache";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/data/auth";
+import type { FormState } from "@/components/ui/action-form";
 import { requestMembership } from "@/lib/data/departments";
+import { chooseDepartment } from "@/lib/data/onboarding";
 import { requestMembershipErrorMessage } from "@/lib/domain/departments";
 
 export type RequestMembershipState = { status: "idle" } | { status: "error"; message: string };
@@ -32,4 +34,21 @@ export async function requestMembershipAction(
 
   refresh();
   return { status: "idle" };
+}
+
+/** The volunteer picks a department at their pathway's "Choose a department" step. */
+export async function chooseDepartmentAction(_: FormState, formData: FormData): Promise<FormState> {
+  const parsed = z
+    .object({ entryId: z.uuid(), departmentId: z.uuid() })
+    .safeParse({ entryId: formData.get("entryId"), departmentId: formData.get("departmentId") });
+  const user = await getCurrentUser();
+  if (!parsed.success || !user || user.status !== "active") {
+    return { status: "error", message: "Choose a department and try again." };
+  }
+  const chosen = await chooseDepartment(parsed.data.entryId, parsed.data.departmentId);
+  if (!chosen.ok) {
+    return { status: "error", message: "That didn't save. Refresh the page and try again." };
+  }
+  refresh();
+  return { status: "done", message: "Thanks. Your department's training is next." };
 }

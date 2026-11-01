@@ -746,3 +746,12 @@ export async function chooseDepartment(
   });
   return result(error);
 }
+
+/** Open departments for the public form's "What interests you?" (names and icons only). */
+export async function getOpenDepartments(): Promise<
+  { id: string; name: string; hue: string; icon: string }[]
+> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("open_departments");
+  return error ? [] : data;
+}
