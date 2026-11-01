@@ -3,11 +3,16 @@ import {
   activityActionLabel,
   activityChange,
   activityOutcomeLabel,
+  canSwitchCurrentService,
+  checklistErrorMessage,
   groupServiceChecklists,
   groupServiceRecord,
   parseChecklistText,
   percentDone,
   progressLabel,
+  hideBlocker,
+  sameListName,
+  tidyListName,
   toChecklistError,
   type RecordRow,
   type ServiceChecklistRow,
@@ -146,5 +151,39 @@ describe("groupServiceRecord", () => {
     expect(record.departments[0]!.doneTasks[0]!.checkedUnder).toBe("a (old)");
     expect(record.departments[1]!.doneTasks[0]!.checkedUnder).toBeNull();
     expect(record.departments[0]!.notDone.map((t) => t.id)).toEqual(["b"]);
+  });
+});
+
+describe("task lists", () => {
+  it("tidies names and compares them ignoring capitals and extra spaces", () => {
+    expect(tidyListName("  Christmas   Eve ")).toBe("Christmas Eve");
+    expect(sameListName("christmas  EVE", " Christmas Eve")).toBe(true);
+    expect(sameListName("Christmas", "Christmas Eve")).toBe(false);
+  });
+
+  it("never hides the default list or one a service is using", () => {
+    expect(hideBlocker({ isDefault: true, inUse: true })).toMatch(/default list/);
+    expect(hideBlocker({ isDefault: false, inUse: true })).toMatch(/service is using/);
+    expect(hideBlocker({ isDefault: false, inUse: false })).toBeNull();
+  });
+
+  it("offers to switch the current service only before anything is ticked", () => {
+    expect(canSwitchCurrentService(null, "b")).toBe(false);
+    expect(canSwitchCurrentService({ setId: "a", hasCheckoffs: false }, "b")).toBe(true);
+    expect(canSwitchCurrentService({ setId: "a", hasCheckoffs: true }, "b")).toBe(false);
+    expect(canSwitchCurrentService({ setId: "b", hasCheckoffs: false }, "b")).toBe(false);
+  });
+
+  it("explains the list errors the database gives", () => {
+    for (const reason of [
+      "name_taken",
+      "list_hidden",
+      "list_not_found",
+      "list_in_use",
+      "service_has_checkoffs",
+    ] as const) {
+      expect(toChecklistError({ message: reason })).toBe(reason);
+      expect(checklistErrorMessage(reason)).not.toMatch(/connection/);
+    }
   });
 });

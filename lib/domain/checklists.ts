@@ -122,6 +122,11 @@ export type ChecklistError =
   | "item_not_found"
   | "nothing_to_undo"
   | "nothing_to_reset"
+  | "name_taken"
+  | "list_hidden"
+  | "list_not_found"
+  | "list_in_use"
+  | "service_has_checkoffs"
   | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<ChecklistError>([
@@ -130,6 +135,11 @@ const KNOWN: ReadonlySet<string> = new Set<ChecklistError>([
   "item_not_found",
   "nothing_to_undo",
   "nothing_to_reset",
+  "name_taken",
+  "list_hidden",
+  "list_not_found",
+  "list_in_use",
+  "service_has_checkoffs",
 ]);
 
 export function toChecklistError(
@@ -153,9 +163,63 @@ export function checklistErrorMessage(error: ChecklistError): string {
       return "There's no reset to undo.";
     case "nothing_to_reset":
       return "Nothing is ticked, so there's nothing to reset.";
+    case "name_taken":
+      return "Another task list already has that name. Choose a different one.";
+    case "list_hidden":
+      return "That task list is hidden. Restore it first.";
+    case "list_not_found":
+      return "That task list isn't available.";
+    case "list_in_use":
+      return "The default list, and a list a service is using, can't be hidden.";
+    case "service_has_checkoffs":
+      return "Something is already ticked for the current service, so it keeps its list.";
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }
+}
+
+// ---------------------------------------------------------------------------
+// Task lists (checklist app US-11)
+// ---------------------------------------------------------------------------
+
+export const MAX_LIST_NAME_LENGTH = 80;
+export const MAX_LIST_DESCRIPTION_LENGTH = 300;
+
+/** A list name as it's stored: trimmed, with runs of spaces made one. */
+export function tidyListName(name: string): string {
+  return name.replace(/\s+/g, " ").trim();
+}
+
+/** List names clash when they match ignoring capitals and extra spaces. */
+export function sameListName(a: string, b: string): boolean {
+  return tidyListName(a).toLowerCase() === tidyListName(b).toLowerCase();
+}
+
+export type TaskList = {
+  id: string;
+  name: string;
+  description: string;
+  isDefault: boolean;
+  hiddenAt: string | null;
+  checklists: number;
+  items: number;
+  inUse: boolean;
+};
+
+/** Why a list can't be hidden, or null if it can. */
+export function hideBlocker(list: Pick<TaskList, "isDefault" | "inUse">): string | null {
+  if (list.isDefault) {
+    return "This is the default list. Make another list the default first.";
+  }
+  return list.inUse ? "A current or upcoming service is using this list." : null;
+}
+
+/** Whether "Also use it for the current service" can be offered when making a list the default. */
+export function canSwitchCurrentService(
+  current: { setId: string; hasCheckoffs: boolean } | null,
+  listId: string,
+): boolean {
+  return current !== null && current.setId !== listId && !current.hasCheckoffs;
 }
 
 // ---------------------------------------------------------------------------
@@ -177,6 +241,8 @@ export const ACTIVITY_ACTIONS: Record<string, string> = {
   remove: "Removed",
   link_position: "Linked a position",
   unlink_position: "Unlinked a position",
+  set_default: "Made the default list",
+  switch_service_list: "Switched the current service to",
 };
 
 export function activityActionLabel(action: string): string {

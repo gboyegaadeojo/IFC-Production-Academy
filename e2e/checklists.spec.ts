@@ -78,3 +78,40 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await expect(department.getByText("1 of 2 done")).toBeVisible();
   await expect(department.getByText(`Check the batteries ${stamp}`)).toBeVisible();
 });
+
+test("an admin copies a task list, makes it the default and back, then hides and restores it", async ({
+  page,
+}) => {
+  const stamp = Date.now();
+  const name = `E2E list ${stamp}`;
+  await signInByEmail(page, "emery.director@example.com");
+
+  await page.goto("/admin/checklists");
+  await page.getByLabel("List name").fill(name);
+  await page.getByLabel("Start with").selectOption({ label: "A copy of Pre-Service Checklist" });
+  await page.getByRole("button", { name: "Add list" }).click();
+  await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
+
+  // Names are unique ignoring capitals and extra spaces.
+  await page.getByLabel("List name").last().fill(`  e2e LIST   ${stamp} `);
+  await page.getByRole("button", { name: "Add list" }).click();
+  await expect(page.getByText("Another task list already has that name.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Make this the default" }).click();
+  await expect(page.getByText("This is the default list: new services use it.")).toBeVisible();
+  const lists = page.getByRole("list", { name: "Task lists" });
+  await expect(lists.getByRole("link", { name: new RegExp(`^${name}.*Default`) })).toBeVisible();
+
+  // Back to the usual default, so the other tests keep their list.
+  await lists.getByRole("link", { name: /^Pre-Service Checklist/ }).click();
+  await page.getByRole("button", { name: "Make this the default" }).click();
+  await expect(page.getByText("This is the default list: new services use it.")).toBeVisible();
+
+  await lists.getByRole("link", { name: new RegExp(`^${name}`) }).click();
+  await page.getByRole("button", { name: "Hide this list" }).click();
+  const hidden = page.getByRole("region", { name: "Hidden lists" });
+  await expect(hidden.getByText(name)).toBeVisible();
+  await expect(lists.getByRole("link", { name: new RegExp(`^${name}`) })).toHaveCount(0);
+  await hidden.getByRole("button", { name: `Restore ${name}` }).click();
+  await expect(lists.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
+});

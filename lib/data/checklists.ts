@@ -5,6 +5,7 @@ import {
   groupServiceChecklists,
   groupServiceRecord,
   type RecordDepartment,
+  type TaskList,
   toChecklistError,
   type ChecklistError,
   type ParsedSection,
@@ -35,13 +36,18 @@ export type ChecklistSummary = {
   items: number;
 };
 
-/** Checklists in departments this person manages checklists for. */
+/** A task list's checklists, in departments this person manages checklists for. */
 export async function listChecklists(
   grants: readonly CapabilityGrant[],
+  setId: string,
 ): Promise<ChecklistSummary[]> {
   const supabase = await createSupabaseServerClient();
   const [checklists, departments, positions, roles, items] = await Promise.all([
-    supabase.from("checklists").select("id, name, department_id").is("archived_at", null),
+    supabase
+      .from("checklists")
+      .select("id, name, department_id")
+      .eq("set_id", setId)
+      .is("archived_at", null),
     supabase.from("departments").select("id, name, sort_order").order("sort_order"),
     supabase.from("checklist_positions").select("checklist_id, role_id"),
     supabase.from("serving_roles").select("id, name"),
@@ -83,6 +89,7 @@ export async function listChecklists(
 export type ChecklistDetail = {
   id: string;
   name: string;
+  setId: string;
   departmentId: string;
   departmentName: string;
   positionIds: string[];
@@ -98,7 +105,7 @@ export async function getChecklist(id: string): Promise<ChecklistDetail | null> 
   const supabase = await createSupabaseServerClient();
   const checklist = await supabase
     .from("checklists")
-    .select("id, name, department_id")
+    .select("id, name, department_id, set_id")
     .eq("id", id)
     .is("archived_at", null)
     .maybeSingle();
@@ -132,6 +139,7 @@ export async function getChecklist(id: string): Promise<ChecklistDetail | null> 
   return {
     id: checklist.data.id,
     name: checklist.data.name,
+    setId: checklist.data.set_id,
     departmentId: checklist.data.department_id,
     departmentName: department.data.name,
     positionIds: positions.data.map((p) => p.role_id),
@@ -166,11 +174,12 @@ export async function getDepartmentPositions(
 export async function createChecklist(
   departmentId: string,
   name: string,
+  setId: string,
 ): Promise<ChecklistResult<string>> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("checklists")
-    .insert({ department_id: departmentId, name })
+    .insert({ department_id: departmentId, name, set_id: setId })
     .select("id")
     .single();
   return error ? fail(error) : { ok: true, value: data.id };
@@ -337,6 +346,105 @@ export async function setLeadsService(roleId: string, leads: boolean): Promise<C
   const { error } = await supabase.rpc("set_role_leads_service", {
     p_role_id: roleId,
     p_leads: leads,
+  });
+  return error ? fail(error) : ok;
+}
+
+// ---------------------------------------------------------------------------
+// Task lists (checklist app US-11)
+// ---------------------------------------------------------------------------
+
+/** Every task list, visible ones first with the default at the top. Checklist managers only. */
+export async function listTaskLists(): Promise<TaskList[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("checklist_set_overview");
+  if (error) {
+    throw new Error("Could not load task lists", { cause: error.code });
+  }
+  return data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    isDefault: row.is_default,
+    hiddenAt: row.hidden_at,
+    checklists: row.checklists,
+    items: row.items,
+    inUse: row.in_use,
+  }));
+}
+
+export type CurrentServiceList = {
+  eventId: string;
+  title: string;
+  startsAt: string;
+  setId: string;
+  hasCheckoffs: boolean;
+};
+
+/** The current service and the list it uses, or null when none is on the schedule. */
+export async function getCurrentServiceList(): Promise<CurrentServiceList | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("current_service_checklist_set");
+  if (error) {
+    throw new Error("Could not load the current service", { cause: error.code });
+  }
+  const row = data[0];
+  return row
+    ? {
+        eventId: row.event_id,
+        title: row.title,
+        startsAt: row.starts_at,
+        setId: row.set_id,
+        hasCheckoffs: row.has_checkoffs,
+      }
+    : null;
+}
+
+export async function createTaskList(
+  name: string,
+  description: string,
+  copyFrom: string | null,
+): Promise<ChecklistResult<string>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("create_checklist_set", {
+    p_name: name,
+    p_description: description,
+    p_copy_from: copyFrom,
+  });
+  return error ? fail(error) : { ok: true, value: data };
+}
+
+export async function updateTaskList(
+  id: string,
+  name: string,
+  description: string,
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("update_checklist_set", {
+    p_set_id: id,
+    p_name: name,
+    p_description: description,
+  });
+  return error ? fail(error) : ok;
+}
+
+export async function setTaskListHidden(id: string, hidden: boolean): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_checklist_set_hidden", {
+    p_set_id: id,
+    p_hidden: hidden,
+  });
+  return error ? fail(error) : ok;
+}
+
+export async function setDefaultTaskList(
+  id: string,
+  switchCurrent: boolean,
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_default_checklist_set", {
+    p_set_id: id,
+    p_switch_current: switchCurrent,
   });
   return error ? fail(error) : ok;
 }

@@ -60,7 +60,7 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
       <header className="flex flex-col gap-3">
         <Breadcrumbs
           items={[
-            { label: "Pre-service checklists", href: "/admin/checklists" },
+            { label: "Pre-service checklists", href: `/admin/checklists?list=${checklist.setId}` },
             { label: checklist.name },
           ]}
         />

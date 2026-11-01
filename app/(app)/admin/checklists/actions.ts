@@ -9,6 +9,8 @@ import * as checklists from "@/lib/data/checklists";
 import {
   checklistErrorMessage,
   MAX_ITEM_LENGTH,
+  MAX_LIST_DESCRIPTION_LENGTH,
+  MAX_LIST_NAME_LENGTH,
   MAX_SECTION_LENGTH,
   parseChecklistText,
 } from "@/lib/domain/checklists";
@@ -38,9 +40,13 @@ const denied = () => error(checklistErrorMessage("not_authorized"));
 
 export async function createChecklistAction(_: FormState, formData: FormData): Promise<FormState> {
   const departmentId = id.safeParse(formData.get("departmentId"));
+  const listId = id.safeParse(formData.get("listId"));
   const title = name(80, "Give the checklist a name.").safeParse(text(formData.get("name")));
   if (!departmentId.success) {
     return error("Choose a department.");
+  }
+  if (!listId.success) {
+    return error("Choose a task list.");
   }
   if (!title.success) {
     return error(title.error.issues[0]?.message ?? "Give the checklist a name.");
@@ -48,7 +54,7 @@ export async function createChecklistAction(_: FormState, formData: FormData): P
   if (!(await allowed())) {
     return denied();
   }
-  const result = await checklists.createChecklist(departmentId.data, title.data);
+  const result = await checklists.createChecklist(departmentId.data, title.data, listId.data);
   if (!result.ok) {
     return error(checklistErrorMessage(result.error));
   }
@@ -218,4 +224,95 @@ export async function importAction(_: FormState, formData: FormData): Promise<Fo
       result.value === 1 ? "item" : "items"
     }.`,
   );
+}
+
+// ---------------------------------------------------------------------------
+// Task lists (checklist app US-11). The database lets only church-wide checklist managers change
+// them, and logs every change.
+// ---------------------------------------------------------------------------
+
+const listName = name(MAX_LIST_NAME_LENGTH, "Give the list a name.");
+const listDescription = z
+  .string()
+  .transform((value) => value.replace(/\s+/g, " ").trim())
+  .pipe(
+    z
+      .string()
+      .max(MAX_LIST_DESCRIPTION_LENGTH, `Keep it under ${MAX_LIST_DESCRIPTION_LENGTH} characters.`),
+  );
+
+export async function createTaskListAction(_: FormState, formData: FormData): Promise<FormState> {
+  const title = listName.safeParse(text(formData.get("name")));
+  const description = listDescription.safeParse(text(formData.get("description")));
+  const start = text(formData.get("copyFrom"));
+  const copyFrom = start === "" ? null : id.safeParse(start);
+  if (!title.success) {
+    return error(title.error.issues[0]?.message ?? "Give the list a name.");
+  }
+  if (!description.success) {
+    return error(description.error.issues[0]?.message ?? "Check the description.");
+  }
+  if ((copyFrom && !copyFrom.success) || !(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.createTaskList(
+    title.data,
+    description.data,
+    copyFrom?.success ? copyFrom.data : null,
+  );
+  if (!result.ok) {
+    return error(checklistErrorMessage(result.error));
+  }
+  redirect(`/admin/checklists?list=${result.value}`);
+}
+
+export async function updateTaskListAction(_: FormState, formData: FormData): Promise<FormState> {
+  const listId = id.safeParse(formData.get("listId"));
+  const title = listName.safeParse(text(formData.get("name")));
+  const description = listDescription.safeParse(text(formData.get("description")));
+  if (!listId.success || !(await allowed())) {
+    return denied();
+  }
+  if (!title.success) {
+    return error(title.error.issues[0]?.message ?? "Give the list a name.");
+  }
+  if (!description.success) {
+    return error(description.error.issues[0]?.message ?? "Check the description.");
+  }
+  const result = await checklists.updateTaskList(listId.data, title.data, description.data);
+  return result.ok ? done("Saved.") : error(checklistErrorMessage(result.error));
+}
+
+export async function setDefaultTaskListAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const listId = id.safeParse(formData.get("listId"));
+  const switchCurrent = formData.get("switchCurrent") === "on";
+  if (!listId.success || !(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.setDefaultTaskList(listId.data, switchCurrent);
+  return result.ok
+    ? done(
+        switchCurrent
+          ? "This is now the default, and the current service uses it."
+          : "This is now the default. New services use it.",
+      )
+    : error(checklistErrorMessage(result.error));
+}
+
+export async function setTaskListHiddenAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const listId = id.safeParse(formData.get("listId"));
+  const hidden = formData.get("hidden") === "true";
+  if (!listId.success || !(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.setTaskListHidden(listId.data, hidden);
+  return result.ok
+    ? done(hidden ? "List hidden. Past services keep their records." : "List restored.")
+    : error(checklistErrorMessage(result.error));
 }

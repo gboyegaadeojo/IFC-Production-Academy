@@ -855,15 +855,32 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      checklist_sets: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          description: string;
+          is_default: boolean;
+          archived_at: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        // Changed only through create_checklist_set, update_checklist_set,
+        // set_checklist_set_hidden, and set_default_checklist_set.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       checklists: {
         Row: {
           id: string;
           department_id: string;
+          set_id: string;
           name: string;
           archived_at: string | null;
           created_by: string | null;
         } & Timestamps;
-        Insert: { department_id: string; name: string };
+        Insert: { department_id: string; name: string; set_id?: string };
         Update: { name?: string; archived_at?: string | null };
         Relationships: [];
       };
@@ -1373,6 +1390,45 @@ export type Database = {
         }[];
       };
       freeze_service_checklist_records: { Args: never; Returns: number };
+      create_checklist_set: {
+        Args: { p_name: string; p_description: string; p_copy_from: string | null };
+        Returns: string;
+      };
+      update_checklist_set: {
+        Args: { p_set_id: string; p_name: string; p_description: string };
+        Returns: undefined;
+      };
+      set_checklist_set_hidden: {
+        Args: { p_set_id: string; p_hidden: boolean };
+        Returns: undefined;
+      };
+      set_default_checklist_set: {
+        Args: { p_set_id: string; p_switch_current: boolean };
+        Returns: undefined;
+      };
+      checklist_set_overview: {
+        Args: never;
+        Returns: {
+          id: string;
+          name: string;
+          description: string;
+          is_default: boolean;
+          hidden_at: string | null;
+          checklists: number;
+          items: number;
+          in_use: boolean;
+        }[];
+      };
+      current_service_checklist_set: {
+        Args: never;
+        Returns: {
+          event_id: string;
+          title: string;
+          starts_at: string;
+          set_id: string;
+          has_checkoffs: boolean;
+        }[];
+      };
       checklist_tick: {
         Args: {
           p_event_id: string;
