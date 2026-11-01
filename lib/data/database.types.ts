@@ -507,6 +507,7 @@ export type Database = {
           description: string;
           archived_at: string | null;
           created_by: string | null;
+          leads_service: boolean;
         } & Timestamps;
         Insert: { department_id: string; name: string; description?: string };
         Update: { name?: string; description?: string; archived_at?: string | null };
@@ -733,6 +734,52 @@ export type Database = {
           location?: string;
           notes?: string;
         };
+        Relationships: [];
+      };
+      checklists: {
+        Row: {
+          id: string;
+          department_id: string;
+          name: string;
+          archived_at: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        Insert: { department_id: string; name: string };
+        Update: { name?: string; archived_at?: string | null };
+        Relationships: [];
+      };
+      checklist_positions: {
+        Row: { checklist_id: string; role_id: string; created_at: string };
+        // Changed only through set_checklist_positions.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      checklist_sections: {
+        Row: {
+          id: string;
+          checklist_id: string;
+          department_id: string;
+          name: string;
+          sort_order: number;
+          archived_at: string | null;
+        } & Timestamps;
+        Insert: { checklist_id: string; name: string; sort_order: number };
+        Update: { name?: string; sort_order?: number; archived_at?: string | null };
+        Relationships: [];
+      };
+      checklist_items: {
+        Row: {
+          id: string;
+          section_id: string;
+          checklist_id: string;
+          department_id: string;
+          text: string;
+          sort_order: number;
+          archived_at: string | null;
+        } & Timestamps;
+        Insert: { section_id: string; text: string; sort_order: number };
+        Update: { text?: string; sort_order?: number; archived_at?: string | null };
         Relationships: [];
       };
       service_types: {
@@ -1109,6 +1156,44 @@ export type Database = {
         Returns: Database["public"]["Enums"]["assignment_readiness"];
       };
       cancel_assignment: { Args: { p_assignment_id: string }; Returns: undefined };
+      set_role_leads_service: {
+        Args: { p_role_id: string; p_leads: boolean };
+        Returns: undefined;
+      };
+      set_checklist_positions: {
+        Args: { p_checklist_id: string; p_role_ids: string[] };
+        Returns: undefined;
+      };
+      event_checklists: {
+        Args: { p_event_id: string };
+        Returns: {
+          checklist_id: string;
+          checklist_name: string;
+          department_name: string;
+          is_mine: boolean;
+          section_id: string;
+          section_name: string;
+          item_id: string;
+          item_text: string;
+          checked_by_name: string | null;
+          checked_at: string | null;
+        }[];
+      };
+      set_checklist_item: {
+        Args: { p_event_id: string; p_item_id: string; p_checked: boolean };
+        Returns: undefined;
+      };
+      reset_service_checklists: { Args: { p_event_id: string }; Returns: number };
+      undo_checklist_reset: { Args: { p_event_id: string }; Returns: number };
+      service_checklist_state: {
+        Args: { p_event_id: string };
+        Returns: {
+          can_lead: boolean;
+          can_tick: boolean;
+          open: boolean;
+          undo_available: boolean;
+        }[];
+      };
       save_service_type: {
         Args: {
           p_id: string | null;

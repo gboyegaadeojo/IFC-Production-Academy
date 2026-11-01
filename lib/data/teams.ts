@@ -1,6 +1,6 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
-import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
+import { hasCapability, type Capability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import { toTeamError, type Position, type TeamError, type TeamPerson } from "@/lib/domain/teams";
 
 // Position teams (decision record 9). The database checks team.manage on every read and write.
@@ -9,9 +9,10 @@ export type TeamResult = { ok: true } | { ok: false; error: TeamError };
 
 export type TeamDepartment = { id: string; name: string; hue: string; icon: string };
 
-/** Departments whose serving team this person runs, in display order. */
+/** Departments where this person holds a capability (by default, running the teams), in order. */
 export async function getTeamDepartments(
   grants: readonly CapabilityGrant[],
+  capability: Capability = "team.manage",
 ): Promise<TeamDepartment[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
@@ -23,7 +24,7 @@ export async function getTeamDepartments(
     throw new Error("Could not load departments", { cause: error.code });
   }
   return data
-    .filter((d) => hasCapability(grants, "team.manage", d.id))
+    .filter((d) => hasCapability(grants, capability, d.id))
     .map((d) => ({ id: d.id, name: d.name, hue: d.hue, icon: d.icon }));
 }
 
@@ -35,7 +36,7 @@ export async function getServingTeam(
   const [roles, overview] = await Promise.all([
     supabase
       .from("serving_roles")
-      .select("id, name")
+      .select("id, name, leads_service")
       .eq("department_id", departmentId)
       .is("archived_at", null)
       .order("name"),
@@ -48,7 +49,11 @@ export async function getServingTeam(
     throw new Error("Could not load the teams", { cause: overview.error.code });
   }
   return {
-    positions: roles.data.map((role) => ({ id: role.id, name: role.name })),
+    positions: roles.data.map((role) => ({
+      id: role.id,
+      name: role.name,
+      leadsService: role.leads_service,
+    })),
     people: overview.data.map((row) => ({
       id: row.user_id,
       name: row.display_name,
