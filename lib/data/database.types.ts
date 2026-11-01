@@ -18,6 +18,7 @@ export type Database = {
           name: string;
           time_zone: string;
           scheduling_source: string;
+          pco_organization_id: string | null;
           checklist_service_type_id: string | null;
           service_weekday: number;
         } & Timestamps;
@@ -1333,6 +1334,10 @@ export type Database = {
       };
       sync_planning_center: { Args: { p: Json }; Returns: Json };
       request_pco_refresh: { Args: never; Returns: undefined };
+      planning_center_sign_in: {
+        Args: { p_pco_person_id: string; p_pco_organization_id: string; p_emails: string[] };
+        Returns: { user_id: string; email: string }[];
+      };
       pco_unlinked_places: {
         Args: { p_event_id?: string };
         Returns: {

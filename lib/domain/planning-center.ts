@@ -46,6 +46,8 @@ export type PcoPlan = {
 export type PcoPayload = {
   from: string;
   to: string;
+  /** IFC's Planning Center organization, so sign-in accepts only its people. */
+  organization_id?: string;
   service_types: { id: string; name: string }[];
   teams: PcoTeam[];
   people: { id: string; name: string; emails: string[] }[];

@@ -133,6 +133,10 @@ async function read(authorization: string): Promise<PcoPayload> {
     blockouts: [],
   };
 
+  // The organization the token belongs to: Planning Center sign-in accepts only its people.
+  const organization = await orEmpty(async () => (await list("/people/v2", authorization, 1)).data);
+  payload.organization_id = organization[0]?.id;
+
   const serviceTypes = (
     await list("/services/v2/service_types?per_page=100&order=sequence", authorization)
   ).data.filter(isLive);
