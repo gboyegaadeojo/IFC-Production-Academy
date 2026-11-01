@@ -493,7 +493,7 @@ A custom build on managed services fits your "balanced" budget: premium design a
 | Files | Supabase Storage, private bucket with signed links | $0 |
 | Video | Unlisted YouTube via the official embedded player, and the church video library (UniFi NAS behind a Cloudflare Tunnel and Access service token, streamed by the Worker after an RLS check); a VideoSource record allows Vimeo or Mux later | $0 |
 | Email | Resend (confirmed) | $0 |
-| Backups | Nightly encrypted backup to IFC's Google Drive (confirmed) | $0 |
+| Backups | Weekly encrypted backup to IFC's Google Drive (weekly since 2026-11-01) | $0 |
 | Monitoring | Sentry (errors), PostHog (usage) | $0 |
 | Native apps (Phase 5) | React Native with Expo on the same API | $0 to $19, plus store fees |
 
@@ -520,7 +520,7 @@ The pause needs 7 straight days with no activity. Twice a week would technically
 | Safeguard | Design |
 | --- | --- |
 | Daily keep-alive | GitHub Actions job every day at 12:00 America/Winnipeg. It makes a real read through the Supabase API (for example, counting published courses) and fails loudly if the request does not succeed |
-| Second source of activity | The nightly Google Drive backup reads the whole database every night |
+| Second source of activity | The weekly Google Drive backup reads the whole database every Sunday |
 | Failure alert | Any failed keep-alive or backup run emails G and the Platform Admin through Resend |
 | Staleness check | A weekly summary email shows the last successful keep-alive and backup. Two missed days in a row are treated as an incident |
 | GitHub's own rule | GitHub disables scheduled workflows in a repository with no activity for 60 days. The weekly summary commits a small status file to the repository, so the schedule stays enabled |
@@ -533,21 +533,21 @@ The pause needs 7 straight days with no activity. Twice a week would technically
 
 ### Backup design (Google Drive)
 
-Supabase Free has no automatic backups. Every night a scheduled job copies the database and the stored SOP files, encrypts them, and saves them to a dedicated Shared Drive, keeping 30 daily, 12 weekly, and 12 monthly copies. A monthly restore test proves the copies work.
+Supabase Free has no automatic backups. Every Sunday (weekly since 2026-11-01) a scheduled job copies the database and the stored SOP files, encrypts them, and saves them to a dedicated Shared Drive, keeping the last 30 weekly copies. A monthly restore test proves the copies work.
 
 | Part | Design |
 | --- | --- |
-| Schedule | GitHub Actions cron, nightly at 2:00 America/Winnipeg (08:00 UTC; 07:00 UTC in summer) |
+| Schedule | GitHub Actions cron, Sundays at 3:00 America/Winnipeg (08:00 UTC) |
 | What is copied | Full Postgres dump with `pg_dump` (custom format, schema and data, including auth users), with the `pg_dump` version matched to Supabase's Postgres version; plus every file in Supabase Storage as a zip |
 | Encryption | Encrypted with `age` before leaving the runner. The private key is held offline by the Production Director and the Platform Admin, never in Drive or GitHub |
 | Destination | A **Shared Drive** named "IFC Academy Backups" in IFC's Google Workspace. A Google Cloud **service account** uploads through the Drive API and is a Content manager of that Shared Drive, because service accounts cannot upload into a personal My Drive |
 | Access | Shared Drive limited to the Production Director and Platform Admin, because backups hold personal data and mentoring notes |
 | Secrets | Supabase connection string, service account key, and `age` public key stored as GitHub Actions encrypted secrets in a private repository |
 | File naming | `academy-db-2026-11-02T0800Z.dump.age` and `academy-files-2026-11-02T0800Z.zip.age`, with a SHA-256 checksum alongside |
-| Retention | 30 daily, 12 weekly (Sundays), 12 monthly (1st of month). The job deletes older copies. A year of copies is likely a few gigabytes of the 100 TB |
+| Retention | The last 30 weekly copies, about 7 months. The job deletes older copies. They are likely a few gigabytes of the 100 TB |
 | Monitoring | Failure alerts and the weekly summary, as in the keep-alive design |
 | Restore test | Monthly, a second workflow restores the latest backup into a throwaway Postgres 17 container using Supabase's own image (built 2026-10-31; no second Supabase project or extra secrets needed beyond a dedicated restore-test `age` key), checks row counts for users, progress, competency records, and audit events against counts taken at backup time, and logs pass or fail only. Failures alert the admin |
-| Restore runbook | Step by step: create or reset the project, decrypt, `pg_restore`, re-upload files, point the app at it, check sign-in. Target: back online within 4 hours, losing at most 24 hours of data |
+| Restore runbook | Step by step: create or reset the project, decrypt, `pg_restore`, re-upload files, point the app at it, check sign-in. Target: back online within 4 hours, losing at most a week of data (weekly backups, decided 2026-11-01) |
 
 This meets the package's reliability requirements: automated backups, documented and tested restoration, and tested database recovery.
 

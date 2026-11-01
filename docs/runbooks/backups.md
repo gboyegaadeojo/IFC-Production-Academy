@@ -2,16 +2,17 @@
 
 Supabase Free keeps no backups, so the Academy makes its own (SPEC §9 "Backup design"):
 
-- **Nightly** (`.github/workflows/backup.yml`, 08:00 UTC): the whole database (`pg_dump`
+- **Weekly** (`.github/workflows/backup.yml`, Sundays 08:00 UTC; weekly since 2026-11-01): the whole database (`pg_dump`
   custom format, version 17 like Supabase) and every stored SOP file, encrypted with `age` on
   the runner, uploaded with SHA-256 checksums to the **IFC Academy Backups** Shared Drive. Old
-  copies are deleted: 30 daily, 12 Sundays, 12 first-of-the-month.
+  copies are deleted: the last 30 are kept (about 7 months).
 - **Monthly** (`restore-test.yml`, the 3rd, 10:00 UTC): downloads the newest backup, checks its
   checksums, decrypts it, restores it into a throwaway Postgres 17 container that uses
   Supabase's own image, and compares row counts with the counts taken when it was made.
 - **Weekly** (`weekly-summary.yml`, Mondays 14:00 UTC): emails when each job last succeeded and
   commits `status/last-run.json`, which stops GitHub disabling scheduled jobs after 60 quiet days.
-  A keep-alive or backup with no success for two days counts as an incident and alerts the admins.
+  A keep-alive with no success for two days, or a backup with none for eight, counts as an incident
+  and alerts the admins.
 
 None of it logs data: only status, timings, sizes, and file counts. Nothing is ever uploaded as a
 workflow artifact. Backups and restore tests are **off until the repository variable
@@ -100,7 +101,7 @@ Run **Backup** by hand (Actions → Backup → Run workflow). The log should sho
 
 ## Restoring for real
 
-Target: back online within 4 hours, losing at most a day of data.
+Target: back online within 4 hours, losing at most a week of data.
 
 1. Download the newest `academy-db-….dump.age`, `academy-files-….zip.age`, and
    `academy-….sha256` from the Shared Drive, and check them: `sha256sum -c academy-….sha256`.

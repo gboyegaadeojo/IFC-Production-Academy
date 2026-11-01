@@ -2,7 +2,7 @@
  * Weekly summary (CLAUDE.md "Scheduled jobs", SPEC §9 "Keep-alive design"). Reads when each
  * scheduled job last ran and last succeeded, writes status/last-run.json (timestamps, success
  * flags, and backup sizes only: no counts of people, no names), and emails the admins if Resend
- * is set up. Exits 1 when the keep-alive or backup hasn't succeeded for two days, so the failure
+ * is set up. Exits 1 when the keep-alive hasn't succeeded for two days or the backup for eight, so the failure
  * alert fires.
  *
  * Env: GITHUB_TOKEN, GITHUB_REPOSITORY, and optionally RESEND_API_KEY, ALERT_EMAILS, ALERT_FROM,
@@ -14,7 +14,8 @@ import { driveConfigured, driveToken, listFolder } from "./backup/drive.ts";
 
 const WORKFLOWS = [
   { file: "keepalive.yml", label: "Keep-alive", staleAfterHours: 48 },
-  { file: "backup.yml", label: "Nightly backup", staleAfterHours: 48 },
+  // Weekly on Sundays: late after eight days, so one missed week is caught.
+  { file: "backup.yml", label: "Weekly backup", staleAfterHours: 24 * 8 },
   { file: "restore-test.yml", label: "Monthly restore test", staleAfterHours: 24 * 40 },
   { file: "notifications.yml", label: "Notification emails", staleAfterHours: 24 },
 ] as const;

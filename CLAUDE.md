@@ -28,7 +28,7 @@ A volunteer learning and competency platform for the production ministry at Imma
 | Styling | Tailwind CSS driven by the design tokens in DESIGN-REQUIREMENTS §4 (CSS variables in `app/globals.css`, dark theme first) |
 | Tests | Vitest (unit), Playwright (end-to-end and PWA), pgTAP or SQL tests for RLS policies |
 | Monitoring | Sentry (errors), PostHog (usage), both free tiers |
-| Scheduled jobs | GitHub Actions: daily keep-alive, nightly encrypted backup to Google Drive, monthly restore test, weekly summary |
+| Scheduled jobs | GitHub Actions: daily keep-alive, weekly encrypted backup to Google Drive, monthly restore test, weekly summary |
 
 Native iOS and Android apps are Phase 5 (React Native and Expo on the same API). Don't build for them yet, but keep business logic out of React components so it can be reused.
 
@@ -62,7 +62,7 @@ Anyone can read the code, the commit history, and **the GitHub Actions logs**.
 | Workflow | Schedule | Purpose |
 | --- | --- | --- |
 | `keepalive.yml` | Daily, 18:00 UTC | Real read through the Supabase API so the free project never hits the 7-day inactivity pause. Fails loudly |
-| `backup.yml` | Nightly, 08:00 UTC | `pg_dump` (custom format, version matched to Supabase Postgres) plus Storage files → `age` encrypt → upload to the "IFC Academy Backups" Shared Drive via a service account. Retention: 30 daily, 12 weekly, 12 monthly |
+| `backup.yml` | Weekly, Sundays 08:00 UTC (decided 2026-11-01) | `pg_dump` (custom format, version matched to Supabase Postgres) plus Storage files → `age` encrypt → upload to the "IFC Academy Backups" Shared Drive, signed in keylessly (Workload Identity Federation). Keeps the last 30 weekly copies, about 7 months |
 | `restore-test.yml` | Monthly | Restore the latest backup into a throwaway Postgres 17 container (Supabase's image) and compare row counts with those taken at backup time. Results go in the log as pass/fail only |
 | `notifications.yml` | Every 15 minutes | Queue SOP review reminders, then send pending notification emails through Resend with the service role (Actions secret only). Logs counts only. Sends nothing until `RESEND_API_KEY` and `NOTIFY_FROM` are set; see `docs/runbooks/notifications.md` |
 | `planning-center.yml` | Every 15 minutes, and on demand from the Planning Center page | Read Planning Center Services (read-only Personal Access Token, `PCO_PAT_ID` and `PCO_PAT_SECRET`, Actions secrets only) and apply it with `sync_planning_center()` using the service role. Logs counts only. Does nothing until the token is set; see `docs/runbooks/scheduling.md` |
