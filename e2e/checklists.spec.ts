@@ -115,3 +115,66 @@ test("an admin copies a task list, makes it the default and back, then hides and
   await hidden.getByRole("button", { name: `Restore ${name}` }).click();
   await expect(lists.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
 });
+
+test("an admin moves a task, removes with a confirmation, and restores from Hidden items", async ({
+  page,
+}) => {
+  const stamp = Date.now();
+  const [a, b] = [`First ${stamp}`, `Second ${stamp}`];
+  const [one, two, three] = [`Task one ${stamp}`, `Task two ${stamp}`, `Task three ${stamp}`];
+  await signInByEmail(page, "emery.director@example.com");
+
+  await page.goto("/admin/checklists");
+  await page.getByLabel("Name", { exact: true }).fill(`E2E move ${stamp}`);
+  await page.getByLabel("Department").selectOption({ label: "Camera Operations" });
+  await page.getByRole("button", { name: "Add checklist" }).click();
+  await page
+    .getByLabel("List", { exact: true })
+    .fill(`# ${a}\n- ${one}\n- ${two}\n# ${b}\n- ${three}`);
+  await page.getByRole("button", { name: "Add these" }).click();
+  await expect(page.getByText("Added 2 sections and 3 items.")).toBeVisible();
+
+  const section = (name: string) =>
+    page.locator("div.rounded-card", { has: page.getByRole("heading", { level: 3, name }) });
+  const task = (text: string) => page.locator("li", { hasText: text });
+
+  // Move to…: task one goes to the end of the second section.
+  await task(one).getByText("Edit, move or remove").click();
+  await task(one).getByLabel("Move to…").selectOption({ label: b });
+  await task(one)
+    .getByRole("button", { name: `Move ${one}` })
+    .click();
+  await expect(section(b)).toContainText(one);
+  await expect(section(a)).not.toContainText(one);
+
+  // Removing asks first.
+  await task(two).getByText("Edit, move or remove").click();
+  await task(two)
+    .getByRole("button", { name: `Remove item ${two}` })
+    .click();
+  const confirm = page.getByRole("alertdialog", { name: "Remove this task?" });
+  await expect(confirm).toContainText("you can restore it from Hidden items");
+  await confirm.getByRole("button", { name: "Remove task" }).click();
+  await expect(page.getByText(two)).toHaveCount(0);
+
+  await section(b).getByText("Rename, move or remove this section").click();
+  await section(b)
+    .getByRole("button", { name: `Remove section ${b}` })
+    .click();
+  const confirmSection = page.getByRole("alertdialog", { name: `Remove ${b}?` });
+  await expect(confirmSection).toContainText("Its 2 tasks go with it.");
+  await confirmSection.getByRole("button", { name: "Remove section" }).click();
+  await expect(page.getByRole("heading", { level: 3, name: b })).toHaveCount(0);
+
+  // Hidden items brings them back.
+  await page.getByRole("link", { name: "Hidden items" }).click();
+  const hidden = page.getByRole("list", { name: "Hidden items, newest first" });
+  await hidden.getByRole("button", { name: `Restore ${b}` }).click();
+  await expect(hidden.getByText(b, { exact: true })).toHaveCount(0);
+  await hidden.getByRole("button", { name: `Restore ${two}` }).click();
+  await expect(hidden.getByText(two, { exact: true })).toHaveCount(0);
+  await page.getByRole("link", { name: "Pre-service checklists" }).click();
+  await page.getByRole("link", { name: new RegExp(`^E2E move ${stamp}`) }).click();
+  await expect(section(b)).toContainText(one);
+  await expect(section(a)).toContainText(two);
+});

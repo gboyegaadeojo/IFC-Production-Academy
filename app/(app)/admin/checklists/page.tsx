@@ -22,6 +22,7 @@ import { PageSkeleton } from "../page-skeleton";
 import {
   createChecklistAction,
   createTaskListAction,
+  moveAction,
   setDefaultTaskListAction,
   setTaskListHiddenAction,
   updateTaskListAction,
@@ -135,6 +136,12 @@ async function ChecklistsContent({ searchParams }: Pick<Props, "searchParams">) 
             {selected.name}
           </h2>
           {managesLists ? <ManageList list={selected} current={current} lists={visible} /> : null}
+          <Link
+            href={`/admin/checklists/hidden?list=${selected.id}`}
+            className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+          >
+            Hidden items in {selected.name}
+          </Link>
 
           {items.length === 0 ? (
             <EmptyState title="No department checklists in this list yet">
@@ -146,23 +153,29 @@ async function ChecklistsContent({ searchParams }: Pick<Props, "searchParams">) 
               aria-label={`Checklists in ${selected.name}`}
               className="flex flex-col divide-y divide-border rounded-card border border-border"
             >
-              {items.map((checklist) => (
-                <li key={checklist.id}>
-                  <Link
-                    href={`/admin/checklists/${checklist.id}`}
-                    className="flex min-h-touch flex-col gap-1 px-4 py-3 hover:bg-card"
-                  >
-                    <span className="font-medium text-text">{checklist.name}</span>
-                    <span className="text-small text-text-muted">
-                      {checklist.departmentName} · {checklist.items}{" "}
-                      {checklist.items === 1 ? "item" : "items"}
-                      {checklist.positionNames.length > 0
-                        ? ` · For ${checklist.positionNames.join(", ")}`
-                        : " · Not linked to a position yet"}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {items.map((checklist, index) => {
+                const previous = items[index - 1];
+                const next = items[index + 1];
+                return (
+                  <li key={checklist.id} className="flex flex-wrap items-center gap-2 pr-3">
+                    <Link
+                      href={`/admin/checklists/${checklist.id}`}
+                      className="flex min-h-touch flex-1 flex-col gap-1 px-4 py-3 hover:bg-card"
+                    >
+                      <span className="font-medium text-text">{checklist.name}</span>
+                      <span className="text-small text-text-muted">
+                        {checklist.departmentName} · {checklist.items}{" "}
+                        {checklist.items === 1 ? "item" : "items"}
+                        {checklist.positionNames.length > 0
+                          ? ` · For ${checklist.positionNames.join(", ")}`
+                          : " · Not linked to a position yet"}
+                      </span>
+                    </Link>
+                    {previous ? <SwapOrder a={checklist} b={previous} label="Move up" /> : null}
+                    {next ? <SwapOrder a={checklist} b={next} label="Move down" /> : null}
+                  </li>
+                );
+              })}
             </ul>
           )}
 
@@ -362,5 +375,34 @@ function ManageList({
         />
       )}
     </div>
+  );
+}
+
+/** Move up or down: swaps a department checklist's place with its neighbour's. */
+function SwapOrder({
+  a,
+  b,
+  label,
+}: {
+  a: { id: string; name: string; sortOrder: number };
+  b: { id: string; sortOrder: number };
+  label: string;
+}) {
+  return (
+    <ActionForm
+      action={moveAction}
+      submitLabel={label}
+      pendingLabel="Moving…"
+      variant="tertiary"
+      srLabel={a.name}
+      hidden={{
+        table: "checklists",
+        aId: a.id,
+        aOrder: String(a.sortOrder),
+        bId: b.id,
+        bOrder: String(b.sortOrder),
+      }}
+      className="flex"
+    />
   );
 }

@@ -4,6 +4,8 @@ import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import {
   groupServiceChecklists,
   groupServiceRecord,
+  type HiddenItem,
+  type HiddenKind,
   type RecordDepartment,
   type TaskList,
   toChecklistError,
@@ -30,13 +32,14 @@ const ok = { ok: true as const, value: undefined };
 export type ChecklistSummary = {
   id: string;
   name: string;
+  sortOrder: number;
   departmentId: string;
   departmentName: string;
   positionNames: string[];
   items: number;
 };
 
-/** A task list's checklists, in departments this person manages checklists for. */
+/** A task list's checklists, in its order, in departments this person manages checklists for. */
 export async function listChecklists(
   grants: readonly CapabilityGrant[],
   setId: string,
@@ -45,10 +48,12 @@ export async function listChecklists(
   const [checklists, departments, positions, roles, items] = await Promise.all([
     supabase
       .from("checklists")
-      .select("id, name, department_id")
+      .select("id, name, department_id, sort_order")
       .eq("set_id", setId)
-      .is("archived_at", null),
-    supabase.from("departments").select("id, name, sort_order").order("sort_order"),
+      .is("archived_at", null)
+      .order("sort_order")
+      .order("name"),
+    supabase.from("departments").select("id, name"),
     supabase.from("checklist_positions").select("checklist_id, role_id"),
     supabase.from("serving_roles").select("id, name"),
     supabase.from("checklist_items").select("checklist_id").is("archived_at", null),
@@ -64,26 +69,20 @@ export async function listChecklists(
       )?.code,
     });
   }
-  return departments.data.flatMap((department) =>
-    checklists.data
-      .filter(
-        (c) =>
-          c.department_id === department.id &&
-          hasCapability(grants, "checklist.manage", department.id),
-      )
-      .toSorted((a, b) => a.name.localeCompare(b.name))
-      .map((c) => ({
-        id: c.id,
-        name: c.name,
-        departmentId: department.id,
-        departmentName: department.name,
-        positionNames: positions.data
-          .filter((p) => p.checklist_id === c.id)
-          .map((p) => roles.data.find((r) => r.id === p.role_id)?.name ?? "A position")
-          .toSorted(),
-        items: items.data.filter((i) => i.checklist_id === c.id).length,
-      })),
-  );
+  return checklists.data
+    .filter((c) => hasCapability(grants, "checklist.manage", c.department_id))
+    .map((c) => ({
+      id: c.id,
+      name: c.name,
+      sortOrder: c.sort_order,
+      departmentId: c.department_id,
+      departmentName: departments.data.find((d) => d.id === c.department_id)?.name ?? "",
+      positionNames: positions.data
+        .filter((p) => p.checklist_id === c.id)
+        .map((p) => roles.data.find((r) => r.id === p.role_id)?.name ?? "A position")
+        .toSorted(),
+      items: items.data.filter((i) => i.checklist_id === c.id).length,
+    }));
 }
 
 export type ChecklistDetail = {
@@ -284,9 +283,9 @@ export async function updateItem(
   return error ? fail(error) : ok;
 }
 
-/** Swaps the order of two sections or two items, for moving one up or down. */
+/** Swaps the order of two checklists, sections, or items, for moving one up or down. */
 export async function swapOrder(
-  table: "checklist_sections" | "checklist_items",
+  table: "checklists" | "checklist_sections" | "checklist_items",
   a: { id: string; sortOrder: number },
   b: { id: string; sortOrder: number },
 ): Promise<ChecklistResult> {
@@ -330,6 +329,104 @@ export async function importSections(
     added += section.items.length;
   }
   return { ok: true, value: added };
+}
+
+export type MoveTarget = {
+  id: string;
+  name: string;
+  sections: { id: string; name: string }[];
+};
+
+/** The live checklists and sections in a list that this person can move things into. */
+export async function getMoveTargets(
+  grants: readonly CapabilityGrant[],
+  setId: string,
+): Promise<MoveTarget[]> {
+  const supabase = await createSupabaseServerClient();
+  const checklists = await supabase
+    .from("checklists")
+    .select("id, name, department_id")
+    .eq("set_id", setId)
+    .is("archived_at", null)
+    .order("sort_order")
+    .order("name");
+  if (checklists.error) {
+    throw new Error("Could not load checklists", { cause: checklists.error.code });
+  }
+  const managed = checklists.data.filter((c) =>
+    hasCapability(grants, "checklist.manage", c.department_id),
+  );
+  const sections = await supabase
+    .from("checklist_sections")
+    .select("id, name, checklist_id")
+    .in(
+      "checklist_id",
+      managed.map((c) => c.id),
+    )
+    .is("archived_at", null)
+    .order("sort_order");
+  if (sections.error) {
+    throw new Error("Could not load sections", { cause: sections.error.code });
+  }
+  return managed.map((c) => ({
+    id: c.id,
+    name: c.name,
+    sections: sections.data
+      .filter((section) => section.checklist_id === c.id)
+      .map((section) => ({ id: section.id, name: section.name })),
+  }));
+}
+
+export async function moveSection(
+  sectionId: string,
+  checklistId: string,
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("move_checklist_section", {
+    p_section_id: sectionId,
+    p_checklist_id: checklistId,
+  });
+  return error ? fail(error) : ok;
+}
+
+export async function moveItem(itemId: string, sectionId: string): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("move_checklist_item", {
+    p_item_id: itemId,
+    p_section_id: sectionId,
+  });
+  return error ? fail(error) : ok;
+}
+
+/** Everything hidden in a list, newest first (checklist app US-13a). */
+export async function getHiddenItems(setId: string): Promise<HiddenItem[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("checklist_hidden_items", { p_set_id: setId });
+  if (error) {
+    throw new Error("Could not load hidden items", { cause: error.code });
+  }
+  return data.map((row) => ({
+    kind: row.kind === "checklist" ? "checklist" : row.kind === "section" ? "section" : "item",
+    id: row.id,
+    name: row.name,
+    place: row.place,
+    hiddenAt: row.hidden_at,
+    parentHidden: row.parent_hidden,
+  }));
+}
+
+export async function restorePart(
+  kind: HiddenKind,
+  id: string,
+  withParents: boolean,
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("restore_checklist_part", {
+    p_kind: kind,
+    p_id: id,
+    p_with_parents: withParents,
+  });
+  return error ? fail(error) : ok;
 }
 
 export async function setSeesAll(roleId: string, seesAll: boolean): Promise<ChecklistResult> {

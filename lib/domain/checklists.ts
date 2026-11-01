@@ -127,6 +127,8 @@ export type ChecklistError =
   | "list_not_found"
   | "list_in_use"
   | "service_has_checkoffs"
+  | "move_not_allowed"
+  | "parent_hidden"
   | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<ChecklistError>([
@@ -140,6 +142,8 @@ const KNOWN: ReadonlySet<string> = new Set<ChecklistError>([
   "list_not_found",
   "list_in_use",
   "service_has_checkoffs",
+  "move_not_allowed",
+  "parent_hidden",
 ]);
 
 export function toChecklistError(
@@ -173,6 +177,10 @@ export function checklistErrorMessage(error: ChecklistError): string {
       return "The default list, and a list a service is using, can't be hidden.";
     case "service_has_checkoffs":
       return "Something is already ticked for the current service, so it keeps its list.";
+    case "move_not_allowed":
+      return "That can only move to a section or checklist that isn't hidden, in the same task list.";
+    case "parent_hidden":
+      return "What it belongs to is hidden. Restore that too, or restore it first.";
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }
@@ -220,6 +228,57 @@ export function canSwitchCurrentService(
   listId: string,
 ): boolean {
   return current !== null && current.setId !== listId && !current.hasCheckoffs;
+}
+
+// ---------------------------------------------------------------------------
+// Hidden items and restructuring (checklist app US-12, US-12a, US-13, US-13a)
+// ---------------------------------------------------------------------------
+
+export type HiddenKind = "checklist" | "section" | "item";
+
+export type HiddenItem = {
+  kind: HiddenKind;
+  id: string;
+  name: string;
+  /** Where it was: the department for a checklist, the checklist (and section) otherwise. */
+  place: string;
+  hiddenAt: string;
+  parentHidden: boolean;
+};
+
+const KIND_LABELS: Record<HiddenKind, string> = {
+  checklist: "Department checklist",
+  section: "Section",
+  item: "Task",
+};
+
+export function hiddenKindLabel(kind: HiddenKind): string {
+  return KIND_LABELS[kind];
+}
+
+/** What a restore brings back with it, when what it belongs to is hidden too. */
+export function restoreWithParentsLabel(kind: HiddenKind): string {
+  return kind === "item"
+    ? "Restore it with its section and checklist"
+    : "Restore it with its checklist";
+}
+
+/** The warning before hiding something that still has tasks in it. */
+export function removeWarning(kind: "checklist" | "section", tasks: number, positions = 0): string {
+  const parts = [
+    tasks > 0
+      ? `Its ${tasks} ${tasks === 1 ? "task goes" : "tasks go"} with it.`
+      : "It has no tasks.",
+  ];
+  if (kind === "checklist" && positions > 0) {
+    parts.push(
+      `Its ${positions === 1 ? "link to a position is" : `links to ${positions} positions are`} removed, and not restored if you bring it back.`,
+    );
+  }
+  parts.push(
+    "It disappears from current and future checklists. Past services keep their records, and you can restore it from Hidden items.",
+  );
+  return parts.join(" ");
 }
 
 // ---------------------------------------------------------------------------

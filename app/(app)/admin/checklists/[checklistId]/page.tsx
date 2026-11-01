@@ -1,11 +1,20 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { getChecklist, getDepartmentPositions, type ChecklistDetail } from "@/lib/data/checklists";
+import {
+  getChecklist,
+  getDepartmentPositions,
+  getMoveTargets,
+  type ChecklistDetail,
+  type MoveTarget,
+} from "@/lib/data/checklists";
 import { hasCapability } from "@/lib/domain/capabilities";
+import { removeWarning } from "@/lib/domain/checklists";
 import { AccessDenied } from "../../access-denied";
 import { PageSkeleton } from "../../page-skeleton";
 import {
@@ -14,6 +23,7 @@ import {
   importAction,
   itemAction,
   moveAction,
+  moveToAction,
   renameChecklistAction,
   sectionAction,
   setPositionsAction,
@@ -53,7 +63,10 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
   if (!hasCapability(grants, "checklist.manage", checklist.departmentId)) {
     return <AccessDenied />;
   }
-  const positions = await getDepartmentPositions(checklist.departmentId);
+  const [positions, targets] = await Promise.all([
+    getDepartmentPositions(checklist.departmentId),
+    getMoveTargets(grants, checklist.setId),
+  ]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -66,6 +79,12 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
         />
         <h1 className="text-title font-semibold">{checklist.name}</h1>
         <p className="text-text-secondary">{checklist.departmentName}</p>
+        <Link
+          href={`/admin/checklists/hidden?list=${checklist.setId}`}
+          className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+        >
+          Hidden items
+        </Link>
       </header>
 
       <section
@@ -109,7 +128,7 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
         )}
       </section>
 
-      <Sections checklist={checklist} />
+      <Sections checklist={checklist} targets={targets} />
 
       <section
         aria-labelledby="paste-heading"
@@ -167,29 +186,32 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
             />
           </Field>
         </ActionForm>
-        <details>
-          <summary className="flex min-h-control cursor-pointer items-center font-medium">
-            Archive this checklist
-          </summary>
-          <p className="mt-2 text-text-secondary">
-            It stops showing on service days. Past services keep what was ticked.
-          </p>
-          <div className="mt-3">
+        <div>
+          <ConfirmDialog
+            triggerLabel="Remove this checklist"
+            variant="destructive"
+            title={`Remove ${checklist.name}?`}
+            message={removeWarning(
+              "checklist",
+              checklist.sections.reduce((sum, section) => sum + section.items.length, 0),
+              checklist.positionIds.length,
+            )}
+          >
             <ActionForm
               action={archiveChecklistAction}
-              submitLabel="Archive"
-              pendingLabel="Archiving…"
+              submitLabel="Remove checklist"
+              pendingLabel="Removing…"
               variant="destructive"
-              hidden={{ checklistId: checklist.id }}
+              hidden={{ checklistId: checklist.id, listId: checklist.setId }}
             />
-          </div>
-        </details>
+          </ConfirmDialog>
+        </div>
       </section>
     </div>
   );
 }
 
-function Sections({ checklist }: { checklist: ChecklistDetail }) {
+function Sections({ checklist, targets }: { checklist: ChecklistDetail; targets: MoveTarget[] }) {
   return (
     <section aria-labelledby="items-heading" className="flex max-w-3xl flex-col gap-4">
       <h2 id="items-heading" className="text-heading font-semibold">
@@ -256,7 +278,7 @@ function Sections({ checklist }: { checklist: ChecklistDetail }) {
                       ) : null}
                       <details className="w-full">
                         <summary className="flex min-h-control cursor-pointer items-center text-small text-accent-light">
-                          Edit<span className="sr-only"> {item.text}</span>
+                          Edit, move or remove<span className="sr-only"> {item.text}</span>
                         </summary>
                         <div className="mt-2 flex flex-col gap-3">
                           <ActionForm
@@ -277,14 +299,23 @@ function Sections({ checklist }: { checklist: ChecklistDetail }) {
                               />
                             </Field>
                           </ActionForm>
-                          <ActionForm
-                            action={itemAction}
-                            submitLabel="Remove item"
-                            pendingLabel="Removing…"
-                            variant="tertiary"
-                            hidden={{ itemId: item.id, op: "remove" }}
-                            className="flex"
-                          />
+                          <MoveItemTo item={item} sectionId={section.id} targets={targets} />
+                          <div>
+                            <ConfirmDialog
+                              triggerLabel="Remove item"
+                              srLabel={item.text}
+                              title="Remove this task?"
+                              message={`“${item.text}” disappears from current and future checklists. Past services keep their records, and you can restore it from Hidden items.`}
+                            >
+                              <ActionForm
+                                action={itemAction}
+                                submitLabel="Remove task"
+                                pendingLabel="Removing…"
+                                variant="destructive"
+                                hidden={{ itemId: item.id, op: "remove" }}
+                              />
+                            </ConfirmDialog>
+                          </div>
                         </div>
                       </details>
                     </span>
@@ -313,7 +344,7 @@ function Sections({ checklist }: { checklist: ChecklistDetail }) {
               </ActionForm>
               <details>
                 <summary className="flex min-h-control cursor-pointer items-center text-small text-accent-light">
-                  Rename or remove this section
+                  Rename, move or remove this section
                 </summary>
                 <div className="mt-2 flex flex-col gap-3">
                   <ActionForm
@@ -334,14 +365,23 @@ function Sections({ checklist }: { checklist: ChecklistDetail }) {
                       />
                     </Field>
                   </ActionForm>
-                  <ActionForm
-                    action={sectionAction}
-                    submitLabel="Remove section"
-                    pendingLabel="Removing…"
-                    variant="tertiary"
-                    hidden={{ sectionId: section.id, op: "remove" }}
-                    className="flex"
-                  />
+                  <MoveSectionTo section={section} checklistId={checklist.id} targets={targets} />
+                  <div>
+                    <ConfirmDialog
+                      triggerLabel="Remove section"
+                      srLabel={section.name}
+                      title={`Remove ${section.name}?`}
+                      message={removeWarning("section", section.items.length)}
+                    >
+                      <ActionForm
+                        action={sectionAction}
+                        submitLabel="Remove section"
+                        pendingLabel="Removing…"
+                        variant="destructive"
+                        hidden={{ sectionId: section.id, op: "remove" }}
+                      />
+                    </ConfirmDialog>
+                  </div>
                 </div>
               </details>
             </div>
@@ -401,5 +441,91 @@ function Move({
       srLabel={name}
       className="flex"
     />
+  );
+}
+
+/** "Move to…" for a task: any live section in the same list, chosen by checklist then section. */
+function MoveItemTo({
+  item,
+  sectionId,
+  targets,
+}: {
+  item: { id: string; text: string };
+  sectionId: string;
+  targets: MoveTarget[];
+}) {
+  const places = targets
+    .map((target) => ({ ...target, sections: target.sections.filter((s) => s.id !== sectionId) }))
+    .filter((target) => target.sections.length > 0);
+  if (places.length === 0) {
+    return null;
+  }
+  return (
+    <ActionForm
+      action={moveToAction}
+      submitLabel="Move"
+      pendingLabel="Moving…"
+      variant="secondary"
+      srLabel={item.text}
+      hidden={{ kind: "item", id: item.id }}
+    >
+      <Field
+        id={`move-item-${item.id}`}
+        label="Move to…"
+        hint="It goes at the end of that section."
+      >
+        <select id={`move-item-${item.id}`} name="target" required className={fieldClasses}>
+          {places.map((target) => (
+            <optgroup key={target.id} label={target.name}>
+              {target.sections.map((section) => (
+                <option key={section.id} value={section.id}>
+                  {section.name}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </Field>
+    </ActionForm>
+  );
+}
+
+/** "Move to…" for a whole section, with its tasks: another checklist in the same list. */
+function MoveSectionTo({
+  section,
+  checklistId,
+  targets,
+}: {
+  section: { id: string; name: string };
+  checklistId: string;
+  targets: MoveTarget[];
+}) {
+  const places = targets.filter((target) => target.id !== checklistId);
+  if (places.length === 0) {
+    return null;
+  }
+  return (
+    <ActionForm
+      action={moveToAction}
+      submitLabel="Move section"
+      pendingLabel="Moving…"
+      variant="secondary"
+      srLabel={section.name}
+      hidden={{ kind: "section", id: section.id }}
+    >
+      <Field
+        id={`move-section-${section.id}`}
+        label="Move to…"
+        hint="The section and its tasks go at the end of that checklist."
+      >
+        <select id={`move-section-${section.id}`} name="target" required className={fieldClasses}>
+          {places.map((target) => (
+            <option key={target.id} value={target.id}>
+              {target.name}
+            </option>
+          ))}
+        </select>
+      </Field>
+    </ActionForm>
   );
 }

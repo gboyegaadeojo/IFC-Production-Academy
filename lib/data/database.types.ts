@@ -877,11 +877,12 @@ export type Database = {
           department_id: string;
           set_id: string;
           name: string;
+          sort_order: number;
           archived_at: string | null;
           created_by: string | null;
         } & Timestamps;
         Insert: { department_id: string; name: string; set_id?: string };
-        Update: { name?: string; archived_at?: string | null };
+        Update: { name?: string; sort_order?: number; archived_at?: string | null };
         Relationships: [];
       };
       checklist_positions: {
@@ -1390,6 +1391,29 @@ export type Database = {
         }[];
       };
       freeze_service_checklist_records: { Args: never; Returns: number };
+      move_checklist_section: {
+        Args: { p_section_id: string; p_checklist_id: string };
+        Returns: undefined;
+      };
+      move_checklist_item: {
+        Args: { p_item_id: string; p_section_id: string };
+        Returns: undefined;
+      };
+      restore_checklist_part: {
+        Args: { p_kind: string; p_id: string; p_with_parents: boolean };
+        Returns: undefined;
+      };
+      checklist_hidden_items: {
+        Args: { p_set_id: string };
+        Returns: {
+          kind: string;
+          id: string;
+          name: string;
+          place: string;
+          hidden_at: string;
+          parent_hidden: boolean;
+        }[];
+      };
       create_checklist_set: {
         Args: { p_name: string; p_description: string; p_copy_from: string | null };
         Returns: string;

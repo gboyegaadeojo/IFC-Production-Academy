@@ -11,6 +11,8 @@ import {
   percentDone,
   progressLabel,
   hideBlocker,
+  removeWarning,
+  restoreWithParentsLabel,
   sameListName,
   tidyListName,
   toChecklistError,
@@ -185,5 +187,22 @@ describe("task lists", () => {
       expect(toChecklistError({ message: reason })).toBe(reason);
       expect(checklistErrorMessage(reason)).not.toMatch(/connection/);
     }
+  });
+});
+
+describe("hidden items", () => {
+  it("warns about the tasks, and position links, that go with a removal", () => {
+    expect(removeWarning("section", 3)).toMatch(/^Its 3 tasks go with it\./);
+    expect(removeWarning("section", 1)).toMatch(/^Its 1 task goes with it\./);
+    expect(removeWarning("section", 0)).toMatch(/^It has no tasks\./);
+    expect(removeWarning("checklist", 2, 2)).toMatch(/links to 2 positions are removed/);
+    expect(removeWarning("checklist", 2, 1)).toMatch(/link to a position is removed/);
+    expect(removeWarning("section", 2, 5)).not.toMatch(/position/);
+    expect(removeWarning("checklist", 2)).toMatch(/restore it from Hidden items/);
+  });
+
+  it("says what comes back with a restore inside something hidden", () => {
+    expect(restoreWithParentsLabel("item")).toMatch(/section and checklist/);
+    expect(restoreWithParentsLabel("section")).toBe("Restore it with its checklist");
   });
 });

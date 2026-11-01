@@ -76,6 +76,7 @@ export async function renameChecklistAction(_: FormState, formData: FormData): P
 
 export async function archiveChecklistAction(_: FormState, formData: FormData): Promise<FormState> {
   const checklistId = id.safeParse(formData.get("checklistId"));
+  const listId = id.safeParse(formData.get("listId"));
   if (!checklistId.success || !(await allowed())) {
     return denied();
   }
@@ -83,7 +84,7 @@ export async function archiveChecklistAction(_: FormState, formData: FormData): 
   if (!result.ok) {
     return error(checklistErrorMessage(result.error));
   }
-  redirect("/admin/checklists");
+  redirect(listId.success ? `/admin/checklists?list=${listId.data}` : "/admin/checklists");
 }
 
 export async function setPositionsAction(_: FormState, formData: FormData): Promise<FormState> {
@@ -175,7 +176,7 @@ export async function itemAction(_: FormState, formData: FormData): Promise<Form
 }
 
 const move = z.object({
-  table: z.enum(["checklist_sections", "checklist_items"]),
+  table: z.enum(["checklists", "checklist_sections", "checklist_items"]),
   aId: z.uuid(),
   aOrder: z.coerce.number().int(),
   bId: z.uuid(),
@@ -314,5 +315,61 @@ export async function setTaskListHiddenAction(
   const result = await checklists.setTaskListHidden(listId.data, hidden);
   return result.ok
     ? done(hidden ? "List hidden. Past services keep their records." : "List restored.")
+    : error(checklistErrorMessage(result.error));
+}
+
+// ---------------------------------------------------------------------------
+// Move to… and Hidden items (checklist app US-12a, US-13, US-13a)
+// ---------------------------------------------------------------------------
+
+const moveTo = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("section"), id: z.uuid(), target: z.uuid() }),
+  z.object({ kind: z.literal("item"), id: z.uuid(), target: z.uuid() }),
+]);
+
+/** Moves a section to another checklist, or a task to another section, in the same list. */
+export async function moveToAction(_: FormState, formData: FormData): Promise<FormState> {
+  const parsed = moveTo.safeParse({
+    kind: formData.get("kind"),
+    id: formData.get("id"),
+    target: formData.get("target"),
+  });
+  if (!(await allowed())) {
+    return denied();
+  }
+  if (!parsed.success) {
+    return error("Choose where to move it.");
+  }
+  const result =
+    parsed.data.kind === "section"
+      ? await checklists.moveSection(parsed.data.id, parsed.data.target)
+      : await checklists.moveItem(parsed.data.id, parsed.data.target);
+  return result.ok
+    ? done("Moved to the end of where it went.")
+    : error(checklistErrorMessage(result.error));
+}
+
+const restore = z.object({
+  kind: z.enum(["checklist", "section", "item"]),
+  id: z.uuid(),
+  withParents: z.enum(["true", "false"]).transform((value) => value === "true"),
+});
+
+export async function restoreAction(_: FormState, formData: FormData): Promise<FormState> {
+  const parsed = restore.safeParse({
+    kind: formData.get("kind"),
+    id: formData.get("id"),
+    withParents: formData.get("withParents") ?? "false",
+  });
+  if (!parsed.success || !(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.restorePart(
+    parsed.data.kind,
+    parsed.data.id,
+    parsed.data.withParents,
+  );
+  return result.ok
+    ? done("Restored, with its history.")
     : error(checklistErrorMessage(result.error));
 }
