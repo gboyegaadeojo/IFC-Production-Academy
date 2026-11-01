@@ -296,6 +296,23 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   const schedulerContext = await browser.newContext();
   const scheduler = await schedulerContext.newPage();
   await signInByEmail(scheduler, "casey.leader@example.com");
+  // Positions are filled only from their team (decision record 9), so the leader adds them first.
+  await scheduler.goto("/admin/teams");
+  const cameraChip = scheduler.getByRole("link", { name: "Camera Operations" });
+  if ((await cameraChip.count()) > 0) {
+    await cameraChip.click();
+  }
+  const positionTeam = scheduler.getByRole("region", { name: /^Sample role \(seed data\)/ });
+  await positionTeam.getByText("Add someone").click();
+  await positionTeam
+    .getByLabel("Add to Sample role (seed data)")
+    .selectOption({ label: `${name} (trained)` });
+  await positionTeam.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(
+    positionTeam
+      .getByRole("list", { name: "Sample role (seed data) team" })
+      .getByText(name, { exact: true }),
+  ).toBeVisible();
   await scheduler.goto("/admin/schedule");
   await scheduler.getByLabel("Name").fill(service);
   await scheduler.getByLabel("Date").fill(nextWeek);

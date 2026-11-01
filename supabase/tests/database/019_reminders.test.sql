@@ -82,6 +82,10 @@ select public.set_role_competencies((select id from ctx where key = 'role'), arr
 reset role;
 select private.grant_competency('f1000000-0000-4000-8000-000000000001', (select id from ctx where key = 'comp'), null);
 select private.grant_competency('f1000000-0000-4000-8000-000000000003', (select id from ctx where key = 'comp'), null);
+insert into public.serving_team_members (role_id, department_id, user_id)
+select (select id from ctx where key = 'role'), 'b7ba9dae-cab5-43e0-a996-8ae9d2436855', u::uuid
+from unnest(array['f1000000-0000-4000-8000-000000000001', 'f1000000-0000-4000-8000-000000000002',
+                  'f1000000-0000-4000-8000-000000000003', 'f1000000-0000-4000-8000-000000000006']) u;
 
 -- Soon: an event later today or tomorrow, so its 10:00-two-days-before moment has passed.
 select pg_temp.act_as('f1000000-0000-4000-8000-000000000004');

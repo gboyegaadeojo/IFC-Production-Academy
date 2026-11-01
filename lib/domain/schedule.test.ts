@@ -100,7 +100,7 @@ describe("candidateLabel", () => {
     ).toBe("Avery (trained)");
     expect(
       candidateLabel({ name: "Blake", approved: false, conflict: true, unavailable: true }),
-    ).toBe("Blake (still learning, already serving then, unavailable that day)");
+    ).toBe("Blake (still learning, already serving that day, unavailable that day)");
   });
 });
 

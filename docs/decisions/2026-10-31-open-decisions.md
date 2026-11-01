@@ -92,19 +92,24 @@ The full curriculum, quiz bank, and practical checklists are in
 | Handheld and Gimbal | Level 3 practical | **Roaming Camera Operator**; needs Live Shot Operation too |
 | Camera Lead and Trainer | Level 3 practical | Records practical assessments for others (granted the Trainer role by a leader) |
 
-**Training is shown, never a gate** (G, 2026-10-31). People learn at different paces, so not
-passing never stops anyone serving:
+**Training is shown, never a gate; position teams decide who serves** (G, 2026-10-31). People
+learn at different paces, so not passing never stops anyone. Who can be scheduled works the way
+IFC already runs Planning Center Services:
 
-- **Anyone in the department can be scheduled in any role.** The scheduler sees "Trained" or
-  "Still learning" beside each name, and can pair someone still learning with a trained person
-  ("Someone alongside"). The assignment records which it was, for the department's own picture of
-  who is ready.
+- **Position teams.** Each position (serving role, such as Camera 1, Camera 2, Audio,
+  ProPresenter) has a team. A position can only be filled from its team. Whoever runs the teams
+  (the Scheduling Administrator, a department leader, or the Production Director) adds people when
+  they're ready, in Serving teams. Someone not yet in the department joins it when added.
+- **One position a day.** Nobody is scheduled on a day they've blocked out, or in a second
+  position the same day anywhere in the production team, unless someone with override rights gives
+  a reason.
+- **Training shows beside each name** ("Trained" or "Still learning") on the team page and when
+  scheduling, and the scheduler can pair a learner with a trained person ("Someone alongside").
 - **"Not yet", not "fail".** A practical that doesn't meet the pass rule reads "Not yet, keep
-  practising", with the trainer's feedback. There is no waiting period: try again whenever you're
-  ready.
-- **Approved to Serve still means something.** It stays its own record (SPEC §3), shows on the
-  person's department page, the readiness reports, and in the scheduler, so leaders can see who is
-  trained. It informs scheduling instead of blocking it. This sets aside SRS-COMP-006's block.
+  practising", with the trainer's feedback, and there's no waiting period.
+- **Approved to Serve still means something.** It stays its own record (SPEC §3), shown on the
+  person's department page, the readiness reports, and the team page. It informs who gets added
+  to a team; it doesn't add them. This sets aside SRS-COMP-006's automatic block.
 
 How the checklists work:
 
@@ -204,18 +209,27 @@ Why this works better than keeping two systems: training and scheduling sit in o
 scheduler sees who is trained as they schedule, and volunteers have one app for learning and
 serving.
 
+How Planning Center is set up today, and how the Academy matches it: one production team with
+positions (Audio, Camera 1, Camera 2, Miscellaneous, Production Director, ProPresenter, Technical
+Director); people added to each position they serve in; service types (the Sunday service,
+Communion, Crossover) with a dated plan for each service; volunteers who accept or decline, block
+out dates, and sign up for open spots. In the Academy, positions are serving roles in each
+department, and position teams are in Serving teams (built).
+
 What the Academy adds so schedulers and volunteers don't miss Planning Center (built in stages):
 
 1. **Calendars.** A month calendar for volunteers: tap a day to see what you're serving and who
    with. A team calendar for schedulers, by department.
-2. **Repeating services.** Set up "Sunday service, 9:00 to 11:30, with these positions" once and
-   create the next weeks in one step.
+2. **Service types.** Set up "Sunday service, 10:05, with these positions" once and create the
+   next weeks' services in one step.
 3. **Scheduler grid.** Weeks across, positions down, with who is in each, so a month is planned
    on one screen; suggested people for each open position (trained first, then least recently
    scheduled, never someone away).
-4. **Swaps and replacements.** A volunteer who can't make it asks for a replacement; the scheduler
-   approves a volunteer who offers.
-5. **Already built:** confirm or decline, days away, reminders (serving soon, please confirm),
+4. **Swaps and sign-ups.** A volunteer who can't make it asks for a replacement; teammates on
+   that position can sign up for open spots.
+5. **Pre-service checklists.** Each volunteer sees the checklist for the position they're serving
+   in that day (from IFC's existing Sunday pre-service checklist).
+6. **Already built:** confirm or decline, days away, reminders (serving soon, please confirm),
    calendar file download, and the service-day view with SOPs.
 
 **Switch-over:** schedulers run both for the pilot month, then production stops scheduling in

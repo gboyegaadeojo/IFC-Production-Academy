@@ -167,7 +167,7 @@ export function candidateLabel(candidate: {
 }): string {
   const notes = [
     candidate.approved ? "trained" : "still learning",
-    candidate.conflict ? "already serving then" : null,
+    candidate.conflict ? "already serving that day" : null,
     candidate.unavailable ? "unavailable that day" : null,
   ].filter(Boolean);
   return `${candidate.name} (${notes.join(", ")})`;
@@ -181,6 +181,7 @@ export type ScheduleError =
   | "not_authorized"
   | "event_closed"
   | "volunteer_not_member"
+  | "not_on_team"
   | "position_filled"
   | "schedule_conflict"
   | "volunteer_unavailable"
@@ -194,6 +195,7 @@ const KNOWN: ReadonlySet<string> = new Set<ScheduleError>([
   "not_authorized",
   "event_closed",
   "volunteer_not_member",
+  "not_on_team",
   "position_filled",
   "schedule_conflict",
   "volunteer_unavailable",
@@ -220,10 +222,12 @@ export function scheduleErrorMessage(error: ScheduleError): string {
       return "This event is over or cancelled.";
     case "volunteer_not_member":
       return "They need to be an active member of the department.";
+    case "not_on_team":
+      return "Only people on this department's serving team can be scheduled. Ask whoever runs the teams to add them.";
     case "position_filled":
       return "Someone is already in this position. Cancel their assignment first.";
     case "schedule_conflict":
-      return "They're already serving at that time. Choose someone else, or override with a reason if you're allowed to.";
+      return "They're already serving then, or in another department that day. Choose someone else, or override with a reason if you're allowed to.";
     case "volunteer_unavailable":
       return "They've said they're unavailable that day. Choose someone else, or override with a reason if you're allowed to.";
     case "supervisor_not_approved":

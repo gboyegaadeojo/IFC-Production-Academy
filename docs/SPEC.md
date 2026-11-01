@@ -217,7 +217,7 @@ Quiz behaviour (built 2026-10-31): a course can hold several quizzes, each place
 | SRS-COMP-001–002 | Competency records separate from completion, scoped to skill or equipment, with date and the assessment that granted them. **A passed practical grants the competency automatically**; no separate approval (decided 2026-10-30) | M |
 | SRS-COMP-003 | States: Not Assessed, Supervised Practice, Approved, Suspended, Expired | S |
 | SRS-COMP-004 | Leaders define competencies required for serving roles. **Approved to Serve is granted automatically** when every required competency is approved, and withdrawn if one is suspended or expires; it stays its own record (decided 2026-10-30) | M |
-| SRS-COMP-005–006 | Scheduling checks competency; no silent unqualified assignment. **Changed 2026-10-31:** training is shown to the scheduler ("Trained" or "Still learning") and recorded on the assignment, never a block (decision 5) | M |
+| SRS-COMP-005–006 | Scheduling checks competency; no silent unqualified assignment. **Changed 2026-10-31:** positions are filled only from their position team; training is shown ("Trained" or "Still learning") and recorded on the assignment, never a block (decision 5) | M |
 | SRS-COMP-007 | Supervised-practice assignments with a named supervisor (now optional: "someone alongside") | S |
 | SRS-COMP-008 | Overrides need permission, reason, audit (now only for conflicts and days away) | M |
 | SRS-COMP-009 | Expiry configurable, off by default | M |
