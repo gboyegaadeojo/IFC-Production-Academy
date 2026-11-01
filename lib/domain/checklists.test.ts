@@ -3,7 +3,10 @@ import {
   activityActionLabel,
   activityChange,
   activityOutcomeLabel,
+  boardOrder,
+  boardSections,
   canSwitchCurrentService,
+  teamProgress,
   checklistErrorMessage,
   groupServiceChecklists,
   groupServiceRecord,
@@ -20,6 +23,54 @@ import {
   type RecordRow,
   type ServiceChecklistRow,
 } from "./checklists";
+
+describe("the service-day board", () => {
+  it("puts your own departments first, keeping the order otherwise", () => {
+    const order = boardOrder([
+      { id: "a", isMine: false },
+      { id: "b", isMine: true },
+      { id: "c", isMine: false },
+      { id: "d", isMine: true },
+    ]);
+    expect(order.map((c) => c.id)).toEqual(["b", "d", "a", "c"]);
+  });
+
+  it("adds up the team's ticks", () => {
+    expect(
+      teamProgress([
+        { done: 2, total: 5 },
+        { done: 0, total: 3 },
+      ]),
+    ).toEqual({ done: 2, total: 8 });
+    expect(teamProgress([])).toEqual({ done: 0, total: 0 });
+  });
+
+  const sections = [
+    {
+      id: "s1",
+      items: [
+        { id: "i1", checkedAt: "2026-11-01T15:00:00Z" },
+        { id: "i2", checkedAt: null },
+      ],
+    },
+    { id: "s2", items: [{ id: "i3", checkedAt: "2026-11-01T15:01:00Z" }] },
+  ];
+
+  it("shows everything, with each section's count", () => {
+    const shown = boardSections(sections, "all");
+    expect(shown.map((s) => [s.id, s.done, s.total, s.shown.length])).toEqual([
+      ["s1", 1, 2, 2],
+      ["s2", 1, 1, 1],
+    ]);
+  });
+
+  it("keeps only what's still to do, dropping finished sections", () => {
+    const shown = boardSections(sections, "todo");
+    expect(shown.map((s) => [s.id, s.done, s.total, s.shown.map((i) => i.id)])).toEqual([
+      ["s1", 1, 2, ["i2"]],
+    ]);
+  });
+});
 
 describe("parseChecklistText", () => {
   it("reads headings and items, dropping list markers", () => {
