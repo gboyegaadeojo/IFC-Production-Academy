@@ -1,4 +1,4 @@
-# Nightly encrypted backup to Google Drive (CLAUDE.md "Scheduled jobs", SPEC §9 "Backup design").
+# Weekly encrypted backup to Google Drive (G, 2026-11-01) (CLAUDE.md "Scheduled jobs", SPEC §9 "Backup design").
 #
 # 1. pg_dump (custom format, pg_dump 17 to match Supabase's Postgres 17) of the whole database,
 #    including auth users.
@@ -15,8 +15,8 @@ name: Backup
 
 on:
   schedule:
-    # 08:00 UTC: 2 am Winnipeg in winter, 3 am in summer.
-    - cron: "0 8 * * *"
+    # Sundays, 08:00 UTC: 3 am Winnipeg (UTC-5 all year from 2026-11-01).
+    - cron: "0 8 * * 0"
   workflow_dispatch:
 
 permissions:
@@ -110,6 +110,8 @@ jobs:
           set -euo pipefail
           umask 077
           node scripts/backup/download-storage.ts "$RUNNER_TEMP/plain/storage"
+          # With no stored files yet there's no folder; the row counts still need one.
+          mkdir -p "$RUNNER_TEMP/plain/storage"
           cp "$RUNNER_TEMP/plain/counts.json" "$RUNNER_TEMP/plain/storage/counts.json"
           (cd "$RUNNER_TEMP/plain/storage" && zip -q -r -9 "$RUNNER_TEMP/plain/files.zip" .)
           echo "Files archive: $(stat -c%s "$RUNNER_TEMP/plain/files.zip") bytes"
@@ -163,4 +165,4 @@ jobs:
           resend-api-key: ${{ secrets.RESEND_API_KEY }}
           to: ${{ secrets.ALERT_EMAILS }}
           from: ${{ secrets.ALERT_FROM }}
-          subject: "IFC Academy: nightly backup failed"
+          subject: "IFC Academy: weekly backup failed"

@@ -1,5 +1,5 @@
 /**
- * Downloads every object in every Supabase Storage bucket into a folder, for the nightly backup.
+ * Downloads every object in every Supabase Storage bucket into a folder, for the weekly backup.
  * Usage: node scripts/backup/download-storage.ts <out-dir>
  * Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Logs counts and total size only.
  */

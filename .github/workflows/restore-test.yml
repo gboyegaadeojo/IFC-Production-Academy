@@ -11,7 +11,7 @@ name: Restore test
 
 on:
   schedule:
-    # The 3rd of each month, 10:00 UTC, after the nightly backup.
+    # The 3rd of each month, 10:00 UTC, after the weekly backup.
     - cron: "0 10 3 * *"
   workflow_dispatch:
 
