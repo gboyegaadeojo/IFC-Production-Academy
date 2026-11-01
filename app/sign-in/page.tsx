@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { AppearancePicker } from "@/components/appearance-picker";
 import { Wordmark } from "@/components/brand";
 import { buttonClasses } from "@/components/ui/button";
 import { signOutAction } from "@/app/auth/actions";
+import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
 import { safeNextPath, signInErrorMessage } from "@/lib/domain/auth";
 import { SignInForm } from "./sign-in-form";
@@ -29,9 +31,18 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
             <SignInContent searchParams={searchParams} />
           </Suspense>
         </div>
+        <div className="mt-8 border-t border-border pt-6">
+          <Suspense fallback={null}>
+            <SignInAppearance />
+          </Suspense>
+        </div>
       </div>
     </main>
   );
+}
+
+async function SignInAppearance() {
+  return <AppearancePicker initial={await getAppearance()} />;
 }
 
 function SignInSkeleton() {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { signOutAction } from "@/app/auth/actions";
 import { Wordmark } from "@/components/brand";
+import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
 import { getUnreadCount } from "@/lib/data/notifications";
@@ -36,9 +37,12 @@ async function Account() {
   }
   // Only areas a person may use are offered (SPEC §8); each admin page checks again on the server.
   const active = user.status === "active";
-  const [grants, unread] = active
-    ? await Promise.all([getMyCapabilities(), getUnreadCount(user.id)])
-    : [[], 0];
+  const [[grants, unread], appearance] = await Promise.all([
+    active
+      ? Promise.all([getMyCapabilities(), getUnreadCount(user.id)])
+      : Promise.resolve([[], 0] as const),
+    getAppearance(),
+  ]);
   const showAdmin = active && adminSections(grants).length > 0;
   return (
     <AccountMenu
@@ -46,6 +50,7 @@ async function Account() {
       initials={initials(user.displayName)}
       showAdmin={showAdmin}
       unread={unread}
+      appearance={appearance}
       signOut={signOutAction}
     />
   );

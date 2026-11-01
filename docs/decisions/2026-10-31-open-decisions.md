@@ -66,8 +66,10 @@ approval.
 - **Type:** the app keeps IBM Plex Sans (built for interfaces, with tabular numbers). Certificates
   use **Literata**, the serif on ifcwpg.com, for the recipient's name, which ties them visually to
   the church's own materials.
-- **Theme:** dark only at launch. A light theme waits for Phase 5 (unchanged). Printed
-  certificates use a light layout, so they don't waste ink.
+- **Theme:** dark is the default. *Revised 2026-11-01:* G asked for the checklist app's Appearance
+  setting now, so each person can choose **Dark, Light or System** in the menu under their name or
+  on the sign-in page, remembered on that device. Printed certificates use a light layout in every
+  theme, so they don't waste ink.
 - **Photography:** one 2-hour shoot during a Sunday rehearsal. The shot list: one hero image of the
   production team at work, for the sign-in page, and one cover per department (an operator at each
   position: camera, front of house, ProPresenter, director's desk, lighting console). The light is

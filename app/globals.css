@@ -4,8 +4,8 @@
  * Design tokens. Visual values follow docs/DESIGN-REQUIREMENTS.md §4 (colour, type, geometry) and
  * §5 (motion); SPEC §7 points there. Components use them through Tailwind utilities such as
  * bg-card, text-text-secondary, or rounded-card. Never hardcode hex values in components.
- * Dark is the signature theme. Light values are defined but not switched on yet (SPEC §9 open
- * decision 4); they would apply with data-theme="light".
+ * Dark is the signature theme and the default. Each person can choose Light or System instead
+ * (checklist app US-08a; decision 4): the root layout sets data-theme="light" for it.
  */
 :root {
   color-scheme: dark;
@@ -62,6 +62,11 @@
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
 }
 
+/*
+ * Light, contrast on --bg / --card / --hover: text 16.6 / 17.7 / 15.7; secondary 7.0 / 7.4 / 6.6;
+ * muted 5.7 / 6.0 / 5.3; accent text 6.7 / 7.1 / 6.3; status 5.3 or more; department hues 5.1 or
+ * more, so they still work as text; strong borders 3.5 or more.
+ */
 [data-theme="light"] {
   color-scheme: light;
   --bg: #f7f8fa;
@@ -69,16 +74,26 @@
   --card: #ffffff;
   --hover: #f0f1f5;
   --border: #e1e3e9;
-  --border-strong: #8a8e9c;
+  --border-strong: #7c808e;
   --text: #171820;
   --text-secondary: #515563;
-  --text-muted: #6b6b76;
+  --text-muted: #62626d;
   --accent: #6d28d9;
   --accent-light: #6d28d9;
-  --success: #15803d;
-  --warning: #b45309;
+  --success: #12733a;
+  --warning: #a14a07;
   --error: #b91c1c;
   --info: #1d4ed8;
+  --dept-blue: #1f5fd1;
+  --dept-teal: #0a735a;
+  --dept-violet: #7a3fd6;
+  --dept-coral: #b8361f;
+  --dept-amber: #8f5b00;
+}
+
+/* The IFC mark is white artwork: dark on a light theme. */
+[data-theme="light"] .mark-on-theme {
+  filter: invert(1);
 }
 
 @media (prefers-reduced-motion: reduce) {

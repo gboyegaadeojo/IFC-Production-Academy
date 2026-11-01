@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
+import { AppearancePicker } from "@/components/appearance-picker";
 import { ChevronDownIcon } from "@/components/ui/icons";
+import type { Appearance } from "@/lib/domain/appearance";
 
 /**
- * Account menu (DESIGN §3.2): Profile, the Academy/Admin workspace switch when permitted, and
- * Sign out. A disclosure, not an ARIA menu: Tab moves through the links, Escape closes and returns
+ * Account menu (DESIGN §3.2): Profile, the Academy/Admin workspace switch when permitted,
+ * Appearance (checklist app US-08a), and Sign out. A disclosure, not an ARIA menu: Tab moves through the links, Escape closes and returns
  * focus to the button, and a click outside closes it.
  */
 export function AccountMenu({
@@ -15,6 +17,7 @@ export function AccountMenu({
   initials,
   showAdmin,
   unread = 0,
+  appearance,
   signOut,
 }: {
   displayName: string;
@@ -22,6 +25,8 @@ export function AccountMenu({
   showAdmin: boolean;
   /** Unread notifications, shown on the button and the Notifications link. */
   unread?: number;
+  /** This device's appearance. */
+  appearance: Appearance;
   signOut: () => Promise<void>;
 }) {
   const pathname = usePathname();
@@ -131,6 +136,9 @@ export function AccountMenu({
               </li>
             ) : null}
           </ul>
+          <div className="mt-2 border-t border-border px-1 pt-2 pb-1">
+            <AppearancePicker initial={appearance} />
+          </div>
           <div className="mt-2 border-t border-border pt-2">
             <form action={signOut}>
               <button type="submit" className={`${item} w-full`}>
