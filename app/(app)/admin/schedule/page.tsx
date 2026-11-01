@@ -11,6 +11,7 @@ import { eventTimeLabel } from "@/lib/domain/schedule";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
 import { createEventAction } from "./actions";
+import { ScheduleTabs } from "./schedule-tabs";
 
 export const metadata: Metadata = { title: "Schedule" };
 
@@ -36,6 +37,8 @@ async function AdminScheduleContent() {
         title="Schedule"
         description="Add services and rehearsals, then the positions they need. Each position is filled from its team in Serving teams. The Academy checks nobody is away that day or already serving in another position."
       />
+
+      <ScheduleTabs current="upcoming" />
 
       <section aria-labelledby="events-heading" className="flex flex-col gap-3">
         <h2 id="events-heading" className="text-heading font-semibold">
@@ -85,8 +88,11 @@ async function AdminScheduleContent() {
         className="flex max-w-2xl flex-col gap-4 rounded-card border border-dashed border-border p-5"
       >
         <h2 id="new-event-heading" className="text-subheading font-semibold">
-          Add an event
+          Add a one-off event
         </h2>
+        <p className="text-small text-text-secondary">
+          For regular services, set up a service type once and create its dates in one step.
+        </p>
         <ActionForm action={createEventAction} submitLabel="Add event" pendingLabel="Adding…">
           <Field id="event-title" label="Name">
             <input
