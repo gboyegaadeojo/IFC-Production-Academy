@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { openAccountMenu } from "./support/account-menu";
+import { pressUntil } from "./support/admin-nav";
 import { mailpitAvailable, signInByEmail } from "./support/email-sign-in";
 import {
   capture,
@@ -208,6 +209,7 @@ test("admin sidebar states at 390, 768, 1024 and 1440px", async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto("/admin/planning-center");
     await expect(page.getByRole("heading", { level: 1, name: "Planning Center" })).toBeVisible();
+    await page.waitForLoadState("networkidle");
     if (viewport.width < 1024) {
       await page.getByRole("button", { name: "Open admin menu" }).click();
       const drawer = page.getByRole("dialog", { name: "Admin menu" });
@@ -217,23 +219,21 @@ test("admin sidebar states at 390, 768, 1024 and 1440px", async ({ page }) => {
       continue;
     }
     const nav = page.getByRole("navigation", { name: "Admin" });
-    await expect(nav.getByRole("link", { name: "Planning Center" })).toHaveAttribute(
+    await expect(nav.getByRole("link", { name: /^Planning Center/ })).toHaveAttribute(
       "aria-current",
       "page",
     );
     await page.screenshot({ path: `${DIR}/admin-sidebar-active-${viewport.name}.png` });
     for (const group of ["Checklists", "Training Academy", "People & Teams", "System & Settings"]) {
-      const toggle = nav.getByRole("button", { name: group });
-      if ((await toggle.getAttribute("aria-expanded")) === "false") {
-        await toggle.click();
-      }
+      await pressUntil(nav.getByRole("button", { name: group }), "aria-expanded", "true");
     }
     await page.screenshot({ path: `${DIR}/admin-sidebar-long-${viewport.name}.png` });
-    await page.getByRole("button", { name: "Icons only" }).click();
+    const iconsOnly = page.getByRole("button", { name: "Icons only" });
+    await pressUntil(iconsOnly, "aria-pressed", "true");
     await nav.getByRole("button", { name: "Services & Scheduling" }).click();
     await expect(page.getByRole("group", { name: "Services & Scheduling" })).toBeVisible();
     await page.screenshot({ path: `${DIR}/admin-sidebar-collapsed-${viewport.name}.png` });
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: "Icons only" }).click();
+    await pressUntil(iconsOnly, "aria-pressed", "false");
   }
 });
