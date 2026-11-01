@@ -1377,6 +1377,14 @@ export type Database = {
         Returns: undefined;
       };
       run_onboarding: { Args: never; Returns: number };
+      onboarding_leaders: {
+        Args: { p_pathway_id: string };
+        Returns: { user_id: string; display_name: string }[];
+      };
+      onboarding_task_pools: {
+        Args: { p_task_ids: string[] };
+        Returns: { task_id: string; user_id: string; display_name: string }[];
+      };
       my_onboarding: {
         Args: never;
         Returns: {

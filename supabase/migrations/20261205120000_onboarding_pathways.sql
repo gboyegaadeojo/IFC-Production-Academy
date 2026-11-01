@@ -986,3 +986,48 @@ end;
 $$;
 revoke all on function public.onboarding_choose_department(uuid, uuid) from public, anon;
 grant execute on function public.onboarding_choose_department(uuid, uuid) to authenticated;
+
+-- People a follow-up can be given to in a pathway: anyone with a role there, organisation-wide or
+-- in its department. Only for people who look after the pathway.
+create function public.onboarding_leaders(p_pathway_id uuid)
+returns table (user_id uuid, display_name text)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select distinct p.id, p.display_name
+  from public.onboarding_pathways pw
+  join public.user_roles ur on ur.revoked_at is null
+   and (ur.department_id is null or ur.department_id = pw.department_id)
+  join public.profiles p on p.id = ur.user_id and p.status = 'active'
+  where pw.id = p_pathway_id and private.can_manage_pathway(p_pathway_id)
+  order by p.display_name;
+$$;
+revoke all on function public.onboarding_leaders(uuid) from public, anon;
+grant execute on function public.onboarding_leaders(uuid) to authenticated;
+
+-- Who each follow-up could go to, for handing over: its pool and the pathway's managers.
+create function public.onboarding_task_pools(p_task_ids uuid[])
+returns table (task_id uuid, user_id uuid, display_name text)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select distinct t.id, pr.id, pr.display_name
+  from public.onboarding_tasks t
+  join public.onboarding_entries e on e.id = t.entry_id
+  join public.onboarding_pathways pw on pw.id = e.pathway_id
+  join lateral (
+    select * from private.onboarding_pool(t.pool_role_id, pw.department_id)
+    union
+    select * from private.department_capability_holders('onboarding.manage', pw.department_id)
+  ) pool(uid) on true
+  join public.profiles pr on pr.id = pool.uid
+  where t.id = any(p_task_ids)
+    and (t.assignee_id = (select auth.uid()) or private.can_manage_entry(t.entry_id))
+  order by pr.display_name;
+$$;
+revoke all on function public.onboarding_task_pools(uuid[]) from public, anon;
+grant execute on function public.onboarding_task_pools(uuid[]) to authenticated;
