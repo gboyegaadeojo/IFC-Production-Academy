@@ -1,4 +1,4 @@
--- Scheduling with competency checks: SRS-SCHED-001..011, SRS-COMP-005..008, workflow D.
+-- Scheduling with training shown, not enforced: SRS-SCHED-001..011, SRS-COMP-005..008, workflow D.
 begin;
 select no_plan();
 
@@ -64,6 +64,10 @@ insert into ctx values
   ('pos1', public.add_event_position((select id from ctx where key = 'event'), (select id from ctx where key = 'role'))),
   ('pos2', public.add_event_position((select id from ctx where key = 'event'), (select id from ctx where key = 'role'))),
   ('pos3', public.add_event_position((select id from ctx where key = 'event'), (select id from ctx where key = 'role')));
+-- A second, later event for someone still learning.
+insert into public.events (title, starts_at, ends_at)
+  values ('Fake later service', date_trunc('hour', now()) + interval '10 days', date_trunc('hour', now()) + interval '10 days 2 hours');
+insert into ctx values ('pos4', public.add_event_position((select id from public.events where title = 'Fake later service'), (select id from ctx where key = 'role')));
 select throws_ok(
   $$ insert into public.events (title, starts_at, ends_at) values ('Backwards', now() + interval '2 days', now() + interval '1 day') $$,
   '23514', null, 'an event ends after it starts'
@@ -92,13 +96,10 @@ select throws_ok(
   $$ select public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000001') $$,
   'P0001', 'schedule_conflict', 'nobody serves twice at the same time'
 );
-select throws_ok(
-  $$ select public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000002') $$,
-  'P0001', 'not_approved_for_role', 'no silent assignment of someone not approved (SRS-COMP-006)'
-);
-select throws_ok(
-  $$ select public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000002', null, 'Short-staffed') $$,
-  'P0001', 'not_approved_for_role', 'a reason alone does nothing without schedule.override'
+-- Training is shown, never enforced (decided 2026-10-31): someone still learning can serve.
+select is(
+  public.assign_to_position((select id from ctx where key = 'pos4'), 'e0000000-0000-4000-8000-000000000002')::text,
+  'learning', 'someone still learning is scheduled, and the assignment says so'
 );
 select throws_ok(
   $$ select public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000002',
@@ -181,7 +182,7 @@ select throws_ok(
   $$ select public.respond_to_assignment((select id from public.event_assignments where position_id = (select id from ctx where key = 'pos1')), 'declined') $$,
   '42501', 'not_authorized', 'nobody answers for someone else'
 );
-select is((select count(*)::int from public.event_assignments), 1, 'and never see other volunteers'' assignments');
+select is((select count(*)::int from public.event_assignments), 2, 'and never see other volunteers'' assignments');
 select lives_ok(
   $$ select public.respond_to_assignment((select id from public.event_assignments where position_id = (select id from ctx where key = 'pos2')), 'declined') $$,
   'a volunteer declines'

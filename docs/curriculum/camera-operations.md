@@ -14,7 +14,7 @@ Wherever this says "IFC's setting", the Camera lead fills in the actual value in
 
 | Level | Course | Competency its practical grants | Serving role it unlocks |
 | --- | --- | --- | --- |
-| 1. Foundations | Camera Operations: Foundations | **Camera Fundamentals** | **Wide Camera Operator**, on your own. Any other camera as supervised practice |
+| 1. Foundations | Camera Operations: Foundations | **Camera Fundamentals** | **Wide Camera Operator** (trained). Anyone can still be scheduled anywhere while they learn |
 | 2. Proficiency | Camera Operations: Live Shots | **Live Shot Operation** | **Live Camera Operator** (needs Camera Fundamentals and Live Shot Operation) |
 | 3. Advanced and Leadership | Camera Operations: Advanced and Leading | **Handheld and Gimbal**; **Camera Lead and Trainer** | **Roaming Camera Operator** (needs Live Shot Operation and Handheld and Gimbal). Camera Lead and Trainer qualifies someone to be given the Trainer role |
 
@@ -32,7 +32,7 @@ Set up in the Academy:
 
 **Outcome:** you set up and shut down a camera position safely, frame clean basic shots, follow
 the director's calls, and serve the wide camera on your own.
-**Time:** about 2 hours of lessons, then one supervised service and the practical.
+**Time:** about 2 hours of lessons, then one service beside a trained operator, and the practical.
 
 Each lesson has a 3 to 8 minute video filmed at IFC (see "Filming" under each lesson), written key
 points that stand in until the video exists, and the SOPs it relies on.
@@ -158,13 +158,13 @@ points that stand in until the video exists, and the SOPs it relies on.
 - Objectives: know exactly what the practical checks and how it's decided.
 - Key points: a trainer observes you through a real service or rehearsal using the checklist
   below, and ticks what they see. The Academy works out the result from the checklist. The
-  trainer doesn't choose the outcome. "Further practice required" isn't a failure; it tells you
-  what to practise before next time.
+  trainer doesn't choose the outcome. "Not yet" isn't a failure, and it never stops you serving;
+  it tells you what to practise, and you try again whenever you're ready.
 - Filming: a trainer walking through the checklist with a volunteer.
 
 **12. Final readiness review** (3 min)
 - Objectives: check yourself against the checklist before you request your assessment.
-- Key points: serve at least one service as supervised practice beside an approved operator.
+- Key points: serve at least one service beside a trained operator.
   Review the setup SOP the night before. Then tap **Request assessment**.
 - Quiz: the Level 1 quiz (15 questions; 80% to pass; 3 attempts; answers shown once you pass or
   use every attempt). It must be passed before the practical.
@@ -172,10 +172,11 @@ points that stand in until the video exists, and the SOPs it relies on.
 ### Level 1 practical: Camera Fundamentals
 
 Observed during a real rehearsal or service, at the position the trainer chooses. **R** means
-required: missing one means "Further practice required".
+required: missing one means "Not yet". Everyone learns at their own pace, and a "Not yet" never
+stops anyone being scheduled.
 
 **Pass rule:** every required item, and at least 80% of all items (13 of 16).
-**Reassessment:** after at least 7 days.
+**Reassessment:** whenever you're ready (no waiting period).
 
 | # | Observed behaviour | R |
 | --- | --- | --- |
@@ -218,8 +219,8 @@ Lessons (outline; the Camera lead writes them after the pilot):
 
 ### Level 2 practical: Live Shot Operation
 
-**Pass rule:** every required item, and at least 80% of all items. **Reassessment:** after at
-least 14 days.
+**Pass rule:** every required item, and at least 80% of all items. **Reassessment:** whenever
+you're ready.
 
 | # | Observed behaviour | R |
 | --- | --- | --- |

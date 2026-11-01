@@ -9,6 +9,7 @@ A volunteer learning and competency platform for the production ministry at Imma
 ## Non-negotiable product rules
 
 - **Course completion, competency approval, and Approved to Serve are three separate records.** Watching videos or passing a quiz never makes someone Approved to Serve (SPEC §3, SRS-PROG-007, SRS-COMP-001).
+- **Training is shown, never a gate to serving** (decided 2026-10-31). Anyone in a department can be scheduled in any role; the scheduler sees "Trained" or "Still learning". A practical that isn't passed is "Not yet", with no waiting period. People learn at different paces.
 - **The system decides results, not people** (decided 2026-10-30). Lessons are completed by the learner, quizzes are scored automatically, and a practical passes when the observer's checklist meets the leader's pass rule; the observer never picks the outcome. A pass grants the competency, and Approved to Serve follows automatically. Leaders publish their own department's curriculum with version history and rollback, with no approval gate.
 - **Departments, levels, courses, and rules are data, never code.** No `if (department === 'camera')`. Lighting Operations goes live by changing a status row.
 - **Never claim a video was fully watched.** Completion is a learner action; watch % is an informal signal only (SRS-LESSON-006).
@@ -105,4 +106,4 @@ Do this first, as one PR:
 
 ## Decisions (settled 2026-10-31)
 
-SPEC §9's open decisions are settled in [docs/decisions/2026-10-31-open-decisions.md](docs/decisions/2026-10-31-open-decisions.md): ownership and launch dates, brand, Camera competencies and rubrics ([docs/curriculum/camera-operations.md](docs/curriculum/camera-operations.md)), content, privacy and retention, under-18 volunteers (no age rules in the app), reminders, certificates, Planning Center, and native apps. Follow them. Privacy and retention rules await church leadership's sign-off; ask G before changing them. Quiz answer keys live in the gitignored `private/` folder, never in the repo.
+SPEC §9's open decisions are settled in [docs/decisions/2026-10-31-open-decisions.md](docs/decisions/2026-10-31-open-decisions.md): ownership and launch dates, brand, Camera competencies and rubrics ([docs/curriculum/camera-operations.md](docs/curriculum/camera-operations.md)), content, privacy and retention (not needed: no privacy page, retention job, or age rules), reminders, certificates, Planning Center (the Academy replaces Planning Center Services for production scheduling), and native apps. Follow them. Quiz answer keys live in the gitignored `private/` folder, never in the repo.

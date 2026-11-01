@@ -1,7 +1,8 @@
 /**
  * Practical assessments (SRS-ASSESS-001..008). The observer records what they saw; the system works
- * out Pass or Further Practice Required from the leader's pass rule (decided 2026-10-30). The
- * database is the authority; practicalOutcome mirrors its rule so pages can explain a result.
+ * out Pass or Not yet from the leader's pass rule (decided 2026-10-30). The database is the
+ * authority; practicalOutcome mirrors its rule so pages can explain a result. "Not yet" never stops
+ * anyone serving: scheduling shows training, it doesn't block on it (decided 2026-10-31).
  */
 import { z } from "zod";
 
@@ -42,9 +43,10 @@ export function passRuleLabel(rule: PassRule): string {
   return share ? `To pass: ${share}` : "Every assessment passes";
 }
 
+/** "Not yet" rather than a fail: people learn at different paces (G, 2026-10-31). */
 export const OUTCOME_LABELS: Record<PracticalOutcome, string> = {
   pass: "Pass",
-  further_practice: "Further practice required",
+  further_practice: "Not yet",
 };
 
 export type AssessmentSummary = {
@@ -59,7 +61,7 @@ export type PracticalState = "not_assessed" | "requested" | "further_practice" |
 export const PRACTICAL_STATE_LABELS: Record<PracticalState, string> = {
   not_assessed: "Not assessed yet",
   requested: "Assessment requested",
-  further_practice: "Further practice required",
+  further_practice: "Not yet, keep practising",
   passed: "Passed",
 };
 
@@ -80,7 +82,7 @@ export function practicalState(
   return valid.length > 0 ? "further_practice" : "not_assessed";
 }
 
-/** When the next assessment may happen after Further Practice Required. Null: any time. */
+/** When the next assessment may happen after Not yet. Null: any time. */
 export function nextAssessmentAt(
   lastFurtherPracticeAt: string | null,
   retryWaitDays: number,

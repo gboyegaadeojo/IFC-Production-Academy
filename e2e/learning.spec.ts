@@ -308,7 +308,7 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
     .selectOption({ label: "Sample role (seed data) (Camera Operations)" });
   await scheduler.getByRole("button", { name: "Add position" }).click();
   await scheduler.getByText("Schedule someone").click();
-  await scheduler.getByLabel("Volunteer").selectOption({ label: `${name} (approved)` });
+  await scheduler.getByLabel("Volunteer").selectOption({ label: `${name} (trained)` });
   await scheduler.getByRole("button", { name: "Schedule", exact: true }).click();
   // The position now shows who's in it and the check result.
   const position = scheduler
@@ -316,7 +316,7 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
     .getByRole("listitem")
     .filter({ hasText: name });
   await expect(position.getByText("Waiting for a reply")).toBeVisible();
-  await expect(position.getByText("Approved to serve")).toBeVisible();
+  await expect(position.getByText("Trained", { exact: true })).toBeVisible();
   await schedulerContext.close();
 
   await volunteer.goto("/schedule");
