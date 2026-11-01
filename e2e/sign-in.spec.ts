@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 test("a signed-out visitor is sent to sign-in", async ({ page }) => {
   await page.goto("/home");
   await expect(page).toHaveURL(/\/sign-in/);
-  await expect(page.getByRole("heading", { name: "Sign in to keep learning" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Built to serve/ })).toBeVisible();
 });
 
 test("the sign-in page offers an email link only", async ({ page }) => {
