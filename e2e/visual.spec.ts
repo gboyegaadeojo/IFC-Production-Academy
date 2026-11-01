@@ -87,7 +87,7 @@ for (const viewport of VIEWPORTS) {
       await expect(drawer).toBeVisible();
       // Wait for the opening transition to finish before capturing.
       await expect(drawer).toHaveCSS("opacity", "1");
-      await expect(drawer.getByRole("button", { name: /Administration/ })).toBeVisible();
+      await expect(drawer.getByRole("link", { name: "Back to Academy" })).toBeVisible();
       // Focus moves into the drawer, to its first control.
       await expect(drawer.getByRole("button", { name: "Close admin menu" })).toBeFocused();
       await page.screenshot({ path: `${DIR}/admin-drawer-${viewport.name}.png` });

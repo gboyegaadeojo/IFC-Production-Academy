@@ -67,6 +67,9 @@
   --dept-violet: #b07cff;
   --dept-coral: #ff6b57;
   --dept-amber: #ffc23d;
+  --dept-pink: #ff7eb6;
+  --dept-cyan: #3fd0e0;
+  --dept-lime: #a3d94a;
 
   /*
    * Paper: printed documents such as certificates (decision 8). Light so they print without
@@ -136,6 +139,9 @@
   --dept-violet: #7a3fd6;
   --dept-coral: #b8361f;
   --dept-amber: #8f5b00;
+  --dept-pink: #b8306e;
+  --dept-cyan: #0b6f80;
+  --dept-lime: #4b7612;
 }
 
 /* The IFC mark is white artwork: dark on a light theme. */
@@ -218,6 +224,9 @@
   --color-dept-violet: var(--dept-violet);
   --color-dept-coral: var(--dept-coral);
   --color-dept-amber: var(--dept-amber);
+  --color-dept-pink: var(--dept-pink);
+  --color-dept-cyan: var(--dept-cyan);
+  --color-dept-lime: var(--dept-lime);
   --color-paper: var(--paper);
   --color-paper-ink: var(--paper-ink);
   --color-paper-muted: var(--paper-muted);

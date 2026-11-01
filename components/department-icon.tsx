@@ -39,7 +39,59 @@ const paths: Record<string, ReactNode> = {
       <path d="M12 3a6 6 0 00-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0012 3z" />
     </>
   ),
+  livestream: (
+    <>
+      <circle cx="12" cy="12" r="2" />
+      <path d="M8.5 15.5a5 5 0 010-7M15.5 8.5a5 5 0 010 7M5.6 18.4a9 9 0 010-12.8M18.4 5.6a9 9 0 010 12.8" />
+    </>
+  ),
+  music: (
+    <>
+      <path d="M9 18V5l11-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="17" cy="16" r="3" />
+    </>
+  ),
+  photography: (
+    <>
+      <path d="M4 8h3l2-3h6l2 3h3a1 1 0 011 1v9a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </>
+  ),
+  social: (
+    <>
+      <path d="M3 11v2a1 1 0 001 1h3l5 4V6L7 10H4a1 1 0 00-1 1z" />
+      <path d="M16 9a4 4 0 010 6M19 6.5a8 8 0 010 11" />
+    </>
+  ),
+  stage: (
+    <>
+      <path d="M3 20h18M5 20v-4h14v4" />
+      <path d="M8 4l-2 8M16 4l2 8M12 4v8" />
+    </>
+  ),
+  editing: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 9h18M7 5v4M12 5v4M17 5v4M10 12.5v4l3.5-2z" />
+    </>
+  ),
 };
+
+/** Icons a department can pick when it's created, with words for the picker. */
+export const DEPARTMENT_ICON_OPTIONS: { key: string; label: string }[] = [
+  { key: "camera", label: "Camera" },
+  { key: "audio", label: "Sound desk" },
+  { key: "graphics", label: "Screens and slides" },
+  { key: "directing", label: "Headset" },
+  { key: "lighting", label: "Lighting" },
+  { key: "livestream", label: "Livestream" },
+  { key: "music", label: "Music" },
+  { key: "photography", label: "Photography" },
+  { key: "social", label: "Announcements" },
+  { key: "stage", label: "Stage" },
+  { key: "editing", label: "Video editing" },
+];
 
 const fallback = (
   <>

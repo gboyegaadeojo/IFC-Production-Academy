@@ -31,6 +31,7 @@ const ENROLMENT_LABELS: Record<EnrolmentMode, string> = {
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
 import { DepartmentForm } from "./department-form";
+import { NewDepartmentForm } from "./new-department-form";
 
 export const metadata: Metadata = { title: "Departments" };
 
@@ -53,8 +54,21 @@ async function DepartmentsContent() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Departments"
-        description="Open, pause, or rename a department. Changes take effect straight away and are recorded in the audit log. Nobody's training history changes."
+        description="Add, open, pause, or rename a department. Changes take effect straight away and are recorded in the audit log. Nobody's training history changes."
       />
+      <details className="group max-w-2xl rounded-card border border-border bg-surface p-4">
+        <summary className="inline-flex min-h-control cursor-pointer list-none items-center rounded-button bg-accent px-4 text-small font-medium text-on-accent hover:brightness-110 [&::-webkit-details-marker]:hidden">
+          + Add a department
+        </summary>
+        <div className="mt-4 flex flex-col gap-4">
+          <p className="text-small text-text-secondary">
+            It gets the three levels straight away (Foundations, Proficiency, Advanced and
+            Leadership). Then set up its courses in Curriculum, its positions in Competencies and
+            roles, its checklist, and its onboarding pathway, as for every other department.
+          </p>
+          <NewDepartmentForm />
+        </div>
+      </details>
       <div className="relative overflow-x-auto rounded-card border border-border">
         <table className="w-full min-w-[40rem] text-left text-small">
           <caption className="sr-only">Departments in display order</caption>
