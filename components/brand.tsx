@@ -31,7 +31,7 @@ export function Wordmark() {
   return (
     <span className="inline-flex items-center gap-2.5 whitespace-nowrap">
       <IfcMark className="mark-on-theme" />{" "}
-      <span className="text-body font-medium tracking-tight text-text">
+      <span className="text-body font-semibold tracking-tight text-text">
         Production <span className="text-text-secondary">Academy</span>
       </span>
     </span>

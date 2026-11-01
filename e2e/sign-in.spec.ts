@@ -71,18 +71,18 @@ test("the Academy is installable: manifest, icons, and theme", async ({ page, re
 });
 
 test("each device chooses Dark, Light or System, and keeps it", async ({ page }) => {
-  // Checklist app US-08a: Dark by default.
+  // Checklist app US-08a: Light by default (new look, 2026-11-01).
   await page.goto("/sign-in");
   const html = page.locator("html");
-  await expect(html).toHaveAttribute("data-theme", "dark");
+  await expect(html).toHaveAttribute("data-theme", "light");
   const appearance = page.getByRole("group", { name: "Appearance" });
-  await expect(appearance.getByRole("radio", { name: "Dark" })).toBeChecked();
-
-  await appearance.getByTitle("Light").click();
-  await expect(html).toHaveAttribute("data-theme", "light");
-  await page.reload();
-  await expect(html).toHaveAttribute("data-theme", "light");
   await expect(appearance.getByRole("radio", { name: "Light" })).toBeChecked();
+
+  await appearance.getByTitle("Dark").click();
+  await expect(html).toHaveAttribute("data-theme", "dark");
+  await page.reload();
+  await expect(html).toHaveAttribute("data-theme", "dark");
+  await expect(appearance.getByRole("radio", { name: "Dark" })).toBeChecked();
 
   // System follows the device, before the first paint and when it changes.
   await page.emulateMedia({ colorScheme: "light" });

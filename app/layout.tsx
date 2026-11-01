@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import { getAppearance } from "@/lib/data/appearance";
 import {
   colorScheme,
@@ -9,15 +9,15 @@ import {
 } from "@/lib/domain/appearance";
 import "./globals.css";
 
-// A grotesk with a technical, broadcast-equipment feel (SPEC §7), and its mono for small labels.
-const plexSans = IBM_Plex_Sans({
-  variable: "--font-plex-sans",
+// Inter for everything people read, and a mono for small labels (new look, approved 2026-11-01).
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
   weight: ["400", "500"],
   display: "swap",
@@ -38,11 +38,11 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, title: "IFC Academy", statusBarStyle: "black-translucent" },
 };
 
-// Each device's appearance (checklist app US-08a): Dark by default, Light, or System.
+// Each device's appearance (checklist app US-08a): Light by default, Dark, or System.
 export async function generateViewport(): Promise<Viewport> {
   const appearance = await getAppearance();
   return {
-    themeColor: appearance === "system" ? THEME_COLORS.dark : THEME_COLORS[appearance],
+    themeColor: appearance === "system" ? THEME_COLORS.light : THEME_COLORS[appearance],
     colorScheme: colorScheme(appearance),
   };
 }
@@ -56,7 +56,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-appearance={appearance}
       data-theme={initialTheme(appearance)}
       suppressHydrationWarning
-      className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: SYSTEM_THEME_SCRIPT }} />

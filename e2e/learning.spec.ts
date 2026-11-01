@@ -132,7 +132,7 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   const leader = await leaderContext.newPage();
   await signInByEmail(leader, "casey.leader@example.com");
   await openAccountMenu(leader);
-  await leader.getByRole("link", { name: "Admin" }).click();
+  await leader.getByRole("link", { name: "Admin" }).first().click();
   await leader.goto("/admin/members");
   await leader
     .getByRole("listitem")
