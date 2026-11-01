@@ -38,7 +38,7 @@ test("a new volunteer signs in, sees the departments, and requests to join", asy
   await camera.getByRole("button", { name: "Request to join Camera Operations" }).click();
   await expect(camera.getByText("Request sent")).toBeVisible();
   // Asking to join never makes someone a member, let alone approved to serve.
-  await expect(camera.getByText("You're a member")).toHaveCount(0);
+  await expect(camera.getByText("Member", { exact: true })).toHaveCount(0);
 
   await page.reload();
   await expect(
