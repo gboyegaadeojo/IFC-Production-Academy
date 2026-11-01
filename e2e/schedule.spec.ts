@@ -24,7 +24,7 @@ test("a scheduler sets up a service type, makes its dates, and sees them in the 
   await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
 
   await page
-    .getByLabel("Position")
+    .getByLabel("Position", { exact: true })
     .selectOption({ label: "Sample role (seed data) (Camera Operations)" });
   await page.getByRole("button", { name: "Add position" }).click();
   await expect(

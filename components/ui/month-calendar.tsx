@@ -55,9 +55,7 @@ export function MonthCalendar({
           <CalendarNav href={monthHref(shiftMonth(month, -1))} label="Previous month">
             ‹
           </CalendarNav>
-          <CalendarNav href={monthHref(today.slice(0, 7))} label="This month">
-            Today
-          </CalendarNav>
+          <CalendarNav href={monthHref(today.slice(0, 7))}>Today</CalendarNav>
           <CalendarNav href={monthHref(shiftMonth(month, 1))} label="Next month">
             ›
           </CalendarNav>
@@ -147,7 +145,8 @@ function CalendarNav({
   children,
 }: {
   href: string;
-  label: string;
+  /** Only for symbols; visible words name the link themselves. */
+  label?: string;
   children: React.ReactNode;
 }) {
   return (
