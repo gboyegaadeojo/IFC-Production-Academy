@@ -317,7 +317,7 @@ grant select, insert on public.onboarding_notes to authenticated;
 
 -- The live steps of a pathway, in order: stage order, then step order.
 create function private.onboarding_ordered_steps(p_pathway_id uuid)
-returns table (step_id uuid, position integer)
+returns table (step_id uuid, step_order integer)
 language sql
 stable
 security definer
@@ -417,7 +417,7 @@ begin
        or not exists (select 1 from private.onboarding_ordered_steps(v_entry.pathway_id) o
                       where o.step_id = v_entry.current_step_id) then
       select o.step_id into v_next from private.onboarding_ordered_steps(v_entry.pathway_id) o
-      order by o.position limit 1;
+      order by o.step_order limit 1;
       if v_entry.current_step_id is not null then
         -- The removed step's place: continue with whatever now follows it in order.
         select o.step_id into v_next from private.onboarding_ordered_steps(v_entry.pathway_id) o
@@ -426,7 +426,7 @@ begin
         join public.onboarding_stages so on so.id = old.stage_id
         join public.onboarding_stages sn on sn.id = s.stage_id
         where (sn.sort_order, s.sort_order) > (so.sort_order, old.sort_order)
-        order by o.position limit 1;
+        order by o.step_order limit 1;
       end if;
       if v_next is null then
         update public.onboarding_entries set status = 'finished', finished_at = now(), current_step_id = null
@@ -562,7 +562,7 @@ begin
     -- On to the next step in order, or finish.
     select o2.step_id into v_next
     from private.onboarding_ordered_steps(v_entry.pathway_id) o1
-    join private.onboarding_ordered_steps(v_entry.pathway_id) o2 on o2.position = o1.position + 1
+    join private.onboarding_ordered_steps(v_entry.pathway_id) o2 on o2.step_order = o1.step_order + 1
     where o1.step_id = v_step.id;
     if v_next is null then
       update public.onboarding_entries set status = 'finished', finished_at = now(), current_step_id = null
@@ -946,8 +946,8 @@ stable
 security definer
 set search_path = ''
 as $$
-  select e.id, p.name, e.status, s.id, s.title, s.kind, sg.name, sg.timing, o.position,
-         (select o2.position from private.onboarding_ordered_steps(e.pathway_id) o2 where o2.step_id = e.current_step_id),
+  select e.id, p.name, e.status, s.id, s.title, s.kind, sg.name, sg.timing, o.step_order,
+         (select o2.step_order from private.onboarding_ordered_steps(e.pathway_id) o2 where o2.step_id = e.current_step_id),
          (select pr.display_name from public.onboarding_tasks t join public.profiles pr on pr.id = t.assignee_id
            where t.entry_id = e.id and t.done_at is null order by t.created_at desc limit 1),
          e.chosen_department_id
@@ -959,7 +959,7 @@ as $$
   join public.onboarding_stages sg on sg.id = s.stage_id
   where e.status in ('active', 'finished') and s.kind not in ('trigger_form', 'trigger_manual', 'trigger_join', 'trigger_pco')
     and private.is_active_user()
-  order by e.started_at, o.position;
+  order by e.started_at, o.step_order;
 $$;
 revoke all on function public.my_onboarding() from public, anon;
 grant execute on function public.my_onboarding() to authenticated;
