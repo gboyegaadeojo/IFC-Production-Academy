@@ -44,6 +44,12 @@ export type AdminSectionGroup = (typeof ADMIN_GROUPS)[number];
 export type AdminGroupIcon =
   "dashboard" | "list-checks" | "calendar-range" | "graduation-cap" | "users" | "settings";
 
+/**
+ * Whether the admin sidebar is icons only on this device ("collapsed" or "expanded"). Here, not
+ * in the client component, so the server layout can read it.
+ */
+export const ADMIN_SIDEBAR_COOKIE = "admin_sidebar";
+
 /** Each group's icon in the sidebar (components/ui/icons.tsx). */
 export const ADMIN_GROUP_ICONS: Record<AdminSectionGroup, AdminGroupIcon> = {
   Overview: "dashboard",

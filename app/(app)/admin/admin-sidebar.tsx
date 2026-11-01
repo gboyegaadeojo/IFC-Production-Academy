@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/icons";
 import {
   ADMIN_GROUP_ICONS,
+  ADMIN_SIDEBAR_COOKIE,
   isCurrentSection,
   type AdminGroupIcon,
   type AdminSection,
@@ -52,7 +53,6 @@ const GROUP_ICONS: Record<AdminGroupIcon, (props: { className?: string }) => Rea
 
 /** Remembered on this device: which groups are open, and whether the sidebar is icons only. */
 const OPEN_GROUPS_KEY = "admin-nav-open";
-export const SIDEBAR_COOKIE = "admin_sidebar";
 
 /** The most specific match, so /admin/checklists/activity is the Activity log, not Task lists. */
 export function currentSection(groups: AdminNavGroup[], pathname: string): AdminSection | null {
@@ -182,7 +182,7 @@ export function AdminSidebar({
     const next = !collapsed;
     setCollapsed(next);
     setFlyout(null);
-    document.cookie = `${SIDEBAR_COOKIE}=${next ? "collapsed" : "expanded"}; path=/admin; max-age=${60 * 60 * 24 * 400}; samesite=lax`;
+    document.cookie = `${ADMIN_SIDEBAR_COOKIE}=${next ? "collapsed" : "expanded"}; path=/admin; max-age=${60 * 60 * 24 * 400}; samesite=lax`;
   };
 
   const compact = collapsed && variant === "rail";

@@ -8,14 +8,9 @@ import { getAdminNavCounts } from "@/lib/data/admin/overview";
 import { getAppearance } from "@/lib/data/appearance";
 import { getMyCapabilities } from "@/lib/data/capabilities";
 import { getUnreadCount } from "@/lib/data/notifications";
-import { adminNavigation } from "@/lib/domain/admin";
+import { ADMIN_SIDEBAR_COOKIE, adminNavigation } from "@/lib/domain/admin";
 import { initials } from "@/lib/domain/people";
-import {
-  AdminCurrentLabel,
-  AdminSidebar,
-  SIDEBAR_COOKIE,
-  type AdminNavGroup,
-} from "./admin-sidebar";
+import { AdminCurrentLabel, AdminSidebar, type AdminNavGroup } from "./admin-sidebar";
 
 export const metadata: Metadata = { title: { template: "%s · Admin", default: "Admin" } };
 
@@ -68,7 +63,7 @@ async function Navigation() {
     appearance,
     signOut: signOutAction,
   };
-  const collapsed = cookieStore.get(SIDEBAR_COOKIE)?.value === "collapsed";
+  const collapsed = cookieStore.get(ADMIN_SIDEBAR_COOKIE)?.value === "collapsed";
 
   return (
     <>
