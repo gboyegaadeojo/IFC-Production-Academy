@@ -3,6 +3,8 @@ import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import {
   groupServiceChecklists,
+  groupServiceRecord,
+  type RecordDepartment,
   toChecklistError,
   type ChecklistError,
   type ParsedSection,
@@ -576,4 +578,54 @@ export async function getRecentServices(
     throw new Error("Could not load services", { cause: error.code });
   }
   return data.map((row) => ({ id: row.id, title: row.title, startsAt: row.starts_at }));
+}
+
+export type HistoryService = {
+  id: string;
+  title: string;
+  startsAt: string;
+  hasRecord: boolean;
+  done: number;
+  total: number;
+};
+
+/** Past and current services with "X of Y done" (checklist app US-07b). Managers only. */
+export async function getChecklistHistory(limit = 30): Promise<HistoryService[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("checklist_history", { p_limit: limit });
+  if (error) {
+    throw new Error("Could not load service history", { cause: error.code });
+  }
+  return data.map((row) => ({
+    id: row.event_id,
+    title: row.title,
+    startsAt: row.starts_at,
+    hasRecord: row.has_record,
+    done: row.done,
+    total: row.total,
+  }));
+}
+
+/** One service's record by department. */
+export async function getServiceRecord(
+  eventId: string,
+): Promise<{ done: number; total: number; departments: RecordDepartment[] }> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("service_checklist_record", { p_event_id: eventId });
+  if (error) {
+    throw new Error("Could not load the service record", { cause: error.code });
+  }
+  return groupServiceRecord(
+    data.map((row) => ({
+      checklistId: row.checklist_id,
+      checklistName: row.checklist_name,
+      sectionName: row.section_name,
+      itemId: row.item_id,
+      itemText: row.item_text,
+      checkedText: row.checked_text,
+      checkedByName: row.checked_by_name,
+      checkedAt: row.checked_at,
+      removedAt: row.removed_at,
+    })),
+  );
 }

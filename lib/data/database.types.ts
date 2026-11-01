@@ -728,6 +728,7 @@ export type Database = {
           created_by: string | null;
           service_type_id: string | null;
           signups_open: boolean;
+          checklist_recorded_at: string | null;
           source: string;
           external_id: string | null;
         } & Timestamps;
@@ -1346,6 +1347,32 @@ export type Database = {
           checked_at: string | null;
         }[];
       };
+      checklist_history: {
+        Args: { p_limit: number };
+        Returns: {
+          event_id: string;
+          title: string;
+          starts_at: string;
+          has_record: boolean;
+          done: number;
+          total: number;
+        }[];
+      };
+      service_checklist_record: {
+        Args: { p_event_id: string };
+        Returns: {
+          checklist_id: string;
+          checklist_name: string;
+          section_name: string;
+          item_id: string;
+          item_text: string;
+          checked_text: string | null;
+          checked_by_name: string | null;
+          checked_at: string | null;
+          removed_at: string | null;
+        }[];
+      };
+      freeze_service_checklist_records: { Args: never; Returns: number };
       checklist_tick: {
         Args: {
           p_event_id: string;

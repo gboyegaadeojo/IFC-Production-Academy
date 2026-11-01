@@ -71,4 +71,10 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await expect(log.getByText(first).first()).toBeVisible();
   await page.getByRole("link", { name: "Checklist edits" }).click();
   await expect(log.getByText(name).first()).toBeVisible();
+
+  // The service's record: what was done and what wasn't, per department.
+  await page.goto(`/admin/checklists/history/${eventId}`);
+  const department = page.getByRole("region", { name: new RegExp(`^${name}`) });
+  await expect(department.getByText("1 of 2 done")).toBeVisible();
+  await expect(department.getByText(`Check the batteries ${stamp}`)).toBeVisible();
 });

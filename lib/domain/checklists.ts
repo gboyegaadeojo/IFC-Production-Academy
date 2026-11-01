@@ -211,3 +211,92 @@ export function activityChange(
   }
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// Service history (checklist app US-07b)
+// ---------------------------------------------------------------------------
+
+export type RecordRow = {
+  checklistId: string;
+  checklistName: string;
+  sectionName: string;
+  itemId: string;
+  itemText: string;
+  checkedText: string | null;
+  checkedByName: string | null;
+  checkedAt: string | null;
+  removedAt: string | null;
+};
+
+export type RecordTask = {
+  id: string;
+  text: string;
+  /** The text it was ticked under, when that differs from the record. */
+  checkedUnder: string | null;
+  section: string;
+  checkedByName: string | null;
+  checkedAt: string | null;
+  removedAt: string | null;
+};
+
+export type RecordDepartment = {
+  id: string;
+  name: string;
+  done: number;
+  total: number;
+  notDone: RecordTask[];
+  doneTasks: RecordTask[];
+  removed: RecordTask[];
+};
+
+/**
+ * A service's record by department: "X of Y done", what wasn't ticked, what was, and what was
+ * removed during the service (not counted).
+ */
+export function groupServiceRecord(rows: readonly RecordRow[]): {
+  done: number;
+  total: number;
+  departments: RecordDepartment[];
+} {
+  const departments: RecordDepartment[] = [];
+  for (const row of rows) {
+    let department = departments.find((d) => d.id === row.checklistId);
+    if (!department) {
+      department = {
+        id: row.checklistId,
+        name: row.checklistName,
+        done: 0,
+        total: 0,
+        notDone: [],
+        doneTasks: [],
+        removed: [],
+      };
+      departments.push(department);
+    }
+    const task: RecordTask = {
+      id: row.itemId,
+      text: row.itemText,
+      checkedUnder: row.checkedText && row.checkedText !== row.itemText ? row.checkedText : null,
+      section: row.sectionName,
+      checkedByName: row.checkedByName,
+      checkedAt: row.checkedAt,
+      removedAt: row.removedAt,
+    };
+    if (row.removedAt) {
+      department.removed.push(task);
+      continue;
+    }
+    department.total += 1;
+    if (row.checkedAt) {
+      department.done += 1;
+      department.doneTasks.push(task);
+    } else {
+      department.notDone.push(task);
+    }
+  }
+  return {
+    done: departments.reduce((sum, d) => sum + d.done, 0),
+    total: departments.reduce((sum, d) => sum + d.total, 0),
+    departments,
+  };
+}
