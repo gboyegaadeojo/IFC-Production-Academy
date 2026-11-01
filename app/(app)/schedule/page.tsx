@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -166,7 +167,13 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                   </span>
                 </div>
                 {assignment.status !== "declined" ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Link
+                      href={`/serve/${assignment.event.id}`}
+                      className="flex min-h-control items-center px-1 text-small font-medium text-accent-light underline-offset-4 hover:underline"
+                    >
+                      Checklist<span className="sr-only"> for {assignment.event.title}</span>
+                    </Link>
                     {assignment.status === "pending" ? (
                       <ActionForm
                         action={respondAction}
@@ -299,6 +306,12 @@ async function DayPanel({
                 {ASSIGNMENT_STATUS_LABELS[assignment.status]}
               </StatusBadge>
             </p>
+            <Link
+              href={`/serve/${assignment.event.id}`}
+              className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+            >
+              Open the pre-service checklist
+            </Link>
             {(teams[index] ?? []).length > 0 ? (
               <div className="flex flex-col gap-1">
                 <h3 className="text-small font-medium text-text-muted">Serving with you</h3>

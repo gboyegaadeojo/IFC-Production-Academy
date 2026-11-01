@@ -14,7 +14,7 @@ export type TeamPerson = {
   trainedRoleIds: string[];
 };
 
-export type Position = { id: string; name: string };
+export type Position = { id: string; name: string; leadsService?: boolean };
 
 /** The people on one position's team, by name. */
 export function positionTeam(people: readonly TeamPerson[], roleId: string): TeamPerson[] {

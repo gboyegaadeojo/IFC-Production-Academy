@@ -16,6 +16,7 @@ export const CAPABILITIES = [
   "schedule.manage",
   "schedule.override",
   "team.manage",
+  "checklist.manage",
   "mentoring.assign",
   "mentoring.feedback",
   "mentoring.private_notes",

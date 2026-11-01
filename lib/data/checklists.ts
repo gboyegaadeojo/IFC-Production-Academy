@@ -1,0 +1,442 @@
+import "server-only";
+import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
+import {
+  groupServiceChecklists,
+  toChecklistError,
+  type ChecklistError,
+  type ParsedSection,
+  type ServiceChecklist,
+} from "@/lib/domain/checklists";
+
+// Pre-service checklists (decision record 9, stage 2). Row-level security and the database
+// functions decide who may edit, tick, and reset.
+
+export type ChecklistResult<T = undefined> =
+  { ok: true; value: T } | { ok: false; error: ChecklistError };
+
+function fail(error: { code?: string; message?: string }): { ok: false; error: ChecklistError } {
+  return { ok: false, error: toChecklistError(error) };
+}
+const ok = { ok: true as const, value: undefined };
+
+// ---------------------------------------------------------------------------
+// Editing
+// ---------------------------------------------------------------------------
+
+export type ChecklistSummary = {
+  id: string;
+  name: string;
+  departmentId: string;
+  departmentName: string;
+  positionNames: string[];
+  items: number;
+};
+
+/** Checklists in departments this person manages checklists for. */
+export async function listChecklists(
+  grants: readonly CapabilityGrant[],
+): Promise<ChecklistSummary[]> {
+  const supabase = await createSupabaseServerClient();
+  const [checklists, departments, positions, roles, items] = await Promise.all([
+    supabase.from("checklists").select("id, name, department_id").is("archived_at", null),
+    supabase.from("departments").select("id, name, sort_order").order("sort_order"),
+    supabase.from("checklist_positions").select("checklist_id, role_id"),
+    supabase.from("serving_roles").select("id, name"),
+    supabase.from("checklist_items").select("checklist_id").is("archived_at", null),
+  ]);
+  if (checklists.error || departments.error || positions.error || roles.error || items.error) {
+    throw new Error("Could not load checklists", {
+      cause: (
+        checklists.error ??
+        departments.error ??
+        positions.error ??
+        roles.error ??
+        items.error
+      )?.code,
+    });
+  }
+  return departments.data.flatMap((department) =>
+    checklists.data
+      .filter(
+        (c) =>
+          c.department_id === department.id &&
+          hasCapability(grants, "checklist.manage", department.id),
+      )
+      .toSorted((a, b) => a.name.localeCompare(b.name))
+      .map((c) => ({
+        id: c.id,
+        name: c.name,
+        departmentId: department.id,
+        departmentName: department.name,
+        positionNames: positions.data
+          .filter((p) => p.checklist_id === c.id)
+          .map((p) => roles.data.find((r) => r.id === p.role_id)?.name ?? "A position")
+          .toSorted(),
+        items: items.data.filter((i) => i.checklist_id === c.id).length,
+      })),
+  );
+}
+
+export type ChecklistDetail = {
+  id: string;
+  name: string;
+  departmentId: string;
+  departmentName: string;
+  positionIds: string[];
+  sections: {
+    id: string;
+    name: string;
+    sortOrder: number;
+    items: { id: string; text: string; sortOrder: number }[];
+  }[];
+};
+
+export async function getChecklist(id: string): Promise<ChecklistDetail | null> {
+  const supabase = await createSupabaseServerClient();
+  const checklist = await supabase
+    .from("checklists")
+    .select("id, name, department_id")
+    .eq("id", id)
+    .is("archived_at", null)
+    .maybeSingle();
+  if (checklist.error) {
+    throw new Error("Could not load the checklist", { cause: checklist.error.code });
+  }
+  if (!checklist.data) {
+    return null;
+  }
+  const [department, positions, sections, items] = await Promise.all([
+    supabase.from("departments").select("name").eq("id", checklist.data.department_id).single(),
+    supabase.from("checklist_positions").select("role_id").eq("checklist_id", id),
+    supabase
+      .from("checklist_sections")
+      .select("id, name, sort_order")
+      .eq("checklist_id", id)
+      .is("archived_at", null)
+      .order("sort_order"),
+    supabase
+      .from("checklist_items")
+      .select("id, section_id, text, sort_order")
+      .eq("checklist_id", id)
+      .is("archived_at", null)
+      .order("sort_order"),
+  ]);
+  if (department.error || positions.error || sections.error || items.error) {
+    throw new Error("Could not load the checklist", {
+      cause: (department.error ?? positions.error ?? sections.error ?? items.error)?.code,
+    });
+  }
+  return {
+    id: checklist.data.id,
+    name: checklist.data.name,
+    departmentId: checklist.data.department_id,
+    departmentName: department.data.name,
+    positionIds: positions.data.map((p) => p.role_id),
+    sections: sections.data.map((section) => ({
+      id: section.id,
+      name: section.name,
+      sortOrder: section.sort_order,
+      items: items.data
+        .filter((item) => item.section_id === section.id)
+        .map((item) => ({ id: item.id, text: item.text, sortOrder: item.sort_order })),
+    })),
+  };
+}
+
+/** Positions in a department, for linking a checklist to the people who use it. */
+export async function getDepartmentPositions(
+  departmentId: string,
+): Promise<{ id: string; name: string; leadsService: boolean }[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("serving_roles")
+    .select("id, name, leads_service")
+    .eq("department_id", departmentId)
+    .is("archived_at", null)
+    .order("name");
+  if (error) {
+    throw new Error("Could not load positions", { cause: error.code });
+  }
+  return data.map((r) => ({ id: r.id, name: r.name, leadsService: r.leads_service }));
+}
+
+export async function createChecklist(
+  departmentId: string,
+  name: string,
+): Promise<ChecklistResult<string>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("checklists")
+    .insert({ department_id: departmentId, name })
+    .select("id")
+    .single();
+  return error ? fail(error) : { ok: true, value: data.id };
+}
+
+export async function renameChecklist(id: string, name: string): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("checklists").update({ name }).eq("id", id);
+  return error ? fail(error) : ok;
+}
+
+export async function archiveChecklist(id: string): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("checklists")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", id);
+  return error ? fail(error) : ok;
+}
+
+export async function setChecklistPositions(
+  id: string,
+  roleIds: string[],
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_checklist_positions", {
+    p_checklist_id: id,
+    p_role_ids: roleIds,
+  });
+  return error ? fail(error) : ok;
+}
+
+async function nextSectionOrder(checklistId: string): Promise<number> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("checklist_sections")
+    .select("sort_order")
+    .eq("checklist_id", checklistId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+  return (data?.[0]?.sort_order ?? 0) + 10;
+}
+
+async function nextItemOrder(sectionId: string): Promise<number> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("checklist_items")
+    .select("sort_order")
+    .eq("section_id", sectionId)
+    .order("sort_order", { ascending: false })
+    .limit(1);
+  return (data?.[0]?.sort_order ?? 0) + 10;
+}
+
+export async function addSection(checklistId: string, name: string): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("checklist_sections").insert({
+    checklist_id: checklistId,
+    name,
+    sort_order: await nextSectionOrder(checklistId),
+  });
+  return error ? fail(error) : ok;
+}
+
+export async function updateSection(
+  id: string,
+  change: { name?: string; archived?: boolean },
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("checklist_sections")
+    .update({
+      ...(change.name ? { name: change.name } : {}),
+      ...(change.archived ? { archived_at: new Date().toISOString() } : {}),
+    })
+    .eq("id", id);
+  return error ? fail(error) : ok;
+}
+
+export async function addItem(sectionId: string, text: string): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.from("checklist_items").insert({
+    section_id: sectionId,
+    text,
+    sort_order: await nextItemOrder(sectionId),
+  });
+  return error ? fail(error) : ok;
+}
+
+export async function updateItem(
+  id: string,
+  change: { text?: string; archived?: boolean },
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("checklist_items")
+    .update({
+      ...(change.text ? { text: change.text } : {}),
+      ...(change.archived ? { archived_at: new Date().toISOString() } : {}),
+    })
+    .eq("id", id);
+  return error ? fail(error) : ok;
+}
+
+/** Swaps the order of two sections or two items, for moving one up or down. */
+export async function swapOrder(
+  table: "checklist_sections" | "checklist_items",
+  a: { id: string; sortOrder: number },
+  b: { id: string; sortOrder: number },
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const first = await supabase.from(table).update({ sort_order: b.sortOrder }).eq("id", a.id);
+  if (first.error) {
+    return fail(first.error);
+  }
+  const second = await supabase.from(table).update({ sort_order: a.sortOrder }).eq("id", b.id);
+  return second.error ? fail(second.error) : ok;
+}
+
+/** Adds pasted sections and items after what's there. */
+export async function importSections(
+  checklistId: string,
+  sections: readonly ParsedSection[],
+): Promise<ChecklistResult<number>> {
+  const supabase = await createSupabaseServerClient();
+  let order = await nextSectionOrder(checklistId);
+  let added = 0;
+  for (const section of sections) {
+    const created = await supabase
+      .from("checklist_sections")
+      .insert({ checklist_id: checklistId, name: section.name, sort_order: order })
+      .select("id")
+      .single();
+    if (created.error) {
+      return fail(created.error);
+    }
+    order += 10;
+    const items = await supabase.from("checklist_items").insert(
+      section.items.map((text, index) => ({
+        section_id: created.data.id,
+        text,
+        sort_order: (index + 1) * 10,
+      })),
+    );
+    if (items.error) {
+      return fail(items.error);
+    }
+    added += section.items.length;
+  }
+  return { ok: true, value: added };
+}
+
+export async function setLeadsService(roleId: string, leads: boolean): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_role_leads_service", {
+    p_role_id: roleId,
+    p_leads: leads,
+  });
+  return error ? fail(error) : ok;
+}
+
+// ---------------------------------------------------------------------------
+// Service day
+// ---------------------------------------------------------------------------
+
+export type ServiceChecklistState = {
+  canLead: boolean;
+  canTick: boolean;
+  open: boolean;
+  undoAvailable: boolean;
+};
+
+/** A service's checklists and what this person may do, or null if they can't see them. */
+export async function getServiceChecklists(
+  eventId: string,
+): Promise<{ checklists: ServiceChecklist[]; state: ServiceChecklistState } | null> {
+  const supabase = await createSupabaseServerClient();
+  const [rows, state] = await Promise.all([
+    supabase.rpc("event_checklists", { p_event_id: eventId }),
+    supabase.rpc("service_checklist_state", { p_event_id: eventId }),
+  ]);
+  if (rows.error?.code === "42501" || state.error?.code === "42501") {
+    return null;
+  }
+  if (rows.error || state.error) {
+    throw new Error("Could not load the checklists", {
+      cause: (rows.error ?? state.error)?.code,
+    });
+  }
+  const flags = state.data[0];
+  return {
+    checklists: groupServiceChecklists(
+      rows.data.map((row) => ({
+        checklistId: row.checklist_id,
+        checklistName: row.checklist_name,
+        departmentName: row.department_name,
+        isMine: row.is_mine,
+        sectionId: row.section_id,
+        sectionName: row.section_name,
+        itemId: row.item_id,
+        itemText: row.item_text,
+        checkedByName: row.checked_by_name,
+        checkedAt: row.checked_at,
+      })),
+    ),
+    state: {
+      canLead: flags?.can_lead ?? false,
+      canTick: flags?.can_tick ?? false,
+      open: flags?.open ?? false,
+      undoAvailable: flags?.undo_available ?? false,
+    },
+  };
+}
+
+export async function setChecklistItem(
+  eventId: string,
+  itemId: string,
+  checked: boolean,
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_checklist_item", {
+    p_event_id: eventId,
+    p_item_id: itemId,
+    p_checked: checked,
+  });
+  return error ? fail(error) : ok;
+}
+
+export async function resetServiceChecklists(eventId: string): Promise<ChecklistResult<number>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("reset_service_checklists", { p_event_id: eventId });
+  return error ? fail(error) : { ok: true, value: data };
+}
+
+export async function undoChecklistReset(eventId: string): Promise<ChecklistResult<number>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("undo_checklist_reset", { p_event_id: eventId });
+  return error ? fail(error) : { ok: true, value: data };
+}
+
+export type ServiceHeader = {
+  id: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  location: string;
+  cancelled: boolean;
+};
+
+/** The service itself: services aren't private, so any active user may read them. */
+export async function getServiceHeader(eventId: string): Promise<ServiceHeader | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("events")
+    .select("id, title, starts_at, ends_at, location, cancelled_at")
+    .eq("id", eventId)
+    .maybeSingle();
+  if (error) {
+    throw new Error("Could not load the service", { cause: error.code });
+  }
+  return data
+    ? {
+        id: data.id,
+        title: data.title,
+        startsAt: data.starts_at,
+        endsAt: data.ends_at,
+        location: data.location,
+        cancelled: data.cancelled_at !== null,
+      }
+    : null;
+}

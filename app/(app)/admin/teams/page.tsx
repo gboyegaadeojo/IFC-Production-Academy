@@ -21,7 +21,7 @@ import {
 } from "@/lib/domain/teams";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
-import { addToTeamAction, removeFromTeamAction } from "./actions";
+import { addToTeamAction, removeFromTeamAction, setLeadsAction } from "./actions";
 
 export const metadata: Metadata = { title: "Serving teams" };
 
@@ -165,6 +165,22 @@ function PositionTeam({
           {team.length}
         </span>
       </h2>
+      <div className="flex flex-wrap items-center gap-3 text-small text-text-secondary">
+        <span>
+          {position.leadsService
+            ? "Leads the service: sees every checklist and can reset them."
+            : "Doesn't lead the service."}
+        </span>
+        <ActionForm
+          action={setLeadsAction}
+          submitLabel={position.leadsService ? "Stop leading" : "Make this a leading position"}
+          pendingLabel="Saving…"
+          variant="tertiary"
+          hidden={{ roleId: position.id, leads: position.leadsService ? "false" : "true" }}
+          srLabel={position.name}
+          className="flex"
+        />
+      </div>
       {team.length === 0 ? (
         <p className="text-small text-text-muted">
           Nobody can be scheduled as {position.name} yet.
