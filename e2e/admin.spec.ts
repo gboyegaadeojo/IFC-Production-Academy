@@ -60,9 +60,9 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
 
   // The volunteer is now a member. Membership is not approval to serve.
   await volunteer.reload();
-  await expect(
-    volunteer.getByRole("article", { name: "Audio Engineering" }).getByText("You're a member"),
-  ).toBeVisible();
+  const audio = volunteer.getByRole("article", { name: "Audio Engineering" });
+  await expect(audio.getByText("Member", { exact: true })).toBeVisible();
+  await expect(audio.getByText(/^Approved:/)).toHaveCount(0);
 
   await volunteerContext.close();
   await leaderContext.close();
