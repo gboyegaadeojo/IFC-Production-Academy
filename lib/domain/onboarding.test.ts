@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  cameInByLabel,
   dueLabel,
+  eventLabel,
   dueWithin,
   planStepDrop,
   planStepMove,
@@ -146,5 +148,14 @@ describe("the volunteer's view", () => {
     expect(pathway?.nowNumber).toBe(2);
     expect(pathway?.contactName).toBe("G Adeojo");
     expect(pathway?.choosing).toBe(false);
+  });
+});
+
+describe("history wording", () => {
+  it("says how someone came in and what happened", () => {
+    expect(cameInByLabel("manual")).toBe("a leader adding them");
+    expect(eventLabel("started", "form")).toBe("Came in through the “I want to serve” page");
+    expect(eventLabel("task_assigned", "Alex Example")).toBe("Handed to Alex Example");
+    expect(eventLabel("finished", "")).toBe("Onboarding complete");
   });
 });

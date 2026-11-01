@@ -449,3 +449,49 @@ function markNext(steps: VolunteerStep[]): VolunteerStep[] {
   const now = steps.findIndex((s) => s.state === "now");
   return steps.map((step, i) => (now >= 0 && i === now + 1 ? { ...step, state: "next" } : step));
 }
+
+// ---------------------------------------------------------------------------
+// History, in plain words
+// ---------------------------------------------------------------------------
+
+const CAME_IN_BY: Record<string, string> = {
+  form: "the “I want to serve” page",
+  manual: "a leader adding them",
+  join: "joining the department",
+  branch: "choosing this department",
+  pco_workflow: "a Planning Center workflow",
+};
+
+export function cameInByLabel(way: string): string {
+  return CAME_IN_BY[way] ?? way;
+}
+
+/** One line of someone's onboarding history. Names and step titles only, never notes. */
+export function eventLabel(kind: string, detail: string): string {
+  switch (kind) {
+    case "started":
+      return `Came in through ${cameInByLabel(detail)}`;
+    case "email":
+      return detail;
+    case "notified":
+      return `Leaders told: ${detail}`;
+    case "task_created":
+      return `Follow-up created: ${detail}`;
+    case "task_claimed":
+      return `${detail} took the follow-up`;
+    case "task_assigned":
+      return `Handed to ${detail}`;
+    case "task_done":
+      return `Done: ${detail}`;
+    case "course_done":
+      return `Finished ${detail}`;
+    case "chose_department":
+      return `Chose ${detail}`;
+    case "stopped":
+      return "Stopped";
+    case "finished":
+      return "Onboarding complete";
+    default:
+      return detail || kind;
+  }
+}
