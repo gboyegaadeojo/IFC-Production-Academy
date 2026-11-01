@@ -22,6 +22,7 @@ export const CAPABILITIES = [
   "mentoring.private_notes",
   "report.view",
   "report.export",
+  "onboarding.manage",
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
