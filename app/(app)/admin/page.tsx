@@ -1,16 +1,24 @@
+import type { CSSProperties, ReactNode } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { DepartmentIcon } from "@/components/department-icon";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ChevronRightIcon } from "@/components/ui/icons";
-import { PageHeader } from "@/components/ui/page-header";
-import { getAdminAccess } from "@/lib/data/admin/access";
 import {
-  getAdminOverview,
-  type AdminOverview,
-  type TrainingSummary,
-} from "@/lib/data/admin/overview";
+  ArrowRightIcon,
+  GraduationCapIcon,
+  QuizIcon,
+  UserCheckIcon,
+  UsersIcon,
+} from "@/components/ui/icons";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { getAdminAccess } from "@/lib/data/admin/access";
+import { getAdminOverview, type TrainingSummary } from "@/lib/data/admin/overview";
+import { getCurrentUser } from "@/lib/data/auth";
 import { formatDateTime } from "@/lib/domain/admin";
+import { needsYou, pipelineSegments, type NeedsYouItem } from "@/lib/domain/dashboard";
+import { departmentHueVar } from "@/lib/domain/departments";
 import { AccessDenied } from "./access-denied";
 import { PageSkeleton } from "./page-skeleton";
 
@@ -24,84 +32,60 @@ export default function AdminDashboardPage() {
   );
 }
 
-type QueueItem = { label: string; count: number; detail: string; href: string };
+const NEEDS_ICON: Record<
+  NeedsYouItem["key"],
+  { icon: (p: { className?: string }) => ReactNode; tile: string }
+> = {
+  assessments: { icon: UserCheckIcon, tile: "bg-tile-green text-tile-green-ink" },
+  requests: { icon: UsersIcon, tile: "bg-tile-blue text-tile-blue-ink" },
+  review: { icon: QuizIcon, tile: "bg-tile-violet text-tile-violet-ink" },
+  drafts: { icon: GraduationCapIcon, tile: "bg-tile-orange text-tile-orange-ink" },
+};
 
-/** What needs someone's attention, from real counts only (DESIGN §7.1). */
-function queue(overview: AdminOverview): QueueItem[] {
-  const items: QueueItem[] = [];
-  const awaiting = (overview.training ?? []).reduce((sum, d) => sum + d.awaitingAssessment, 0);
-  if (awaiting > 0) {
-    items.push({
-      label: "Waiting for a practical assessment",
-      count: awaiting,
-      detail:
-        awaiting === 1
-          ? "1 volunteer asked to be assessed"
-          : `${awaiting} volunteers asked to be assessed`,
-      href: "/admin/assessments",
-    });
-  }
-  if (overview.pendingRequests) {
-    items.push({
-      label: "Membership requests",
-      count: overview.pendingRequests,
-      detail:
-        overview.pendingRequests === 1
-          ? "1 person is waiting to join"
-          : `${overview.pendingRequests} people are waiting to join`,
-      href: "/admin/members",
-    });
-  }
-  if (overview.awaitingReview) {
-    items.push({
-      label: "Curriculum waiting for review",
-      count: overview.awaitingReview,
-      detail: "Submitted changes that need a second person to publish",
-      href: "/admin/curriculum",
-    });
-  }
-  if (overview.draftsInProgress) {
-    items.push({
-      label: "Unpublished curriculum drafts",
-      count: overview.draftsInProgress,
-      detail: "Drafts volunteers can't see until they're published",
-      href: "/admin/curriculum",
-    });
-  }
-  return items;
-}
-
+/**
+ * Admin dashboard (DESIGN §7.1; redesign approved 2026-11-01). What needs you first, then one table
+ * that reads left to right from joining to serving, then the totals and recent activity. Every
+ * figure is a real count limited to the departments you look after; course completion and
+ * approval to serve stay separate (SPEC §3).
+ */
 async function DashboardContent() {
   const { grants, allowed } = await getAdminAccess("overview");
   if (!allowed) {
     return <AccessDenied />;
   }
-  const overview = await getAdminOverview(grants);
-  const attention = queue(overview);
-
-  const metrics = [
-    overview.activeInvitations !== null
-      ? {
-          label: "Open invitations",
-          value: overview.activeInvitations,
-          note: "Links that can still be used",
-          href: "/admin/invitations",
-        }
+  const [overview, me] = await Promise.all([getAdminOverview(grants), getCurrentUser()]);
+  const items = needsYou({
+    awaitingAssessment: overview.training
+      ? overview.training.reduce((sum, d) => sum + d.awaitingAssessment, 0)
       : null,
+    pendingRequests: overview.pendingRequests,
+    awaitingReview: overview.awaitingReview,
+    drafts: overview.drafts,
+  });
+
+  const glance = [
     overview.people
       ? {
-          label: "People",
+          label: "People with an account",
           value: overview.people.total,
           note:
             overview.people.notActive === 0
-              ? "All accounts active"
+              ? "all active"
               : `${overview.people.notActive} suspended or deactivated`,
           href: "/admin/people",
         }
       : null,
+    overview.activeInvitations !== null
+      ? {
+          label: "Invitation links still open",
+          value: overview.activeInvitations,
+          note: null,
+          href: "/admin/invitations",
+        }
+      : null,
     overview.departments
       ? {
-          label: "Active departments",
+          label: "Departments open",
           value: overview.departments.active,
           note:
             [
@@ -111,208 +95,325 @@ async function DashboardContent() {
               overview.departments.inactive ? `${overview.departments.inactive} inactive` : null,
             ]
               .filter(Boolean)
-              .join(" · ") || "None waiting to open",
+              .join(" · ") || null,
           href: "/admin/departments",
         }
       : null,
-  ].filter((metric) => metric !== null);
+  ].filter((row) => row !== null);
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-9">
       <PageHeader
-        eyebrow="Admin"
+        eyebrow="Administration"
         title="Dashboard"
-        description="What needs your attention across the departments you look after."
+        description="What needs you today, then how each department's volunteers are moving from joining to serving."
       />
 
-      <section aria-labelledby="attention-heading" className="flex flex-col gap-3">
-        <h2 id="attention-heading" className="text-heading font-semibold">
-          Needs attention
-        </h2>
-        {attention.length === 0 ? (
-          <EmptyState title="You're all caught up">
-            No requests are waiting and no curriculum is waiting on you. New items appear here as
-            they come in.
-          </EmptyState>
-        ) : (
-          <ul className="divide-y divide-border rounded-card border border-border">
-            {attention.map((item) => (
-              <li key={item.label}>
-                <Link
-                  href={item.href}
-                  className="group flex min-h-touch items-center gap-4 px-4 py-4 transition-surface hover:bg-card"
-                >
-                  <span className="tabular flex min-w-12 justify-center rounded-pill border border-warning/60 px-2 py-0.5 font-mono text-small text-text">
-                    {item.count}
-                  </span>
-                  <span className="flex flex-1 flex-col">
-                    <span className="font-medium">{item.label}</span>
-                    <span className="text-small text-text-secondary">{item.detail}</span>
-                  </span>
-                  <ChevronRightIcon className="size-4 text-text-muted group-hover:text-text" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {overview.training && overview.training.length > 0 ? (
-        <section aria-labelledby="training-heading" className="flex flex-col gap-4">
+      {items.length > 0 ? (
+        <section aria-labelledby="needs-heading" className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
-            <h2 id="training-heading" className="text-heading font-semibold">
-              Training
+            <h2 id="needs-heading" className="text-heading font-semibold">
+              Needs you
             </h2>
             <p className="text-small text-text-secondary">
-              Where your volunteers are. Finishing courses and being approved to serve are counted
-              separately.
+              Things only you can move forward. Each one opens the page where you do it.
             </p>
           </div>
-          {overview.training.map((department) => (
-            <TrainingRow key={department.departmentId} department={department} />
-          ))}
-        </section>
-      ) : null}
-
-      {metrics.length > 0 ? (
-        <section aria-labelledby="metrics-heading" className="flex flex-col gap-3">
-          <h2 id="metrics-heading" className="text-heading font-semibold">
-            At a glance
-          </h2>
-          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {metrics.map((metric) => (
-              <li key={metric.label}>
-                <Link
-                  href={metric.href}
-                  className="flex h-full flex-col gap-1 rounded-card border border-border bg-card p-5 transition-surface hover:border-border-strong"
-                >
-                  <span className="text-small text-text-secondary">{metric.label}</span>
-                  <span className="tabular text-title font-semibold">{metric.value}</span>
-                  <span className="text-small text-text-muted">{metric.note}</span>
-                </Link>
+          <ul className="grid gap-3.5 md:grid-cols-2 xl:grid-cols-3">
+            {items.map((item) => (
+              <li key={item.key} className="flex">
+                <NeedsYouCard item={item} />
               </li>
             ))}
           </ul>
         </section>
       ) : null}
 
-      {overview.recentActivity ? (
-        <section aria-labelledby="activity-heading" className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between gap-4">
-            <h2 id="activity-heading" className="text-heading font-semibold">
-              Recent activity
+      {overview.training && overview.training.length > 0 ? (
+        <section aria-labelledby="training-heading" className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <h2 id="training-heading" className="text-heading font-semibold">
+              Training, by department
             </h2>
-            <Link
-              href="/admin/audit"
-              className="text-small text-accent-light underline-offset-4 hover:underline"
-            >
-              Full audit log
-            </Link>
+            <p className="text-small text-text-secondary">
+              Read each row left to right: people join, learn, get checked, then serve. Each number
+              counts people. Finishing courses never approves anyone to serve on its own.
+            </p>
           </div>
-          {overview.recentActivity.length === 0 ? (
-            <EmptyState title="Nothing recorded yet">
-              Sensitive changes, such as roles, memberships, and publishing, appear here.
-            </EmptyState>
-          ) : (
-            <ol className="divide-y divide-border rounded-card border border-border">
-              {overview.recentActivity.map((entry) => (
-                <li
-                  key={entry.id}
-                  className="flex flex-col gap-0.5 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-                >
-                  <span className="text-small">
-                    <span className="font-medium text-text">
-                      {entry.actor ? entry.actor.displayName : "System"}
-                    </span>{" "}
-                    <span className="text-text-secondary">{entry.description.toLowerCase()}</span>
-                    {entry.subject ? (
-                      <span className="text-text-secondary"> · {entry.subject.displayName}</span>
-                    ) : null}
-                  </span>
-                  <time dateTime={entry.createdAt} className="shrink-0 text-small text-text-muted">
-                    {formatDateTime(entry.createdAt)}
-                  </time>
-                </li>
-              ))}
-            </ol>
-          )}
+          <TrainingTable rows={overview.training} />
         </section>
+      ) : null}
+
+      {glance.length > 0 || overview.recentActivity ? (
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+          {glance.length > 0 ? (
+            <section
+              aria-labelledby="glance-heading"
+              className="rounded-card border border-border bg-surface"
+            >
+              <h2
+                id="glance-heading"
+                className="border-b border-border px-4 py-3.5 text-subheading font-semibold"
+              >
+                At a glance
+              </h2>
+              <ul className="divide-y divide-border">
+                {glance.map((row) => (
+                  <li key={row.label}>
+                    <Link
+                      href={row.href}
+                      className="flex min-h-touch items-center justify-between gap-3 px-4 py-2.5 transition-surface hover:bg-hover"
+                    >
+                      <span className="text-text-secondary">{row.label}</span>
+                      <span className="tabular font-semibold">
+                        {row.value}
+                        {row.note ? (
+                          <span className="font-normal text-text-muted"> · {row.note}</span>
+                        ) : null}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {overview.recentActivity ? (
+            <section
+              aria-labelledby="activity-heading"
+              className="rounded-card border border-border bg-surface"
+            >
+              <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3.5">
+                <h2 id="activity-heading" className="text-subheading font-semibold">
+                  Recent activity
+                </h2>
+                <Link
+                  href="/admin/audit"
+                  className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+                >
+                  Full audit log
+                </Link>
+              </div>
+              {overview.recentActivity.length === 0 ? (
+                <p className="px-4 py-5 text-small text-text-secondary">
+                  Nothing recorded yet. Sensitive changes, such as roles, memberships, and
+                  publishing, appear here.
+                </p>
+              ) : (
+                <ol className="divide-y divide-border">
+                  {overview.recentActivity.map((entry) => (
+                    <li
+                      key={entry.id}
+                      className="flex flex-col gap-0.5 px-4 py-2.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+                    >
+                      <span>
+                        <span className="font-medium text-text">
+                          {entry.actor
+                            ? entry.actor.id === me?.id
+                              ? "You"
+                              : entry.actor.displayName
+                            : "System"}
+                        </span>
+                        <span className="text-text-secondary">
+                          {" · "}
+                          {entry.description}
+                          {entry.subject ? ` · ${entry.subject.displayName}` : ""}
+                        </span>
+                      </span>
+                      <time
+                        dateTime={entry.createdAt}
+                        className="shrink-0 text-small text-text-muted"
+                      >
+                        {formatDateTime(entry.createdAt)}
+                      </time>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
+          ) : null}
+        </div>
+      ) : null}
+
+      {items.length === 0 && !overview.training && glance.length === 0 ? (
+        <EmptyState title="Nothing to show yet">
+          The areas you look after don&apos;t have a summary here yet. Use the menu to open them.
+        </EmptyState>
       ) : null}
     </div>
   );
 }
 
-/** One department's training figures (SPEC §7 "Leader dashboard"); each links to its records. */
-function TrainingRow({ department }: { department: TrainingSummary }) {
-  const figures: { label: string; value: number; note: string; href: string | null }[] = [
-    {
-      label: "Active members",
-      value: department.activeMembers,
-      note: "People who can take the department's training",
-      href: "/admin/members?view=members",
-    },
-    {
-      label: "In progress",
-      value: department.inProgress,
-      note: "Started a course they haven't finished",
-      href: null,
-    },
-    {
-      label: "Awaiting assessment",
-      value: department.awaitingAssessment,
-      note: "Asked a trainer to assess them",
-      href: "/admin/assessments",
-    },
-    {
-      label: "Not yet",
-      value: department.furtherPractice,
-      note: "Last practical needs another go",
-      href: "/admin/assessments",
-    },
-    {
-      label: "Approved to serve",
-      value: department.approvedToServe,
-      note: "In at least one role",
-      href: "/admin/competencies",
-    },
-    {
-      label: "Certificates",
-      value: department.certificates,
-      note: "Courses finished and certified",
-      href: null,
-    },
-  ];
+function NeedsYouCard({ item }: { item: NeedsYouItem }) {
+  const { icon: Icon, tile } = NEEDS_ICON[item.key];
+  const clear = item.count === 0;
   return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-subheading font-semibold">{department.departmentName}</h3>
-      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {figures.map((figure) => {
-          const body = (
-            <>
-              <span className="text-small text-text-secondary">{figure.label}</span>
-              <span className="tabular text-title font-semibold">{figure.value}</span>
-              <span className="text-small text-text-muted">{figure.note}</span>
-            </>
-          );
-          return (
-            <li key={figure.label}>
-              {figure.href ? (
-                <Link
-                  href={figure.href}
-                  className="flex h-full flex-col gap-1 rounded-card border border-border bg-card p-5 transition-surface hover:border-border-strong"
-                >
-                  {body}
-                  <span className="sr-only"> in {department.departmentName}</span>
-                </Link>
-              ) : (
-                <div className="flex h-full flex-col gap-1 rounded-card border border-border bg-card p-5">
-                  {body}
-                </div>
-              )}
-            </li>
-          );
-        })}
+    <article
+      aria-labelledby={`needs-${item.key}`}
+      className={`flex w-full flex-col gap-2.5 rounded-card border border-border p-4 ${
+        clear ? "bg-card" : "bg-surface shadow-[0_8px_24px_-14px_rgba(22,20,31,0.18)]"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className={`flex size-9 items-center justify-center rounded-button ${
+            clear ? "bg-tile-grey text-tile-grey-ink" : tile
+          }`}
+        >
+          <Icon className="size-[18px]" />
+        </span>
+        <span
+          className={`tabular text-[1.625rem] leading-none font-semibold tracking-tight ${clear ? "text-text-muted" : "text-text"}`}
+        >
+          {item.count}
+        </span>
+      </div>
+      <h3 id={`needs-${item.key}`} className="font-semibold">
+        {item.title}
+      </h3>
+      <p className="text-small text-text-secondary">{item.detail}</p>
+      {clear ? null : (
+        <Link
+          href={item.href}
+          className="mt-auto inline-flex min-h-control w-fit items-center gap-1.5 rounded-button border border-border-strong px-3 text-small font-medium transition-surface hover:bg-hover"
+        >
+          {item.action}
+          <span className="sr-only">: {item.title}</span>
+          <ArrowRightIcon className="size-4" />
+        </Link>
+      )}
+    </article>
+  );
+}
+
+const SEGMENTS = [
+  { key: "approved", label: "Approved to serve", className: "bg-success" },
+  { key: "waiting", label: "Waiting for assessment", className: "bg-warning" },
+  { key: "learning", label: "Learning", className: "bg-accent" },
+  { key: "joined", label: "Joined, not started", className: "bg-accent/30" },
+] as const;
+
+/** One row per department, joining to serving; the bar repeats the numbers, never replaces them. */
+function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
+  const cell = "px-4 py-3 align-middle";
+  const number = `${cell} tabular text-right`;
+  return (
+    <div className="overflow-hidden rounded-card border border-border bg-surface">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[46rem] border-collapse text-left">
+          <caption className="sr-only">Training, by department</caption>
+          <thead>
+            <tr className="border-b border-border text-small text-text-muted">
+              <th scope="col" className={`${cell} font-medium`}>
+                Department
+              </th>
+              <Th label="Members" note="Can take the training" />
+              <Th label="Learning" note="Started a course" />
+              <Th label="Waiting" note="Asked for an assessment" />
+              <Th label="Approved to serve" note="In at least one role" />
+              <Th label="Certificates" note="Courses finished" />
+              <th scope="col" className={`${cell} font-medium`}>
+                <span className="sr-only">Progress</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {rows.map((row) => {
+              const style = { "--dept": departmentHueVar(row.hue) } as CSSProperties;
+              const name = (
+                <span className="flex items-center gap-2.5 font-semibold">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-[8px] bg-hover text-[var(--dept)]">
+                    <DepartmentIcon icon={row.icon} className="size-4" />
+                  </span>
+                  {row.departmentName}
+                </span>
+              );
+              if (row.comingSoon) {
+                return (
+                  <tr key={row.departmentId} style={style} className="text-text-muted">
+                    <th scope="row" className={`${cell} font-normal`}>
+                      {name}
+                    </th>
+                    <td colSpan={6} className={cell}>
+                      <span className="flex items-center gap-2 text-small">
+                        <StatusBadge tone="info">Coming soon</StatusBadge>
+                        Not open to volunteers yet.
+                      </span>
+                    </td>
+                  </tr>
+                );
+              }
+              const segments = pipelineSegments(row);
+              return (
+                <tr key={row.departmentId} style={style}>
+                  <th scope="row" className={`${cell} font-normal`}>
+                    {name}
+                  </th>
+                  <Num className={number} value={row.activeMembers} />
+                  <Num className={number} value={row.inProgress} />
+                  <td className={number}>
+                    <span className={row.awaitingAssessment ? "font-semibold" : "text-text-muted"}>
+                      {row.awaitingAssessment}
+                    </span>
+                    {row.furtherPractice ? (
+                      <span className="block text-small text-text-muted">
+                        {row.furtherPractice} need another go
+                      </span>
+                    ) : null}
+                  </td>
+                  <Num className={number} value={row.approvedToServe} />
+                  <Num className={number} value={row.certificates} />
+                  <td className={`${cell} w-40`}>
+                    <span
+                      aria-hidden="true"
+                      className="flex h-2 w-full min-w-28 overflow-hidden rounded-pill bg-hover"
+                    >
+                      {SEGMENTS.map((segment) =>
+                        segments[segment.key] > 0 ? (
+                          <span
+                            key={segment.key}
+                            className={`h-full ${segment.className}`}
+                            style={{ width: `${segments[segment.key]}%` }}
+                          />
+                        ) : null,
+                      )}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <ul
+        aria-label="Bar colours"
+        className="flex flex-wrap gap-x-4 gap-y-1.5 border-t border-border px-4 py-3 text-small text-text-secondary"
+      >
+        {SEGMENTS.map((segment) => (
+          <li key={segment.key} className="flex items-center gap-1.5">
+            <span aria-hidden="true" className={`size-2.5 rounded-[3px] ${segment.className}`} />
+            {segment.label}
+          </li>
+        ))}
       </ul>
     </div>
+  );
+}
+
+function Th({ label, note }: { label: string; note: string }) {
+  return (
+    <th scope="col" className="px-4 py-3 text-right align-bottom font-medium">
+      {label}
+      <span className="block text-[0.6875rem] font-normal">{note}</span>
+    </th>
+  );
+}
+
+function Num({ value, className }: { value: number; className: string }) {
+  return (
+    <td className={className}>
+      <span className={value ? "font-semibold" : "text-text-muted"}>{value}</span>
+    </td>
   );
 }
