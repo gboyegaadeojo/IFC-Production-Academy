@@ -108,3 +108,8 @@ insert into public.practical_criteria (practical_id, course_version_id, label, i
 values
   ('cccccccc-0000-4000-8000-000000000043', 'cccccccc-0000-4000-8000-000000000011', 'Fake required step', true, 10),
   ('cccccccc-0000-4000-8000-000000000043', 'cccccccc-0000-4000-8000-000000000011', 'Fake optional step', false, 20);
+
+-- Local and CI only: the Academy's own scheduler, so its tests run against it. The live database
+-- keeps Planning Center as the scheduler (20261122120000_planning_center.sql). Planning Center
+-- mode has its own tests (024_planning_center).
+update public.organizations set scheduling_source = 'academy';

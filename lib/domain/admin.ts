@@ -16,6 +16,7 @@ export type AdminSectionKey =
   | "schedule"
   | "teams"
   | "checklists"
+  | "planning-center"
   | "reports"
   | "mentoring"
   | "people"
@@ -37,6 +38,12 @@ const SECTIONS: readonly AdminSection[] = [
   { key: "people", href: "/admin/people", label: "People and roles", group: "People" },
   { key: "schedule", href: "/admin/schedule", label: "Schedule", group: "People" },
   { key: "teams", href: "/admin/teams", label: "Serving teams", group: "People" },
+  {
+    key: "planning-center",
+    href: "/admin/planning-center",
+    label: "Planning Center",
+    group: "People",
+  },
   {
     key: "checklists",
     href: "/admin/checklists",
@@ -99,6 +106,11 @@ export function canOpenAdminSection(
       return hasCapabilityAnywhere(grants, "team.manage");
     case "checklists":
       return hasCapabilityAnywhere(grants, "checklist.manage");
+    case "planning-center":
+      return (
+        hasCapabilityAnywhere(grants, "team.manage") ||
+        hasCapabilityAnywhere(grants, "schedule.manage")
+      );
     case "reports":
       return hasCapabilityAnywhere(grants, "report.view");
     case "mentoring":

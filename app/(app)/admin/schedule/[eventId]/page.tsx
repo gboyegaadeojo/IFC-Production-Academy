@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
+import { getSchedulingSource } from "@/lib/data/planning-center";
 import {
   getCandidates,
   getEventDetail,
@@ -63,7 +64,10 @@ async function EventContent({ params }: Pick<Props, "params">) {
   if (!event) {
     notFound();
   }
-  const open = !event.cancelled && new Date(event.endsAt).getTime() > new Date().getTime();
+  // While Planning Center schedules, services are read from there and can't be changed here.
+  const academy = (await getSchedulingSource()) === "academy";
+  const open =
+    academy && !event.cancelled && new Date(event.endsAt).getTime() > new Date().getTime();
   const coverRequested = await getOpenCoverRequestsForEvent(event.id);
 
   return (
@@ -78,6 +82,11 @@ async function EventContent({ params }: Pick<Props, "params">) {
           {event.location ? ` · ${event.location}` : ""}
         </p>
         {event.cancelled ? <StatusBadge tone="neutral">Cancelled</StatusBadge> : null}
+        {academy ? null : (
+          <p className="max-w-2xl text-small text-text-secondary">
+            Scheduled in Planning Center. Changes made there show here within 15 minutes.
+          </p>
+        )}
         {event.notes ? <p className="max-w-2xl text-small text-text-muted">{event.notes}</p> : null}
         {open ? (
           <div className="flex flex-wrap items-center gap-3 text-small text-text-secondary">

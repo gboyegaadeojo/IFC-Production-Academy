@@ -13,7 +13,7 @@ options after research, and later answers from G are recorded in place with the 
 | 6 | Content and videos | IFC films its own short lessons on its own cameras; written lessons stand in until each video exists |
 | 7 | Privacy, retention, under-18 | Not needed: no privacy notice, retention schedule, or age rules in the Academy |
 | 8 | Reminders and certificate | Serving reminder 2 days before at 10:00, learning nudges at 7 and 21 days, quiet hours 20:00 to 08:00; a print-ready certificate with a QR verification check |
-| 9 | Calendar and Planning Center | The Academy replaces Planning Center Services for production scheduling; Planning Center stays the church's people database |
+| 9 | Calendar and Planning Center | Planning Center Services schedules; the Academy reads it every 15 minutes. The Academy's own scheduler is built but switched off, for later |
 | 10 | Native apps | Not until the PWA hits clear limits (criteria below) |
 
 ## 3. Ownership, budget, and launch date
@@ -200,10 +200,30 @@ Academy's reminders are the only ones volunteers get.
 
 ## 9. Calendar provider and Planning Center
 
-**The Academy replaces Planning Center Services for production scheduling** (G, 2026-10-31).
-Production's schedulers build the schedule in the Academy, volunteers see and answer it there, and
-the Academy's reminders are the only ones they get. Planning Center stays the church's people
-database and keeps serving other ministries; the Academy copies nothing into or out of it.
+**Planning Center Services schedules; the Academy reads it** (G, 2026-10-31, revised the same
+day). G asked why the Academy didn't use Planning Center's existing scheduling. Planning Center
+can't be embedded in another site, but its API can be read, as IFC's Sunday Pre-Service Checklist
+app already does. So schedulers and volunteers keep using Planning Center, and the Academy shows
+what it reads from there:
+
+- **A scheduled job** (`planning-center.yml`, every 15 minutes) reads Planning Center with the
+  same read-only Personal Access Token as the checklist app: service types, teams and positions,
+  each position's roster, plans for the next 60 days with who's scheduled and their replies, and
+  blockout dates. It writes them into the Academy with the service role. It logs counts only.
+- **People are matched by email:** their Academy sign-in email is one of their Planning Center
+  emails. Only the match is kept, not the emails.
+- **Position links**, on the Planning Center admin page like the checklist app's Team mapping, tie
+  each Planning Center position (or a whole team) to an Academy position, so its people get the
+  right checklist, training, and switches.
+- **Volunteers** accept, decline, and block out dates in Planning Center; the Academy's schedule,
+  calendar, "who's serving with you", and the service-day checklist all follow it. Planning Center
+  sends its own reminders, so the Academy doesn't.
+- **The Academy's own scheduler** (service types, the Matrix, sign-ups, swaps, below) is built but
+  switched off. A scheduler can turn it on from the Planning Center page if IFC ever schedules in
+  the Academy instead. While Planning Center schedules, the database refuses schedule changes
+  from anyone but the sync.
+
+What the Academy's own scheduler offers, for later:
 
 Why this works better than keeping two systems: training and scheduling sit in one place, so a
 scheduler sees who is trained as they schedule, and volunteers have one app for learning and
@@ -235,8 +255,8 @@ What the Academy adds so schedulers and volunteers don't miss Planning Center (b
 6. **Already built:** confirm or decline, days away, reminders (serving soon, please confirm),
    calendar file download, and the service-day view with SOPs.
 
-**Switch-over:** schedulers run both for the pilot month, then production stops scheduling in
-Planning Center from the ministry-wide launch.
+**Switch-over:** none needed while Planning Center schedules. If IFC later moves scheduling into
+the Academy, run both for a month first.
 
 **Calendar:** the calendar file download stays; no Google or Microsoft calendar connection is
 needed.

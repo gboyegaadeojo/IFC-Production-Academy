@@ -625,7 +625,7 @@ Measure baselines during the pilot before setting targets: share of enrolled vol
 | 6 | Course content and video inventory | Decided 2026-10-31: IFC films short lessons on its own equipment, unlisted on the church channel; written lessons stand in until each video exists |
 | 7 | Retention periods and privacy notice; under-18 volunteers? | Decided 2026-10-31: not needed. No privacy notice page, retention schedule, or age rules in the Academy |
 | 8 | Reminder schedule and certificate template | Decided 2026-10-31: serving reminder 2 days before at 10:00; learning nudges at 7 and 21 days; quiet hours 20:00 to 08:00; print-ready certificate with a QR code to a public check that shows initials only |
-| 9 | Calendar provider; Planning Center or another church system? | Decided 2026-10-31: the Academy replaces Planning Center Services for production scheduling (calendars, repeating services, scheduler grid, swaps); Planning Center stays the church's people database; calendar files (built) |
+| 9 | Calendar provider; Planning Center or another church system? | Decided 2026-10-31: Planning Center Services schedules, and the Academy reads it every 15 minutes (schedule, rosters, replies, blockouts), matching people by email. The Academy's own scheduler is built but switched off, for later; calendar files (built) |
 | 10 | Native apps | Decided 2026-10-31: only if the PWA hits limits set out in the decision record |
 
 Details, reasoning, and sources: [decisions/2026-10-31-open-decisions.md](decisions/2026-10-31-open-decisions.md).

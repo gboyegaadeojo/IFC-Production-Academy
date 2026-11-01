@@ -1,0 +1,53 @@
+# Copies the schedule from Planning Center Services into the Academy (decision record 9, revised).
+# Every 15 minutes, and on demand. Reads Planning Center with the church's read-only token and
+# writes with the service role; both live only in this repository's Actions secrets. The script
+# logs counts only, never names, emails, or ids. Without PCO_PAT_ID it does nothing.
+name: Planning Center sync
+
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: planning-center
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            .github/actions
+            lib/domain/planning-center.ts
+            lib/domain/supabase-keys.ts
+            scripts/sync-planning-center.ts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+
+      - name: Sync from Planning Center
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PCO_PAT_ID: ${{ secrets.PCO_PAT_ID }}
+          PCO_PAT_SECRET: ${{ secrets.PCO_PAT_SECRET }}
+        run: node scripts/sync-planning-center.ts
+
+      - name: Email the admins
+        if: failure()
+        uses: ./.github/actions/notify-failure
+        with:
+          resend-api-key: ${{ secrets.RESEND_API_KEY }}
+          to: ${{ secrets.ALERT_EMAILS }}
+          from: ${{ secrets.ALERT_FROM }}
+          subject: "IFC Academy: Planning Center sync failed"

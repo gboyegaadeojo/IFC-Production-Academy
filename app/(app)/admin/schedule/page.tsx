@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
+import { getSchedulingSource } from "@/lib/data/planning-center";
 import { getUpcomingEvents } from "@/lib/data/schedule";
 import { eventTimeLabel } from "@/lib/domain/schedule";
 import { AccessDenied } from "../access-denied";
@@ -29,7 +30,7 @@ async function AdminScheduleContent() {
   if (!allowed) {
     return <AccessDenied />;
   }
-  const events = await getUpcomingEvents();
+  const [events, source] = await Promise.all([getUpcomingEvents(), getSchedulingSource()]);
 
   return (
     <div className="flex flex-col gap-10">
@@ -83,59 +84,67 @@ async function AdminScheduleContent() {
         )}
       </section>
 
-      <section
-        aria-labelledby="new-event-heading"
-        className="flex max-w-2xl flex-col gap-4 rounded-card border border-dashed border-border p-5"
-      >
-        <h2 id="new-event-heading" className="text-subheading font-semibold">
-          Add a one-off event
-        </h2>
-        <p className="text-small text-text-secondary">
-          For regular services, set up a service type once and create its dates in one step.
-        </p>
-        <ActionForm action={createEventAction} submitLabel="Add event" pendingLabel="Adding…">
-          <Field id="event-title" label="Name">
-            <input
-              id="event-title"
-              name="title"
-              required
-              maxLength={120}
-              placeholder="Sunday service"
-              className={fieldClasses}
-            />
-          </Field>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Field id="event-date" label="Date">
-              <input id="event-date" name="date" type="date" required className={fieldClasses} />
-            </Field>
-            <Field id="event-start" label="Starts">
+      {source === "academy" ? (
+        <section
+          aria-labelledby="new-event-heading"
+          className="flex max-w-2xl flex-col gap-4 rounded-card border border-dashed border-border p-5"
+        >
+          <h2 id="new-event-heading" className="text-subheading font-semibold">
+            Add a one-off event
+          </h2>
+          <p className="text-small text-text-secondary">
+            For regular services, set up a service type once and create its dates in one step.
+          </p>
+          <ActionForm action={createEventAction} submitLabel="Add event" pendingLabel="Adding…">
+            <Field id="event-title" label="Name">
               <input
-                id="event-start"
-                name="startTime"
-                type="time"
+                id="event-title"
+                name="title"
                 required
+                maxLength={120}
+                placeholder="Sunday service"
                 className={fieldClasses}
               />
             </Field>
-            <Field id="event-end" label="Ends">
-              <input id="event-end" name="endTime" type="time" required className={fieldClasses} />
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Field id="event-date" label="Date">
+                <input id="event-date" name="date" type="date" required className={fieldClasses} />
+              </Field>
+              <Field id="event-start" label="Starts">
+                <input
+                  id="event-start"
+                  name="startTime"
+                  type="time"
+                  required
+                  className={fieldClasses}
+                />
+              </Field>
+              <Field id="event-end" label="Ends">
+                <input
+                  id="event-end"
+                  name="endTime"
+                  type="time"
+                  required
+                  className={fieldClasses}
+                />
+              </Field>
+            </div>
+            <p className="text-small text-text-muted">Times are Winnipeg time.</p>
+            <Field id="event-location" label="Location (optional)">
+              <input id="event-location" name="location" maxLength={120} className={fieldClasses} />
             </Field>
-          </div>
-          <p className="text-small text-text-muted">Times are Winnipeg time.</p>
-          <Field id="event-location" label="Location (optional)">
-            <input id="event-location" name="location" maxLength={120} className={fieldClasses} />
-          </Field>
-          <Field id="event-notes" label="Notes (optional)">
-            <textarea
-              id="event-notes"
-              name="notes"
-              rows={2}
-              maxLength={1000}
-              className={`${fieldClasses} py-3`}
-            />
-          </Field>
-        </ActionForm>
-      </section>
+            <Field id="event-notes" label="Notes (optional)">
+              <textarea
+                id="event-notes"
+                name="notes"
+                rows={2}
+                maxLength={1000}
+                className={`${fieldClasses} py-3`}
+              />
+            </Field>
+          </ActionForm>
+        </section>
+      ) : null}
     </div>
   );
 }
