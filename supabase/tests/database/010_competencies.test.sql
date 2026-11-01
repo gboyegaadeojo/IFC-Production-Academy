@@ -91,7 +91,7 @@ select throws_ok(
 reset role;
 
 select pg_temp.act_as('a0000000-0000-4000-8000-000000000003');
-select is_empty($$ select 1 from public.competencies $$, 'someone outside the department sees no competencies');
+select isnt_empty($$ select 1 from public.competencies $$, 'anyone in the Academy can see what a role needs');
 reset role;
 
 -- ---------------------------------------------------------------------------

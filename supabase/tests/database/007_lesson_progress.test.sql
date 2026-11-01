@@ -184,17 +184,18 @@ reset role;
 -- Who can record and who can read (SRS-RBAC-004)
 -- ---------------------------------------------------------------------------
 select pg_temp.act_as('70000000-0000-4000-8000-000000000003');
-select throws_ok(
+-- Training is open to everyone in the Academy (decision 2026-11-01): no membership needed.
+select lives_ok(
   $$ select public.record_lesson_view((select id from ctx where key = 'course'), (select id from ctx where key = 'key1')) $$,
-  '42501', 'not_authorized', 'someone outside the department cannot record progress'
+  'someone who isn''t a member can still learn and record progress'
 );
-select throws_ok(
+select lives_ok(
   $$ select public.complete_lesson((select id from ctx where key = 'course'), (select id from ctx where key = 'key1')) $$,
-  '42501', 'not_authorized', 'someone outside the department cannot complete a lesson'
+  'and complete a lesson'
 );
 select is_empty(
-  $$ select 1 from public.lesson_progress $$,
-  'someone outside the department reads no progress'
+  $$ select 1 from public.lesson_progress where user_id <> '70000000-0000-4000-8000-000000000003' $$,
+  'but reads nobody else''s progress'
 );
 reset role;
 
@@ -221,9 +222,9 @@ select is(
   2,
   'the department''s leader reads its members'' progress (report.view)'
 );
-select throws_ok(
+select lives_ok(
   $$ select public.record_lesson_view((select id from ctx where key = 'course'), (select id from ctx where key = 'key1')) $$,
-  '42501', 'not_authorized', 'curriculum staff who aren''t members don''t record progress'
+  'curriculum staff can take the training too'
 );
 reset role;
 
@@ -234,15 +235,26 @@ select is_empty(
 );
 reset role;
 
--- A member removed from the department can no longer record progress.
+-- Leaving a department doesn't stop someone learning: training is open to everyone.
 update public.department_memberships set status = 'removed', decided_at = now()
  where user_id = '70000000-0000-4000-8000-000000000002';
 select pg_temp.act_as('70000000-0000-4000-8000-000000000002');
-select throws_ok(
+select lives_ok(
   $$ select public.record_lesson_view((select id from ctx where key = 'course'), (select id from ctx where key = 'key1')) $$,
-  '42501', 'not_authorized', 'a removed member cannot record progress'
+  'someone who left the department can keep learning'
 );
 reset role;
+-- A hidden department's training is closed to everyone but its staff.
+update public.departments set status = 'inactive'
+ where id = (select department_id from public.courses where id = (select id from ctx where key = 'course'));
+select pg_temp.act_as('70000000-0000-4000-8000-000000000003');
+select throws_ok(
+  $$ select public.record_lesson_view((select id from ctx where key = 'course'), (select id from ctx where key = 'key1')) $$,
+  '42501', 'not_authorized', 'nobody learns in a hidden department'
+);
+reset role;
+update public.departments set status = 'active'
+ where id = (select department_id from public.courses where id = (select id from ctx where key = 'course'));
 
 -- ---------------------------------------------------------------------------
 -- New versions keep history (SRS-CUR-008) and copy the video
@@ -271,7 +283,8 @@ reset role;
 select results_eq(
   $$ select v.version_number from public.lesson_progress p
        join public.course_versions v on v.id = p.course_version_id
-      where p.lesson_key = (select id from ctx where key = 'key1') order by v.version_number $$,
+      where p.lesson_key = (select id from ctx where key = 'key1')
+        and p.user_id = '70000000-0000-4000-8000-000000000001' order by v.version_number $$,
   $$ values (1), (2) $$,
   'the earlier row still points at version 1'
 );

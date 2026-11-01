@@ -86,7 +86,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
           {!canOpenCourses ? (
             <p className="flex items-center gap-2 text-small text-text-secondary">
               <LockIcon className="size-4 text-text-muted" />
-              You can see what each level covers. Courses open once you&apos;re a member.
+              You can see what each level covers. Courses open when the department does.
             </p>
           ) : null}
         </div>
@@ -105,9 +105,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
 
       <Readiness
         departmentName={department.name}
-        readiness={
-          department.state.kind === "member" ? await getMyReadiness(user.id, department.id) : null
-        }
+        readiness={canOpenCourses ? await getMyReadiness(user.id, department.id) : null}
       />
     </div>
   );
@@ -174,7 +172,7 @@ function LevelStage({
                   ) : (
                     <span className="flex flex-col py-2">
                       <span className="font-medium text-text-secondary">{course.title}</span>
-                      <span className="text-small text-text-muted">For members</span>
+                      <span className="text-small text-text-muted">Not open yet</span>
                     </span>
                   )}
                 </li>
@@ -225,7 +223,7 @@ function Readiness({
             <dd className="text-small text-text-secondary">
               A trainer watches you work and ticks a checklist; the Academy works out the result.
               {readiness === null
-                ? " Your skills show here once you're a member."
+                ? " Your skills show here once the department opens."
                 : ` Hands-on checks for ${departmentName} aren't set up yet.`}
             </dd>
           </div>

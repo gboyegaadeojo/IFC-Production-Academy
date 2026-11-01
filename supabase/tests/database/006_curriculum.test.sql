@@ -128,9 +128,10 @@ select is(
   'Framing basics',
   'anyone signed in can browse a published course''s title'
 );
-select is_empty(
+-- Training is open to everyone in the Academy (decision 2026-11-01).
+select isnt_empty(
   $$ select 1 from public.lessons where course_version_id = (select id from ctx where key = 'v1') $$,
-  'people outside the department cannot read its lessons'
+  'anyone signed in can read a published course''s lessons, member or not'
 );
 select is_empty(
   $$ select 1 from public.course_versions where course_id = (select id from ctx where key = 'empty_course') $$,

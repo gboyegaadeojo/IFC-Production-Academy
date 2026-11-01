@@ -108,9 +108,9 @@ select throws_ok(
 reset role;
 
 select pg_temp.act_as('b0000000-0000-4000-8000-000000000003');
-select throws_ok(
+select lives_ok(
   $$ select public.request_assessment((select id from ctx where key = 'course'), (select id from ctx where key = 'pkey')) $$,
-  '42501', 'not_authorized', 'someone outside the department cannot ask to be assessed'
+  'anyone in the Academy can ask to be assessed, member or not (decision 2026-11-01)'
 );
 reset role;
 
@@ -118,8 +118,8 @@ reset role;
 -- The system works out the outcome (decided 2026-10-30; SRS-ASSESS-003, -004)
 -- ---------------------------------------------------------------------------
 select pg_temp.act_as('b0000000-0000-4000-8000-000000000006');
-select is((select count(*)::int from public.assessment_requests where closed_at is null), 1,
-  'the trainer sees the open request');
+select is((select count(*)::int from public.assessment_requests where closed_at is null), 2,
+  'the trainer sees both open requests');
 select is((select count(*)::int from public.assessable_members('b7ba9dae-cab5-43e0-a996-8ae9d2436855')
            where user_id in ('b0000000-0000-4000-8000-000000000001', 'b0000000-0000-4000-8000-000000000002')), 2,
   'the trainer can list the department''s active members');
@@ -130,8 +130,8 @@ select throws_ok(
 );
 select throws_ok(
   $$ select * from public.record_practical_assessment((select id from ctx where key = 'course'), (select id from ctx where key = 'pkey'),
-       'b0000000-0000-4000-8000-000000000003', '{}', '') $$,
-  'P0001', 'learner_not_member', 'only members are assessed'
+       'b0000000-0000-4000-8000-0000000000ff', '{}', '') $$,
+  'P0001', 'learner_not_active', 'only active people are assessed'
 );
 -- Every optional item but one required: Further practice, whatever the share.
 select is(
