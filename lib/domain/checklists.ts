@@ -113,6 +113,50 @@ export function percentDone(done: number, total: number): number {
   return total === 0 ? 0 : Math.round((done * 100) / total);
 }
 
+// ---------------------------------------------------------------------------
+// The service-day board (approved mock, 2026-11-01)
+// ---------------------------------------------------------------------------
+
+/** Your own departments first, then the rest, each group in its configured order. */
+export function boardOrder<T extends { isMine: boolean }>(checklists: readonly T[]): T[] {
+  return [...checklists.filter((c) => c.isMine), ...checklists.filter((c) => !c.isMine)];
+}
+
+/** Ticks across every department, for the team's progress ring. */
+export function teamProgress(checklists: readonly { done: number; total: number }[]): {
+  done: number;
+  total: number;
+} {
+  return checklists.reduce(
+    (sum, checklist) => ({ done: sum.done + checklist.done, total: sum.total + checklist.total }),
+    { done: 0, total: 0 },
+  );
+}
+
+export type BoardFilter = "all" | "todo";
+
+/**
+ * The sections to show. "Still to do" keeps only unticked items, and drops a section once all of
+ * it is done. Each section keeps its own done and total, whatever the filter.
+ */
+export function boardSections<
+  S extends { id: string; items: readonly { checkedAt: string | null }[] },
+>(
+  sections: readonly S[],
+  filter: BoardFilter,
+): (S & { done: number; total: number; shown: S["items"][number][] })[] {
+  return sections.flatMap((section) => {
+    const done = section.items.filter((item) => item.checkedAt !== null).length;
+    const shown =
+      filter === "todo"
+        ? section.items.filter((item) => item.checkedAt === null)
+        : [...section.items];
+    return filter === "todo" && shown.length === 0
+      ? []
+      : [{ ...section, done, total: section.items.length, shown }];
+  });
+}
+
 /** What ticking an item returns to the page. */
 export type TickResult = { ok: true } | { ok: false; message: string };
 

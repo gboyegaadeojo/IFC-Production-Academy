@@ -49,12 +49,35 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await expect(page).toHaveURL(/\/admin\/schedule\/[0-9a-f-]{36}$/);
   const eventId = page.url().split("/").at(-1)!;
 
+  // The board shows one department at a time; Emery isn't scheduled, so picks this one.
+  const openDepartment = async () => {
+    await page
+      .getByRole("navigation", { name: "Departments" })
+      .getByRole("button", { name: new RegExp(name) })
+      .click();
+    await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
+  };
   await page.goto(`/serve/${eventId}`);
+  await expect(page.getByText(/done across the team/)).toBeVisible();
+  await openDepartment();
   const item = page.getByLabel(first);
   await item.check();
   await page.reload();
+  await openDepartment();
   await expect(page.getByLabel(first)).toBeChecked();
   await expect(page.getByText("Done by").first()).toBeVisible();
+
+  // "Still to do" hides what's ticked.
+  await page
+    .getByRole("group", { name: "Show" })
+    .getByRole("button", { name: "Still to do" })
+    .click();
+  await expect(page.getByLabel(first)).toHaveCount(0);
+  await expect(page.getByLabel(`Check the batteries ${stamp}`)).toBeVisible();
+  await page
+    .getByRole("group", { name: "Show" })
+    .getByRole("button", { name: "All tasks" })
+    .click();
 
   await page.getByText("Clear every tick for this service").click();
   await page.getByRole("button", { name: "Reset checklists" }).click();
