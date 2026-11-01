@@ -104,7 +104,7 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   await guest.getByRole("button", { name: "Accept and join Audio Engineering" }).click();
   await expect(guest).toHaveURL(/\/home$/);
   await expect(
-    guest.getByRole("article", { name: "Audio Engineering" }).getByText("You're a member"),
+    guest.getByRole("article", { name: "Audio Engineering" }).getByText("Member", { exact: true }),
   ).toBeVisible();
 
   // It was for one person, so it's now used up.
