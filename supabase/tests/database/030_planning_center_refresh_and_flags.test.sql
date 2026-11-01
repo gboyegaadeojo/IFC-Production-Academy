@@ -113,7 +113,7 @@ select throws_ok($$ select public.request_pco_refresh() $$, 'P0001', 'too_soon',
 select throws_ok($$ insert into public.pco_refresh_requests (organization_id) select organization_id from public.profiles where id = auth.uid() $$,
   '42501', null, 'nor by writing the table');
 reset role;
-select is((select count(*)::integer from public.audit_events where action = 'pco_refresh.insert'
+select is((select count(*)::integer from public.audit_events where action = 'pco_refresh.created'
              and actor_id = 'ab000000-0000-4000-8000-000000000001'), 1,
   'the request is audited');
 
