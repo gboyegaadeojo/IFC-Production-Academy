@@ -81,8 +81,22 @@ describe("Planning Center mapping", () => {
       teams,
     );
     expect(members).toEqual([
-      { id: "m1", person_id: "u1", team_id: "t1", position_id: "p1", status: "C" },
-      { id: "m2", person_id: "u2", team_id: "t1", position_id: null, status: "D" },
+      {
+        id: "m1",
+        person_id: "u1",
+        team_id: "t1",
+        position_id: "p1",
+        position_name: "camera 1",
+        status: "C",
+      },
+      {
+        id: "m2",
+        person_id: "u2",
+        team_id: "t1",
+        position_id: null,
+        position_name: "Renamed",
+        status: "D",
+      },
     ]);
   });
 
