@@ -2,6 +2,7 @@
 
 import { useId, useOptimistic, useState, useTransition } from "react";
 import type { TickResult } from "@/lib/domain/checklists";
+import { getTabId } from "./tab-id";
 
 /**
  * One checklist item to tick (decision record 9, stage 2). A native checkbox with its label, so
@@ -23,7 +24,12 @@ export function ChecklistItem({
   checked: boolean;
   checkedBy: string | null;
   disabled: boolean;
-  action: (input: { eventId: string; itemId: string; checked: boolean }) => Promise<TickResult>;
+  action: (input: {
+    eventId: string;
+    itemId: string;
+    checked: boolean;
+    tabId?: string;
+  }) => Promise<TickResult>;
 }) {
   const id = useId();
   const [optimistic, setOptimistic] = useOptimistic(checked);
@@ -44,7 +50,7 @@ export function ChecklistItem({
             setError(null);
             startTransition(async () => {
               setOptimistic(next);
-              const result = await action({ eventId, itemId, checked: next });
+              const result = await action({ eventId, itemId, checked: next, tabId: getTabId() });
               if (!result.ok) {
                 setError(result.message);
               }

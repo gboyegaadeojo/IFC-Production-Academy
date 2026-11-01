@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AutoRefresh } from "@/components/checklist/auto-refresh";
 import { ChecklistItem } from "@/components/checklist/checklist-item";
+import { TabIdField } from "@/components/checklist/tab-id";
 import { ActionForm } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -193,7 +194,9 @@ async function ServeContent({ params, searchParams }: Props) {
                   pendingLabel="Undoing…"
                   variant="secondary"
                   hidden={{ eventId: service.id }}
-                />
+                >
+                  <TabIdField />
+                </ActionForm>
               ) : null}
               <details>
                 <summary className="flex min-h-control cursor-pointer items-center text-small font-medium">
@@ -210,7 +213,9 @@ async function ServeContent({ params, searchParams }: Props) {
                     pendingLabel="Resetting…"
                     variant="destructive"
                     hidden={{ eventId: service.id }}
-                  />
+                  >
+                    <TabIdField />
+                  </ActionForm>
                 </div>
               </details>
             </section>

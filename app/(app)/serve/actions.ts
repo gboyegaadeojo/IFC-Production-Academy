@@ -13,13 +13,24 @@ import { checklistErrorMessage, type TickResult } from "@/lib/domain/checklists"
 
 // Service-day checklists (decision record 9, stage 2). The database checks who is serving.
 
-const tick = z.object({ eventId: z.uuid(), itemId: z.uuid(), checked: z.boolean() });
+const tabId = z
+  .string()
+  .max(80)
+  .regex(/^[A-Za-z0-9-]*$/)
+  .transform((value) => (value === "" ? null : value));
+const tick = z.object({
+  eventId: z.uuid(),
+  itemId: z.uuid(),
+  checked: z.boolean(),
+  tabId: tabId.optional().transform((value) => value ?? null),
+});
 
 /** Ticks or unticks one item. Idempotent, so a retry after a dropped connection is safe. */
 export async function setItemAction(input: {
   eventId: string;
   itemId: string;
   checked: boolean;
+  tabId?: string;
 }): Promise<TickResult> {
   const parsed = tick.safeParse(input);
   if (!parsed.success) {
@@ -30,6 +41,7 @@ export async function setItemAction(input: {
     parsed.data.eventId,
     parsed.data.itemId,
     parsed.data.checked,
+    parsed.data.tabId,
   );
   if (!result.ok) {
     return { ok: false, message: checklistErrorMessage(result.error) };
@@ -40,13 +52,18 @@ export async function setItemAction(input: {
 
 const eventId = z.uuid();
 
+function tabFrom(formData: FormData): string | null {
+  const parsed = tabId.safeParse(formData.get("tabId") ?? "");
+  return parsed.success ? parsed.data : null;
+}
+
 export async function resetAction(_: FormState, formData: FormData): Promise<FormState> {
   const id = eventId.safeParse(formData.get("eventId"));
   if (!id.success) {
     return { status: "error", message: checklistErrorMessage("not_authorized") };
   }
   await requireActiveUser();
-  const result = await resetServiceChecklists(id.data);
+  const result = await resetServiceChecklists(id.data, tabFrom(formData));
   if (!result.ok) {
     return { status: "error", message: checklistErrorMessage(result.error) };
   }
@@ -63,7 +80,7 @@ export async function undoResetAction(_: FormState, formData: FormData): Promise
     return { status: "error", message: checklistErrorMessage("not_authorized") };
   }
   await requireActiveUser();
-  const result = await undoChecklistReset(id.data);
+  const result = await undoChecklistReset(id.data, tabFrom(formData));
   if (!result.ok) {
     return { status: "error", message: checklistErrorMessage(result.error) };
   }

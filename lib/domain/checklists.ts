@@ -157,3 +157,57 @@ export function checklistErrorMessage(error: ChecklistError): string {
       return "That didn't save. Check your connection and try again.";
   }
 }
+
+// ---------------------------------------------------------------------------
+// The activity log (checklist app US-07a, US-13b)
+// ---------------------------------------------------------------------------
+
+export const ACTIVITY_ACTIONS: Record<string, string> = {
+  check: "Ticked",
+  uncheck: "Unticked",
+  reset: "Reset the service's checklists",
+  undo_reset: "Undid the reset",
+  add: "Added",
+  rename: "Renamed",
+  edit: "Edited",
+  hide: "Hid",
+  restore: "Restored",
+  move: "Moved",
+  reorder: "Reordered",
+  remove: "Removed",
+  link_position: "Linked a position",
+  unlink_position: "Unlinked a position",
+};
+
+export function activityActionLabel(action: string): string {
+  return ACTIVITY_ACTIONS[action] ?? action.replaceAll("_", " ");
+}
+
+/** "Refused: …", "No change", or nothing for a change that went through. */
+export function activityOutcomeLabel(outcome: string, reason: string | null): string | null {
+  if (outcome === "refused") {
+    return `Refused: ${checklistErrorMessage(toChecklistError({ message: reason }))}`;
+  }
+  return outcome === "unchanged" ? "No change" : null;
+}
+
+/** The words that changed, old to new, for an edit: "Power on" → "Power on everything". */
+export function activityChange(
+  before: Record<string, unknown> | null,
+  after: Record<string, unknown> | null,
+): string | null {
+  for (const field of ["text", "name"]) {
+    const was = before?.[field];
+    const now = after?.[field];
+    if (typeof was === "string" && typeof now === "string" && was !== now) {
+      return `“${was}” → “${now}”`;
+    }
+  }
+  if (typeof after?.cleared === "number") {
+    return `${after.cleared} ${after.cleared === 1 ? "tick" : "ticks"} cleared`;
+  }
+  if (typeof after?.restored === "number") {
+    return `${after.restored} ${after.restored === 1 ? "tick" : "ticks"} restored`;
+  }
+  return null;
+}

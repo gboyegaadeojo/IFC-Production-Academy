@@ -38,6 +38,14 @@ async function ChecklistsContent() {
         title="Pre-service checklists"
         description="What each position does before and after a service. People see their own checklist first on the day, and can tick as they go."
       />
+      <nav aria-label="Checklist tools" className="flex flex-wrap gap-4 text-small font-medium">
+        <Link
+          href="/admin/checklists/activity"
+          className="text-accent-light underline-offset-4 hover:underline"
+        >
+          Activity log
+        </Link>
+      </nav>
 
       {items.length === 0 ? (
         <EmptyState title="No checklists yet">

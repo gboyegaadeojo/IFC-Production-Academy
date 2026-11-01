@@ -134,6 +134,7 @@ test("admin pages are accessible", async ({ page }) => {
     ["/admin/schedule/calendar", "schedule calendar"],
     ["/admin/teams", "serving teams"],
     ["/admin/checklists", "pre-service checklists"],
+    ["/admin/checklists/activity", "checklist activity"],
     ["/admin/planning-center", "Planning Center"],
     ["/admin/reports", "reports"],
     ["/admin/mentoring", "mentoring (admin)"],

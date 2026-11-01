@@ -747,6 +747,31 @@ export type Database = {
         };
         Relationships: [];
       };
+      checklist_log: {
+        Row: {
+          id: string;
+          organization_id: string;
+          happened_at: string;
+          kind: string;
+          action: string;
+          outcome: string;
+          reason: string | null;
+          event_id: string | null;
+          target_table: string | null;
+          target_id: string | null;
+          subject: string;
+          before: Json | null;
+          after: Json | null;
+          actor_id: string | null;
+          actor_name: string;
+          session_id: string | null;
+          tab_id: string | null;
+        };
+        // Written only by the database; never changed or deleted.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       pco_service_types: {
         Row: { id: string; organization_id: string; name: string; seen_at: string };
         Insert: never;
@@ -1320,6 +1345,20 @@ export type Database = {
           checked_by_name: string | null;
           checked_at: string | null;
         }[];
+      };
+      checklist_tick: {
+        Args: {
+          p_event_id: string;
+          p_item_id: string;
+          p_checked: boolean;
+          p_tab_id: string | null;
+        };
+        Returns: string;
+      };
+      checklist_reset: { Args: { p_event_id: string; p_tab_id: string | null }; Returns: Json };
+      checklist_undo_reset: {
+        Args: { p_event_id: string; p_tab_id: string | null };
+        Returns: Json;
       };
       set_checklist_item: {
         Args: { p_event_id: string; p_item_id: string; p_checked: boolean };

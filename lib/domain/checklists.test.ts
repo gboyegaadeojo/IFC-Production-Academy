@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  activityActionLabel,
+  activityChange,
+  activityOutcomeLabel,
   groupServiceChecklists,
   parseChecklistText,
   percentDone,
@@ -85,5 +88,25 @@ describe("groupServiceChecklists", () => {
     expect(toChecklistError({ message: "checklist_closed" })).toBe("checklist_closed");
     expect(toChecklistError({ code: "42501", message: "x" })).toBe("not_authorized");
     expect(toChecklistError({ code: "XX000", message: "secret" })).toBe("unknown");
+  });
+});
+
+describe("activity log wording", () => {
+  it("names actions and outcomes", () => {
+    expect(activityActionLabel("check")).toBe("Ticked");
+    expect(activityActionLabel("something_new")).toBe("something new");
+    expect(activityOutcomeLabel("refused", "checklist_closed")).toMatch(
+      /^Refused: This checklist opens/,
+    );
+    expect(activityOutcomeLabel("unchanged", null)).toBe("No change");
+    expect(activityOutcomeLabel("ok", null)).toBeNull();
+  });
+
+  it("shows what changed", () => {
+    expect(activityChange({ text: "Power on" }, { text: "Power on everything" })).toBe(
+      "“Power on” → “Power on everything”",
+    );
+    expect(activityChange(null, { cleared: 1 })).toBe("1 tick cleared");
+    expect(activityChange({ sort_order: 10 }, { sort_order: 20 })).toBeNull();
   });
 });
