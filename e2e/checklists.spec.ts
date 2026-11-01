@@ -110,7 +110,7 @@ test("an admin copies a task list, makes it the default and back, then hides and
   await lists.getByRole("link", { name: new RegExp(`^${name}`) }).click();
   await page.getByRole("button", { name: "Hide this list" }).click();
   const hidden = page.getByRole("region", { name: "Hidden lists" });
-  await expect(hidden.getByText(name)).toBeVisible();
+  await expect(hidden.getByRole("listitem").filter({ hasText: name })).toBeVisible();
   await expect(lists.getByRole("link", { name: new RegExp(`^${name}`) })).toHaveCount(0);
   await hidden.getByRole("button", { name: `Restore ${name}` }).click();
   await expect(lists.getByRole("link", { name: new RegExp(`^${name}`) })).toBeVisible();
