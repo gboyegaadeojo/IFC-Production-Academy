@@ -27,8 +27,9 @@ grant all on ctx to authenticated;
 
 -- Records start a week ago; a service two days ago, whose day has ended.
 update public.organizations set checklist_records_since = now() - interval '7 days';
-insert into public.events (title, starts_at, ends_at)
-  values ('Fake past service', now() - interval '2 days', now() - interval '2 days' + interval '2 hours');
+insert into public.events (organization_id, title, starts_at, ends_at)
+  values ((select organization_id from public.departments where id = 'b7ba9dae-cab5-43e0-a996-8ae9d2436855'),
+          'Fake past service', now() - interval '2 days', now() - interval '2 days' + interval '2 hours');
 insert into ctx values ('event', (select id from public.events where title = 'Fake past service'));
 
 -- A checklist made a week ago: one task stays, one is hidden during the service's day, one is
