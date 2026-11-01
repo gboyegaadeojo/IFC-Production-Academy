@@ -260,15 +260,25 @@ async function read(authorization: string): Promise<PcoPayload> {
       }
     }
   }
+  const outcome = { added: 0, notFound: 0, archived: 0 };
   for (const [teamId, serviceTypeId] of unlisted) {
     const found = await firstFound(
-      [`/services/v2/teams/${teamId}?include=team_positions`],
+      [
+        `/services/v2/service_types/${serviceTypeId}/teams/${teamId}?include=team_positions`,
+        `/services/v2/teams/${teamId}?include=team_positions`,
+      ],
       authorization,
     );
-    const [team] = found ? mapTeams(serviceTypeId, found.data, found.included) : [];
-    if (!team) {
+    if (!found) {
+      outcome.notFound += 1;
       continue;
     }
+    const [team] = mapTeams(serviceTypeId, found.data, found.included);
+    if (!team) {
+      outcome.archived += 1;
+      continue;
+    }
+    outcome.added += 1;
     payload.teams.push(team);
     const byTeam = await firstFound(
       [`/services/v2/teams/${team.id}/person_team_position_assignments?per_page=100`],
@@ -284,7 +294,9 @@ async function read(authorization: string): Promise<PcoPayload> {
     }
   }
   if (unlisted.size > 0) {
-    console.log(`Teams read from plans: ${unlisted.size}`);
+    console.log(
+      `Teams used by plans but not listed: ${unlisted.size} (added ${outcome.added}, not found ${outcome.notFound}, archived ${outcome.archived})`,
+    );
   }
 
   // Everyone on a roster or a plan: their name and emails (for matching), and their blockouts.
