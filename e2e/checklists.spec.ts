@@ -173,7 +173,10 @@ test("an admin moves a task, removes with a confirmation, and restores from Hidd
   await expect(hidden.getByText(b, { exact: true })).toHaveCount(0);
   await hidden.getByRole("button", { name: `Restore ${two}` }).click();
   await expect(hidden.getByText(two, { exact: true })).toHaveCount(0);
-  await page.getByRole("link", { name: "Pre-service checklists" }).click();
+  await page
+    .getByRole("navigation", { name: "Breadcrumb" })
+    .getByRole("link", { name: "Pre-service checklists" })
+    .click();
   await page.getByRole("link", { name: new RegExp(`^E2E move ${stamp}`) }).click();
   await expect(section(b)).toContainText(one);
   await expect(section(a)).toContainText(two);
