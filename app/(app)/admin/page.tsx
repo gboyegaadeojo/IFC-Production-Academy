@@ -299,8 +299,9 @@ function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
   const cell = "px-4 py-3 align-middle";
   const number = `${cell} tabular text-right`;
   return (
-    <div className="overflow-hidden rounded-card border border-border bg-surface">
-      <div className="overflow-x-auto">
+    <div className="min-w-0 overflow-hidden rounded-card border border-border bg-surface">
+      {/* Scrolls on its own on phones; inline-size containment keeps the page from widening. */}
+      <div className="overflow-x-auto [contain:inline-size]">
         <table className="w-full min-w-[46rem] border-collapse text-left">
           <caption className="sr-only">Training, by department</caption>
           <thead>

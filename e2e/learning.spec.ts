@@ -211,7 +211,7 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   // The leader dashboard puts the request first and counts training per department.
   await assessor.goto("/admin");
   await expect(assessor.getByRole("heading", { name: "Training, by department" })).toBeVisible();
-  await assessor.getByRole("link", { name: "Assess: Waiting for an assessment" }).click();
+  await assessor.getByRole("link", { name: /^Assess\b.*Waiting for an assessment/ }).click();
   await expect(assessor.getByRole("heading", { level: 1, name: "Assessments" })).toBeVisible();
   await assessor
     .getByRole("region", { name: "Waiting for assessment" })
