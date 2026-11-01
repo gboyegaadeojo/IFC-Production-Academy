@@ -142,6 +142,7 @@ async function read(authorization: string): Promise<PcoPayload> {
   }));
 
   let rosterSource = "none";
+  const rosterRead = new Set<string>();
   for (const st of serviceTypes) {
     const teams = await orEmpty(async () => {
       const { data, included } = await list(
@@ -150,11 +151,17 @@ async function read(authorization: string): Promise<PcoPayload> {
       );
       return mapTeams(st.id, data, included);
     });
-    payload.teams.push(...teams);
+    // A team can belong to several service types (one media team for Sunday, Communion, and
+    // Crossover): it's listed once, under the first, and its roster is read once.
+    payload.teams.push(...teams.filter((t) => !payload.teams.some((seen) => seen.id === t.id)));
     const positions = teams.flatMap((t) => t.positions.map((p) => ({ id: p.id, team_id: t.id })));
 
     // Who is on each position's team (the roster), whether scheduled or not.
     for (const team of teams) {
+      if (rosterRead.has(team.id)) {
+        continue;
+      }
+      rosterRead.add(team.id);
       const byTeam = await firstFound(
         [`/services/v2/teams/${team.id}/person_team_position_assignments?per_page=100`],
         authorization,
