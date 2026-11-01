@@ -140,15 +140,20 @@ export function MonthCalendar({
                           {Number(date.slice(8))}
                         </span>
                         {dayMarks.length > 0 ? (
-                          <span className="flex flex-col items-center gap-0.5 sm:items-start">
+                          <span className="flex flex-col items-center gap-1 sm:w-full sm:items-stretch">
                             {dayMarks.slice(0, 3).map((mark, index) => (
-                              <span key={index} className="flex items-center gap-1">
+                              // The dot sits on the label's first line, so wrapped labels stay
+                              // aligned under each other.
+                              <span
+                                key={index}
+                                className="flex items-center sm:grid sm:grid-cols-[0.375rem_minmax(0,1fr)] sm:items-start sm:gap-x-1.5"
+                              >
                                 <span
                                   aria-hidden="true"
-                                  className={`size-1.5 shrink-0 rounded-pill ${DOT[mark.tone]}`}
+                                  className={`size-1.5 shrink-0 rounded-pill sm:mt-[0.4375rem] ${DOT[mark.tone]}`}
                                 />
                                 <span className="sr-only">, </span>
-                                <span className="sr-only truncate text-small leading-tight text-text-secondary sm:not-sr-only">
+                                <span className="sr-only text-left text-[0.75rem] leading-[1.35] break-words text-text-secondary sm:not-sr-only sm:line-clamp-2">
                                   {mark.label}
                                 </span>
                               </span>
