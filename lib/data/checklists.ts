@@ -339,6 +339,7 @@ export type ServiceChecklistState = {
   canTick: boolean;
   open: boolean;
   undoAvailable: boolean;
+  isScheduled: boolean;
 };
 
 /** A service's checklists and what this person may do, or null if they can't see them. */
@@ -379,6 +380,7 @@ export async function getServiceChecklists(
       canTick: flags?.can_tick ?? false,
       open: flags?.open ?? false,
       undoAvailable: flags?.undo_available ?? false,
+      isScheduled: flags?.is_scheduled ?? false,
     },
   };
 }
@@ -439,4 +441,14 @@ export async function getServiceHeader(eventId: string): Promise<ServiceHeader |
         cancelled: data.cancelled_at !== null,
       }
     : null;
+}
+
+/** Today's service, or the next one: what the checklist opens to (checklist app US-07). */
+export async function getCurrentServiceId(): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("current_service");
+  if (error) {
+    throw new Error("Could not find the current service", { cause: error.code });
+  }
+  return data;
 }
