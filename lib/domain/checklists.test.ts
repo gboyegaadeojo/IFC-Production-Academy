@@ -4,10 +4,12 @@ import {
   activityChange,
   activityOutcomeLabel,
   groupServiceChecklists,
+  groupServiceRecord,
   parseChecklistText,
   percentDone,
   progressLabel,
   toChecklistError,
+  type RecordRow,
   type ServiceChecklistRow,
 } from "./checklists";
 
@@ -108,5 +110,41 @@ describe("activity log wording", () => {
     );
     expect(activityChange(null, { cleared: 1 })).toBe("1 tick cleared");
     expect(activityChange({ sort_order: 10 }, { sort_order: 20 })).toBeNull();
+  });
+});
+
+describe("groupServiceRecord", () => {
+  const row = (checklistId: string, itemId: string, extra: Partial<RecordRow> = {}): RecordRow => ({
+    checklistId,
+    checklistName: checklistId === "cam" ? "Camera Operators" : "Audio Engineer",
+    sectionName: "Setup",
+    itemId,
+    itemText: itemId,
+    checkedText: null,
+    checkedByName: null,
+    checkedAt: null,
+    removedAt: null,
+    ...extra,
+  });
+
+  it("counts done and not done per department, leaving out tasks removed during the service", () => {
+    const record = groupServiceRecord([
+      row("cam", "a", {
+        checkedAt: "2026-11-08T15:00:00Z",
+        checkedByName: "Avery",
+        checkedText: "a (old)",
+      }),
+      row("cam", "b"),
+      row("cam", "c", { removedAt: "2026-11-08T14:00:00Z" }),
+      row("aud", "d", { checkedAt: "2026-11-08T15:05:00Z", checkedText: "d" }),
+    ]);
+    expect([record.done, record.total]).toEqual([2, 3]);
+    expect(record.departments.map((d) => [d.name, d.done, d.total, d.removed.length])).toEqual([
+      ["Camera Operators", 1, 2, 1],
+      ["Audio Engineer", 1, 1, 0],
+    ]);
+    expect(record.departments[0]!.doneTasks[0]!.checkedUnder).toBe("a (old)");
+    expect(record.departments[1]!.doneTasks[0]!.checkedUnder).toBeNull();
+    expect(record.departments[0]!.notDone.map((t) => t.id)).toEqual(["b"]);
   });
 });

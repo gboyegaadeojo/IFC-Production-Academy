@@ -45,6 +45,12 @@ async function ChecklistsContent() {
         >
           Activity log
         </Link>
+        <Link
+          href="/admin/checklists/history"
+          className="text-accent-light underline-offset-4 hover:underline"
+        >
+          Service history
+        </Link>
       </nav>
 
       {items.length === 0 ? (
