@@ -300,8 +300,11 @@ function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
   const number = `${cell} tabular text-right`;
   return (
     <div className="min-w-0 overflow-hidden rounded-card border border-border bg-surface">
-      {/* Scrolls on its own on phones; inline-size containment keeps the page from widening. */}
-      <div className="overflow-x-auto [contain:inline-size]">
+      {/*
+        Scrolls on its own on phones. `relative` keeps the screen-reader-only header text (which is
+        absolutely positioned) inside the scroll box, so it can't widen the page.
+      */}
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[46rem] border-collapse text-left">
           <caption className="sr-only">Training, by department</caption>
           <thead>
