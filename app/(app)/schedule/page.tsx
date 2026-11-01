@@ -287,7 +287,8 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
           {pco ? (
             <section
               aria-labelledby="blocked-heading"
-              className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-4 gap-y-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto] sm:items-center"
+              // Always two columns: the side panel is too narrow for a third.
+              className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 rounded-card border border-border bg-surface p-4"
             >
               <span
                 aria-hidden="true"
@@ -320,7 +321,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                 href={PLANNING_CENTER_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="col-start-2 text-small font-medium text-accent-light underline-offset-4 hover:underline sm:col-start-auto sm:border-l sm:border-border sm:pl-4"
+                className="col-start-2 w-fit text-small font-medium text-accent-light underline-offset-4 hover:underline"
               >
                 Manage in Planning Center
                 <span className="sr-only"> (opens in a new tab)</span>

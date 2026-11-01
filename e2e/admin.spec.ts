@@ -122,6 +122,28 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   await Promise.all([leaderContext.close(), guestContext.close(), otherContext.close()]);
 });
 
+test("a leader deletes a course added by mistake", async ({ page }) => {
+  // Casey leads Camera Operations (seed data). Only never-published courses can be deleted.
+  const title = `E2E mistake ${Date.now()}`;
+  await signInByEmail(page, "casey.leader@example.com");
+  await page.goto("/admin/curriculum");
+  await page.getByText("Add course to Level 1, Camera Operations").click();
+  await page.getByLabel("Course title").first().fill(title);
+  await page.getByRole("button", { name: "Create course" }).first().click();
+  await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
+
+  await page.goto("/admin/curriculum");
+  await page.getByRole("button", { name: `More for ${title}` }).click();
+  await page.getByRole("button", { name: `Delete draft course ${title}` }).click();
+  const confirm = page.getByRole("alertdialog", { name: `Delete “${title}”?` });
+  await expect(confirm).toContainText("never been published");
+  await confirm.getByRole("button", { name: "Delete course" }).click();
+  await expect(page.getByRole("link", { name: new RegExp(title) })).toHaveCount(0);
+
+  // The seeded published course has no Delete.
+  await expect(page.getByRole("button", { name: /More for Sample course/ })).toHaveCount(0);
+});
+
 test("a leader builds, publishes, and revises a course", async ({ page }) => {
   // Casey leads Camera Operations (seed data). Workflow C (SPEC §3), decided 2026-10-30.
   const title = `E2E framing ${Date.now()}`;

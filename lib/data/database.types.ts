@@ -1177,6 +1177,7 @@ export type Database = {
         Returns: number;
       };
       archive_course: { Args: { p_course_id: string }; Returns: undefined };
+      discard_draft_course: { Args: { p_course_id: string }; Returns: undefined };
       delete_course_module: { Args: { p_module_id: string }; Returns: undefined };
       delete_lesson: { Args: { p_lesson_id: string }; Returns: undefined };
       record_lesson_view: {

@@ -15,6 +15,7 @@ import { departmentHueVar } from "@/lib/domain/departments";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
 import { createCourseAction } from "./actions";
+import { CourseRowMenu } from "./course-row-menu";
 
 export const metadata: Metadata = { title: "Curriculum" };
 
@@ -140,10 +141,10 @@ function Workspace({ department }: { department: CurriculumOverview[number] }) {
               ) : (
                 <ul className="flex flex-col divide-y divide-border border-y border-border">
                   {level.courses.map((course) => (
-                    <li key={course.id}>
+                    <li key={course.id} className="flex items-center gap-1">
                       <Link
                         href={`/admin/curriculum/${course.id}`}
-                        className="group flex items-center gap-3 py-3 transition-surface hover:bg-hover"
+                        className="group flex flex-1 items-center gap-3 py-3 transition-surface hover:bg-hover"
                       >
                         <span className="flex flex-1 flex-col gap-1.5 px-1">
                           <span className="font-medium text-text">{course.state.title}</span>
@@ -151,8 +152,14 @@ function Workspace({ department }: { department: CurriculumOverview[number] }) {
                             {courseStateLabel(course.state)}
                           </StatusBadge>
                         </span>
-                        <ChevronRightIcon className="size-4 shrink-0 text-text-muted group-hover:text-text" />
+                        {course.state.kind === "unpublished" && department.canDraft ? null : (
+                          <ChevronRightIcon className="size-4 shrink-0 text-text-muted group-hover:text-text" />
+                        )}
                       </Link>
+                      {/* Only never-published courses can be deleted; the database checks too. */}
+                      {course.state.kind === "unpublished" && department.canDraft ? (
+                        <CourseRowMenu courseId={course.id} title={course.state.title} />
+                      ) : null}
                     </li>
                   ))}
                 </ul>

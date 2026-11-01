@@ -56,6 +56,10 @@ describe("courseState", () => {
     const state = courseState([v("a", "archived", 3)], true);
     expect(state?.kind).toBe("archived");
   });
+
+  it("leaves out a draft course that was deleted before it was ever published", () => {
+    expect(courseState([v("d", "draft", null)], true)).toBeNull();
+  });
 });
 
 describe("parseObjectives", () => {
