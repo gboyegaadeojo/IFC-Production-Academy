@@ -99,6 +99,9 @@ for (const viewport of VIEWPORTS) {
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}$`));
     await page.getByRole("link", { name: "Start the course" }).click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}/lessons/`));
+    await expect(page.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
+    // Progress is saved for them too, not only for members.
+    await expect(page.getByRole("button", { name: "Mark lesson complete" })).toBeVisible();
     await capture(page, `lesson-visitor-${viewport.name}`);
 
     // A lesson that isn't in the course is not found, for members and visitors alike.

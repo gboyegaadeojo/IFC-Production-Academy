@@ -304,7 +304,7 @@ function DepartmentSkeleton() {
     <div className="page-container flex flex-col gap-12 py-8 lg:py-12" aria-busy="true">
       <LoadingStatus label="Loading the department…" />
       <div className="grid gap-8 lg:grid-cols-[1fr_28rem]">
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-12 w-72 max-w-full" />
           <Skeleton className="h-6 w-[32rem] max-w-full" />

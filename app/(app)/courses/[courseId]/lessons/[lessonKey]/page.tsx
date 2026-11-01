@@ -345,7 +345,7 @@ function LessonSkeleton() {
       <LoadingStatus label="Loading the lesson…" />
       <Skeleton className="h-4 w-72 max-w-full" />
       <div className="grid gap-8 lg:grid-cols-[1fr_19rem]">
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-10 w-96 max-w-full" />
           <Skeleton className="h-64" />

@@ -253,7 +253,7 @@ function CourseSkeleton() {
       <LoadingStatus label="Loading the course…" />
       <Skeleton className="h-4 w-64" />
       <div className="grid gap-10 lg:grid-cols-[1fr_22rem]">
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-12 w-96 max-w-full" />
           <Skeleton className="h-6 w-[32rem] max-w-full" />
