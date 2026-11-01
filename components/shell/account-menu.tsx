@@ -84,7 +84,7 @@ export function AccountMenu({
         className={
           inSidebar
             ? `flex min-h-11 items-center gap-2.5 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
-                compact ? "w-11 justify-center" : "w-full px-2"
+                compact ? "relative w-11 justify-center" : "w-full px-2"
               }`
             : "flex min-h-touch items-center gap-2 rounded-button px-1.5 text-text-secondary transition-surface hover:bg-hover hover:text-text sm:px-2"
         }
@@ -108,12 +108,20 @@ export function AccountMenu({
           {displayName}
         </span>
         {unread > 0 ? (
-          <span
-            aria-hidden="true"
-            className="tabular rounded-pill bg-accent px-1.5 text-small font-medium text-on-accent"
-          >
-            {unread > 99 ? "99+" : unread}
-          </span>
+          compact ? (
+            // Icons only: a dot on the avatar; the number is in the menu and the label.
+            <span
+              aria-hidden="true"
+              className="absolute top-1.5 right-1.5 size-2 rounded-pill bg-accent ring-2 ring-surface"
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="tabular rounded-pill bg-accent px-1.5 text-small font-medium text-on-accent"
+            >
+              {unread > 99 ? "99+" : unread}
+            </span>
+          )
         ) : null}
         <span className="sr-only">
           {unread > 0
