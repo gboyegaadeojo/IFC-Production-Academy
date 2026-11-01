@@ -7,7 +7,13 @@ import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 
 export type Achievements = {
   certificates: CertificateSummary[];
-  approvedRoles: { roleId: string; roleName: string; departmentName: string; approvedAt: string }[];
+  approvedRoles: {
+    roleId: string;
+    roleName: string;
+    departmentId: string;
+    departmentName: string;
+    approvedAt: string;
+  }[];
 };
 
 export async function getMyAchievements(userId: string): Promise<Achievements> {
@@ -55,6 +61,7 @@ export async function getMyAchievements(userId: string): Promise<Achievements> {
             {
               roleId: role.id,
               roleName: role.name,
+              departmentId: department.id,
               departmentName: department.name,
               approvedAt: approval.approved_at,
             },

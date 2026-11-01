@@ -6,6 +6,7 @@ import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
 import { getUnreadCount } from "@/lib/data/notifications";
+import { getMyPlanningCenter } from "@/lib/data/profile";
 import { adminSections } from "@/lib/domain/admin";
 import { initials } from "@/lib/domain/people";
 import { AccountMenu } from "./account-menu";
@@ -37,10 +38,10 @@ async function Account() {
   }
   // Only areas a person may use are offered (SPEC §8); each admin page checks again on the server.
   const active = user.status === "active";
-  const [[grants, unread], appearance] = await Promise.all([
+  const [[grants, unread, planningCenter], appearance] = await Promise.all([
     active
-      ? Promise.all([getMyCapabilities(), getUnreadCount(user.id)])
-      : Promise.resolve([[], 0] as const),
+      ? Promise.all([getMyCapabilities(), getUnreadCount(user.id), getMyPlanningCenter()])
+      : Promise.resolve([[], 0, { linked: false, name: null }] as const),
     getAppearance(),
   ]);
   const showAdmin = active && adminSections(grants).length > 0;
@@ -48,6 +49,8 @@ async function Account() {
     <AccountMenu
       displayName={user.displayName}
       initials={initials(user.displayName)}
+      email={user.email}
+      planningCenter={planningCenter.linked}
       showAdmin={showAdmin}
       unread={unread}
       appearance={appearance}

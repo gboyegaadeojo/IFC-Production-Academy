@@ -18,7 +18,10 @@ test("a volunteer changes the name leaders see", async ({ page }, testInfo) => {
   await expect(page.getByText(email)).toBeVisible();
   await expect(page.getByText("Volunteer", { exact: true })).toBeVisible();
 
+  // The name edits in place.
+  await page.getByRole("button", { name: "Edit name" }).click();
   const name = page.getByLabel("Your name");
+  await expect(name).toBeFocused();
   await name.fill("   ");
   await page.getByRole("button", { name: "Save name" }).click();
   await expect(page.getByRole("main").getByRole("alert")).toHaveText(/Enter the name/);
@@ -30,6 +33,10 @@ test("a volunteer changes the name leaders see", async ({ page }, testInfo) => {
   ).toBeVisible();
   await expect(page.getByRole("button", { name: /^Sam Example\s*, account menu$/ })).toBeVisible();
 
+  // Saving closes the editor.
+  await expect(page.getByLabel("Your name")).toHaveCount(0);
+
+  // Training greets them by first name.
   await page.goto("/home");
-  await expect(page.getByRole("heading", { level: 1, name: "Welcome, Sam Example" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Welcome, Sam" })).toBeVisible();
 });

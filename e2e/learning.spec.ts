@@ -26,7 +26,10 @@ for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
     await signInByEmail(page, "avery.volunteer@example.com");
 
-    await page.getByRole("link", { name: "Open your pathway for Camera Operations" }).click();
+    await page
+      .getByRole("article", { name: "Camera Operations" })
+      .getByRole("link", { name: "Camera Operations", exact: true })
+      .click();
     await expect(page).toHaveURL(/\/departments\/camera-operations$/);
     await expect(page.getByRole("heading", { level: 1, name: "Camera Operations" })).toBeVisible();
     await expect(page.getByRole("article", { name: "Foundations" })).toBeVisible();
@@ -283,11 +286,19 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
     readiness.getByRole("listitem").filter({ hasText: "Sample skill (seed data)" }),
   ).toContainText("Approved");
 
-  // Home shows what they've earned: approval to serve and the certificate, kept apart.
+  // Training shows the approval on the department's card; the profile shows it per role.
   await volunteer.goto("/home");
-  const achievements = volunteer.getByRole("region", { name: "What you've earned" });
-  await expect(achievements.getByText("Sample role (seed data)")).toBeVisible();
-  await expect(achievements.getByText("Sample course (seed data)")).toBeVisible();
+  await expect(
+    volunteer
+      .getByRole("article", { name: "Camera Operations" })
+      .getByText("Approved: Sample role (seed data)"),
+  ).toBeVisible();
+  await volunteer.goto("/profile");
+  await expect(
+    volunteer
+      .getByRole("region", { name: "Departments and roles" })
+      .getByText("Approved: Sample role (seed data)"),
+  ).toBeVisible();
 
   // Workflow D (SPEC §3): now that they're approved, a leader schedules them and they confirm. The
   // candidate list shows the competency check before anyone is scheduled.
@@ -362,9 +373,10 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await volunteer.getByRole("button", { name: "Mark as not complete" }).click();
   await expect(volunteer.getByRole("button", { name: "Mark lesson complete" })).toBeVisible();
 
-  // Home picks up where they left off.
+  // Training picks up where they left off, on the department's card.
   await volunteer.goto("/home");
-  await expect(volunteer.getByRole("heading", { name: "Continue learning" })).toBeVisible();
-  await expect(volunteer.getByRole("link", { name: /Next: Sample lesson/ })).toBeVisible();
+  const card = volunteer.getByRole("article", { name: "Camera Operations" });
+  await expect(card.getByText("Next: Sample lesson")).toBeVisible();
+  await expect(card.getByRole("link", { name: /^Continue .*Sample lesson/ })).toBeVisible();
   await volunteerContext.close();
 });

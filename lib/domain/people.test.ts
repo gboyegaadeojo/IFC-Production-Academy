@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { initials } from "./people";
+import { firstName, initials } from "./people";
+
+describe("firstName", () => {
+  it("takes the first word", () => {
+    expect(firstName("  Sam   Example ")).toBe("Sam");
+    expect(firstName("gadeojo")).toBe("gadeojo");
+  });
+
+  it("keeps an empty name empty", () => {
+    expect(firstName("   ")).toBe("");
+  });
+});
 
 describe("initials", () => {
   it("takes the first letters of the first and last words", () => {

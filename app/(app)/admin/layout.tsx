@@ -8,6 +8,7 @@ import { getAdminNavCounts } from "@/lib/data/admin/overview";
 import { getAppearance } from "@/lib/data/appearance";
 import { getMyCapabilities } from "@/lib/data/capabilities";
 import { getUnreadCount } from "@/lib/data/notifications";
+import { getMyPlanningCenter } from "@/lib/data/profile";
 import { ADMIN_SIDEBAR_COOKIE, adminNavigation } from "@/lib/domain/admin";
 import { initials } from "@/lib/domain/people";
 import { AdminCurrentLabel, AdminSidebar, type AdminNavGroup } from "./admin-sidebar";
@@ -54,10 +55,16 @@ async function Navigation() {
   if (!user || groups.length === 0) {
     return null;
   }
-  const [counts, unread] = await Promise.all([getAdminNavCounts(grants), getUnreadCount(user.id)]);
+  const [counts, unread, planningCenter] = await Promise.all([
+    getAdminNavCounts(grants),
+    getUnreadCount(user.id),
+    getMyPlanningCenter(),
+  ]);
   const account = {
     displayName: user.displayName,
     initials: initials(user.displayName),
+    email: user.email,
+    planningCenter: planningCenter.linked,
     showAdmin: true,
     unread,
     appearance,

@@ -4,17 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { AppearancePicker } from "@/components/appearance-picker";
-import { ChevronDownIcon, ChevronUpDownIcon } from "@/components/ui/icons";
+import {
+  BellIcon,
+  ChevronDownIcon,
+  ChevronUpDownIcon,
+  LogOutIcon,
+  ShieldIcon,
+  UserIcon,
+  UsersIcon,
+} from "@/components/ui/icons";
 import type { Appearance } from "@/lib/domain/appearance";
 
 /**
- * Account menu (DESIGN §3.2): Profile, the Academy/Admin workspace switch when permitted,
- * Appearance (checklist app US-08a), and Sign out. A disclosure, not an ARIA menu: Tab moves through the links, Escape closes and returns
- * focus to the button, and a click outside closes it.
+ * Account menu (DESIGN §3.2; approved mock, 2026-11-01): who you are and how you sign in, then
+ * Profile, Notifications, Mentoring, the Academy/Admin workspace switch when permitted, Appearance
+ * (checklist app US-08a), and Sign out. A disclosure, not an ARIA menu: Tab moves through the
+ * links, Escape closes and returns focus to the button, and a click outside closes it.
  */
 export function AccountMenu({
   displayName,
   initials,
+  email = null,
+  planningCenter = false,
   showAdmin,
   unread = 0,
   appearance,
@@ -24,6 +35,10 @@ export function AccountMenu({
 }: {
   displayName: string;
   initials: string;
+  /** The sign-in email, shown under the name. */
+  email?: string | null;
+  /** Whether this account signs in with Planning Center. */
+  planningCenter?: boolean;
   showAdmin: boolean;
   /** Unread notifications, shown on the button and the Notifications link. */
   unread?: number;
@@ -70,7 +85,9 @@ export function AccountMenu({
   }, [open]);
 
   const item =
-    "flex min-h-touch items-center rounded-button px-3 text-body text-text-secondary transition-surface hover:bg-hover hover:text-text";
+    "flex min-h-touch items-center gap-3 rounded-button px-2.5 text-body text-text-secondary transition-surface hover:bg-card hover:text-text";
+  const avatar =
+    "flex size-8 shrink-0 items-center justify-center rounded-pill border border-border-strong bg-[linear-gradient(135deg,color-mix(in_srgb,var(--accent)_22%,var(--card)),var(--card))] text-small font-medium text-text";
 
   return (
     <div ref={rootRef} className="relative">
@@ -89,10 +106,7 @@ export function AccountMenu({
             : "flex min-h-touch items-center gap-2 rounded-button px-1.5 text-text-secondary transition-surface hover:bg-hover hover:text-text sm:px-2"
         }
       >
-        <span
-          aria-hidden="true"
-          className="flex size-8 items-center justify-center rounded-pill border border-border-strong bg-card text-small font-medium text-text"
-        >
+        <span aria-hidden="true" className={avatar}>
           {initials}
         </span>
         {/* Visible from 640px; always part of the name, so the label matches what's shown. */}
@@ -140,7 +154,7 @@ export function AccountMenu({
       {open ? (
         <div
           id={panelId}
-          className={`absolute z-40 w-64 rounded-card border border-border bg-surface p-2 shadow-[0_16px_40px_-12px_var(--bg)] ${
+          className={`absolute z-40 w-[18.75rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-card border border-border bg-surface shadow-[0_24px_60px_-20px_var(--bg)] ${
             inSidebar
               ? compact
                 ? "bottom-0 left-full ml-3"
@@ -148,25 +162,44 @@ export function AccountMenu({
               : "right-0 mt-2"
           }`}
         >
-          <p className="truncate px-3 pt-1 pb-2 text-small text-text-muted">
-            Signed in as <span className="text-text">{displayName}</span>
-          </p>
-          <ul className="flex flex-col">
+          <div className="flex items-center gap-3 border-b border-border p-4">
+            <span aria-hidden="true" className={avatar}>
+              {initials}
+            </span>
+            <div className="flex min-w-0 flex-col">
+              <span className="sr-only">Signed in as </span>
+              <span className="truncate font-medium text-text">{displayName}</span>
+              {email ? <span className="truncate text-small text-text-muted">{email}</span> : null}
+              {planningCenter ? (
+                <span className="mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-pill border border-border px-2 py-0.5 text-[0.71875rem] text-text-secondary">
+                  <span aria-hidden="true" className="size-1.5 rounded-pill bg-success" />
+                  Signed in with Planning Center
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <ul className="flex flex-col p-1.5">
             <li>
               <Link href="/profile" className={item}>
+                <UserIcon className="size-[18px] shrink-0" />
                 Your profile
               </Link>
             </li>
             <li>
-              <Link href="/notifications" className={`${item} justify-between`}>
+              <Link href="/notifications" className={item}>
+                <BellIcon className="size-[18px] shrink-0" />
                 Notifications
                 {unread > 0 ? (
-                  <span className="tabular text-small text-text-muted">{unread} unread</span>
+                  <span className="tabular ml-auto rounded-pill bg-accent px-2 font-mono text-[0.71875rem] text-on-accent">
+                    {unread > 99 ? "99+" : unread}
+                    <span className="sr-only"> unread</span>
+                  </span>
                 ) : null}
               </Link>
             </li>
             <li>
               <Link href="/mentoring" className={item}>
+                <UsersIcon className="size-[18px] shrink-0" />
                 Mentoring
               </Link>
             </li>
@@ -174,17 +207,19 @@ export function AccountMenu({
             {showAdmin && !inSidebar ? (
               <li>
                 <Link href={inAdmin ? "/home" : "/admin"} className={item}>
+                  <ShieldIcon className="size-[18px] shrink-0" />
                   {inAdmin ? "Back to Academy" : "Admin"}
                 </Link>
               </li>
             ) : null}
           </ul>
-          <div className="mt-2 border-t border-border px-1 pt-2 pb-1">
+          <div className="mx-1.5 border-t border-border px-2.5 py-2">
             <AppearancePicker initial={appearance} />
           </div>
-          <div className="mt-2 border-t border-border pt-2">
+          <div className="mx-1.5 border-t border-border py-1.5">
             <form action={signOut}>
               <button type="submit" className={`${item} w-full`}>
+                <LogOutIcon className="size-[18px] shrink-0" />
                 Sign out
               </button>
             </form>

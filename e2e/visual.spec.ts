@@ -53,9 +53,14 @@ for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
     // Avery is a fake seed member of Camera Operations, which has one fake published course.
     await signInByEmail(page, "avery.volunteer@example.com");
-    await expect(page.getByRole("heading", { name: "Your departments" })).toBeVisible();
-    // Other tests may publish more Camera courses in the same run, so match any real count.
-    await expect(page.getByText(/\d+ courses? published/).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Keep learning" })).toBeVisible();
+    // Other tests may publish more Camera courses or record progress, so match any real count.
+    await expect(
+      page
+        .getByRole("article", { name: "Camera Operations" })
+        .getByText(/^\d+ of \d+ lessons?$/)
+        .first(),
+    ).toBeVisible();
     // Membership is never shown as approval to serve.
     await expect(page.getByText("Approved to serve", { exact: true })).toHaveCount(1);
     await capture(page, `home-member-${viewport.name}`);

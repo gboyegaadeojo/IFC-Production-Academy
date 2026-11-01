@@ -1,3 +1,9 @@
+/** The first word of a display name, for a friendly greeting. Falls back to the whole name. */
+export function firstName(displayName: string): string {
+  const trimmed = displayName.trim();
+  return trimmed.split(/\s+/)[0] || trimmed;
+}
+
 /** Up to two initials for an avatar, from a display name. Falls back to "?" for an empty name. */
 export function initials(displayName: string): string {
   const words = displayName

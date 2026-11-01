@@ -9,7 +9,10 @@ export type MyProfile = {
   roles: { id: string; roleName: string; departmentName: string | null }[];
   memberships: {
     id: string;
+    departmentId: string;
     departmentName: string;
+    departmentHue: string;
+    departmentIcon: string;
     status: MembershipStatus;
     updatedAt: string;
   }[];
@@ -32,7 +35,7 @@ export async function getMyProfile(userId: string): Promise<MyProfile | null> {
       .eq("user_id", userId)
       .order("updated_at", { ascending: false }),
     supabase.from("roles").select("id, name"),
-    supabase.from("departments").select("id, name"),
+    supabase.from("departments").select("id, name, hue, icon"),
   ]);
   for (const result of [profile, email, grants, memberships, roles, departments]) {
     if (result.error) {
@@ -44,6 +47,7 @@ export async function getMyProfile(userId: string): Promise<MyProfile | null> {
   }
 
   const roleName = new Map((roles.data ?? []).map((row) => [row.id, row.name]));
+  const departmentById = new Map((departments.data ?? []).map((row) => [row.id, row]));
   const departmentName = new Map((departments.data ?? []).map((row) => [row.id, row.name]));
 
   // One row per department: the most recent membership record.
@@ -67,7 +71,10 @@ export async function getMyProfile(userId: string): Promise<MyProfile | null> {
     })),
     memberships: latest.map((row) => ({
       id: row.id,
+      departmentId: row.department_id,
       departmentName: departmentName.get(row.department_id) ?? "A department",
+      departmentHue: departmentById.get(row.department_id)?.hue ?? "",
+      departmentIcon: departmentById.get(row.department_id)?.icon ?? "",
       status: row.status,
       updatedAt: row.updated_at,
     })),
@@ -83,4 +90,14 @@ export async function updateMyDisplayName(userId: string, displayName: string): 
     .eq("id", userId)
     .select("id");
   return !error && data.length === 1;
+}
+
+export type MyPlanningCenter = { linked: boolean; name: string | null };
+
+/** Whether you sign in with Planning Center, and its name for you (for the name suggestion). */
+export async function getMyPlanningCenter(): Promise<MyPlanningCenter> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("my_planning_center");
+  const row = error ? undefined : data[0];
+  return { linked: row?.linked ?? false, name: row?.pco_name ?? null };
 }

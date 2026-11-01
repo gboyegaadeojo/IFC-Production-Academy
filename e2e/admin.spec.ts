@@ -60,9 +60,8 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
 
   // The volunteer is now a member. Membership is not approval to serve.
   await volunteer.reload();
-  await expect(
-    volunteer.getByRole("article", { name: "Audio Engineering" }).getByText("You're a member"),
-  ).toBeVisible();
+  await expect(audio.getByText("Member", { exact: true })).toBeVisible();
+  await expect(audio.getByText(/^Approved:/)).toHaveCount(0);
 
   await volunteerContext.close();
   await leaderContext.close();
@@ -105,7 +104,7 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   await guest.getByRole("button", { name: "Accept and join Audio Engineering" }).click();
   await expect(guest).toHaveURL(/\/home$/);
   await expect(
-    guest.getByRole("article", { name: "Audio Engineering" }).getByText("You're a member"),
+    guest.getByRole("article", { name: "Audio Engineering" }).getByText("Member", { exact: true }),
   ).toBeVisible();
 
   // It was for one person, so it's now used up.
