@@ -19,7 +19,9 @@ async function addToTeam(page: Page, label: RegExp) {
   if ((await select.count()) === 0) {
     return;
   }
-  await team.getByText("Add someone").click();
+  if (!(await select.isVisible())) {
+    await team.getByText("Add someone").click();
+  }
   const option = select.locator("option", { hasText: label });
   if ((await option.count()) === 0) {
     return; // Already on the team from an earlier run.
