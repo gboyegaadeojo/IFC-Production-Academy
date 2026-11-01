@@ -81,6 +81,11 @@ export function eventTimeLabel(startsAt: string, endsAt: string): string {
   return `${DAY.format(start)} · ${TIME.format(start)} – ${TIME.format(end)}`;
 }
 
+/** "Sun, Nov 8" in Winnipeg time, for a service day with no times yet. */
+export function eventDayLabel(startsAt: string): string {
+  return DAY.format(new Date(startsAt));
+}
+
 // ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------

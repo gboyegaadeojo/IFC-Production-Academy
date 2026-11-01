@@ -54,12 +54,19 @@ Miscellaneous), each in its department, and link it to the positions that use it
 list** to bring in the current checklist without retyping it: ready-to-paste text for all six
 lists is in the `private/checklists/` folder on G's computer, kept out of the public repository.
 
+Then, under **Pre-service checklists → Settings**, choose the Planning Center **service type** the
+checklist follows (such as the Sunday service), so a youth night or rehearsal earlier in the week
+doesn't open first, and the usual **service day** (Sunday). When nothing is published yet, the
+checklist still opens for that day with a note saying so; once Planning Center publishes the
+service, the next sync gives it that day's checklist, ticks included.
+
 ## What volunteers see
 
 - **Your schedule:** where they're serving (from Planning Center), a month calendar, who's serving
   with them, and their blockout dates. Accept, decline, and block out dates in Planning Center;
   changes show within 15 minutes.
-- **Checklist:** today's service, or the next. Scheduled volunteers see their position's
+- **Checklist:** today's service, or the next (or the next service day, if nothing is published
+  yet). Scheduled volunteers see their position's
   checklist first; production team members who aren't serving can still help.
 
 ## If IFC ever schedules in the Academy

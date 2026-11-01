@@ -3,11 +3,19 @@ import {
   activityActionLabel,
   activityChange,
   activityOutcomeLabel,
+  canSwitchCurrentService,
+  checklistErrorMessage,
   groupServiceChecklists,
   groupServiceRecord,
   parseChecklistText,
   percentDone,
   progressLabel,
+  hideBlocker,
+  nextServiceDay,
+  removeWarning,
+  restoreWithParentsLabel,
+  sameListName,
+  tidyListName,
   toChecklistError,
   type RecordRow,
   type ServiceChecklistRow,
@@ -146,5 +154,68 @@ describe("groupServiceRecord", () => {
     expect(record.departments[0]!.doneTasks[0]!.checkedUnder).toBe("a (old)");
     expect(record.departments[1]!.doneTasks[0]!.checkedUnder).toBeNull();
     expect(record.departments[0]!.notDone.map((t) => t.id)).toEqual(["b"]);
+  });
+});
+
+describe("task lists", () => {
+  it("tidies names and compares them ignoring capitals and extra spaces", () => {
+    expect(tidyListName("  Christmas   Eve ")).toBe("Christmas Eve");
+    expect(sameListName("christmas  EVE", " Christmas Eve")).toBe(true);
+    expect(sameListName("Christmas", "Christmas Eve")).toBe(false);
+  });
+
+  it("never hides the default list or one a service is using", () => {
+    expect(hideBlocker({ isDefault: true, inUse: true })).toMatch(/default list/);
+    expect(hideBlocker({ isDefault: false, inUse: true })).toMatch(/service is using/);
+    expect(hideBlocker({ isDefault: false, inUse: false })).toBeNull();
+  });
+
+  it("offers to switch the current service only before anything is ticked", () => {
+    expect(canSwitchCurrentService(null, "b")).toBe(false);
+    expect(canSwitchCurrentService({ setId: "a", hasCheckoffs: false }, "b")).toBe(true);
+    expect(canSwitchCurrentService({ setId: "a", hasCheckoffs: true }, "b")).toBe(false);
+    expect(canSwitchCurrentService({ setId: "b", hasCheckoffs: false }, "b")).toBe(false);
+  });
+
+  it("explains the list errors the database gives", () => {
+    for (const reason of [
+      "name_taken",
+      "list_hidden",
+      "list_not_found",
+      "list_in_use",
+      "service_has_checkoffs",
+    ] as const) {
+      expect(toChecklistError({ message: reason })).toBe(reason);
+      expect(checklistErrorMessage(reason)).not.toMatch(/connection/);
+    }
+  });
+});
+
+describe("hidden items", () => {
+  it("warns about the tasks, and position links, that go with a removal", () => {
+    expect(removeWarning("section", 3)).toMatch(/^Its 3 tasks go with it\./);
+    expect(removeWarning("section", 1)).toMatch(/^Its 1 task goes with it\./);
+    expect(removeWarning("section", 0)).toMatch(/^It has no tasks\./);
+    expect(removeWarning("checklist", 2, 2)).toMatch(/links to 2 positions are removed/);
+    expect(removeWarning("checklist", 2, 1)).toMatch(/link to a position is removed/);
+    expect(removeWarning("section", 2, 5)).not.toMatch(/position/);
+    expect(removeWarning("checklist", 2)).toMatch(/restore it from Hidden items/);
+  });
+
+  it("says what comes back with a restore inside something hidden", () => {
+    expect(restoreWithParentsLabel("item")).toMatch(/section and checklist/);
+    expect(restoreWithParentsLabel("section")).toBe("Restore it with its checklist");
+  });
+});
+
+describe("settings", () => {
+  it("finds the next service day, today included", () => {
+    // 2026-11-01 is a Sunday.
+    expect(nextServiceDay("2026-11-01", 0)).toBe("2026-11-01");
+    expect(nextServiceDay("2026-11-02", 0)).toBe("2026-11-08");
+    expect(nextServiceDay("2026-11-07", 0)).toBe("2026-11-08");
+    expect(nextServiceDay("2026-11-01", 6)).toBe("2026-11-07");
+    expect(nextServiceDay("2026-12-30", 3)).toBe("2026-12-30");
+    expect(nextServiceDay("2026-12-31", 0)).toBe("2027-01-03");
   });
 });

@@ -9,6 +9,8 @@ import * as checklists from "@/lib/data/checklists";
 import {
   checklistErrorMessage,
   MAX_ITEM_LENGTH,
+  MAX_LIST_DESCRIPTION_LENGTH,
+  MAX_LIST_NAME_LENGTH,
   MAX_SECTION_LENGTH,
   parseChecklistText,
 } from "@/lib/domain/checklists";
@@ -38,9 +40,13 @@ const denied = () => error(checklistErrorMessage("not_authorized"));
 
 export async function createChecklistAction(_: FormState, formData: FormData): Promise<FormState> {
   const departmentId = id.safeParse(formData.get("departmentId"));
+  const listId = id.safeParse(formData.get("listId"));
   const title = name(80, "Give the checklist a name.").safeParse(text(formData.get("name")));
   if (!departmentId.success) {
     return error("Choose a department.");
+  }
+  if (!listId.success) {
+    return error("Choose a task list.");
   }
   if (!title.success) {
     return error(title.error.issues[0]?.message ?? "Give the checklist a name.");
@@ -48,7 +54,7 @@ export async function createChecklistAction(_: FormState, formData: FormData): P
   if (!(await allowed())) {
     return denied();
   }
-  const result = await checklists.createChecklist(departmentId.data, title.data);
+  const result = await checklists.createChecklist(departmentId.data, title.data, listId.data);
   if (!result.ok) {
     return error(checklistErrorMessage(result.error));
   }
@@ -70,6 +76,7 @@ export async function renameChecklistAction(_: FormState, formData: FormData): P
 
 export async function archiveChecklistAction(_: FormState, formData: FormData): Promise<FormState> {
   const checklistId = id.safeParse(formData.get("checklistId"));
+  const listId = id.safeParse(formData.get("listId"));
   if (!checklistId.success || !(await allowed())) {
     return denied();
   }
@@ -77,7 +84,7 @@ export async function archiveChecklistAction(_: FormState, formData: FormData): 
   if (!result.ok) {
     return error(checklistErrorMessage(result.error));
   }
-  redirect("/admin/checklists");
+  redirect(listId.success ? `/admin/checklists?list=${listId.data}` : "/admin/checklists");
 }
 
 export async function setPositionsAction(_: FormState, formData: FormData): Promise<FormState> {
@@ -169,7 +176,7 @@ export async function itemAction(_: FormState, formData: FormData): Promise<Form
 }
 
 const move = z.object({
-  table: z.enum(["checklist_sections", "checklist_items"]),
+  table: z.enum(["checklists", "checklist_sections", "checklist_items"]),
   aId: z.uuid(),
   aOrder: z.coerce.number().int(),
   bId: z.uuid(),
@@ -218,4 +225,188 @@ export async function importAction(_: FormState, formData: FormData): Promise<Fo
       result.value === 1 ? "item" : "items"
     }.`,
   );
+}
+
+// ---------------------------------------------------------------------------
+// Task lists (checklist app US-11). The database lets only church-wide checklist managers change
+// them, and logs every change.
+// ---------------------------------------------------------------------------
+
+const listName = name(MAX_LIST_NAME_LENGTH, "Give the list a name.");
+const listDescription = z
+  .string()
+  .transform((value) => value.replace(/\s+/g, " ").trim())
+  .pipe(
+    z
+      .string()
+      .max(MAX_LIST_DESCRIPTION_LENGTH, `Keep it under ${MAX_LIST_DESCRIPTION_LENGTH} characters.`),
+  );
+
+export async function createTaskListAction(_: FormState, formData: FormData): Promise<FormState> {
+  const title = listName.safeParse(text(formData.get("name")));
+  const description = listDescription.safeParse(text(formData.get("description")));
+  const start = text(formData.get("copyFrom"));
+  const copyFrom = start === "" ? null : id.safeParse(start);
+  if (!title.success) {
+    return error(title.error.issues[0]?.message ?? "Give the list a name.");
+  }
+  if (!description.success) {
+    return error(description.error.issues[0]?.message ?? "Check the description.");
+  }
+  if ((copyFrom && !copyFrom.success) || !(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.createTaskList(
+    title.data,
+    description.data,
+    copyFrom?.success ? copyFrom.data : null,
+  );
+  if (!result.ok) {
+    return error(checklistErrorMessage(result.error));
+  }
+  redirect(`/admin/checklists?list=${result.value}`);
+}
+
+export async function updateTaskListAction(_: FormState, formData: FormData): Promise<FormState> {
+  const listId = id.safeParse(formData.get("listId"));
+  const title = listName.safeParse(text(formData.get("name")));
+  const description = listDescription.safeParse(text(formData.get("description")));
+  if (!listId.success || !(await allowed())) {
+    return denied();
+  }
+  if (!title.success) {
+    return error(title.error.issues[0]?.message ?? "Give the list a name.");
+  }
+  if (!description.success) {
+    return error(description.error.issues[0]?.message ?? "Check the description.");
+  }
+  const result = await checklists.updateTaskList(listId.data, title.data, description.data);
+  return result.ok ? done("Saved.") : error(checklistErrorMessage(result.error));
+}
+
+export async function setDefaultTaskListAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const listId = id.safeParse(formData.get("listId"));
+  const switchCurrent = formData.get("switchCurrent") === "on";
+  if (!listId.success || !(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.setDefaultTaskList(listId.data, switchCurrent);
+  return result.ok
+    ? done(
+        switchCurrent
+          ? "This is now the default, and the current service uses it."
+          : "This is now the default. New services use it.",
+      )
+    : error(checklistErrorMessage(result.error));
+}
+
+export async function setTaskListHiddenAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const listId = id.safeParse(formData.get("listId"));
+  const hidden = formData.get("hidden") === "true";
+  if (!listId.success || !(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.setTaskListHidden(listId.data, hidden);
+  return result.ok
+    ? done(hidden ? "List hidden. Past services keep their records." : "List restored.")
+    : error(checklistErrorMessage(result.error));
+}
+
+// ---------------------------------------------------------------------------
+// Move to… and Hidden items (checklist app US-12a, US-13, US-13a)
+// ---------------------------------------------------------------------------
+
+const moveTo = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("section"), id: z.uuid(), target: z.uuid() }),
+  z.object({ kind: z.literal("item"), id: z.uuid(), target: z.uuid() }),
+]);
+
+/** Moves a section to another checklist, or a task to another section, in the same list. */
+export async function moveToAction(_: FormState, formData: FormData): Promise<FormState> {
+  const parsed = moveTo.safeParse({
+    kind: formData.get("kind"),
+    id: formData.get("id"),
+    target: formData.get("target"),
+  });
+  if (!(await allowed())) {
+    return denied();
+  }
+  if (!parsed.success) {
+    return error("Choose where to move it.");
+  }
+  const result =
+    parsed.data.kind === "section"
+      ? await checklists.moveSection(parsed.data.id, parsed.data.target)
+      : await checklists.moveItem(parsed.data.id, parsed.data.target);
+  return result.ok
+    ? done("Moved to the end of where it went.")
+    : error(checklistErrorMessage(result.error));
+}
+
+const restore = z.object({
+  kind: z.enum(["checklist", "section", "item"]),
+  id: z.uuid(),
+  withParents: z.enum(["true", "false"]).transform((value) => value === "true"),
+});
+
+export async function restoreAction(_: FormState, formData: FormData): Promise<FormState> {
+  const parsed = restore.safeParse({
+    kind: formData.get("kind"),
+    id: formData.get("id"),
+    withParents: formData.get("withParents") ?? "false",
+  });
+  if (!parsed.success || !(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.restorePart(
+    parsed.data.kind,
+    parsed.data.id,
+    parsed.data.withParents,
+  );
+  return result.ok
+    ? done("Restored, with its history.")
+    : error(checklistErrorMessage(result.error));
+}
+
+// ---------------------------------------------------------------------------
+// Settings (checklist app US-07, US-11a, US-15): church-wide checklist managers only, checked and
+// logged by the database.
+// ---------------------------------------------------------------------------
+
+const settingsSchema = z.object({
+  serviceTypeId: z
+    .string()
+    .max(64)
+    .transform((value) => (value === "" ? null : value)),
+  serviceWeekday: z
+    .string()
+    .regex(/^[0-6]$/)
+    .transform(Number),
+});
+
+export async function setChecklistSettingsAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const settings = settingsSchema.safeParse({
+    serviceTypeId: text(formData.get("serviceTypeId")),
+    serviceWeekday: text(formData.get("serviceWeekday")),
+  });
+  if (!settings.success) {
+    return error(checklistErrorMessage("invalid_settings"));
+  }
+  if (!(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.setChecklistSettings(
+    settings.data.serviceTypeId,
+    settings.data.serviceWeekday,
+  );
+  return result.ok ? done("Saved.") : error(checklistErrorMessage(result.error));
 }

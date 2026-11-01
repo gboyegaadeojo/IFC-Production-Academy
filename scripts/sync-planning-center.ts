@@ -235,6 +235,7 @@ async function read(authorization: string): Promise<PcoPayload> {
       }
       payload.plans.push({
         id: plan.id,
+        service_type_id: st.id,
         title: planTitle(String(st.attributes.name ?? "Service"), plan),
         ...window,
         members: mapMembers(members, teams),
