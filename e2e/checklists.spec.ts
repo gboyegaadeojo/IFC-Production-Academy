@@ -167,7 +167,8 @@ test("an admin moves a task, removes with a confirmation, and restores from Hidd
   await expect(page.getByRole("heading", { level: 3, name: b })).toHaveCount(0);
 
   // Hidden items brings them back.
-  await page.getByRole("main").getByRole("link", { name: "Hidden items" }).click();
+  // The page's own link keeps this task list; the sidebar's opens the default one.
+  await page.locator('a[href*="/admin/checklists/hidden?list="]').click();
   const hidden = page.getByRole("list", { name: "Hidden items, newest first" });
   await hidden.getByRole("button", { name: `Restore ${b}` }).click();
   await expect(hidden.getByText(b, { exact: true })).toHaveCount(0);
