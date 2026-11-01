@@ -73,7 +73,16 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   const leader = await leaderContext.newPage();
   await signInByEmail(leader, "devon.leader@example.com");
   await leader.goto("/admin/invitations");
-  await leader.getByLabel("Invite to").selectOption({ label: "Audio Engineering" });
+  await leader
+    .getByRole("radiogroup", { name: "Invite to" })
+    .getByRole("radio", { name: "Audio Engineering" })
+    .check();
+  // The preview shows what the person will see.
+  await expect(
+    leader
+      .getByRole("complementary", { name: "What they'll see" })
+      .getByText("You're invited to Audio Engineering"),
+  ).toBeVisible();
   await leader.getByLabel("Note for you (optional)").fill("E2E invitation");
   await leader.getByRole("button", { name: "Create invitation link" }).click();
   await expect(
@@ -115,9 +124,15 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   await expect(other.getByRole("heading", { name: "This invitation can't be used" })).toBeVisible();
 
   await leader.reload();
-  await expect(leader.getByRole("row").filter({ hasText: "E2E invitation" }).first()).toContainText(
-    "All places used",
-  );
+  // Used up, so it moves from Open to "Used or expired".
+  await leader.getByRole("link", { name: /^Used or expired/ }).click();
+  await expect(
+    leader
+      .getByRole("region", { name: "Invitations" })
+      .getByRole("listitem")
+      .filter({ hasText: "E2E invitation" })
+      .first(),
+  ).toContainText("All places used");
 
   await Promise.all([leaderContext.close(), guestContext.close(), otherContext.close()]);
 });
