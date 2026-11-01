@@ -78,6 +78,26 @@ export async function updateServiceTypeAction(
   return { status: "done", message: "Saved. Services already made keep their times." };
 }
 
+export async function setTypeSignupsAction(_: FormState, formData: FormData): Promise<FormState> {
+  const typeId = id.safeParse(formData.get("typeId"));
+  const open = z.enum(["true", "false"]).safeParse(formData.get("open"));
+  if (!typeId.success || !open.success || !(await allowed())) {
+    return error(serviceTypeErrorMessage("not_authorized"));
+  }
+  const result = await types.setServiceTypeSignups(typeId.data, open.data === "true");
+  if (!result.ok) {
+    return error(serviceTypeErrorMessage(result.error));
+  }
+  refresh();
+  return {
+    status: "done",
+    message:
+      open.data === "true"
+        ? "Services made from now on open sign-ups."
+        : "Services made from now on keep sign-ups closed.",
+  };
+}
+
 export async function archiveServiceTypeAction(
   _: FormState,
   formData: FormData,

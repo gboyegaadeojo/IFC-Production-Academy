@@ -218,17 +218,20 @@ department, and position teams are in Serving teams (built).
 
 What the Academy adds so schedulers and volunteers don't miss Planning Center (built in stages):
 
-1. **Calendars.** A month calendar for volunteers: tap a day to see what you're serving and who
-   with. A team calendar for schedulers, by department.
-2. **Service types.** Set up "Sunday service, 10:05, with these positions" once and create the
-   next weeks' services in one step.
-3. **Scheduler grid.** Weeks across, positions down, with who is in each, so a month is planned
-   on one screen; suggested people for each open position (trained first, then least recently
-   scheduled, never someone away).
-4. **Swaps and sign-ups.** A volunteer who can't make it asks for a replacement; teammates on
-   that position can sign up for open spots.
-5. **Pre-service checklists.** Each volunteer sees the checklist for the position they're serving
-   in that day (from IFC's existing Sunday pre-service checklist).
+1. **Calendars** (built). A month calendar for volunteers: tap a day to see where you're serving
+   and who with. A calendar of every service for schedulers.
+2. **Service types** (built). Set up "Sunday service, 10:05, with these positions" once and make
+   the next weeks' services in one step.
+3. **The Matrix** (built). The next services side by side, one row per position, with who is in
+   each. Suggested people for a position: free first, then trained, then whoever served least
+   recently. Never someone away or already serving that day.
+4. **Swaps and sign-ups** (built). A volunteer who can't make it asks for cover; teammates on that
+   position who are free that day are asked, and the first to take it is scheduled in their
+   place. When a scheduler opens sign-ups (on a service, or on a service type for the services
+   made from it), team members can take open spots themselves.
+5. **Pre-service checklists** (built). Each volunteer sees the checklist for the position they're
+   serving in, ticks as they go, and sees the team's progress. Positions that lead the service
+   (such as Technical Director) can reset and undo. Leaders edit checklists, or paste one in.
 6. **Already built:** confirm or decline, days away, reminders (serving soon, please confirm),
    calendar file download, and the service-day view with SOPs.
 

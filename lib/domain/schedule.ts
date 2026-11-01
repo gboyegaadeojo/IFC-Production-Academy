@@ -189,6 +189,9 @@ export type ScheduleError =
   | "position_has_history"
   | "assignment_closed"
   | "invalid_dates"
+  | "signups_closed"
+  | "request_closed"
+  | "invalid_note"
   | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<ScheduleError>([
@@ -203,6 +206,9 @@ const KNOWN: ReadonlySet<string> = new Set<ScheduleError>([
   "position_has_history",
   "assignment_closed",
   "invalid_dates",
+  "signups_closed",
+  "request_closed",
+  "invalid_note",
 ]);
 
 export function toScheduleError(
@@ -238,6 +244,12 @@ export function scheduleErrorMessage(error: ScheduleError): string {
       return "This assignment can't be changed any more.";
     case "invalid_dates":
       return "Check the dates.";
+    case "signups_closed":
+      return "Sign-ups for this service are closed.";
+    case "request_closed":
+      return "Someone has already covered this, or it was withdrawn.";
+    case "invalid_note":
+      return "Keep the note under 300 characters.";
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }

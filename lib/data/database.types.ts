@@ -719,6 +719,7 @@ export type Database = {
           cancelled_at: string | null;
           created_by: string | null;
           service_type_id: string | null;
+          signups_open: boolean;
         } & Timestamps;
         Insert: {
           title: string;
@@ -734,6 +735,25 @@ export type Database = {
           location?: string;
           notes?: string;
         };
+        Relationships: [];
+      };
+      cover_requests: {
+        Row: {
+          id: string;
+          assignment_id: string;
+          event_id: string;
+          position_id: string;
+          department_id: string;
+          requested_by: string;
+          note: string;
+          status: Database["public"]["Enums"]["cover_request_status"];
+          covered_by: string | null;
+          replacement_id: string | null;
+          closed_at: string | null;
+        } & Timestamps;
+        // Changed only through request_cover, withdraw_cover_request, and take_cover.
+        Insert: never;
+        Update: never;
         Relationships: [];
       };
       checklists: {
@@ -793,6 +813,7 @@ export type Database = {
           notes: string;
           archived_at: string | null;
           created_by: string | null;
+          allow_signups: boolean;
         } & Timestamps;
         // Changed only through save_service_type and archive_service_type.
         Insert: never;
@@ -1156,6 +1177,39 @@ export type Database = {
         Returns: Database["public"]["Enums"]["assignment_readiness"];
       };
       cancel_assignment: { Args: { p_assignment_id: string }; Returns: undefined };
+      set_event_signups: { Args: { p_event_id: string; p_open: boolean }; Returns: undefined };
+      set_service_type_signups: { Args: { p_id: string; p_open: boolean }; Returns: undefined };
+      my_open_spots: {
+        Args: never;
+        Returns: {
+          position_id: string;
+          event_id: string;
+          title: string;
+          starts_at: string;
+          ends_at: string;
+          location: string;
+          role_name: string;
+          department_name: string;
+        }[];
+      };
+      sign_up_for_position: { Args: { p_position_id: string }; Returns: undefined };
+      request_cover: { Args: { p_assignment_id: string; p_note: string }; Returns: string };
+      withdraw_cover_request: { Args: { p_request_id: string }; Returns: undefined };
+      cover_requests_for_me: {
+        Args: never;
+        Returns: {
+          request_id: string;
+          event_id: string;
+          title: string;
+          starts_at: string;
+          ends_at: string;
+          role_name: string;
+          department_name: string;
+          requested_by_name: string;
+          note: string;
+        }[];
+      };
+      take_cover: { Args: { p_request_id: string }; Returns: undefined };
       set_role_leads_service: {
         Args: { p_role_id: string; p_leads: boolean };
         Returns: undefined;
@@ -1420,7 +1474,10 @@ export type Database = {
         | "serving_reminder"
         | "learning_nudge"
         | "assessment_requested"
-        | "competency_expiring";
+        | "competency_expiring"
+        | "cover_requested"
+        | "schedule_update";
+      cover_request_status: "open" | "covered" | "withdrawn";
       email_status: "pending" | "sent" | "skipped" | "failed";
     };
     CompositeTypes: { [_ in never]: never };

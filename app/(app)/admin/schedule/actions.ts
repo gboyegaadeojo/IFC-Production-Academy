@@ -48,6 +48,26 @@ export async function createEventAction(_: FormState, formData: FormData): Promi
   redirect(`/admin/schedule/${result.value}`);
 }
 
+export async function setSignupsAction(_: FormState, formData: FormData): Promise<FormState> {
+  const eventId = id.safeParse(formData.get("eventId"));
+  const open = z.enum(["true", "false"]).safeParse(formData.get("open"));
+  if (!eventId.success || !open.success || !(await allowed())) {
+    return error(scheduleErrorMessage("not_authorized"));
+  }
+  const result = await schedule.setEventSignups(eventId.data, open.data === "true");
+  if (!result.ok) {
+    return error(scheduleErrorMessage(result.error));
+  }
+  refresh();
+  return {
+    status: "done",
+    message:
+      open.data === "true"
+        ? "Sign-ups are open. Team members who are free that day can take open spots."
+        : "Sign-ups are closed.",
+  };
+}
+
 export async function cancelEventAction(_: FormState, formData: FormData): Promise<FormState> {
   const eventId = id.safeParse(formData.get("eventId"));
   if (!eventId.success || !(await allowed())) {

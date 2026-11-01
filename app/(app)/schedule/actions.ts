@@ -74,3 +74,64 @@ export async function removeUnavailabilityAction(
   refresh();
   return { status: "done", message: "Removed." };
 }
+
+// Sign-ups and swaps (decision record 9, stage 3). The database runs every check.
+
+const uuid = z.uuid();
+
+async function run(
+  id: FormDataEntryValue | null,
+  call: (id: string) => Promise<schedule.ScheduleResult>,
+  message: string,
+): Promise<FormState> {
+  const parsed = uuid.safeParse(id);
+  if (!parsed.success || !(await signedIn())) {
+    return { status: "error", message: scheduleErrorMessage("unknown") };
+  }
+  const result = await call(parsed.data);
+  if (!result.ok) {
+    return { status: "error", message: scheduleErrorMessage(result.error) };
+  }
+  refresh();
+  return { status: "done", message };
+}
+
+export async function signUpAction(_: FormState, formData: FormData): Promise<FormState> {
+  return run(
+    formData.get("positionId"),
+    schedule.signUpForPosition,
+    "You're signed up. Thank you!",
+  );
+}
+
+export async function takeCoverAction(_: FormState, formData: FormData): Promise<FormState> {
+  return run(
+    formData.get("requestId"),
+    schedule.takeCover,
+    "You're covering it. Thank you! They've been told.",
+  );
+}
+
+export async function withdrawCoverAction(_: FormState, formData: FormData): Promise<FormState> {
+  return run(
+    formData.get("requestId"),
+    schedule.withdrawCoverRequest,
+    "Withdrawn. You're still scheduled.",
+  );
+}
+
+export async function requestCoverAction(_: FormState, formData: FormData): Promise<FormState> {
+  const note = z
+    .string()
+    .trim()
+    .max(300, "Keep the note under 300 characters.")
+    .safeParse(text(formData.get("note")));
+  if (!note.success) {
+    return { status: "error", message: note.error.issues[0]?.message ?? "Check the note." };
+  }
+  return run(
+    formData.get("assignmentId"),
+    (assignmentId) => schedule.requestCover(assignmentId, note.data),
+    "Asked. Your teammates who are free have been told. You stay scheduled until someone takes it.",
+  );
+}

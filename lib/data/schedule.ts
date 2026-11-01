@@ -237,6 +237,7 @@ export type EventDetail = {
   location: string;
   notes: string;
   cancelled: boolean;
+  signupsOpen: boolean;
   positions: PositionDetail[];
   /** Roles the person may add positions for. */
   roles: { id: string; name: string; departmentName: string }[];
@@ -249,7 +250,7 @@ export async function getEventDetail(
   const supabase = await createSupabaseServerClient();
   const event = await supabase
     .from("events")
-    .select("id, title, starts_at, ends_at, location, notes, cancelled_at")
+    .select("id, title, starts_at, ends_at, location, notes, cancelled_at, signups_open")
     .eq("id", eventId)
     .maybeSingle();
   if (event.error) {
@@ -291,6 +292,7 @@ export async function getEventDetail(
     location: event.data.location,
     notes: event.data.notes,
     cancelled: event.data.cancelled_at !== null,
+    signupsOpen: event.data.signups_open,
     positions: positions.data.map((position) => {
       // The newest assignment that still holds the position, or the latest decline.
       const current =
@@ -567,4 +569,123 @@ export async function getEventsBetween(fromIso: string, toIso: string): Promise<
     positions: positions.data.filter((p) => p.event_id === event.id).length,
     filled: assignments.data.filter((a) => a.event_id === event.id).length,
   }));
+}
+
+// ---------------------------------------------------------------------------
+// Sign-ups and swaps (decision record 9, stage 3)
+// ---------------------------------------------------------------------------
+
+export type OpenSpot = {
+  positionId: string;
+  event: { id: string; title: string; startsAt: string; endsAt: string; location: string };
+  roleName: string;
+  departmentName: string;
+};
+
+/** Open spots on teams this person is on, at services with sign-ups open, on days they're free. */
+export async function getMyOpenSpots(): Promise<OpenSpot[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("my_open_spots");
+  if (error) {
+    throw new Error("Could not load open spots", { cause: error.code });
+  }
+  return data.map((row) => ({
+    positionId: row.position_id,
+    event: {
+      id: row.event_id,
+      title: row.title,
+      startsAt: row.starts_at,
+      endsAt: row.ends_at,
+      location: row.location,
+    },
+    roleName: row.role_name,
+    departmentName: row.department_name,
+  }));
+}
+
+export async function signUpForPosition(positionId: string): Promise<ScheduleResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("sign_up_for_position", { p_position_id: positionId });
+  return error ? fail(error) : { ok: true };
+}
+
+export type CoverRequest = {
+  id: string;
+  event: { id: string; title: string; startsAt: string; endsAt: string };
+  roleName: string;
+  departmentName: string;
+  requestedBy: string;
+  note: string;
+};
+
+/** Teammates' requests this person could take. */
+export async function getCoverRequestsForMe(): Promise<CoverRequest[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("cover_requests_for_me");
+  if (error) {
+    throw new Error("Could not load cover requests", { cause: error.code });
+  }
+  return data.map((row) => ({
+    id: row.request_id,
+    event: { id: row.event_id, title: row.title, startsAt: row.starts_at, endsAt: row.ends_at },
+    roleName: row.role_name,
+    departmentName: row.department_name,
+    requestedBy: row.requested_by_name,
+    note: row.note,
+  }));
+}
+
+/** This person's own open requests, by assignment. */
+export async function getMyOpenCoverRequests(userId: string): Promise<Map<string, string>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cover_requests")
+    .select("id, assignment_id")
+    .eq("requested_by", userId)
+    .eq("status", "open");
+  if (error) {
+    throw new Error("Could not load cover requests", { cause: error.code });
+  }
+  return new Map(data.map((row) => [row.assignment_id, row.id]));
+}
+
+/** Open requests at a service, by position, for the scheduler. */
+export async function getOpenCoverRequestsForEvent(eventId: string): Promise<Set<string>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("cover_requests")
+    .select("position_id")
+    .eq("event_id", eventId)
+    .eq("status", "open");
+  if (error) {
+    throw new Error("Could not load cover requests", { cause: error.code });
+  }
+  return new Set(data.map((row) => row.position_id));
+}
+
+export async function requestCover(assignmentId: string, note: string): Promise<ScheduleResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("request_cover", {
+    p_assignment_id: assignmentId,
+    p_note: note,
+  });
+  return error ? fail(error) : { ok: true };
+}
+
+export async function withdrawCoverRequest(requestId: string): Promise<ScheduleResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("withdraw_cover_request", { p_request_id: requestId });
+  return error ? fail(error) : { ok: true };
+}
+
+export async function takeCover(requestId: string): Promise<ScheduleResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("take_cover", { p_request_id: requestId });
+  return error ? fail(error) : { ok: true };
+}
+
+export async function setEventSignups(eventId: string, open: boolean): Promise<ScheduleResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_event_signups", { p_event_id: eventId, p_open: open });
+  return error ? fail(error) : { ok: true };
 }

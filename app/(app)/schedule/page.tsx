@@ -9,8 +9,11 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
 import { MonthCalendar, type DayMark } from "@/components/ui/month-calendar";
 import {
+  getCoverRequestsForMe,
   getEventTeam,
   getMyAssignmentsBetween,
+  getMyOpenCoverRequests,
+  getMyOpenSpots,
   getMyUnavailability,
   getMyUpcomingAssignments,
   type MyAssignment,
@@ -31,7 +34,15 @@ import {
   READINESS_LABELS,
   winnipegToUtc,
 } from "@/lib/domain/schedule";
-import { addUnavailabilityAction, removeUnavailabilityAction, respondAction } from "./actions";
+import {
+  addUnavailabilityAction,
+  removeUnavailabilityAction,
+  requestCoverAction,
+  respondAction,
+  signUpAction,
+  takeCoverAction,
+  withdrawCoverAction,
+} from "./actions";
 
 export const metadata: Metadata = { title: "Your schedule" };
 
@@ -54,7 +65,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
   const selected = parseDate(params.day);
   const month = parseMonth(params.month, (selected ?? today).slice(0, 7));
   const range = gridRange(month);
-  const [assignments, away, inMonth] = await Promise.all([
+  const [assignments, away, inMonth, coverRequests, openSpots, myRequests] = await Promise.all([
     getMyUpcomingAssignments(user.id),
     getMyUnavailability(user.id),
     getMyAssignmentsBetween(
@@ -62,6 +73,9 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
       (winnipegToUtc(range.from, "00:00") ?? new Date()).toISOString(),
       (winnipegToUtc(addDays(range.to, 1), "00:00") ?? new Date()).toISOString(),
     ),
+    getCoverRequestsForMe(),
+    getMyOpenSpots(),
+    getMyOpenCoverRequests(user.id),
   ]);
 
   const marks = new Map<string, DayMark[]>();
@@ -98,7 +112,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
     <div className="page-container flex flex-col gap-10 py-8 lg:py-12">
       <PageHeader
         title="Your schedule"
-        description="Where you're serving next. Confirm each one, or decline in good time so your leader can find someone else."
+        description="Where you're serving next. Confirm each one, or ask a teammate to cover if you can't make it."
       />
 
       <section aria-label="Calendar" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -184,22 +198,107 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                         className="flex"
                       />
                     ) : null}
-                    <ActionForm
-                      action={respondAction}
-                      submitLabel="Decline"
-                      pendingLabel="Saving…"
-                      variant="secondary"
-                      hidden={{ assignmentId: assignment.id, response: "declined" }}
-                      srLabel={assignment.event.title}
-                      className="flex"
-                    />
+                    {assignment.status === "pending" ? (
+                      <ActionForm
+                        action={respondAction}
+                        submitLabel="Decline"
+                        pendingLabel="Saving…"
+                        variant="secondary"
+                        hidden={{ assignmentId: assignment.id, response: "declined" }}
+                        srLabel={assignment.event.title}
+                        className="flex"
+                      />
+                    ) : null}
                   </div>
+                ) : null}
+                {assignment.status !== "declined" ? (
+                  <CoverControls
+                    assignmentId={assignment.id}
+                    title={assignment.event.title}
+                    requestId={myRequests.get(assignment.id) ?? null}
+                  />
                 ) : null}
               </li>
             ))}
           </ul>
         )}
       </section>
+
+      {coverRequests.length > 0 ? (
+        <section aria-labelledby="cover-heading" className="flex flex-col gap-3">
+          <h2 id="cover-heading" className="text-heading font-semibold">
+            Can you cover?
+          </h2>
+          <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
+            {coverRequests.map((request) => (
+              <li
+                key={request.id}
+                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <span className="flex flex-col gap-1">
+                  <span className="font-medium">
+                    {request.roleName} · {request.event.title}
+                  </span>
+                  <span className="text-small text-text-secondary">
+                    {eventTimeLabel(request.event.startsAt, request.event.endsAt)}
+                  </span>
+                  <span className="text-small text-text-muted">
+                    {request.note
+                      ? `${request.requestedBy} can't make it: “${request.note}”`
+                      : `${request.requestedBy} can't make it.`}
+                  </span>
+                </span>
+                <ActionForm
+                  action={takeCoverAction}
+                  submitLabel="I'll cover it"
+                  pendingLabel="Saving…"
+                  hidden={{ requestId: request.id }}
+                  srLabel={`${request.roleName}, ${request.event.title}`}
+                  className="flex"
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      {openSpots.length > 0 ? (
+        <section aria-labelledby="spots-heading" className="flex flex-col gap-3">
+          <h2 id="spots-heading" className="text-heading font-semibold">
+            Open spots
+          </h2>
+          <p className="max-w-3xl text-small text-text-secondary">
+            Positions on your teams that still need someone, on days you&apos;re free.
+          </p>
+          <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
+            {openSpots.map((spot) => (
+              <li
+                key={spot.positionId}
+                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <span className="flex flex-col gap-1">
+                  <span className="font-medium">
+                    {spot.roleName} · {spot.event.title}
+                  </span>
+                  <span className="text-small text-text-secondary">
+                    {eventTimeLabel(spot.event.startsAt, spot.event.endsAt)}
+                    {spot.event.location ? ` · ${spot.event.location}` : ""}
+                  </span>
+                </span>
+                <ActionForm
+                  action={signUpAction}
+                  submitLabel="Sign up"
+                  pendingLabel="Signing up…"
+                  variant="secondary"
+                  hidden={{ positionId: spot.positionId }}
+                  srLabel={`${spot.roleName}, ${spot.event.title}`}
+                  className="flex"
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section aria-labelledby="away-heading" className="flex flex-col gap-3">
         <h2 id="away-heading" className="text-heading font-semibold">
@@ -266,6 +365,63 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
         </div>
       </section>
     </div>
+  );
+}
+
+/** Ask a teammate to cover, or withdraw the request. */
+function CoverControls({
+  assignmentId,
+  title,
+  requestId,
+}: {
+  assignmentId: string;
+  title: string;
+  requestId: string | null;
+}) {
+  if (requestId) {
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusBadge tone="pending">Cover requested</StatusBadge>
+        <ActionForm
+          action={withdrawCoverAction}
+          submitLabel="Withdraw"
+          pendingLabel="Saving…"
+          variant="tertiary"
+          hidden={{ requestId }}
+          srLabel={`cover request for ${title}`}
+          className="flex"
+        />
+      </div>
+    );
+  }
+  return (
+    <details>
+      <summary className="flex min-h-control cursor-pointer items-center text-small text-accent-light">
+        Can&apos;t make it? Ask for cover<span className="sr-only"> for {title}</span>
+      </summary>
+      <div className="mt-2 flex flex-col gap-2">
+        <ActionForm
+          action={requestCoverAction}
+          submitLabel="Ask for cover"
+          pendingLabel="Asking…"
+          variant="secondary"
+          hidden={{ assignmentId }}
+          className="flex flex-col gap-3"
+        >
+          <Field id={`cover-note-${assignmentId}`} label="Note (optional)">
+            <input
+              id={`cover-note-${assignmentId}`}
+              name="note"
+              maxLength={300}
+              className={fieldClasses}
+            />
+          </Field>
+        </ActionForm>
+        <p className="text-small text-text-muted">
+          Teammates who are free that day are asked. You stay scheduled until someone takes it.
+        </p>
+      </div>
+    </details>
   );
 }
 
