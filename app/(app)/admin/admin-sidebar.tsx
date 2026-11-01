@@ -51,6 +51,33 @@ const GROUP_ICONS: Record<AdminGroupIcon, (props: { className?: string }) => Rea
   settings: SettingsIcon,
 };
 
+/** Each group's icon sits on a soft coloured tile (approved new look, 2026-11-01). Decorative. */
+const GROUP_TILES: Record<AdminSectionGroup, string> = {
+  Overview: "bg-tile-violet text-tile-violet-ink",
+  Checklists: "bg-tile-pink text-tile-pink-ink",
+  "Services & Scheduling": "bg-tile-orange text-tile-orange-ink",
+  "Training Academy": "bg-tile-green text-tile-green-ink",
+  "People & Teams": "bg-tile-blue text-tile-blue-ink",
+  "System & Settings": "bg-tile-grey text-tile-grey-ink",
+};
+
+function GroupTile({
+  group,
+  icon: Icon,
+}: {
+  group: AdminSectionGroup;
+  icon: (props: { className?: string }) => ReactNode;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`flex size-7 shrink-0 items-center justify-center rounded-[8px] ${GROUP_TILES[group]}`}
+    >
+      <Icon className="size-4" />
+    </span>
+  );
+}
+
 /** Remembered on this device: which groups are open, and whether the sidebar is icons only. */
 const OPEN_GROUPS_KEY = "admin-nav-open";
 
@@ -112,7 +139,7 @@ function saveOpenGroups(groups: Iterable<string>) {
 const ROW =
   "relative flex min-h-10 w-full items-center gap-2.5 rounded-button px-2.5 text-left text-body transition-surface pointer-coarse:min-h-11 focus-visible:outline-2 focus-visible:outline-accent-light";
 const ACTIVE =
-  "bg-hover font-medium text-text before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-pill before:bg-accent";
+  "bg-accent-soft font-medium text-text before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-pill before:bg-accent";
 const IDLE = "text-text-secondary hover:bg-card hover:text-text";
 
 function CountBadge({ count, label }: { count: number | undefined; label: string }) {
@@ -258,7 +285,7 @@ export function AdminSidebar({
                     title={compact ? section.label : undefined}
                     className={`${ROW} ${compact ? "size-11 justify-center px-0" : ""} ${current ? ACTIVE : IDLE}`}
                   >
-                    <Icon className="size-[18px] shrink-0" />
+                    <GroupTile group={entry.group} icon={Icon} />
                     <span className={compact ? "sr-only" : "truncate"}>{section.label}</span>
                   </Link>
                 </li>
@@ -294,7 +321,7 @@ export function AdminSidebar({
                         : IDLE
                     }`}
                   >
-                    <Icon className="size-[18px]" />
+                    <GroupTile group={entry.group} icon={Icon} />
                     <span className="sr-only">{entry.group}</span>
                     {hasCount ? (
                       <span
@@ -316,7 +343,7 @@ export function AdminSidebar({
                   onClick={() => toggleGroup(entry.group)}
                   className={`${ROW} font-medium ${isActiveGroup ? "text-text" : "text-text-secondary hover:bg-card hover:text-text"}`}
                 >
-                  <Icon className="size-[18px] shrink-0" />
+                  <GroupTile group={entry.group} icon={Icon} />
                   <span className="min-w-0 flex-1 truncate">{entry.group}</span>
                   {!expanded && hasCount ? (
                     <span aria-hidden="true" className="size-1.5 rounded-pill bg-accent-light" />
@@ -328,11 +355,11 @@ export function AdminSidebar({
                 <ul
                   id={listId}
                   hidden={!expanded}
-                  className="relative mt-0.5 mb-2 flex flex-col gap-0.5 pl-7"
+                  className="relative mt-0.5 mb-2 flex flex-col gap-0.5 pl-9"
                 >
                   <span
                     aria-hidden="true"
-                    className="absolute inset-y-1 left-[18px] w-px bg-border"
+                    className="absolute inset-y-1 left-[23px] w-px bg-border"
                   />
                   {entry.sections.map((section) => {
                     const current = active?.key === section.key;

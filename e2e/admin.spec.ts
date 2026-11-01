@@ -38,7 +38,7 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   const leader = await leaderContext.newPage();
   await signInByEmail(leader, "devon.leader@example.com");
   await openAccountMenu(leader);
-  await leader.getByRole("link", { name: "Admin" }).click();
+  await leader.getByRole("link", { name: "Admin" }).first().click();
   await expect(leader.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
   await (await adminNavLink(leader, "Training Academy", "Membership requests")).click();
   await expect(
@@ -432,7 +432,7 @@ test("a leader pairs a mentor with a volunteer, and they share notes", async ({ 
 test("a Platform Admin manages people and departments but not memberships", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
   await openAccountMenu(page);
-  await page.getByRole("link", { name: "Admin" }).click();
+  await page.getByRole("link", { name: "Admin" }).first().click();
 
   await expect(await adminNavLink(page, "People & Teams", "People and roles")).toBeVisible();
   await expect(await adminNavLink(page, "Training Academy", "Departments")).toBeVisible();

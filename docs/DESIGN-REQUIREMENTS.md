@@ -101,6 +101,8 @@ On deep screens use compact breadcrumbs, department context, and a single clear 
 
 ## 4. Visual design system
 
+> **Updated 2026-11-01 (new look, approved by G in the "Academy New Look Mock").** Light is now the default theme: a lavender-white canvas, white cards, one purple action colour, soft amber and green status pills, and pastel icon tiles in the admin sidebar, inspired by IFC's Church Budget app. Dark stays available with the same accents. Type is **Inter** (Geist Mono for small labels), two steps smaller: body 14px, small 12px, display 26–32px. Learner pages keep the top bar; only Admin uses the sidebar. The exact values and their contrast checks live in `app/globals.css`; where this section's tables differ, `globals.css` wins.
+
 ### 4.1 Colour tokens
 Dark is the signature theme; design an equally intentional light theme and respect system preference if theme switching is supported.
 
