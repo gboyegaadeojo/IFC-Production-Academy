@@ -105,31 +105,16 @@ select is(
     where is_mine),
   1, 'one checklist is the operator''s own; the page shows it by default'
 );
-select lives_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'walk'), true) $$,
-  'they can still help with another department''s'
-);
-select lives_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'walk'), false) $$,
-  'and untick it'
-);
-select lives_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'power'), true) $$,
-  'the operator ticks an item'
-);
-select lives_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'power'), true) $$,
-  'ticking again is harmless'
-);
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'walk'), true), 'ok', 'they can still help with another department''s');
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'walk'), false), 'ok', 'and untick it');
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'power'), true), 'ok', 'the operator ticks an item');
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'power'), true), 'ok', 'ticking again is harmless');
 select is(
   (select checked_by_name from public.event_checklists((select id from ctx where key = 'event'))
     where item_id = (select id from ctx where key = 'power')),
   'Test Operator', 'the tick shows who did it'
 );
-select throws_ok(
-  $$ select public.reset_service_checklists((select id from ctx where key = 'event')) $$,
-  '42501', 'not_authorized', 'an operator cannot reset'
-);
+select is(public.checklist_reset((select id from ctx where key = 'event')) ->> 'reason', 'not_authorized', 'an operator cannot reset');
 reset role;
 
 -- Someone not scheduled sees nothing and can't tick.
@@ -138,10 +123,8 @@ select throws_ok(
   $$ select * from public.event_checklists((select id from ctx where key = 'event')) $$,
   '42501', 'not_authorized', 'someone not scheduled cannot see the service''s checklists'
 );
-select throws_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), true) $$,
-  '42501', 'not_authorized', 'or tick them'
-);
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), true),
+  'not_authorized', 'or tick them');
 reset role;
 
 -- A team member who isn't scheduled can still help.
@@ -150,14 +133,8 @@ select is(
   (select bool_or(is_mine) from public.event_checklists((select id from ctx where key = 'event'))),
   false, 'someone not scheduled has no checklist of their own'
 );
-select lives_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), true) $$,
-  'but a team member can still tick'
-);
-select lives_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), false) $$,
-  'and untick'
-);
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), true), 'ok', 'but a team member can still tick');
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), false), 'ok', 'and untick');
 reset role;
 
 -- History keeps the text as it was.
@@ -175,32 +152,21 @@ select is(
   (select count(distinct checklist_id)::int from public.event_checklists((select id from ctx where key = 'event'))),
   2, 'whoever leads the service sees every checklist'
 );
-select lives_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), true) $$,
-  'and can tick anyone''s'
-);
-select lives_ok(
-  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), false) $$,
-  'or untick it'
-);
-select is(public.reset_service_checklists((select id from ctx where key = 'event')), 1, 'the director resets');
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), true), 'ok', 'and can tick anyone''s');
+select is(public.checklist_tick((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), false), 'ok', 'or untick it');
+select is((public.checklist_reset((select id from ctx where key = 'event')) ->> 'count')::int, 1, 'the director resets');
 select is(
   (select count(*)::int from public.event_checklists((select id from ctx where key = 'event')) where checked_at is not null),
   0, 'after a reset nothing is ticked'
 );
-select throws_ok(
-  $$ select public.reset_service_checklists((select id from ctx where key = 'event')) $$,
-  'P0001', 'nothing_to_reset', 'a reset with nothing ticked is refused, so the undo is kept'
-);
-select is(public.undo_checklist_reset((select id from ctx where key = 'event')), 1, 'and undoes it');
+select is(public.checklist_reset((select id from ctx where key = 'event')) ->> 'reason', 'nothing_to_reset',
+  'a reset with nothing ticked is refused, so the undo is kept');
+select is((public.checklist_undo_reset((select id from ctx where key = 'event')) ->> 'count')::int, 1, 'and undoes it');
 select is(
   (select count(*)::int from public.event_checklists((select id from ctx where key = 'event')) where checked_at is not null),
   1, 'the tick is back'
 );
-select throws_ok(
-  $$ select public.undo_checklist_reset((select id from ctx where key = 'event')) $$,
-  'P0001', 'nothing_to_undo', 'one undo per reset'
-);
+select is(public.checklist_undo_reset((select id from ctx where key = 'event')) ->> 'reason', 'nothing_to_undo', 'one undo per reset');
 reset role;
 select ok(
   exists (select 1 from public.audit_events where action = 'checklist.reset'),
@@ -215,10 +181,8 @@ select public.assign_to_position(public.add_event_position((select id from publi
   'a4000000-0000-4000-8000-000000000002');
 reset role;
 select pg_temp.act_as('a4000000-0000-4000-8000-000000000002');
-select throws_ok(
-  $$ select public.set_checklist_item((select id from public.events where title = 'Fake far service'), (select id from ctx where key = 'batt'), true) $$,
-  'P0001', 'checklist_closed', 'ticking opens two days before the service'
-);
+select is(public.checklist_tick((select id from public.events where title = 'Fake far service'), (select id from ctx where key = 'batt'), true),
+  'checklist_closed', 'ticking opens two days before the service');
 reset role;
 
 -- "Sees all departments" is its own switch, separate from the Director role.

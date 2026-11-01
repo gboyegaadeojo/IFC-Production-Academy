@@ -397,30 +397,60 @@ export async function getServiceChecklists(
   };
 }
 
+/**
+ * Ticks or unticks an item. Every attempt, allowed or refused, is written to the activity log
+ * with the browser tab it came from (checklist app US-07a).
+ */
 export async function setChecklistItem(
   eventId: string,
   itemId: string,
   checked: boolean,
+  tabId: string | null,
 ): Promise<ChecklistResult> {
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("set_checklist_item", {
+  const { data, error } = await supabase.rpc("checklist_tick", {
     p_event_id: eventId,
     p_item_id: itemId,
     p_checked: checked,
+    p_tab_id: tabId,
   });
-  return error ? fail(error) : ok;
+  if (error) {
+    return fail(error);
+  }
+  return data === "ok" ? ok : fail({ message: data });
 }
 
-export async function resetServiceChecklists(eventId: string): Promise<ChecklistResult<number>> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("reset_service_checklists", { p_event_id: eventId });
-  return error ? fail(error) : { ok: true, value: data };
+type Counted = { ok?: boolean; count?: number; reason?: string };
+
+function counted(data: unknown): ChecklistResult<number> {
+  const result = (data ?? {}) as Counted;
+  return result.ok
+    ? { ok: true, value: Number(result.count ?? 0) }
+    : fail({ message: result.reason ?? "unknown" });
 }
 
-export async function undoChecklistReset(eventId: string): Promise<ChecklistResult<number>> {
+export async function resetServiceChecklists(
+  eventId: string,
+  tabId: string | null,
+): Promise<ChecklistResult<number>> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("undo_checklist_reset", { p_event_id: eventId });
-  return error ? fail(error) : { ok: true, value: data };
+  const { data, error } = await supabase.rpc("checklist_reset", {
+    p_event_id: eventId,
+    p_tab_id: tabId,
+  });
+  return error ? fail(error) : counted(data);
+}
+
+export async function undoChecklistReset(
+  eventId: string,
+  tabId: string | null,
+): Promise<ChecklistResult<number>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("checklist_undo_reset", {
+    p_event_id: eventId,
+    p_tab_id: tabId,
+  });
+  return error ? fail(error) : counted(data);
 }
 
 export type ServiceHeader = {
@@ -463,4 +493,87 @@ export async function getCurrentServiceId(): Promise<string | null> {
     throw new Error("Could not find the current service", { cause: error.code });
   }
   return data;
+}
+
+export type ActivityEntry = {
+  id: string;
+  happenedAt: string;
+  kind: "checkoff" | "edit";
+  action: string;
+  outcome: "ok" | "unchanged" | "refused";
+  reason: string | null;
+  subject: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+  actorName: string;
+  sessionId: string | null;
+  tabId: string | null;
+};
+
+/**
+ * The activity log, newest first: one service's check-offs, checklist edits, or both
+ * (checklist app US-07a, US-13b). Row-level security limits it to checklist managers.
+ */
+export async function getChecklistActivity(input: {
+  eventId: string | null;
+  kind: "all" | "checkoff" | "edit";
+  limit?: number;
+}): Promise<ActivityEntry[]> {
+  const supabase = await createSupabaseServerClient();
+  let query = supabase
+    .from("checklist_log")
+    .select(
+      "id, happened_at, kind, action, outcome, reason, subject, before, after, actor_name, session_id, tab_id, event_id",
+    )
+    .order("happened_at", { ascending: false })
+    .limit(input.limit ?? 300);
+  if (input.kind === "checkoff") {
+    query = query.eq("kind", "checkoff");
+  } else if (input.kind === "edit") {
+    query = query.eq("kind", "edit");
+  }
+  if (input.kind !== "edit" && input.eventId) {
+    // Check-offs for the chosen service, plus every edit.
+    query =
+      input.kind === "checkoff"
+        ? query.eq("event_id", input.eventId)
+        : query.or(`event_id.eq.${input.eventId},kind.eq.edit`);
+  }
+  const { data, error } = await query;
+  if (error) {
+    throw new Error("Could not load the activity log", { cause: error.code });
+  }
+  return data.map((row) => ({
+    id: row.id,
+    happenedAt: row.happened_at,
+    kind: row.kind === "edit" ? "edit" : "checkoff",
+    action: row.action,
+    outcome:
+      row.outcome === "refused" ? "refused" : row.outcome === "unchanged" ? "unchanged" : "ok",
+    reason: row.reason,
+    subject: row.subject,
+    before: (row.before as Record<string, unknown> | null) ?? null,
+    after: (row.after as Record<string, unknown> | null) ?? null,
+    actorName: row.actor_name,
+    sessionId: row.session_id,
+    tabId: row.tab_id,
+  }));
+}
+
+/** Recent services, for choosing whose check-offs to show. */
+export async function getRecentServices(
+  limit = 20,
+): Promise<{ id: string; title: string; startsAt: string }[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("events")
+    .select("id, title, starts_at")
+    .is("cancelled_at", null)
+    .lte("starts_at", new Date(Date.now() + 7 * 86_400_000).toISOString())
+    .order("starts_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    throw new Error("Could not load services", { cause: error.code });
+  }
+  return data.map((row) => ({ id: row.id, title: row.title, startsAt: row.starts_at }));
 }

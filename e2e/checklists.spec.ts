@@ -62,4 +62,13 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await expect(page.getByLabel(first)).not.toBeChecked();
   await page.getByRole("button", { name: "Undo the last reset" }).click();
   await expect(page.getByLabel(first)).toBeChecked();
+
+  // Every tick, reset, and undo is in the activity log, with the checklist edits.
+  await page.goto(`/admin/checklists/activity?service=${eventId}`);
+  const log = page.getByRole("list", { name: "Activity, newest first" });
+  await expect(log.getByText("Undid the reset")).toBeVisible();
+  await expect(log.getByText("Reset the service's checklists")).toBeVisible();
+  await expect(log.getByText(first).first()).toBeVisible();
+  await page.getByRole("link", { name: "Checklist edits" }).click();
+  await expect(log.getByText(name).first()).toBeVisible();
 });
