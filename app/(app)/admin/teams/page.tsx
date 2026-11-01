@@ -21,7 +21,7 @@ import {
 } from "@/lib/domain/teams";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
-import { addToTeamAction, removeFromTeamAction, setLeadsAction } from "./actions";
+import { addToTeamAction, removeFromTeamAction, setLeadsAction, setSeesAllAction } from "./actions";
 
 export const metadata: Metadata = { title: "Serving teams" };
 
@@ -165,21 +165,36 @@ function PositionTeam({
           {team.length}
         </span>
       </h2>
-      <div className="flex flex-wrap items-center gap-3 text-small text-text-secondary">
-        <span>
-          {position.leadsService
-            ? "Leads the service: sees every checklist and can reset them."
-            : "Doesn't lead the service."}
-        </span>
-        <ActionForm
-          action={setLeadsAction}
-          submitLabel={position.leadsService ? "Stop leading" : "Make this a leading position"}
-          pendingLabel="Saving…"
-          variant="tertiary"
-          hidden={{ roleId: position.id, leads: position.leadsService ? "false" : "true" }}
-          srLabel={position.name}
-          className="flex"
-        />
+      <div className="flex flex-col gap-1 text-small text-text-secondary">
+        <div className="flex flex-wrap items-center gap-3">
+          <span>
+            Sees all departments: <strong>{position.seesAll ? "Yes" : "No"}</strong>
+          </span>
+          <ActionForm
+            action={setSeesAllAction}
+            submitLabel={position.seesAll ? "Turn off" : "Turn on"}
+            pendingLabel="Saving…"
+            variant="tertiary"
+            hidden={{ roleId: position.id, seesAll: position.seesAll ? "false" : "true" }}
+            srLabel={`Sees all departments for ${position.name}`}
+            className="flex"
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <span>
+            Gets the Director role while scheduled:{" "}
+            <strong>{position.leadsService ? "Yes" : "No"}</strong>
+          </span>
+          <ActionForm
+            action={setLeadsAction}
+            submitLabel={position.leadsService ? "Turn off" : "Turn on"}
+            pendingLabel="Saving…"
+            variant="tertiary"
+            hidden={{ roleId: position.id, leads: position.leadsService ? "false" : "true" }}
+            srLabel={`the Director role for ${position.name}`}
+            className="flex"
+          />
+        </div>
       </div>
       {team.length === 0 ? (
         <p className="text-small text-text-muted">

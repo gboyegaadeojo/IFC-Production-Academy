@@ -36,7 +36,7 @@ export async function getServingTeam(
   const [roles, overview] = await Promise.all([
     supabase
       .from("serving_roles")
-      .select("id, name, leads_service")
+      .select("id, name, leads_service, sees_all_checklists")
       .eq("department_id", departmentId)
       .is("archived_at", null)
       .order("name"),
@@ -53,6 +53,7 @@ export async function getServingTeam(
       id: role.id,
       name: role.name,
       leadsService: role.leads_service,
+      seesAll: role.sees_all_checklists,
     })),
     people: overview.data.map((row) => ({
       id: row.user_id,

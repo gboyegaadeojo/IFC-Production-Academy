@@ -321,6 +321,15 @@ export async function importSections(
   return { ok: true, value: added };
 }
 
+export async function setSeesAll(roleId: string, seesAll: boolean): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_role_sees_all", {
+    p_role_id: roleId,
+    p_sees_all: seesAll,
+  });
+  return error ? fail(error) : ok;
+}
+
 export async function setLeadsService(roleId: string, leads: boolean): Promise<ChecklistResult> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("set_role_leads_service", {
@@ -340,6 +349,8 @@ export type ServiceChecklistState = {
   open: boolean;
   undoAvailable: boolean;
   isScheduled: boolean;
+  /** Sees every department by default ("Sees all departments" position). */
+  seesAll: boolean;
 };
 
 /** A service's checklists and what this person may do, or null if they can't see them. */
@@ -381,6 +392,7 @@ export async function getServiceChecklists(
       open: flags?.open ?? false,
       undoAvailable: flags?.undo_available ?? false,
       isScheduled: flags?.is_scheduled ?? false,
+      seesAll: flags?.sees_all ?? false,
     },
   };
 }

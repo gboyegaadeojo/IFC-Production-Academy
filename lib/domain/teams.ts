@@ -14,7 +14,14 @@ export type TeamPerson = {
   trainedRoleIds: string[];
 };
 
-export type Position = { id: string; name: string; leadsService?: boolean };
+export type Position = {
+  id: string;
+  name: string;
+  /** Gets the Director role while scheduled: can reset and undo the service's checklists. */
+  leadsService?: boolean;
+  /** Sees all departments' checklists by default. */
+  seesAll?: boolean;
+};
 
 /** The people on one position's team, by name. */
 export function positionTeam(people: readonly TeamPerson[], roleId: string): TeamPerson[] {

@@ -508,6 +508,7 @@ export type Database = {
           archived_at: string | null;
           created_by: string | null;
           leads_service: boolean;
+          sees_all_checklists: boolean;
         } & Timestamps;
         Insert: { department_id: string; name: string; description?: string };
         Update: { name?: string; description?: string; archived_at?: string | null };
@@ -1210,6 +1211,10 @@ export type Database = {
         }[];
       };
       take_cover: { Args: { p_request_id: string }; Returns: undefined };
+      set_role_sees_all: {
+        Args: { p_role_id: string; p_sees_all: boolean };
+        Returns: undefined;
+      };
       set_role_leads_service: {
         Args: { p_role_id: string; p_leads: boolean };
         Returns: undefined;
@@ -1247,6 +1252,7 @@ export type Database = {
           open: boolean;
           undo_available: boolean;
           is_scheduled: boolean;
+          sees_all: boolean;
         }[];
       };
       current_service: { Args: never; Returns: string | null };
