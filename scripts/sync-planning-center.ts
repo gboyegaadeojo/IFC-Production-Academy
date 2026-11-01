@@ -247,6 +247,46 @@ async function read(authorization: string): Promise<PcoPayload> {
     }
   }
 
+  // Teams a plan uses that no service type listed: Planning Center can leave a team out of its
+  // service type's list (a 479 Media Team copy in Crossover did, 2026-11-01). Read each directly,
+  // with its positions and roster, under the service type of the plan that uses it, so its people
+  // match their linked positions (the database matches the position names).
+  const listed = new Set(payload.teams.map((t) => t.id));
+  const unlisted = new Map<string, string>();
+  for (const plan of payload.plans) {
+    for (const member of plan.members) {
+      if (!listed.has(member.team_id) && !unlisted.has(member.team_id)) {
+        unlisted.set(member.team_id, plan.service_type_id);
+      }
+    }
+  }
+  for (const [teamId, serviceTypeId] of unlisted) {
+    const found = await firstFound(
+      [`/services/v2/teams/${teamId}?include=team_positions`],
+      authorization,
+    );
+    const [team] = found ? mapTeams(serviceTypeId, found.data, found.included) : [];
+    if (!team) {
+      continue;
+    }
+    payload.teams.push(team);
+    const byTeam = await firstFound(
+      [`/services/v2/teams/${team.id}/person_team_position_assignments?per_page=100`],
+      authorization,
+    );
+    if (byTeam) {
+      payload.roster.push(
+        ...mapRoster(
+          byTeam.data,
+          team.positions.map((p) => ({ id: p.id, team_id: team.id })),
+        ),
+      );
+    }
+  }
+  if (unlisted.size > 0) {
+    console.log(`Teams read from plans: ${unlisted.size}`);
+  }
+
   // Everyone on a roster or a plan: their name and emails (for matching), and their blockouts.
   const people = new Set([
     ...payload.roster.map((r) => r.person_id),
