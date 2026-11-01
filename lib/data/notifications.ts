@@ -1,4 +1,5 @@
 import "server-only";
+import { getMyCapabilities } from "@/lib/data/capabilities";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { isNotificationKind, type NotificationKind } from "@/lib/domain/notifications";
 
@@ -74,6 +75,30 @@ export async function getMyEmailPreferences(
     data.flatMap((row) => (isNotificationKind(row.kind) ? [[row.kind, row.email]] : [])),
   );
 }
+
+/**
+ * Whether to offer the Leading email choices: the person can record assessments, publish courses,
+ * or manage a department, or they own an SOP.
+ */
+export async function offersLeadingChoices(userId: string): Promise<boolean> {
+  const grants = await getMyCapabilities();
+  if (grants.some((g) => LEADING_CAPABILITIES.has(g.capability))) {
+    return true;
+  }
+  const supabase = await createSupabaseServerClient();
+  const { count, error } = await supabase
+    .from("sops")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_id", userId)
+    .is("archived_at", null);
+  return !error && (count ?? 0) > 0;
+}
+
+const LEADING_CAPABILITIES: ReadonlySet<string> = new Set([
+  "assessment.record",
+  "course.publish",
+  "department.manage",
+]);
 
 export async function setEmailPreference(kind: NotificationKind, email: boolean): Promise<boolean> {
   const supabase = await createSupabaseServerClient();

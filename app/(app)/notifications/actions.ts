@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
 import { markAllRead, setEmailPreference } from "@/lib/data/notifications";
@@ -23,21 +24,16 @@ export async function markAllReadAction(): Promise<FormState> {
   return { status: "done", message: "All caught up." };
 }
 
-/** Saves which kinds of notification also come by email (SRS-NOTIF-002). */
-export async function saveEmailPreferencesAction(
-  _: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  if (!(await signedIn())) {
-    return FAILED;
+const emailChoice = z.object({
+  kind: z.string().refine(isNotificationKind),
+  email: z.boolean(),
+});
+
+/** Saves one email switch as soon as it changes (SRS-NOTIF-002). Safe to retry. */
+export async function setEmailChoiceAction(kind: string, email: boolean): Promise<{ ok: boolean }> {
+  const parsed = emailChoice.safeParse({ kind, email });
+  if (!parsed.success || !isNotificationKind(parsed.data.kind) || !(await signedIn())) {
+    return { ok: false };
   }
-  const kinds = formData.getAll("kind").filter((k): k is string => typeof k === "string");
-  const on = new Set(formData.getAll("email").filter((k): k is string => typeof k === "string"));
-  for (const kind of kinds) {
-    if (!isNotificationKind(kind) || !(await setEmailPreference(kind, on.has(kind)))) {
-      return FAILED;
-    }
-  }
-  refresh();
-  return { status: "done", message: "Email choices saved." };
+  return { ok: await setEmailPreference(parsed.data.kind, parsed.data.email) };
 }
