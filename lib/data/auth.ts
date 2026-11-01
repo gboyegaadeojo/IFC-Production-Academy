@@ -11,6 +11,8 @@ export type CurrentUser = {
   id: string;
   displayName: string;
   status: AccountStatus;
+  /** The sign-in email, from the session. */
+  email: string | null;
 };
 
 /** The signed-in person, or null. Read once per request. */
@@ -30,7 +32,13 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   if (error || !profile) {
     return null;
   }
-  return { id: profile.id, displayName: profile.display_name, status: profile.status };
+  const email = claimsData?.claims.email;
+  return {
+    id: profile.id,
+    displayName: profile.display_name,
+    status: profile.status,
+    email: typeof email === "string" ? email : null,
+  };
 });
 
 /** For protected pages: sends signed-out visitors to sign-in and inactive accounts to an explanation. */

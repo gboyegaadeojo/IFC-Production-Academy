@@ -26,6 +26,9 @@ export type LevelSummary = {
   number: number;
   name: string;
   publishedCourses: number;
+  /** Lessons that count towards completion in this level's published courses, and how many are done. */
+  lessonsTotal: number;
+  lessonsDone: number;
 };
 
 export type DepartmentLearning = {
@@ -34,25 +37,56 @@ export type DepartmentLearning = {
   publishedCourses: number;
 };
 
+/** A published course's live lessons, with the keys the learner has marked complete. */
+export type PublishedCourseLessons = {
+  levelId: string;
+  lessons?: readonly { key: string; isRequired: boolean }[];
+  completedKeys?: ReadonlySet<string>;
+};
+
 /**
- * Counts published, non-archived courses per level for each department. Membership never implies
- * progress, completion, or approval to serve; this is a catalogue count only.
+ * The lessons that count towards a course, using the same rule as course progress: the required
+ * ones, or all of them when none are required. Done means the learner marked it complete.
+ */
+export function countedLessons(
+  lessons: readonly { key: string; isRequired: boolean }[],
+  completedKeys: ReadonlySet<string>,
+): { total: number; done: number } {
+  const required = lessons.filter((lesson) => lesson.isRequired);
+  const counted = required.length > 0 ? required : lessons;
+  return {
+    total: counted.length,
+    done: counted.filter((lesson) => completedKeys.has(lesson.key)).length,
+  };
+}
+
+/**
+ * Counts published, non-archived courses per level for each department, and the learner's lessons
+ * marked complete in them. Membership never implies progress, completion, or approval to serve.
  */
 export function summariseLearning(
   departmentIds: readonly string[],
   levels: readonly { id: string; departmentId: string; number: number; name: string }[],
-  publishedCourses: readonly { levelId: string }[],
+  publishedCourses: readonly PublishedCourseLessons[],
 ): DepartmentLearning[] {
   return departmentIds.map((departmentId) => {
     const departmentLevels = levels
       .filter((level) => level.departmentId === departmentId)
       .toSorted((a, b) => a.number - b.number)
-      .map((level) => ({
-        levelId: level.id,
-        number: level.number,
-        name: level.name,
-        publishedCourses: publishedCourses.filter((course) => course.levelId === level.id).length,
-      }));
+      .map((level) => {
+        const courses = publishedCourses.filter((course) => course.levelId === level.id);
+        const counts = courses.map((course) =>
+          countedLessons(course.lessons ?? [], course.completedKeys ?? new Set()),
+        );
+        return {
+          levelId: level.id,
+          number: level.number,
+          name: level.name,
+          publishedCourses: courses.length,
+          lessonsTotal: counts.reduce((total, count) => total + count.total, 0),
+          lessonsDone: counts.reduce((total, count) => total + count.done, 0),
+        };
+      });
     return {
       departmentId,
       levels: departmentLevels,
@@ -66,4 +100,15 @@ export function summariseLearning(
 
 export function courseCountLabel(count: number): string {
   return count === 1 ? "1 course" : `${count} courses`;
+}
+
+/** "4 of 12 lessons", "No courses yet", or the course count when lessons aren't readable. */
+export function levelProgressLabel(level: LevelSummary): string {
+  if (level.publishedCourses === 0) {
+    return "No courses yet";
+  }
+  if (level.lessonsTotal === 0) {
+    return courseCountLabel(level.publishedCourses);
+  }
+  return `${level.lessonsDone} of ${level.lessonsTotal} ${level.lessonsTotal === 1 ? "lesson" : "lessons"}`;
 }

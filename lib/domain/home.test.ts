@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { courseCountLabel, homeState, summariseLearning } from "./home";
+import {
+  countedLessons,
+  courseCountLabel,
+  homeState,
+  levelProgressLabel,
+  summariseLearning,
+} from "./home";
 
 describe("homeState", () => {
   it("is new when someone has no memberships or requests", () => {
@@ -55,6 +61,72 @@ describe("summariseLearning", () => {
     const [audio] = summariseLearning(["aud"], levels, []);
     expect(audio?.publishedCourses).toBe(0);
     expect(audio?.levels).toHaveLength(1);
+    expect(audio?.levels[0]).toMatchObject({ lessonsTotal: 0, lessonsDone: 0 });
+  });
+
+  it("adds up the lessons the learner marked complete per level", () => {
+    const [camera] = summariseLearning(["cam"], levels, [
+      {
+        levelId: "l1",
+        lessons: [
+          { key: "a", isRequired: false },
+          { key: "b", isRequired: false },
+        ],
+        completedKeys: new Set(["a"]),
+      },
+      { levelId: "l1", lessons: [{ key: "c", isRequired: false }], completedKeys: new Set(["c"]) },
+    ]);
+    expect(camera?.levels[0]).toMatchObject({ lessonsTotal: 3, lessonsDone: 2 });
+  });
+});
+
+describe("countedLessons", () => {
+  it("counts only required lessons when a course has any", () => {
+    expect(
+      countedLessons(
+        [
+          { key: "a", isRequired: true },
+          { key: "b", isRequired: false },
+        ],
+        new Set(["b"]),
+      ),
+    ).toEqual({ total: 1, done: 0 });
+  });
+
+  it("counts every lesson when none are required", () => {
+    expect(
+      countedLessons(
+        [
+          { key: "a", isRequired: false },
+          { key: "b", isRequired: false },
+        ],
+        new Set(["b", "zz"]),
+      ),
+    ).toEqual({ total: 2, done: 1 });
+  });
+});
+
+describe("levelProgressLabel", () => {
+  const base = { levelId: "l", number: 1, name: "Foundations" };
+  it("is honest about empty levels", () => {
+    expect(
+      levelProgressLabel({ ...base, publishedCourses: 0, lessonsTotal: 0, lessonsDone: 0 }),
+    ).toBe("No courses yet");
+  });
+
+  it("shows lessons done of the total", () => {
+    expect(
+      levelProgressLabel({ ...base, publishedCourses: 2, lessonsTotal: 12, lessonsDone: 4 }),
+    ).toBe("4 of 12 lessons");
+    expect(
+      levelProgressLabel({ ...base, publishedCourses: 1, lessonsTotal: 1, lessonsDone: 0 }),
+    ).toBe("0 of 1 lesson");
+  });
+
+  it("falls back to the course count when lessons aren't readable", () => {
+    expect(
+      levelProgressLabel({ ...base, publishedCourses: 2, lessonsTotal: 0, lessonsDone: 0 }),
+    ).toBe("2 courses");
   });
 });
 
