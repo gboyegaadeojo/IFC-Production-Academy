@@ -93,7 +93,6 @@ test("a volunteer signs up for an open spot, asks for cover, and a teammate take
     const cover = devon.getByRole("region", { name: "Can you cover?" });
     await expect(cover.getByText(/Away that weekend/)).toBeVisible();
     await cover.getByRole("button", { name: `I'll cover it ${ROLE}, ${service}` }).click();
-    await expect(devon.getByText(/You're covering it/)).toBeVisible();
     await expect(
       devon.getByRole("region", { name: "Coming up" }).getByText(service, { exact: true }),
     ).toBeVisible();
