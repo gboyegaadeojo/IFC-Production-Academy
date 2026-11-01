@@ -10,7 +10,7 @@
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { backupNames, latestCompleteStamp } from "../lib/domain/backup.ts";
-import { accessToken, listFolder } from "./backup/drive.ts";
+import { driveConfigured, driveToken, listFolder } from "./backup/drive.ts";
 
 const WORKFLOWS = [
   { file: "keepalive.yml", label: "Keep-alive", staleAfterHours: 48 },
@@ -44,12 +44,11 @@ async function runs(file: string): Promise<Run[]> {
 }
 
 async function backupSizes(): Promise<{ db: number; files: number } | null> {
-  const account = env("GDRIVE_SERVICE_ACCOUNT_JSON");
   const folder = env("GDRIVE_FOLDER_ID");
-  if (!account || !folder) {
+  if (!driveConfigured() || !folder) {
     return null;
   }
-  const files = await listFolder(await accessToken(account), folder);
+  const files = await listFolder(await driveToken(), folder);
   const stamp = latestCompleteStamp(files.map((f) => f.name));
   if (!stamp) {
     return null;

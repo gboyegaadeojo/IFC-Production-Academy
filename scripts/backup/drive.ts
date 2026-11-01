@@ -1,6 +1,7 @@
 /**
- * A small Google Drive client for the backup jobs, using a service account and Node built-ins
- * only. Works in a Shared Drive folder (supportsAllDrives). Never logs names of people or file
+ * A small Google Drive client for the backup jobs, using Node built-ins only. It signs in with a
+ * short-lived token from GitHub's keyless Workload Identity Federation (GDRIVE_ACCESS_TOKEN), or,
+ * where key files are allowed, a service-account key (GDRIVE_SERVICE_ACCOUNT_JSON). Works in a Shared Drive folder (supportsAllDrives). Never logs names of people or file
  * contents; callers log counts, sizes, and timings.
  */
 import { createSign } from "node:crypto";
@@ -46,6 +47,24 @@ export async function accessToken(serviceAccountJson: string): Promise<string> {
     throw new Error(`Google sign-in failed with HTTP ${response.status}`);
   }
   return ((await response.json()) as { access_token: string }).access_token;
+}
+
+/** Whether the job has a way to sign in to Google Drive. */
+export function driveConfigured(): boolean {
+  return Boolean(process.env.GDRIVE_ACCESS_TOKEN || process.env.GDRIVE_SERVICE_ACCOUNT_JSON);
+}
+
+/** A Drive token: the keyless one GitHub got from Google, else one from a key file. */
+export async function driveToken(): Promise<string> {
+  const keyless = process.env.GDRIVE_ACCESS_TOKEN;
+  if (keyless) {
+    return keyless;
+  }
+  const account = process.env.GDRIVE_SERVICE_ACCOUNT_JSON;
+  if (!account) {
+    throw new Error("No Google sign-in: GDRIVE_ACCESS_TOKEN or GDRIVE_SERVICE_ACCOUNT_JSON");
+  }
+  return accessToken(account);
 }
 
 export type DriveFile = { id: string; name: string; size: number };
