@@ -650,6 +650,13 @@ export async function restoreVersion(versionId: string): Promise<CurriculumResul
   return error ? fail(error) : { ok: true };
 }
 
+/** Deletes a course that was never published (taken out of the curriculum; audited). */
+export async function discardDraftCourse(courseId: string): Promise<CurriculumResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("discard_draft_course", { p_course_id: courseId });
+  return error ? fail(error) : { ok: true };
+}
+
 export async function archiveCourse(courseId: string): Promise<CurriculumResult> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("archive_course", { p_course_id: courseId });

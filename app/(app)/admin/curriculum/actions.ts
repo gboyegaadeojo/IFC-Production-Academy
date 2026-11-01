@@ -335,6 +335,23 @@ export async function restoreAction(_: FormState, formData: FormData): Promise<F
   };
 }
 
+/** Deletes a course added by mistake. The database refuses any course that was ever published. */
+export async function discardDraftCourseAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const courseId = id.safeParse(formData.get("courseId"));
+  if (!courseId.success || !(await allowed())) {
+    return failed("not_authorized");
+  }
+  const result = await curriculum.discardDraftCourse(courseId.data);
+  if (!result.ok) {
+    return failed(result.error);
+  }
+  refresh();
+  return { status: "done", message: "Deleted." };
+}
+
 export async function archiveAction(_: FormState, formData: FormData): Promise<FormState> {
   const courseId = id.safeParse(formData.get("courseId"));
   if (!courseId.success || !(await allowed())) {

@@ -39,8 +39,11 @@ export function courseState(
     .toSorted((a, b) => (b.versionNumber ?? 0) - (a.versionNumber ?? 0))[0];
 
   if (archived) {
-    const title = open?.title ?? latest?.title;
-    return title === undefined ? null : { kind: "archived", title, draftId: open?.id ?? null };
+    // A course archived before it was ever published was deleted as a mistake: it isn't listed.
+    if (latest === undefined) {
+      return null;
+    }
+    return { kind: "archived", title: open?.title ?? latest.title, draftId: open?.id ?? null };
   }
   if (published && published.versionNumber !== null) {
     return {
@@ -233,6 +236,7 @@ export type CurriculumError =
   | "draft_exists"
   | "quiz_has_no_questions"
   | "practical_has_no_criteria"
+  | "course_was_published"
   | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<CurriculumError>([
@@ -248,6 +252,7 @@ const KNOWN: ReadonlySet<string> = new Set<CurriculumError>([
   "draft_exists",
   "quiz_has_no_questions",
   "practical_has_no_criteria",
+  "course_was_published",
 ]);
 
 export function toCurriculumError(
@@ -288,6 +293,8 @@ export function curriculumErrorMessage(error: CurriculumError): string {
       return "A quiz in this course has no questions yet. Add questions or remove the quiz first.";
     case "practical_has_no_criteria":
       return "A practical assessment in this course has no checklist items yet. Add some or remove it first.";
+    case "course_was_published":
+      return "This course has been published, so it can't be deleted. Archive it from the course page instead.";
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }
