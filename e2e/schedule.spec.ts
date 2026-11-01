@@ -28,8 +28,11 @@ test("a scheduler sets up a service type, makes its dates, and sees them in the 
     .selectOption({ label: "Sample role (seed data) (Camera Operations)" });
   await page.getByRole("button", { name: "Add position" }).click();
   await expect(
-    page.getByRole("region", { name: "Positions" }).getByText("Sample role (seed data)"),
-  ).toBeVisible();
+    page
+      .getByRole("region", { name: "Positions" })
+      .getByRole("listitem")
+      .filter({ hasText: "Sample role (seed data)" }),
+  ).toHaveCount(1);
 
   await page.getByLabel("How many").fill("2");
   await page.getByRole("button", { name: "Make services" }).click();
