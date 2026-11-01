@@ -85,18 +85,12 @@ export function MonthCalendar({
                 const inMonth = date.startsWith(month);
                 const isSelected = date === selected;
                 const isToday = date === today;
-                const name = [
-                  dayLabel(date),
-                  isToday ? "today" : null,
-                  ...dayMarks.map((mark) => mark.label),
-                ]
-                  .filter(Boolean)
-                  .join(", ");
+                // Named by its content, not an aria-label, so what's seen is what's announced.
+                const day = [dayLabel(date), isToday ? "today" : null].filter(Boolean).join(", ");
                 return (
                   <td key={date} className="p-0.5 align-top">
                     <Link
                       href={hrefFor(date)}
-                      aria-label={name}
                       aria-current={isSelected ? "date" : undefined}
                       scroll={false}
                       className={`flex min-h-14 flex-col items-center gap-1 rounded-button border px-0.5 py-1.5 text-small transition-surface sm:min-h-20 sm:items-start sm:px-2 ${
@@ -105,7 +99,9 @@ export function MonthCalendar({
                           : "border-transparent hover:border-border hover:bg-card"
                       } ${inMonth ? "text-text" : "text-text-muted"}`}
                     >
+                      <span className="sr-only">{day}</span>
                       <span
+                        aria-hidden="true"
                         className={`tabular flex size-6 items-center justify-center rounded-pill font-mono ${
                           isToday ? "bg-accent font-semibold text-on-accent" : ""
                         }`}
@@ -120,7 +116,8 @@ export function MonthCalendar({
                                 aria-hidden="true"
                                 className={`size-1.5 shrink-0 rounded-pill ${DOT[mark.tone]}`}
                               />
-                              <span className="hidden truncate text-small leading-tight text-text-secondary sm:inline">
+                              <span className="sr-only">, </span>
+                              <span className="sr-only truncate text-small leading-tight text-text-secondary sm:not-sr-only">
                                 {mark.label}
                               </span>
                             </span>

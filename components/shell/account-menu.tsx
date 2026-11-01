@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { AppearancePicker } from "@/components/appearance-picker";
-import { ChevronDownIcon } from "@/components/ui/icons";
+import { ChevronDownIcon, ChevronUpDownIcon } from "@/components/ui/icons";
 import type { Appearance } from "@/lib/domain/appearance";
 
 /**
@@ -19,6 +19,8 @@ export function AccountMenu({
   unread = 0,
   appearance,
   signOut,
+  placement = "header",
+  compact = false,
 }: {
   displayName: string;
   initials: string;
@@ -28,7 +30,12 @@ export function AccountMenu({
   /** This device's appearance. */
   appearance: Appearance;
   signOut: () => Promise<void>;
+  /** In the admin sidebar's footer the menu opens upwards, or sideways when it's icons only. */
+  placement?: "header" | "sidebar";
+  /** Icons-only sidebar: just the avatar. */
+  compact?: boolean;
 }) {
+  const inSidebar = placement === "sidebar";
   const pathname = usePathname();
   // Open only on the page where it was opened, so navigating anywhere closes it.
   const [openedOn, setOpenedOn] = useState<string | null>(null);
@@ -73,7 +80,14 @@ export function AccountMenu({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        className="flex min-h-touch items-center gap-2 rounded-button px-1.5 text-text-secondary transition-surface hover:bg-hover hover:text-text sm:px-2"
+        title={compact ? displayName : undefined}
+        className={
+          inSidebar
+            ? `flex min-h-11 items-center gap-2.5 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
+                compact ? "relative w-11 justify-center" : "w-full px-2"
+              }`
+            : "flex min-h-touch items-center gap-2 rounded-button px-1.5 text-text-secondary transition-surface hover:bg-hover hover:text-text sm:px-2"
+        }
       >
         <span
           aria-hidden="true"
@@ -82,16 +96,32 @@ export function AccountMenu({
           {initials}
         </span>
         {/* Visible from 640px; always part of the name, so the label matches what's shown. */}
-        <span className="sr-only text-small sm:not-sr-only sm:max-w-40 sm:truncate">
+        <span
+          className={
+            inSidebar
+              ? compact
+                ? "sr-only"
+                : "min-w-0 flex-1 truncate text-small font-medium text-text"
+              : "sr-only text-small sm:not-sr-only sm:max-w-40 sm:truncate"
+          }
+        >
           {displayName}
         </span>
         {unread > 0 ? (
-          <span
-            aria-hidden="true"
-            className="tabular rounded-pill bg-accent px-1.5 text-small font-medium text-on-accent"
-          >
-            {unread > 99 ? "99+" : unread}
-          </span>
+          compact ? (
+            // Icons only: a dot on the avatar; the number is in the menu and the label.
+            <span
+              aria-hidden="true"
+              className="absolute top-1.5 right-1.5 size-2 rounded-pill bg-accent ring-2 ring-surface"
+            />
+          ) : (
+            <span
+              aria-hidden="true"
+              className="tabular rounded-pill bg-accent px-1.5 text-small font-medium text-on-accent"
+            >
+              {unread > 99 ? "99+" : unread}
+            </span>
+          )
         ) : null}
         <span className="sr-only">
           {unread > 0
@@ -99,12 +129,24 @@ export function AccountMenu({
             : ""}
           , account menu
         </span>
-        <ChevronDownIcon className="hidden size-4 sm:block" />
+        {inSidebar ? (
+          compact ? null : (
+            <ChevronUpDownIcon className="size-4 shrink-0 text-text-muted" />
+          )
+        ) : (
+          <ChevronDownIcon className="hidden size-4 sm:block" />
+        )}
       </button>
       {open ? (
         <div
           id={panelId}
-          className="absolute right-0 z-40 mt-2 w-64 rounded-card border border-border bg-surface p-2 shadow-[0_16px_40px_-12px_var(--bg)]"
+          className={`absolute z-40 w-64 rounded-card border border-border bg-surface p-2 shadow-[0_16px_40px_-12px_var(--bg)] ${
+            inSidebar
+              ? compact
+                ? "bottom-0 left-full ml-3"
+                : "bottom-full left-0 mb-2"
+              : "right-0 mt-2"
+          }`}
         >
           <p className="truncate px-3 pt-1 pb-2 text-small text-text-muted">
             Signed in as <span className="text-text">{displayName}</span>
@@ -128,7 +170,8 @@ export function AccountMenu({
                 Mentoring
               </Link>
             </li>
-            {showAdmin ? (
+            {/* The sidebar has its own workspace switcher. */}
+            {showAdmin && !inSidebar ? (
               <li>
                 <Link href={inAdmin ? "/home" : "/admin"} className={item}>
                   {inAdmin ? "Back to Academy" : "Admin"}

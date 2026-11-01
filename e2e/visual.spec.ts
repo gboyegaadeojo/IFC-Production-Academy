@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { openAccountMenu } from "./support/account-menu";
+import { pressUntil } from "./support/admin-nav";
 import { mailpitAvailable, signInByEmail } from "./support/email-sign-in";
 import {
   capture,
@@ -77,13 +78,13 @@ for (const viewport of VIEWPORTS) {
       // Below 1024px the sidebar is a drawer: focus moves in, Escape closes, focus returns.
       const trigger = page.getByRole("button", { name: "Open admin menu" });
       await trigger.click();
-      const drawer = page.getByRole("dialog", { name: "Admin" });
+      const drawer = page.getByRole("dialog", { name: "Admin menu" });
       await expect(drawer).toBeVisible();
       // Wait for the opening transition to finish before capturing.
       await expect(drawer).toHaveCSS("opacity", "1");
-      await expect(drawer.getByRole("link", { name: "Back to Academy" })).toBeVisible();
+      await expect(drawer.getByRole("button", { name: /Administration/ })).toBeVisible();
       // Focus moves into the drawer, to its first control.
-      await expect(drawer.getByRole("button", { name: "Close admin" })).toBeFocused();
+      await expect(drawer.getByRole("button", { name: "Close admin menu" })).toBeFocused();
       await page.screenshot({ path: `${DIR}/admin-drawer-${viewport.name}.png` });
       await page.keyboard.press("Escape");
       await expect(drawer).toBeHidden();
@@ -191,5 +192,48 @@ test("admin screens at 768px and 1024px", async ({ page }) => {
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       await capture(page, `${name}-${viewport.name}`);
     }
+  }
+});
+
+test("admin sidebar states at 390, 768, 1024 and 1440px", async ({ page }) => {
+  // DESIGN §3.2 review set: expanded with every group open (long navigation), icons only with a
+  // flyout, and the drawer below 1024px. Fake seed data only.
+  test.setTimeout(90_000);
+  await signInByEmail(page, "emery.director@example.com");
+  for (const viewport of [
+    { name: "390", width: 390, height: 844 },
+    { name: "768", width: 768, height: 1024 },
+    { name: "1024", width: 1024, height: 768 },
+    { name: "1440", width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/admin/planning-center");
+    await expect(page.getByRole("heading", { level: 1, name: "Planning Center" })).toBeVisible();
+    await page.waitForLoadState("networkidle");
+    if (viewport.width < 1024) {
+      await page.getByRole("button", { name: "Open admin menu" }).click();
+      const drawer = page.getByRole("dialog", { name: "Admin menu" });
+      await expect(drawer).toHaveCSS("opacity", "1");
+      await page.screenshot({ path: `${DIR}/admin-sidebar-drawer-${viewport.name}.png` });
+      await page.keyboard.press("Escape");
+      continue;
+    }
+    const nav = page.getByRole("navigation", { name: "Admin" });
+    await expect(nav.getByRole("link", { name: /^Planning Center/ })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    await page.screenshot({ path: `${DIR}/admin-sidebar-active-${viewport.name}.png` });
+    for (const group of ["Checklists", "Training Academy", "People & Teams", "System & Settings"]) {
+      await pressUntil(nav.getByRole("button", { name: group }), "aria-expanded", "true");
+    }
+    await page.screenshot({ path: `${DIR}/admin-sidebar-long-${viewport.name}.png` });
+    const iconsOnly = page.getByRole("button", { name: "Icons only" });
+    await pressUntil(iconsOnly, "aria-pressed", "true");
+    await nav.getByRole("button", { name: "Services & Scheduling" }).click();
+    await expect(page.getByRole("group", { name: "Services & Scheduling" })).toBeVisible();
+    await page.screenshot({ path: `${DIR}/admin-sidebar-collapsed-${viewport.name}.png` });
+    await page.keyboard.press("Escape");
+    await pressUntil(iconsOnly, "aria-pressed", "false");
   }
 });
