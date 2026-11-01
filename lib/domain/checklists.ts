@@ -45,6 +45,7 @@ export type ServiceChecklistRow = {
   checklistId: string;
   checklistName: string;
   departmentName: string;
+  departmentHue: string;
   isMine: boolean;
   sectionId: string;
   sectionName: string;
@@ -58,6 +59,7 @@ export type ServiceChecklist = {
   id: string;
   name: string;
   departmentName: string;
+  departmentHue: string;
   isMine: boolean;
   done: number;
   total: number;
@@ -78,6 +80,7 @@ export function groupServiceChecklists(rows: readonly ServiceChecklistRow[]): Se
         id: row.checklistId,
         name: row.checklistName,
         departmentName: row.departmentName,
+        departmentHue: row.departmentHue,
         isMine: row.isMine,
         done: 0,
         total: 0,
@@ -116,6 +119,11 @@ export function percentDone(done: number, total: number): number {
 // ---------------------------------------------------------------------------
 // The service-day board (approved mock, 2026-11-01)
 // ---------------------------------------------------------------------------
+
+/** "You're serving · Camera 1", with every position you're scheduled in for the service. */
+export function servingLabel(positions: readonly string[]): string {
+  return positions.length > 0 ? `You're serving · ${positions.join(", ")}` : "You're serving";
+}
 
 /** Your own departments first, then the rest, each group in its configured order. */
 export function boardOrder<T extends { isMine: boolean }>(checklists: readonly T[]): T[] {

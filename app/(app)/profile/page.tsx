@@ -11,7 +11,13 @@ import { getMyAchievements } from "@/lib/data/achievements";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyCertificates } from "@/lib/data/certificates";
 import { getDepartmentLearning } from "@/lib/data/learning";
-import { getMyPlanningCenter, getMyProfile, type MyProfile } from "@/lib/data/profile";
+import {
+  getMyPlanningCenter,
+  getMyPositionTeams,
+  getMyProfile,
+  type MyProfile,
+} from "@/lib/data/profile";
+import { stillLearningPositions } from "@/lib/domain/teams";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar, type MembershipStatus } from "@/lib/domain/departments";
 import { levelProgressLabel, type DepartmentLearning } from "@/lib/domain/home";
@@ -43,11 +49,12 @@ const MEMBERSHIP_TONES: Record<MembershipStatus, StatusTone> = {
  */
 async function ProfileContent() {
   const user = await requireActiveUser();
-  const [profile, certificates, achievements, planningCenter] = await Promise.all([
+  const [profile, certificates, achievements, planningCenter, positionTeams] = await Promise.all([
     getMyProfile(user.id),
     getMyCertificates(user.id),
     getMyAchievements(user.id),
     getMyPlanningCenter(),
+    getMyPositionTeams(user.id),
   ]);
   if (!profile) {
     notFound();
@@ -57,6 +64,10 @@ async function ProfileContent() {
     .map((m) => m.departmentId);
   const learning = await getDepartmentLearning(user.id, activeIds);
   const learningFor = new Map(learning.map((entry) => [entry.departmentId, entry]));
+  const learningPositions = stillLearningPositions(
+    positionTeams,
+    new Set(achievements.approvedRoles.map((role) => role.roleId)),
+  );
 
   return (
     <div className="page-container flex flex-col gap-8 py-8 lg:py-12">
@@ -102,6 +113,21 @@ async function ProfileContent() {
                 <span className="break-all">{profile.email}</span>
               </Detail>
             ) : null}
+            {planningCenter.teams.length > 0 ? (
+              <Detail
+                term={
+                  planningCenter.teams.length === 1
+                    ? "Planning Center team"
+                    : "Planning Center teams"
+                }
+              >
+                <ul className="flex flex-col items-end gap-0.5">
+                  {planningCenter.teams.map((team) => (
+                    <li key={team}>{team}</li>
+                  ))}
+                </ul>
+              </Detail>
+            ) : null}
             <Detail term="Roles">
               <ul className="flex flex-col items-end gap-0.5">
                 {profile.roles.map((role) => (
@@ -121,6 +147,7 @@ async function ProfileContent() {
             memberships={profile.memberships}
             learningFor={learningFor}
             approved={achievements.approvedRoles}
+            learning={learningPositions}
           />
           <Certificates certificates={certificates} />
         </div>
@@ -153,10 +180,13 @@ function Departments({
   memberships,
   learningFor,
   approved,
+  learning,
 }: {
   memberships: MyProfile["memberships"];
   learningFor: Map<string, DepartmentLearning>;
   approved: { departmentId: string; roleId: string; roleName: string }[];
+  /** Positions whose team you're on but aren't approved in yet. */
+  learning: { departmentId: string; roleId: string; roleName: string }[];
 }) {
   const active = memberships.filter((m) => m.status === "active").length;
   return (
@@ -205,6 +235,13 @@ function Departments({
                       Approved: {role.roleName}
                     </StatusBadge>
                   ))}
+                  {learning
+                    .filter((r) => r.departmentId === membership.departmentId)
+                    .map((role) => (
+                      <StatusBadge key={role.roleId} tone="pending">
+                        Still learning: {role.roleName}
+                      </StatusBadge>
+                    ))}
                 </div>
               </li>
             );

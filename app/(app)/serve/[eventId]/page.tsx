@@ -17,6 +17,7 @@ import {
   boardOrder,
   NOT_PUBLISHED_NOTE,
   percentDone,
+  servingLabel,
   teamProgress,
   type ServiceChecklist,
 } from "@/lib/domain/checklists";
@@ -80,7 +81,7 @@ async function ServeContent({ params }: Pick<Props, "params">) {
             </span>
             {service.cancelled ? <StatusBadge tone="neutral">Cancelled</StatusBadge> : null}
             {data?.state.isScheduled ? (
-              <StatusBadge tone="success">You&apos;re serving</StatusBadge>
+              <StatusBadge tone="success">{servingLabel(data.state.myPositions)}</StatusBadge>
             ) : null}
           </div>
         </div>
@@ -230,6 +231,7 @@ function toBoard(checklist: ServiceChecklist): BoardChecklist {
   return {
     id: checklist.id,
     name: checklist.name,
+    departmentHue: checklist.departmentHue,
     isMine: checklist.isMine,
     done: checklist.done,
     total: checklist.total,

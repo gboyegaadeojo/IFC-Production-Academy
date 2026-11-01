@@ -41,7 +41,7 @@ async function Account() {
   const [[grants, unread, planningCenter], appearance] = await Promise.all([
     active
       ? Promise.all([getMyCapabilities(), getUnreadCount(user.id), getMyPlanningCenter()])
-      : Promise.resolve([[], 0, { linked: false, name: null }] as const),
+      : Promise.resolve([[], 0, { linked: false, name: null, teams: [] }] as const),
     getAppearance(),
   ]);
   const showAdmin = active && adminSections(grants).length > 0;
