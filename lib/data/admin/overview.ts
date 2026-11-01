@@ -1,6 +1,7 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
-import { canOpenAdminSection } from "@/lib/domain/admin";
+import { getUnlinkedPlaces } from "@/lib/data/planning-center";
+import { canOpenAdminSection, type AdminSectionKey } from "@/lib/domain/admin";
 import type { CapabilityGrant } from "@/lib/domain/capabilities";
 import { listAuditEntries, type AuditEntry } from "./audit";
 
@@ -127,4 +128,33 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
         }))
       : null,
   };
+}
+
+/**
+ * Sidebar badges: real counts only, for sections the person may open, keyed by section. A count
+ * of zero, or one that can't be read, shows no badge.
+ */
+export async function getAdminNavCounts(
+  grants: readonly CapabilityGrant[],
+): Promise<Partial<Record<AdminSectionKey, number>>> {
+  const supabase = await createSupabaseServerClient();
+  const [requests, unlinked] = await Promise.all([
+    canOpenAdminSection(grants, "members")
+      ? supabase
+          .from("department_memberships")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "requested")
+      : null,
+    canOpenAdminSection(grants, "planning-center")
+      ? getUnlinkedPlaces().catch(() => [])
+      : Promise.resolve([]),
+  ]);
+  const counts: Partial<Record<AdminSectionKey, number>> = {};
+  if (requests && !requests.error && requests.count) {
+    counts.members = requests.count;
+  }
+  if (unlinked.length > 0) {
+    counts["planning-center"] = unlinked.length;
+  }
+  return counts;
 }

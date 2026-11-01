@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { openAccountMenu } from "./support/account-menu";
+import { adminNavLink } from "./support/admin-nav";
 import {
   clearMailFor,
   mailpitAvailable,
@@ -39,10 +40,7 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   await openAccountMenu(leader);
   await leader.getByRole("link", { name: "Admin" }).click();
   await expect(leader.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
-  await leader
-    .getByRole("navigation", { name: "Admin" })
-    .getByRole("link", { name: "Membership requests" })
-    .click();
+  await (await adminNavLink(leader, "Training Academy", "Membership requests")).click();
   await expect(
     leader.getByRole("heading", { level: 1, name: "Membership requests" }),
   ).toBeVisible();
@@ -415,10 +413,10 @@ test("a Platform Admin manages people and departments but not memberships", asyn
   await openAccountMenu(page);
   await page.getByRole("link", { name: "Admin" }).click();
 
+  await expect(await adminNavLink(page, "People & Teams", "People and roles")).toBeVisible();
+  await expect(await adminNavLink(page, "Training Academy", "Departments")).toBeVisible();
+  await expect(await adminNavLink(page, "System & Settings", "Audit log")).toBeVisible();
   const nav = page.getByRole("navigation", { name: "Admin" });
-  await expect(nav.getByRole("link", { name: "People and roles" })).toBeVisible();
-  await expect(nav.getByRole("link", { name: "Departments" })).toBeVisible();
-  await expect(nav.getByRole("link", { name: "Audit log" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Membership requests" })).toHaveCount(0);
 
   await page.goto("/admin/members");
@@ -431,7 +429,7 @@ test("a Platform Admin manages people and departments but not memberships", asyn
     page.getByRole("paragraph").filter({ hasText: /^Department Leader, Audio Engineering$/ }),
   ).toBeVisible();
 
-  await page.getByRole("link", { name: "Audit log" }).click();
+  await (await adminNavLink(page, "System & Settings", "Audit log")).click();
   await expect(page.getByRole("heading", { level: 1, name: "Audit log" })).toBeVisible();
 });
 

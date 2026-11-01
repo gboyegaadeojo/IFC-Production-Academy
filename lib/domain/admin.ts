@@ -29,11 +29,30 @@ export type AdminSectionKey =
 
 /**
  * Sidebar groups (DESIGN §3.2), one per part of the ministry's tools, so an admin knows where a
- * setting lives (G, 2026-11-01): the pre-service Checklist, Services (Planning Center and the
- * schedule), the Academy's training, People, and System.
+ * setting lives (G, 2026-11-01).
  */
-export type AdminSectionGroup =
-  "Overview" | "Checklist" | "Services" | "Academy" | "People" | "System";
+export const ADMIN_GROUPS = [
+  "Overview",
+  "Checklists",
+  "Services & Scheduling",
+  "Training Academy",
+  "People & Teams",
+  "System & Settings",
+] as const;
+export type AdminSectionGroup = (typeof ADMIN_GROUPS)[number];
+
+export type AdminGroupIcon =
+  "dashboard" | "list-checks" | "calendar-range" | "graduation-cap" | "users" | "settings";
+
+/** Each group's icon in the sidebar (components/ui/icons.tsx). */
+export const ADMIN_GROUP_ICONS: Record<AdminSectionGroup, AdminGroupIcon> = {
+  Overview: "dashboard",
+  Checklists: "list-checks",
+  "Services & Scheduling": "calendar-range",
+  "Training Academy": "graduation-cap",
+  "People & Teams": "users",
+  "System & Settings": "settings",
+};
 
 export type AdminSection = {
   key: AdminSectionKey;
@@ -43,55 +62,70 @@ export type AdminSection = {
 };
 
 const SECTIONS: readonly AdminSection[] = [
-  { key: "checklists", href: "/admin/checklists", label: "Task lists", group: "Checklist" },
+  { key: "checklists", href: "/admin/checklists", label: "Task lists", group: "Checklists" },
   {
     key: "checklist-activity",
     href: "/admin/checklists/activity",
     label: "Activity log",
-    group: "Checklist",
+    group: "Checklists",
   },
   {
     key: "checklist-history",
     href: "/admin/checklists/history",
     label: "Service history",
-    group: "Checklist",
+    group: "Checklists",
   },
   {
     key: "checklist-hidden",
     href: "/admin/checklists/hidden",
     label: "Hidden items",
-    group: "Checklist",
+    group: "Checklists",
   },
   {
     key: "checklist-settings",
     href: "/admin/checklists/settings",
     label: "Checklist settings",
-    group: "Checklist",
+    group: "Checklists",
   },
   {
     key: "planning-center",
     href: "/admin/planning-center",
     label: "Planning Center",
-    group: "Services",
+    group: "Services & Scheduling",
   },
-  { key: "teams", href: "/admin/teams", label: "Serving teams", group: "Services" },
-  { key: "schedule", href: "/admin/schedule", label: "Schedule", group: "Services" },
-  { key: "curriculum", href: "/admin/curriculum", label: "Curriculum", group: "Academy" },
-  { key: "sops", href: "/admin/sops", label: "SOP library", group: "Academy" },
-  { key: "assessments", href: "/admin/assessments", label: "Assessments", group: "Academy" },
+  { key: "teams", href: "/admin/teams", label: "Serving teams", group: "Services & Scheduling" },
+  { key: "schedule", href: "/admin/schedule", label: "Schedule", group: "Services & Scheduling" },
+  { key: "curriculum", href: "/admin/curriculum", label: "Curriculum", group: "Training Academy" },
+  { key: "sops", href: "/admin/sops", label: "SOP library", group: "Training Academy" },
+  {
+    key: "assessments",
+    href: "/admin/assessments",
+    label: "Assessments",
+    group: "Training Academy",
+  },
   {
     key: "competencies",
     href: "/admin/competencies",
     label: "Competencies and roles",
-    group: "Academy",
+    group: "Training Academy",
   },
-  { key: "members", href: "/admin/members", label: "Membership requests", group: "Academy" },
-  { key: "mentoring", href: "/admin/mentoring", label: "Mentoring", group: "Academy" },
-  { key: "departments", href: "/admin/departments", label: "Departments", group: "Academy" },
-  { key: "reports", href: "/admin/reports", label: "Reports", group: "Academy" },
-  { key: "people", href: "/admin/people", label: "People and roles", group: "People" },
-  { key: "invitations", href: "/admin/invitations", label: "Invitations", group: "People" },
-  { key: "audit", href: "/admin/audit", label: "Audit log", group: "System" },
+  {
+    key: "members",
+    href: "/admin/members",
+    label: "Membership requests",
+    group: "Training Academy",
+  },
+  { key: "mentoring", href: "/admin/mentoring", label: "Mentoring", group: "Training Academy" },
+  {
+    key: "departments",
+    href: "/admin/departments",
+    label: "Departments",
+    group: "Training Academy",
+  },
+  { key: "reports", href: "/admin/reports", label: "Reports", group: "Training Academy" },
+  { key: "people", href: "/admin/people", label: "People and roles", group: "People & Teams" },
+  { key: "invitations", href: "/admin/invitations", label: "Invitations", group: "People & Teams" },
+  { key: "audit", href: "/admin/audit", label: "Audit log", group: "System & Settings" },
 ];
 
 /** Visible sections grouped for the sidebar, in order, skipping empty groups. */

@@ -80,12 +80,19 @@ Primary: **Home**, **Explore**, **My Learning**, **Resources** (only when implem
 **Mobile:** 44px minimum interactive targets; compact top header, accessible menu/drawer; optionally bottom navigation for 3–4 high-frequency learner destinations if implemented. Never use a desktop sidebar squeezed into a mobile viewport.
 
 ### 3.2 Admin navigation
-Use a dedicated admin shell with a persistent 240–256px sidebar on desktop and a drawer on mobile. Group links:
-- **Overview:** Dashboard
-- **People:** Membership Requests, People & Roles, Invitations
-- **Learning:** Curriculum, Departments
-- **System:** Audit Log
-Only show links authorized by existing capabilities. Include clear “Back to Academy” navigation. Active item uses subtle surface highlight plus a narrow purple indicator, not a harsh full outline. The account dropdown contains Profile, Academy/Admin workspace switch (as permitted), theme preference when implemented, and Sign Out.
+A dedicated admin shell (revised 2026-11-01). In Admin, the sidebar replaces the Academy's top header.
+
+- **Desktop (1024px and up):** a full-height sidebar, 256px wide or 72px icons only. The choice is remembered on the device. It has three fixed parts: the brand and the icons-only switch; the **workspace switcher** (Administration, Academy); and the account menu in the footer (Profile, Notifications, Mentoring, Appearance, Sign out). The navigation between them scrolls on its own.
+- **Groups**, each with one icon, opening and closing (several at once). The current page's group opens by itself; open groups are remembered on the device.
+  - **Overview:** Dashboard
+  - **Checklists:** Task lists, Activity log, Service history, Hidden items, Checklist settings
+  - **Services & Scheduling:** Planning Center, Serving teams, Schedule
+  - **Training Academy:** Curriculum, SOP library, Assessments, Competencies and roles, Membership requests, Mentoring, Departments, Reports
+  - **People & Teams:** People and roles, Invitations
+  - **System & Settings:** Audit log
+- **Icons only:** each group's icon opens a flyout of its pages on hover, click or Enter. Escape closes it and returns focus.
+- **Below 1024px:** a slim bar with the current page; its menu opens the same sidebar in the drawer.
+- Only show links authorized by existing capabilities. The current item uses a subtle surface highlight, stronger text, and a narrow purple bar, never a harsh full outline. **Badges only for real counts** (pending membership requests, people in unlinked Planning Center positions), none at zero. 14px labels, 18px icons, 36–44px rows, 150–200ms transitions that stop under reduced motion.
 
 ### 3.3 Breadcrumbs and context
 On deep screens use compact breadcrumbs, department context, and a single clear page title. Avoid repeating introductory prose on every visit; move longer explanations into contextual help or an information panel.

@@ -158,6 +158,68 @@ test("admin pages are accessible", async ({ page }) => {
   await expectAccessible(page, "person");
 });
 
+test("the admin sidebar: groups, icons only, flyouts and the drawer, by keyboard", async ({
+  page,
+}) => {
+  // DESIGN §3.2: the current page's group opens, groups stay open, the sidebar can be icons only.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin/checklists/activity");
+  const nav = page.getByRole("navigation", { name: "Admin" });
+  await expect(nav.getByRole("button", { name: "Checklists" })).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+  await expect(nav.getByRole("link", { name: "Activity log" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(page.getByRole("button", { name: /, account menu$/ })).toBeVisible();
+
+  const training = nav.getByRole("button", { name: "Training Academy" });
+  await expect(training).toHaveAttribute("aria-expanded", "false");
+  await training.focus();
+  await page.keyboard.press("Enter");
+  await expect(training).toHaveAttribute("aria-expanded", "true");
+  await expectAccessible(page, "admin sidebar expanded");
+  await page.reload();
+  await expect(nav.getByRole("button", { name: "Training Academy" })).toHaveAttribute(
+    "aria-expanded",
+    "true",
+  );
+
+  // Icons only, remembered, with a flyout per group.
+  const iconsOnly = page.getByRole("button", { name: "Icons only" });
+  await iconsOnly.click();
+  await expect(iconsOnly).toHaveAttribute("aria-pressed", "true");
+  const services = nav.getByRole("button", { name: "Services & Scheduling" });
+  await services.focus();
+  await page.keyboard.press("Enter");
+  const flyout = page.getByRole("group", { name: "Services & Scheduling" });
+  await expect(flyout.getByRole("link", { name: "Planning Center" })).toBeVisible();
+  await expectAccessible(page, "admin sidebar icons only, flyout open");
+  await page.keyboard.press("Escape");
+  await expect(flyout).toBeHidden();
+  await expect(services).toBeFocused();
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Icons only" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "Icons only" }).click();
+
+  // Phone: the same sidebar in a drawer.
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Open admin menu" }).click();
+  const drawer = page.getByRole("dialog", { name: "Admin menu" });
+  await expect(drawer).toHaveCSS("opacity", "1");
+  await expect(drawer.getByRole("link", { name: "Activity log" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expectAccessible(page, "admin sidebar drawer");
+});
+
 test("department settings are accessible, including the edit drawer", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
   await page.goto("/admin/departments");

@@ -65,21 +65,21 @@ describe("adminSections", () => {
         keys: entry.sections.map((s) => s.key),
       })),
     ).toEqual([
-      { group: "Academy", keys: ["departments"] },
-      { group: "People", keys: ["people"] },
-      { group: "System", keys: ["audit"] },
+      { group: "Training Academy", keys: ["departments"] },
+      { group: "People & Teams", keys: ["people"] },
+      { group: "System & Settings", keys: ["audit"] },
     ]);
     expect(groupAdminSections(adminSections(cameraLeader)).map((entry) => entry.group)).toEqual([
-      "Academy",
-      "People",
+      "Training Academy",
+      "People & Teams",
     ]);
   });
 
   it("puts the dashboard first for anyone with a section, and nowhere for volunteers", () => {
     expect(adminNavigation(cameraLeader).map((entry) => entry.group)).toEqual([
       "Overview",
-      "Academy",
-      "People",
+      "Training Academy",
+      "People & Teams",
     ]);
     expect(adminNavigation(cameraLeader)[0]?.sections.map((s) => s.href)).toEqual(["/admin"]);
     expect(adminNavigation(volunteer)).toEqual([]);
@@ -103,7 +103,7 @@ describe("adminSections", () => {
     ];
     expect(groupAdminSections(adminSections(churchWide))).toEqual([
       {
-        group: "Checklist",
+        group: "Checklists",
         sections: expect.arrayContaining([
           expect.objectContaining({ label: "Task lists" }),
           expect.objectContaining({ label: "Checklist settings" }),
