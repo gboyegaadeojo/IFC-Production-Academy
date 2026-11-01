@@ -25,7 +25,10 @@ export type AdminSectionKey =
   | "mentoring"
   | "people"
   | "departments"
-  | "audit";
+  | "audit"
+  | "onboarding"
+  | "onboarding-people"
+  | "onboarding-follow-ups";
 
 /**
  * Sidebar groups (DESIGN §3.2), one per part of the ministry's tools, so an admin knows where a
@@ -130,6 +133,24 @@ const SECTIONS: readonly AdminSection[] = [
   },
   { key: "reports", href: "/admin/reports", label: "Reports", group: "Training Academy" },
   { key: "people", href: "/admin/people", label: "People and roles", group: "People & Teams" },
+  {
+    key: "onboarding",
+    href: "/admin/onboarding",
+    label: "Onboarding pathways",
+    group: "People & Teams",
+  },
+  {
+    key: "onboarding-people",
+    href: "/admin/onboarding/people",
+    label: "People in pathways",
+    group: "People & Teams",
+  },
+  {
+    key: "onboarding-follow-ups",
+    href: "/admin/onboarding/follow-ups",
+    label: "Follow-ups",
+    group: "People & Teams",
+  },
   { key: "invitations", href: "/admin/invitations", label: "Invitations", group: "People & Teams" },
   { key: "audit", href: "/admin/audit", label: "Audit log", group: "System & Settings" },
 ];
@@ -206,6 +227,10 @@ export function canOpenAdminSection(
       return hasCapability(grants, "department.manage");
     case "audit":
       return hasCapability(grants, "audit.view");
+    case "onboarding":
+    case "onboarding-people":
+    case "onboarding-follow-ups":
+      return hasCapabilityAnywhere(grants, "onboarding.manage");
   }
 }
 
