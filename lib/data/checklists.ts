@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import {
@@ -547,6 +548,50 @@ export async function setDefaultTaskList(
 }
 
 // ---------------------------------------------------------------------------
+// Settings (checklist app US-07, US-11a, US-15). Only church-wide checklist managers see or
+// change them; the database checks and logs.
+// ---------------------------------------------------------------------------
+
+export type ChecklistSettings = {
+  serviceTypeId: string | null;
+  serviceWeekday: number;
+  serviceTypes: { id: string; name: string }[];
+};
+
+const ServiceTypes = z.array(z.object({ id: z.string(), name: z.string() }));
+
+export async function getChecklistSettings(): Promise<ChecklistSettings | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("checklist_settings");
+  if (error) {
+    if (toChecklistError(error) === "not_authorized") {
+      return null;
+    }
+    throw new Error("Could not load the checklist settings", { cause: error.code });
+  }
+  const row = data[0];
+  return row
+    ? {
+        serviceTypeId: row.service_type_id,
+        serviceWeekday: row.service_weekday,
+        serviceTypes: ServiceTypes.catch([]).parse(row.service_types),
+      }
+    : null;
+}
+
+export async function setChecklistSettings(
+  serviceTypeId: string | null,
+  serviceWeekday: number,
+): Promise<ChecklistResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_checklist_settings", {
+    p_service_type_id: serviceTypeId,
+    p_service_weekday: serviceWeekday,
+  });
+  return error ? fail(error) : ok;
+}
+
+// ---------------------------------------------------------------------------
 // Service day
 // ---------------------------------------------------------------------------
 
@@ -667,6 +712,8 @@ export type ServiceHeader = {
   endsAt: string;
   location: string;
   cancelled: boolean;
+  /** Opened by the checklist before Planning Center published the service. */
+  notPublished: boolean;
 };
 
 /** The service itself: services aren't private, so any active user may read them. */
@@ -674,7 +721,7 @@ export async function getServiceHeader(eventId: string): Promise<ServiceHeader |
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("events")
-    .select("id, title, starts_at, ends_at, location, cancelled_at")
+    .select("id, title, starts_at, ends_at, location, cancelled_at, is_placeholder")
     .eq("id", eventId)
     .maybeSingle();
   if (error) {
@@ -688,11 +735,25 @@ export async function getServiceHeader(eventId: string): Promise<ServiceHeader |
         endsAt: data.ends_at,
         location: data.location,
         cancelled: data.cancelled_at !== null,
+        notPublished: data.is_placeholder,
       }
     : null;
 }
 
-/** Today's service, or the next one: what the checklist opens to (checklist app US-07). */
+/**
+ * What the checklist opens to (checklist app US-07): today's service, or the next one. When
+ * nothing is published, the database opens the next service day for the team, so they can tick.
+ */
+export async function openCurrentService(): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("open_current_service");
+  if (error) {
+    throw new Error("Could not open the current service", { cause: error.code });
+  }
+  return data;
+}
+
+/** Today's service, or the next one, without opening one (checklist app US-07). */
 export async function getCurrentServiceId(): Promise<string | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("current_service");

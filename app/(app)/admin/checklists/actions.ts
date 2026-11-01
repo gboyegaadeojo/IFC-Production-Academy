@@ -373,3 +373,40 @@ export async function restoreAction(_: FormState, formData: FormData): Promise<F
     ? done("Restored, with its history.")
     : error(checklistErrorMessage(result.error));
 }
+
+// ---------------------------------------------------------------------------
+// Settings (checklist app US-07, US-11a, US-15): church-wide checklist managers only, checked and
+// logged by the database.
+// ---------------------------------------------------------------------------
+
+const settingsSchema = z.object({
+  serviceTypeId: z
+    .string()
+    .max(64)
+    .transform((value) => (value === "" ? null : value)),
+  serviceWeekday: z
+    .string()
+    .regex(/^[0-6]$/)
+    .transform(Number),
+});
+
+export async function setChecklistSettingsAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const settings = settingsSchema.safeParse({
+    serviceTypeId: text(formData.get("serviceTypeId")),
+    serviceWeekday: text(formData.get("serviceWeekday")),
+  });
+  if (!settings.success) {
+    return error(checklistErrorMessage("invalid_settings"));
+  }
+  if (!(await allowed())) {
+    return denied();
+  }
+  const result = await checklists.setChecklistSettings(
+    settings.data.serviceTypeId,
+    settings.data.serviceWeekday,
+  );
+  return result.ok ? done("Saved.") : error(checklistErrorMessage(result.error));
+}

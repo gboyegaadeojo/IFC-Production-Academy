@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   candidateLabel,
+  eventDayLabel,
   eventSchema,
   eventTimeLabel,
   toScheduleError,
@@ -77,6 +78,13 @@ describe("eventTimeLabel", () => {
     expect(label).toContain("Dec 6");
     expect(label).toMatch(/9:00/);
     expect(label).toMatch(/11:30/);
+  });
+});
+
+describe("eventDayLabel", () => {
+  it("shows the Winnipeg day, even just after midnight there", () => {
+    const start = winnipegToUtc("2026-12-06", "00:00")?.toISOString() ?? "";
+    expect(eventDayLabel(start)).toContain("Dec 6");
   });
 });
 

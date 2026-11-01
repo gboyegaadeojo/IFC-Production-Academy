@@ -178,3 +178,26 @@ test("an admin moves a task, removes with a confirmation, and restores from Hidd
   await expect(section(b)).toContainText(one);
   await expect(section(a)).toContainText(two);
 });
+
+test("an admin chooses the service day the checklist opens for, and puts it back", async ({
+  page,
+}) => {
+  await signInByEmail(page, "emery.director@example.com");
+
+  await page.goto("/admin/checklists");
+  await page.getByRole("link", { name: "Settings" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Checklist settings" })).toBeVisible();
+  await expect(page.getByLabel("Service type")).toHaveValue("");
+  await expect(page.getByLabel("Service day")).toHaveValue("0");
+
+  await page.getByLabel("Service day").selectOption({ label: "Saturday" });
+  await page.getByRole("button", { name: "Save settings" }).click();
+  await expect(page.getByText("Saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Service day")).toHaveValue("6");
+
+  // Back to Sunday, so the other tests keep the usual day.
+  await page.getByLabel("Service day").selectOption({ label: "Sunday" });
+  await page.getByRole("button", { name: "Save settings" }).click();
+  await expect(page.getByText("Saved.")).toBeVisible();
+});

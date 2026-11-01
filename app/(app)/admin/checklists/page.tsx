@@ -82,6 +82,14 @@ async function ChecklistsContent({ searchParams }: Pick<Props, "searchParams">) 
         >
           Service history
         </Link>
+        {managesLists ? (
+          <Link
+            href="/admin/checklists/settings"
+            className="text-accent-light underline-offset-4 hover:underline"
+          >
+            Settings
+          </Link>
+        ) : null}
       </nav>
 
       <section aria-labelledby="lists-heading" className="flex max-w-3xl flex-col gap-3">

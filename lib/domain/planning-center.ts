@@ -33,6 +33,8 @@ export type PcoMember = {
 
 export type PcoPlan = {
   id: string;
+  /** The service type it belongs to, for the checklist's chosen type (checklist app US-15). */
+  service_type_id: string;
   title: string;
   starts_at: string;
   ends_at: string;

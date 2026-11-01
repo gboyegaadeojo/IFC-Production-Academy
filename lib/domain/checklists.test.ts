@@ -11,6 +11,7 @@ import {
   percentDone,
   progressLabel,
   hideBlocker,
+  nextServiceDay,
   removeWarning,
   restoreWithParentsLabel,
   sameListName,
@@ -204,5 +205,17 @@ describe("hidden items", () => {
   it("says what comes back with a restore inside something hidden", () => {
     expect(restoreWithParentsLabel("item")).toMatch(/section and checklist/);
     expect(restoreWithParentsLabel("section")).toBe("Restore it with its checklist");
+  });
+});
+
+describe("settings", () => {
+  it("finds the next service day, today included", () => {
+    // 2026-11-01 is a Sunday.
+    expect(nextServiceDay("2026-11-01", 0)).toBe("2026-11-01");
+    expect(nextServiceDay("2026-11-02", 0)).toBe("2026-11-08");
+    expect(nextServiceDay("2026-11-07", 0)).toBe("2026-11-08");
+    expect(nextServiceDay("2026-11-01", 6)).toBe("2026-11-07");
+    expect(nextServiceDay("2026-12-30", 3)).toBe("2026-12-30");
+    expect(nextServiceDay("2026-12-31", 0)).toBe("2027-01-03");
   });
 });

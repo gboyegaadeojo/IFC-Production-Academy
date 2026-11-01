@@ -129,6 +129,7 @@ export type ChecklistError =
   | "service_has_checkoffs"
   | "move_not_allowed"
   | "parent_hidden"
+  | "invalid_settings"
   | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<ChecklistError>([
@@ -144,6 +145,7 @@ const KNOWN: ReadonlySet<string> = new Set<ChecklistError>([
   "service_has_checkoffs",
   "move_not_allowed",
   "parent_hidden",
+  "invalid_settings",
 ]);
 
 export function toChecklistError(
@@ -181,6 +183,8 @@ export function checklistErrorMessage(error: ChecklistError): string {
       return "That can only move to a section or checklist that isn't hidden, in the same task list.";
     case "parent_hidden":
       return "What it belongs to is hidden. Restore that too, or restore it first.";
+    case "invalid_settings":
+      return "Choose a service type from Planning Center and a day of the week.";
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }
@@ -282,6 +286,35 @@ export function removeWarning(kind: "checklist" | "section", tasks: number, posi
 }
 
 // ---------------------------------------------------------------------------
+// Settings (checklist app US-07, US-11a, US-15)
+// ---------------------------------------------------------------------------
+
+export const WEEKDAYS = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+] as const;
+
+/**
+ * The next service day on or after a date ("YYYY-MM-DD"), as the database works it out when
+ * nothing is published: today, if today is the service day.
+ */
+export function nextServiceDay(today: string, weekday: number): string {
+  const date = new Date(`${today}T12:00:00Z`);
+  const ahead = (((weekday - date.getUTCDay()) % 7) + 7) % 7;
+  date.setUTCDate(date.getUTCDate() + ahead);
+  return date.toISOString().slice(0, 10);
+}
+
+/** The note on a service day the checklist opened before Planning Center published a plan. */
+export const NOT_PUBLISHED_NOTE =
+  "No service is published in Planning Center yet. Your checklist is ready when you are.";
+
+// ---------------------------------------------------------------------------
 // The activity log (checklist app US-07a, US-13b)
 // ---------------------------------------------------------------------------
 
@@ -301,6 +334,7 @@ export const ACTIVITY_ACTIONS: Record<string, string> = {
   link_position: "Linked a position",
   unlink_position: "Unlinked a position",
   set_default: "Made the default list",
+  settings: "Changed the checklist settings",
   switch_service_list: "Switched the current service to",
 };
 

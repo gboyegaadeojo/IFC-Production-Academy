@@ -13,8 +13,13 @@ import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getServiceChecklists, getServiceHeader } from "@/lib/data/checklists";
-import { percentDone, progressLabel, type ServiceChecklist } from "@/lib/domain/checklists";
-import { eventTimeLabel, TIME_ZONE } from "@/lib/domain/schedule";
+import {
+  NOT_PUBLISHED_NOTE,
+  percentDone,
+  progressLabel,
+  type ServiceChecklist,
+} from "@/lib/domain/checklists";
+import { eventDayLabel, eventTimeLabel, TIME_ZONE } from "@/lib/domain/schedule";
 import { resetAction, setItemAction, undoResetAction } from "../actions";
 
 export const metadata: Metadata = { title: "Service checklist" };
@@ -68,10 +73,17 @@ async function ServeContent({ params, searchParams }: Props) {
         <Breadcrumbs items={[{ label: "Schedule", href: "/schedule" }, { label: service.title }]} />
         <h1 className="text-title font-semibold">{service.title}</h1>
         <p className="text-text-secondary">
-          {eventTimeLabel(service.startsAt, service.endsAt)}
+          {service.notPublished
+            ? eventDayLabel(service.startsAt)
+            : eventTimeLabel(service.startsAt, service.endsAt)}
           {service.location ? ` · ${service.location}` : ""}
         </p>
         {service.cancelled ? <StatusBadge tone="neutral">Cancelled</StatusBadge> : null}
+        {service.notPublished && !service.cancelled ? (
+          <p className="max-w-2xl rounded-card border border-border p-4 text-small text-text-secondary">
+            {NOT_PUBLISHED_NOTE}
+          </p>
+        ) : null}
       </header>
 
       {!data ? (

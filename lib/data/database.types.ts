@@ -18,6 +18,8 @@ export type Database = {
           name: string;
           time_zone: string;
           scheduling_source: string;
+          checklist_service_type_id: string | null;
+          service_weekday: number;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -731,6 +733,8 @@ export type Database = {
           checklist_recorded_at: string | null;
           source: string;
           external_id: string | null;
+          pco_service_type_id: string | null;
+          is_placeholder: boolean;
         } & Timestamps;
         Insert: {
           title: string;
@@ -1430,6 +1434,14 @@ export type Database = {
         Args: { p_set_id: string; p_switch_current: boolean };
         Returns: undefined;
       };
+      checklist_settings: {
+        Args: never;
+        Returns: { service_type_id: string | null; service_weekday: number; service_types: Json }[];
+      };
+      set_checklist_settings: {
+        Args: { p_service_type_id: string | null; p_service_weekday: number };
+        Returns: undefined;
+      };
       checklist_set_overview: {
         Args: never;
         Returns: {
@@ -1485,6 +1497,7 @@ export type Database = {
         }[];
       };
       current_service: { Args: never; Returns: string | null };
+      open_current_service: { Args: never; Returns: string | null };
       save_service_type: {
         Args: {
           p_id: string | null;

@@ -3,14 +3,17 @@ import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireActiveUser } from "@/lib/data/auth";
-import { getCurrentServiceId } from "@/lib/data/checklists";
+import { openCurrentService } from "@/lib/data/checklists";
 
 export const metadata: Metadata = { title: "Checklist" };
 
-/** Opens today's service, or the next one, as the checklist app does (its US-07). */
+/**
+ * Opens today's service, or the next one, as the checklist app does (its US-07). With nothing
+ * published, the team still get the next service day's checklist.
+ */
 export default async function CurrentServicePage() {
   await requireActiveUser();
-  const eventId = await getCurrentServiceId();
+  const eventId = await openCurrentService();
   if (eventId) {
     redirect(`/serve/${eventId}`);
   }
