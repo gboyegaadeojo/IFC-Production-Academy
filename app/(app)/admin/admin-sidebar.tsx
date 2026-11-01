@@ -15,10 +15,9 @@ import {
 import { IfcMark } from "@/components/brand";
 import { AccountMenu } from "@/components/shell/account-menu";
 import {
+  ArrowLeftIcon,
   CalendarRangeIcon,
-  CheckIcon,
   ChevronRightIcon,
-  ChevronUpDownIcon,
   DashboardIcon,
   GraduationCapIcon,
   HouseIcon,
@@ -26,7 +25,6 @@ import {
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
   SettingsIcon,
-  ShieldIcon,
   UsersIcon,
 } from "@/components/ui/icons";
 import {
@@ -402,92 +400,24 @@ export function AdminSidebar({
   );
 }
 
-/** Administration or the Academy, for people who may open Admin (only they see this sidebar). */
+/**
+ * One click back to the Academy (G, 2026-11-01: the old workspace menu took two). Shown at the top
+ * of the sidebar, and as the house icon alone when the sidebar is icons only.
+ */
 function WorkspaceSwitcher({ compact }: { compact: boolean }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const panelId = useId();
-  const rootRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const pathname = usePathname();
-  const [seenPath, setSeenPath] = useState(pathname);
-  if (pathname !== seenPath) {
-    setSeenPath(pathname);
-    setIsOpen(false);
-  }
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-        buttonRef.current?.focus();
-      }
-    }
-    function onPointer(event: PointerEvent) {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    }
-    document.addEventListener("keydown", onKey);
-    document.addEventListener("pointerdown", onPointer);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.removeEventListener("pointerdown", onPointer);
-    };
-  }, [isOpen]);
-
-  const item =
-    "flex min-h-10 items-center gap-2.5 rounded-button px-2.5 text-small transition-surface hover:bg-hover hover:text-text";
-
   return (
-    <div
-      ref={rootRef}
-      className={`relative shrink-0 pb-3 ${compact ? "flex justify-center pt-1" : "px-3 pt-1"}`}
-    >
-      <button
-        ref={buttonRef}
-        type="button"
-        aria-expanded={isOpen}
-        aria-controls={panelId}
-        onClick={() => setIsOpen(!isOpen)}
-        title={compact ? "Workspace: Administration" : undefined}
-        className={`flex items-center gap-2.5 rounded-button border border-border bg-card text-left transition-surface hover:border-border-strong ${
-          compact ? "size-11 justify-center" : "min-h-11 w-full px-2.5"
+    <div className={`shrink-0 pb-3 ${compact ? "flex justify-center pt-1" : "px-3 pt-1"}`}>
+      <Link
+        href="/home"
+        title={compact ? "Back to Academy" : undefined}
+        className={`flex items-center gap-2.5 rounded-button border border-border bg-card text-small font-medium text-text transition-surface hover:border-border-strong hover:bg-hover ${
+          compact ? "size-11 justify-center" : "min-h-11 w-full px-3"
         }`}
       >
-        <ShieldIcon className="size-[18px] shrink-0 text-text-secondary" />
-        <span className={compact ? "sr-only" : "flex min-w-0 flex-1 flex-col leading-tight"}>
-          <span className="eyebrow">Workspace</span>
-          <span className="truncate text-small font-medium text-text">Administration</span>
-        </span>
-        {compact ? null : <ChevronUpDownIcon className="size-4 shrink-0 text-text-muted" />}
-      </button>
-      {isOpen ? (
-        <div
-          id={panelId}
-          className={`absolute z-40 w-56 rounded-card border border-border bg-surface p-1.5 shadow-[0_16px_40px_-12px_var(--bg)] ${
-            compact ? "top-1 left-full ml-2" : "inset-x-3 top-full -mt-1.5 w-auto"
-          }`}
-        >
-          <ul className="flex flex-col">
-            <li>
-              <Link href="/admin" aria-current="true" className={`${item} text-text`}>
-                <ShieldIcon className="size-4" />
-                Administration
-                <CheckIcon className="ml-auto size-4 text-accent-light" />
-              </Link>
-            </li>
-            <li>
-              <Link href="/home" className={`${item} text-text-secondary`}>
-                <HouseIcon className="size-4" />
-                Academy
-              </Link>
-            </li>
-          </ul>
-        </div>
-      ) : null}
+        {compact ? null : <ArrowLeftIcon className="size-4 shrink-0 text-text-secondary" />}
+        <HouseIcon className="size-[18px] shrink-0 text-text-secondary" />
+        <span className={compact ? "sr-only" : "truncate"}>Back to Academy</span>
+      </Link>
     </div>
   );
 }

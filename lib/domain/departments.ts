@@ -95,7 +95,17 @@ export function browsableDepartments<T extends Pick<Department, "status" | "sort
 }
 
 /** Department hues are design tokens (SPEC §7). Unknown hues fall back to the accent text colour. */
-const KNOWN_HUES: ReadonlySet<string> = new Set(["blue", "teal", "violet", "coral", "amber"]);
+export const DEPARTMENT_HUES = [
+  { key: "blue", label: "Blue" },
+  { key: "teal", label: "Teal" },
+  { key: "violet", label: "Violet" },
+  { key: "coral", label: "Coral" },
+  { key: "amber", label: "Amber" },
+  { key: "pink", label: "Pink" },
+  { key: "cyan", label: "Cyan" },
+  { key: "lime", label: "Lime" },
+] as const;
+const KNOWN_HUES: ReadonlySet<string> = new Set(DEPARTMENT_HUES.map((h) => h.key));
 
 export function departmentHueVar(hue: string): string {
   return KNOWN_HUES.has(hue) ? `var(--dept-${hue})` : "var(--accent-light)";
@@ -141,4 +151,25 @@ export function requestMembershipErrorMessage(error: RequestMembershipError): st
     case "unknown":
       return "Your request didn't go through. Check your connection and try again.";
   }
+}
+
+/**
+ * A web address part from a department name: "Camera Operations" -> "camera-operations". Taken
+ * names get a number: "camera-operations-2".
+ */
+export function departmentSlug(name: string, taken: ReadonlySet<string> = new Set()): string {
+  const base =
+    name
+      .normalize("NFKD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase()
+      .replace(/&/g, " and ")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "department";
+  let slug = base;
+  for (let n = 2; taken.has(slug); n += 1) {
+    slug = `${base}-${n}`;
+  }
+  return slug;
 }

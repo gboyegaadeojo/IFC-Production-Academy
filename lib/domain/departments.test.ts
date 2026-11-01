@@ -7,6 +7,7 @@ import {
   requestMembershipErrorMessage,
   toRequestMembershipError,
   type Membership,
+  departmentSlug,
 } from "./departments";
 
 const open = { status: "active", enrolmentMode: "request" } as const;
@@ -117,6 +118,21 @@ describe("request membership errors", () => {
   it("has a plain-language message for every error", () => {
     expect(requestMembershipErrorMessage("department_not_open")).toBe(
       "This department isn't taking requests yet.",
+    );
+  });
+});
+
+describe("departmentSlug", () => {
+  it("makes a web address part from the name", () => {
+    expect(departmentSlug("Camera Operations")).toBe("camera-operations");
+    expect(departmentSlug("Sound & Lighting")).toBe("sound-and-lighting");
+    expect(departmentSlug("Café Média")).toBe("cafe-media");
+    expect(departmentSlug("!!!")).toBe("department");
+  });
+
+  it("numbers a name that's taken", () => {
+    expect(departmentSlug("Livestream", new Set(["livestream", "livestream-2"]))).toBe(
+      "livestream-3",
     );
   });
 });

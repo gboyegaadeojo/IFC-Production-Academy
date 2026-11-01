@@ -9,7 +9,6 @@ import { getUnreadCount } from "@/lib/data/notifications";
 import { getMyPlanningCenter } from "@/lib/data/profile";
 import { adminSections } from "@/lib/domain/admin";
 import { initials } from "@/lib/domain/people";
-import { ShieldIcon } from "@/components/ui/icons";
 import { AccountMenu } from "./account-menu";
 import { AcademyNav } from "./academy-nav";
 
@@ -47,27 +46,15 @@ async function Account() {
   ]);
   const showAdmin = active && adminSections(grants).length > 0;
   return (
-    <div className="flex items-center gap-2">
-      {/* Leaders reach the Admin workspace in one click (approved mock, 2026-11-01). */}
-      {showAdmin ? (
-        <Link
-          href="/admin"
-          className="hidden min-h-9 items-center gap-1.5 rounded-button border border-border px-2.5 text-small text-text-secondary transition-surface hover:bg-hover hover:text-text sm:inline-flex"
-        >
-          <ShieldIcon className="size-3.5" />
-          Admin
-        </Link>
-      ) : null}
-      <AccountMenu
-        displayName={user.displayName}
-        initials={initials(user.displayName)}
-        email={user.email}
-        planningCenter={planningCenter.linked}
-        showAdmin={showAdmin}
-        unread={unread}
-        appearance={appearance}
-        signOut={signOutAction}
-      />
-    </div>
+    <AccountMenu
+      displayName={user.displayName}
+      initials={initials(user.displayName)}
+      email={user.email}
+      planningCenter={planningCenter.linked}
+      showAdmin={showAdmin}
+      unread={unread}
+      appearance={appearance}
+      signOut={signOutAction}
+    />
   );
 }
