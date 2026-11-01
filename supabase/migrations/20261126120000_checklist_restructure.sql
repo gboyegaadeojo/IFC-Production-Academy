@@ -163,10 +163,15 @@ security definer
 set search_path = ''
 as $$
 begin
-  if exists (select 1 from public.checklists c where c.id = new.checklist_id and c.archived_at is not null)
-     or (tg_table_name = 'checklist_items' and exists (
-           select 1 from public.checklist_sections s where s.id = new.section_id and s.archived_at is not null)) then
+  if exists (select 1 from public.checklists c where c.id = new.checklist_id and c.archived_at is not null) then
     raise exception 'parent_hidden' using errcode = 'P0001';
+  end if;
+  -- Sections have no section_id, and PL/pgSQL looks the field up even when the table test fails.
+  if tg_table_name = 'checklist_items' then
+    if exists (select 1 from public.checklist_sections s
+               where s.id = (to_jsonb(new) ->> 'section_id')::uuid and s.archived_at is not null) then
+      raise exception 'parent_hidden' using errcode = 'P0001';
+    end if;
   end if;
   return new;
 end;

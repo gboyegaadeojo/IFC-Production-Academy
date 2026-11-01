@@ -89,7 +89,7 @@ select is(
   0, 'position links are not copied'
 );
 select is(
-  (select array_agg(text order by sort_order) from public.checklist_items i join public.checklists c on c.id = i.checklist_id
+  (select array_agg(i.text order by i.sort_order) from public.checklist_items i join public.checklists c on c.id = i.checklist_id
     where c.set_id = (select id from ctx where key = 'copy') and c.name = 'Fake Lists Camera'),
   array['Fake lists power', 'Fake lists lens'], 'in the same order'
 );

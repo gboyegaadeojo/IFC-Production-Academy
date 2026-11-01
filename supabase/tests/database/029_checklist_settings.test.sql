@@ -57,11 +57,8 @@ select throws_ok($$ select * from public.checklist_settings() $$, '42501', 'not_
   'volunteers cannot see the settings');
 select throws_ok($$ select public.set_checklist_settings(null, 0) $$, '42501', 'not_authorized',
   'nor change them');
-update public.organizations set service_weekday = 3;
-reset role;
-select is((select service_weekday::integer from public.organizations order by created_at limit 1), 0,
+select throws_ok($$ update public.organizations set service_weekday = 3 $$, '42501', null,
   'nor write them directly');
-select pg_temp.act_as('aa000000-0000-4000-8000-000000000002');
 select is(public.open_current_service(), null,
   'with nothing published, the checklist opens nothing for someone it isn''t for');
 
