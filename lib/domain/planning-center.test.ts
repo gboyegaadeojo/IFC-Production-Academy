@@ -100,6 +100,36 @@ describe("Planning Center mapping", () => {
     ]);
   });
 
+  it("finds a position on the shared team when the plan names a team that was merged away", () => {
+    const members = mapMembers(
+      [
+        res(
+          "PlanPerson",
+          "m9",
+          { status: "C", team_position_name: "Camera 1" },
+          {
+            person: one("Person", "u9"),
+            team: one("Team", "old-team"),
+          },
+        ),
+        res(
+          "PlanPerson",
+          "m10",
+          { status: "C", team_position_name: "Nowhere" },
+          {
+            person: one("Person", "u10"),
+            team: one("Team", "old-team"),
+          },
+        ),
+      ],
+      teams,
+    );
+    expect(members.map((m) => [m.team_id, m.position_id])).toEqual([
+      ["t1", "p1"],
+      ["old-team", null],
+    ]);
+  });
+
   it("times a plan from its service times, else its date", () => {
     const plan = res("Plan", "pl1", { sort_date: "2026-11-08T16:05:00Z" });
     expect(

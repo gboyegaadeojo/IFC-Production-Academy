@@ -99,18 +99,33 @@ export function mapTeams(serviceTypeId: string, data: Resource[], included: Reso
  * Planning Center names the position here instead of giving its id, so it's matched by name
  * within the team, as the checklist app does. A name that matches nothing leaves position_id
  * null, and the team's own link (if any) applies.
+ *
+ * `teams` are the teams serving the plan's service type. A plan scheduled before its teams were
+ * merged into one shared team still names the old team, which no longer exists (G, 2026-11-01).
+ * Then the position is looked up by name across those teams, and used when exactly one matches.
  */
 export function mapMembers(members: Resource[], teams: readonly PcoTeam[]): PcoMember[] {
   return members.flatMap((member) => {
     const personId = relatedId(member, "person");
-    const teamId = relatedId(member, "team");
+    let teamId = relatedId(member, "team");
     if (!personId || !teamId) {
       return [];
     }
     const positionName = text(member.attributes.team_position_name);
-    const position = positionName
-      ? teams.find((t) => t.id === teamId)?.positions.find((p) => sameName(p.name, positionName))
+    const team = teams.find((t) => t.id === teamId);
+    let position = positionName
+      ? team?.positions.find((p) => sameName(p.name, positionName))
       : undefined;
+    if (!team && positionName) {
+      const matches = teams.flatMap((t) =>
+        t.positions.filter((p) => sameName(p.name, positionName)).map((p) => ({ t, p })),
+      );
+      const only = matches.length === 1 ? matches[0] : undefined;
+      if (only) {
+        teamId = only.t.id;
+        position = only.p;
+      }
+    }
     return [
       {
         id: member.id,
