@@ -35,7 +35,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   serving_reminder: "Reminders to confirm, and two days before I serve",
   cover_requested: "When a teammate asks for someone to cover their spot",
   schedule_update: "When someone covers for me, or changes a schedule I run",
-  learning_nudge: "A nudge when a course I started has gone quiet",
+  learning_nudge: "A nudge when a course I started goes quiet",
   assessment_recorded: "When a practical assessment is recorded for me",
   competency_expiring: "When an approval is about to expire",
   membership_approved: "When I join a department",
@@ -43,6 +43,75 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   assessment_requested: "When someone is ready for an assessment I can record",
   sop_review_due: "When an SOP I own is due or overdue for review",
 };
+
+/** A short note under some email choices, saying where or when it comes from. */
+export const NOTIFICATION_KIND_HINTS: Partial<Record<NotificationKind, string>> = {
+  assignment_scheduled: "From Planning Center",
+  learning_nudge: "After a week with no progress",
+  assessment_requested: "Leaders and assessors",
+  sop_review_due: "SOP owners",
+};
+
+export type NotificationGroup = {
+  id: "serving" | "training" | "leading";
+  title: string;
+  kinds: readonly NotificationKind[];
+};
+
+/** Email choices, grouped the way people think about them (approved mock, 2026-11-01). */
+export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
+  {
+    id: "serving",
+    title: "Serving",
+    kinds: ["assignment_scheduled", "serving_reminder", "cover_requested", "schedule_update"],
+  },
+  {
+    id: "training",
+    title: "Training",
+    kinds: [
+      "membership_approved",
+      "learning_nudge",
+      "assessment_recorded",
+      "competency_expiring",
+      "mentoring_paired",
+    ],
+  },
+  { id: "leading", title: "Leading", kinds: ["assessment_requested", "sop_review_due"] },
+];
+
+/**
+ * The groups to offer. Leading choices are only for people who lead or assess, or own an SOP, so
+ * volunteers aren't asked about emails they can never get.
+ */
+export function emailChoiceGroups(leads: boolean): readonly NotificationGroup[] {
+  return NOTIFICATION_GROUPS.filter((group) => group.id !== "leading" || leads);
+}
+
+/** "now", "5m", "2h", "Yesterday", or a short date, for the Recent list. */
+export function relativeTime(iso: string, now: Date): string {
+  const then = new Date(iso);
+  const minutes = Math.floor((now.getTime() - then.getTime()) / 60_000);
+  if (minutes < 1) return "now";
+  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 24 * 60) return `${Math.floor(minutes / 60)}h`;
+  const day = (date: Date) => WINNIPEG_DAY.format(date);
+  const yesterday = new Date(now.getTime() - 86_400_000);
+  if (day(then) === day(yesterday)) return "Yesterday";
+  return WINNIPEG_SHORT_DATE.format(then);
+}
+
+const WINNIPEG_DAY = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Winnipeg",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+const WINNIPEG_SHORT_DATE = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Winnipeg",
+  month: "short",
+  day: "numeric",
+});
 
 const WINNIPEG_HOUR = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/Winnipeg",
