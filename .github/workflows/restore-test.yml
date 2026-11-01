@@ -27,6 +27,9 @@ jobs:
     if: vars.BACKUPS_ENABLED == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
+      id-token: write # keyless sign-in to Google
     services:
       postgres:
         image: ghcr.io/supabase/postgres:17.11.0.006
@@ -55,13 +58,18 @@ jobs:
         env:
           AGE_RESTORE_IDENTITY: ${{ secrets.AGE_RESTORE_IDENTITY }}
           GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
+          GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: |
           set -euo pipefail
           missing=""
-          for name in AGE_RESTORE_IDENTITY GDRIVE_SERVICE_ACCOUNT_JSON GDRIVE_FOLDER_ID; do
+          for name in AGE_RESTORE_IDENTITY GDRIVE_FOLDER_ID; do
             if [ -z "${!name}" ]; then missing="$missing $name"; fi
           done
+          if [ -z "$GDRIVE_SERVICE_ACCOUNT_JSON" ] && { [ -z "$GCP_WORKLOAD_IDENTITY_PROVIDER" ] || [ -z "$GCP_SERVICE_ACCOUNT" ]; }; then
+            missing="$missing GCP_WORKLOAD_IDENTITY_PROVIDER+GCP_SERVICE_ACCOUNT(variables)"
+          fi
           if [ -n "$missing" ]; then
             echo "::error::The restore test is not set up. Missing secrets:$missing. See docs/runbooks/backups.md."
             exit 1
@@ -76,9 +84,25 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq postgresql-client-17 age unzip jq >/dev/null
 
+      # Keyless sign-in to Google (Workload Identity Federation): GitHub proves this is this
+      # repository's job on main, and Google returns a short-lived Drive token, masked in logs.
+      # Setup: docs/runbooks/backups.md. Skipped where a service-account key is used instead.
+      - name: Sign in to Google
+        id: google
+        if: vars.GCP_WORKLOAD_IDENTITY_PROVIDER != ''
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/drive
+          create_credentials_file: false
+          export_environment_variables: false
+
       - name: Download the newest backup
         id: fetch
         env:
+          GDRIVE_ACCESS_TOKEN: ${{ steps.google.outputs.access_token }}
           GDRIVE_SERVICE_ACCOUNT_JSON: ${{ secrets.GDRIVE_SERVICE_ACCOUNT_JSON }}
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
         run: |

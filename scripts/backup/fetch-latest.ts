@@ -6,18 +6,15 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { backupNames, latestCompleteStamp } from "../../lib/domain/backup.ts";
-import { accessToken, downloadFile, listFolder } from "./drive.ts";
+import { downloadFile, driveConfigured, driveToken, listFolder } from "./drive.ts";
 
 async function main(): Promise<void> {
   const out = process.argv[2];
-  const account = process.env.GDRIVE_SERVICE_ACCOUNT_JSON ?? "";
   const folderId = process.env.GDRIVE_FOLDER_ID ?? "";
-  if (!out || !account || !folderId) {
-    throw new Error(
-      "fetch-latest: a folder, GDRIVE_SERVICE_ACCOUNT_JSON, and GDRIVE_FOLDER_ID are needed",
-    );
+  if (!out || !driveConfigured() || !folderId) {
+    throw new Error("fetch-latest: a folder, a Google sign-in, and GDRIVE_FOLDER_ID are needed");
   }
-  const token = await accessToken(account);
+  const token = await driveToken();
   const files = await listFolder(token, folderId);
   const stamp = latestCompleteStamp(files.map((f) => f.name));
   if (!stamp) {

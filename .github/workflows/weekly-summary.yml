@@ -15,6 +15,7 @@ on:
 permissions:
   contents: write
   actions: read
+  id-token: write # keyless sign-in to Google, for backup sizes
 
 concurrency:
   group: weekly-summary
@@ -39,8 +40,25 @@ jobs:
         with:
           node-version: 24
 
+      # Keyless sign-in to Google (Workload Identity Federation): GitHub proves this is this
+      # repository's job on main, and Google returns a short-lived Drive token, masked in logs.
+      # Setup: docs/runbooks/backups.md. Skipped where a service-account key is used instead.
+      - name: Sign in to Google
+        id: google
+        if: vars.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && vars.BACKUPS_ENABLED == 'true'
+        continue-on-error: true # the summary still goes out without backup sizes
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_scopes: https://www.googleapis.com/auth/drive
+          create_credentials_file: false
+          export_environment_variables: false
+
       - name: Summarise the scheduled jobs
         env:
+          GDRIVE_ACCESS_TOKEN: ${{ steps.google.outputs.access_token }}
           GITHUB_TOKEN: ${{ github.token }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           BACKUPS_ENABLED: ${{ vars.BACKUPS_ENABLED }}

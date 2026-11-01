@@ -8,19 +8,16 @@
 import { statSync } from "node:fs";
 import { join } from "node:path";
 import { backupNames, filesToDelete } from "../../lib/domain/backup.ts";
-import { accessToken, deleteFile, listFolder, uploadFile } from "./drive.ts";
+import { deleteFile, driveConfigured, driveToken, listFolder, uploadFile } from "./drive.ts";
 
 async function main(): Promise<void> {
   const [dir, stamp] = process.argv.slice(2);
-  const account = process.env.GDRIVE_SERVICE_ACCOUNT_JSON ?? "";
   const folderId = process.env.GDRIVE_FOLDER_ID ?? "";
-  if (!dir || !stamp || !account || !folderId) {
-    throw new Error(
-      "upload: a folder, a stamp, GDRIVE_SERVICE_ACCOUNT_JSON, and GDRIVE_FOLDER_ID are needed",
-    );
+  if (!dir || !stamp || !driveConfigured() || !folderId) {
+    throw new Error("upload: a folder, a stamp, a Google sign-in, and GDRIVE_FOLDER_ID are needed");
   }
   const started = Date.now();
-  const token = await accessToken(account);
+  const token = await driveToken();
   const names = backupNames(stamp);
   for (const name of [names.db, names.files, names.checksums]) {
     const path = join(dir, name);
