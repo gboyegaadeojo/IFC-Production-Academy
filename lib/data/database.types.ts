@@ -1082,6 +1082,178 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      onboarding_pathways: {
+        Row: {
+          id: string;
+          organization_id: string;
+          department_id: string | null;
+          name: string;
+          summary: string;
+          archived_at: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          organization_id: string;
+          department_id?: string | null;
+          name: string;
+          summary?: string;
+        };
+        Update: { name?: string; summary?: string; archived_at?: string | null };
+        Relationships: [];
+      };
+      onboarding_stages: {
+        Row: {
+          id: string;
+          pathway_id: string;
+          name: string;
+          timing: string;
+          sort_order: number;
+          archived_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: { pathway_id: string; name: string; timing?: string; sort_order?: number };
+        Update: {
+          name?: string;
+          timing?: string;
+          sort_order?: number;
+          archived_at?: string | null;
+        };
+        Relationships: [];
+      };
+      onboarding_steps: {
+        Row: {
+          id: string;
+          pathway_id: string;
+          stage_id: string;
+          kind: Database["public"]["Enums"]["onboarding_step_kind"];
+          title: string;
+          config: Json;
+          sort_order: number;
+          archived_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          pathway_id: string;
+          stage_id: string;
+          kind: Database["public"]["Enums"]["onboarding_step_kind"];
+          title: string;
+          config?: Json;
+          sort_order?: number;
+        };
+        Update: {
+          stage_id?: string;
+          title?: string;
+          config?: Json;
+          sort_order?: number;
+          archived_at?: string | null;
+        };
+        Relationships: [];
+      };
+      onboarding_contacts: {
+        Row: {
+          id: string;
+          organization_id: string;
+          display_name: string;
+          email: string;
+          phone: string;
+          message: string;
+          interests: string[];
+          user_id: string | null;
+          source: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      onboarding_entries: {
+        Row: {
+          id: string;
+          organization_id: string;
+          pathway_id: string;
+          contact_id: string;
+          current_step_id: string | null;
+          status: Database["public"]["Enums"]["onboarding_entry_status"];
+          came_in_by: string;
+          chosen_department_id: string | null;
+          step_started_at: string;
+          started_at: string;
+          finished_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      onboarding_tasks: {
+        Row: {
+          id: string;
+          entry_id: string;
+          step_id: string;
+          kind: string;
+          title: string;
+          detail: string;
+          pool_role_id: string | null;
+          assignee_id: string | null;
+          due_at: string | null;
+          done_at: string | null;
+          done_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      onboarding_events: {
+        Row: {
+          id: string;
+          entry_id: string;
+          step_id: string | null;
+          kind: string;
+          detail: string;
+          actor_id: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      onboarding_notes: {
+        Row: {
+          id: string;
+          entry_id: string;
+          author_id: string;
+          body: string;
+          visibility: string;
+          created_at: string;
+        };
+        Insert: { entry_id: string; body: string; visibility: string };
+        Update: never;
+        Relationships: [];
+      };
+      onboarding_outbox: {
+        Row: {
+          id: string;
+          entry_id: string;
+          step_id: string;
+          contact_id: string;
+          subject: string;
+          body: string;
+          status: string;
+          created_at: string;
+          sent_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       notifications: {
         Row: {
           id: string;
@@ -1178,6 +1350,50 @@ export type Database = {
       };
       archive_course: { Args: { p_course_id: string }; Returns: undefined };
       discard_draft_course: { Args: { p_course_id: string }; Returns: undefined };
+      submit_interest: {
+        Args: {
+          p_name: string;
+          p_email: string;
+          p_phone: string;
+          p_message: string;
+          p_interests: string[];
+          p_website: string;
+        };
+        Returns: undefined;
+      };
+      onboarding_add_person: {
+        Args: { p_pathway_id: string; p_name: string; p_email: string };
+        Returns: string;
+      };
+      onboarding_complete_task: { Args: { p_task_id: string }; Returns: undefined };
+      onboarding_claim_task: { Args: { p_task_id: string }; Returns: undefined };
+      onboarding_assign_task: {
+        Args: { p_task_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      onboarding_stop: { Args: { p_entry_id: string }; Returns: undefined };
+      onboarding_choose_department: {
+        Args: { p_entry_id: string; p_department_id: string };
+        Returns: undefined;
+      };
+      run_onboarding: { Args: never; Returns: number };
+      my_onboarding: {
+        Args: never;
+        Returns: {
+          entry_id: string;
+          pathway_name: string;
+          status: Database["public"]["Enums"]["onboarding_entry_status"];
+          step_id: string;
+          step_title: string;
+          step_kind: Database["public"]["Enums"]["onboarding_step_kind"];
+          stage_name: string;
+          stage_timing: string;
+          step_position: number;
+          current_position: number | null;
+          contact_name: string | null;
+          chosen_department_id: string | null;
+        }[];
+      };
       delete_course_module: { Args: { p_module_id: string }; Returns: undefined };
       delete_lesson: { Args: { p_lesson_id: string }; Returns: undefined };
       record_lesson_view: {
@@ -1774,7 +1990,24 @@ export type Database = {
         | "assessment_requested"
         | "competency_expiring"
         | "cover_requested"
-        | "schedule_update";
+        | "schedule_update"
+        | "onboarding_task"
+        | "onboarding_update";
+      onboarding_step_kind:
+        | "trigger_form"
+        | "trigger_manual"
+        | "trigger_join"
+        | "trigger_pco"
+        | "email"
+        | "notify"
+        | "task"
+        | "mentor"
+        | "course"
+        | "wait"
+        | "pco_team"
+        | "branch"
+        | "finish";
+      onboarding_entry_status: "active" | "finished" | "stopped";
       cover_request_status: "open" | "covered" | "withdrawn";
       email_status: "pending" | "sent" | "skipped" | "failed";
     };

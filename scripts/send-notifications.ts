@@ -43,6 +43,9 @@ async function main(): Promise<void> {
   // Freeze the checklist record of services whose day has ended (checklist app US-07b).
   const frozen = await rpc<number>(supabaseUrl, serviceKey, "freeze_service_checklist_records", {});
   console.log(`Checklist records frozen: ${frozen}.`);
+  // Onboarding pathways: waits that have run their time move on (counts only in the log).
+  const onboarding = await rpc<number>(supabaseUrl, serviceKey, "run_onboarding", {});
+  console.log(`Onboarding entries checked: ${onboarding}.`);
 
   if (!resendKey || !from) {
     console.log(

@@ -14,7 +14,9 @@ export type NotificationKind =
   | "assessment_requested"
   | "competency_expiring"
   | "cover_requested"
-  | "schedule_update";
+  | "schedule_update"
+  | "onboarding_task"
+  | "onboarding_update";
 
 export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "assignment_scheduled",
@@ -28,6 +30,8 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "mentoring_paired",
   "assessment_requested",
   "sop_review_due",
+  "onboarding_task",
+  "onboarding_update",
 ];
 
 export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
@@ -42,6 +46,8 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   mentoring_paired: "When I'm paired for mentoring",
   assessment_requested: "When someone is ready for an assessment I can record",
   sop_review_due: "When an SOP I own is due or overdue for review",
+  onboarding_task: "When someone new needs me to follow up",
+  onboarding_update: "When someone moves on in onboarding",
 };
 
 /** A short note under some email choices, saying where or when it comes from. */
@@ -50,6 +56,7 @@ export const NOTIFICATION_KIND_HINTS: Partial<Record<NotificationKind, string>> 
   learning_nudge: "After a week with no progress",
   assessment_requested: "Leaders and assessors",
   sop_review_due: "SOP owners",
+  onboarding_task: "Leaders who welcome new people",
 };
 
 export type NotificationGroup = {
@@ -76,7 +83,11 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "mentoring_paired",
     ],
   },
-  { id: "leading", title: "Leading", kinds: ["assessment_requested", "sop_review_due"] },
+  {
+    id: "leading",
+    title: "Leading",
+    kinds: ["assessment_requested", "sop_review_due", "onboarding_task", "onboarding_update"],
+  },
 ];
 
 /**

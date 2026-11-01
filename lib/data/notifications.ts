@@ -98,6 +98,7 @@ const LEADING_CAPABILITIES: ReadonlySet<string> = new Set([
   "assessment.record",
   "course.publish",
   "department.manage",
+  "onboarding.manage",
 ]);
 
 export async function setEmailPreference(kind: NotificationKind, email: boolean): Promise<boolean> {

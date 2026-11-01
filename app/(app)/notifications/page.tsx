@@ -125,6 +125,8 @@ const KIND_ICON: Record<
   mentoring_paired: { icon: UsersIcon, tone: "text-accent-light" },
   assessment_requested: { icon: UserCheckIcon, tone: "text-accent-light" },
   sop_review_due: { icon: FileTextIcon, tone: "text-text-secondary" },
+  onboarding_task: { icon: UserCheckIcon, tone: "text-warning" },
+  onboarding_update: { icon: UsersIcon, tone: "text-accent-light" },
 };
 
 function FeedItem({ notification, now }: { notification: AppNotification; now: Date }) {
