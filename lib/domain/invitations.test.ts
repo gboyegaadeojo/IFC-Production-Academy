@@ -6,9 +6,35 @@ import {
   invitationUrl,
   isInvitationToken,
   maxUsesFor,
+  placesLabel,
+  splitInvitations,
   toAcceptError,
   toPreviewStatus,
 } from "./invitations";
+
+describe("the invitations list", () => {
+  const now = new Date("2026-11-01T12:00:00Z");
+  const base = { revokedAt: null, expiresAt: "2026-11-10T00:00:00Z", useCount: 0, maxUses: 1 };
+
+  it("splits links that still work from ones that ended", () => {
+    const { open, past } = splitInvitations(
+      [
+        { ...base, id: "open" },
+        { ...base, id: "used", useCount: 1 },
+        { ...base, id: "expired", expiresAt: "2026-10-01T00:00:00Z" },
+        { ...base, id: "revoked", revokedAt: "2026-10-31T00:00:00Z" },
+      ],
+      now,
+    );
+    expect(open.map((i) => i.id)).toEqual(["open"]);
+    expect(past.map((i) => i.id)).toEqual(["used", "expired", "revoked"]);
+  });
+
+  it("says how many places are used", () => {
+    expect(placesLabel(1, 1)).toBe("1 of 1 place used");
+    expect(placesLabel(3, 25)).toBe("3 of 25 places used");
+  });
+});
 
 const AUDIO = "8cd57d7d-1aab-4be6-b67b-e9bc606e0d73";
 

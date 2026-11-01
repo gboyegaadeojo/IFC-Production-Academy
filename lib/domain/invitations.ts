@@ -67,6 +67,23 @@ export function invitationState(
   return "active";
 }
 
+/** "1 of 1 place used", "3 of 25 places used". */
+export function placesLabel(useCount: number, maxUses: number): string {
+  return `${useCount} of ${maxUses} ${maxUses === 1 ? "place" : "places"} used`;
+}
+
+/** The list's two views: links that still work, and everything that ended, each newest first. */
+export function splitInvitations<
+  T extends { revokedAt: string | null; expiresAt: string; useCount: number; maxUses: number },
+>(invitations: readonly T[], now: Date = new Date()): { open: T[]; past: T[] } {
+  const open: T[] = [];
+  const past: T[] = [];
+  for (const invitation of invitations) {
+    (invitationState(invitation, now) === "active" ? open : past).push(invitation);
+  }
+  return { open, past };
+}
+
 export const INVITATION_STATE_LABELS: Record<InvitationState, string> = {
   active: "Active",
   expired: "Expired",
