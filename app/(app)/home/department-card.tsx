@@ -152,7 +152,15 @@ function CompactCover({ icon }: { icon: string }) {
  * next step. Every membership state stays distinct: requested, can request (first time, after a
  * decline, after removal), coming soon, invite only. Inactive departments never reach here.
  */
-export function ExploreRow({ department }: { department: DepartmentCardData }) {
+export function ExploreRow({
+  department,
+  continuing,
+}: {
+  department: DepartmentCardData;
+  /** A course they've started here: training is open to everyone, members or not. */
+  continuing?: ContinueCourse;
+}) {
+  const next = continuing?.progress.next ?? null;
   const headingId = `department-${department.id}`;
   const style = { "--dept": departmentHueVar(department.hue) } as CSSProperties;
   return (
@@ -175,8 +183,26 @@ export function ExploreRow({ department }: { department: DepartmentCardData }) {
           </Link>
         </h3>
         <p className="text-small text-text-secondary">{department.summary}</p>
+        {continuing && next ? (
+          <Link
+            href={stepHref(continuing.course.id, next)}
+            className="mt-1 w-fit text-small font-medium text-accent-light underline-offset-4 hover:underline"
+          >
+            Continue {continuing.course.title}: {next.title}
+          </Link>
+        ) : null}
       </div>
       <div className="col-start-2 flex flex-col gap-1.5 sm:col-start-3 sm:items-end">
+        {/* Anyone can take a department's courses; joining is for serving with its team. */}
+        {department.state.kind !== "coming_soon" ? (
+          <Link
+            href={`/departments/${department.slug}`}
+            className={buttonClasses("secondary", "gap-1.5", "sm")}
+          >
+            See courses<span className="sr-only"> in {department.name}</span>
+            <ArrowRightIcon className="size-3.5" />
+          </Link>
+        ) : null}
         <MembershipStatus department={department} publishedCourses={null} hideOpenLink compact />
       </div>
     </article>

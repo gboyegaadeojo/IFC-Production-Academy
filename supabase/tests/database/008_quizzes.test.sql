@@ -223,9 +223,9 @@ select throws_ok(
 reset role;
 
 select pg_temp.act_as('80000000-0000-4000-8000-000000000003');
-select throws_ok(
+select lives_ok(
   $$ select public.start_quiz_attempt((select id from ctx where key = 'course'), (select id from ctx where key = 'quizkey')) $$,
-  '42501', 'not_authorized', 'someone outside the department cannot take the quiz'
+  'anyone in the Academy can take the quiz, member or not'
 );
 reset role;
 
@@ -239,8 +239,8 @@ select throws_ok(
 reset role;
 
 select pg_temp.act_as('80000000-0000-4000-8000-000000000004');
-select is((select count(*)::int from public.quiz_attempts), 2,
-  'the department''s leader reads its members'' attempts (report.view)');
+select is((select count(*)::int from public.quiz_attempts), 3,
+  'the department''s leader reads every attempt in it, members or not (report.view)');
 select is((select count(*)::int from public.quiz_attempt_review((select id from ctx where key = 'a1')) where is_correct is not null), 2,
   'the leader sees which answers were right');
 select throws_ok(

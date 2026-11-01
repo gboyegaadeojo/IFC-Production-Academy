@@ -11,7 +11,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, ChevronDownIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
-import { getLearnerCourse, getLearnerLesson, isActiveMember } from "@/lib/data/pathway";
+import { getLearnerCourse, getLearnerLesson, canLearnIn } from "@/lib/data/pathway";
 import { mediaLibraryEnabled } from "@/lib/data/media";
 import { getCourseProgress } from "@/lib/data/progress";
 import { getPassedPracticalKeys } from "@/lib/data/practicals";
@@ -62,14 +62,14 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     notFound();
   }
   if (!course.canOpen) {
-    // Not a member: the course page explains how to get access.
+    // No lessons yet, or the department isn't open: the course page explains.
     redirect(`/courses/${course.id}`);
   }
   const position = lessonPosition(course.modules, lessonKey);
   const [lesson, member, courseProgress, passed, practicalsPassed] = position
     ? await Promise.all([
         getLearnerLesson(course.versionId, lessonKey),
-        isActiveMember(user.id, course.department.id),
+        canLearnIn(user.id, course.department.id),
         getCourseProgress(user.id, course.id),
         getPassedQuizKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
         getPassedPracticalKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
@@ -345,7 +345,7 @@ function LessonSkeleton() {
       <LoadingStatus label="Loading the lesson…" />
       <Skeleton className="h-4 w-72 max-w-full" />
       <div className="grid gap-8 lg:grid-cols-[1fr_19rem]">
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-10 w-96 max-w-full" />
           <Skeleton className="h-64" />

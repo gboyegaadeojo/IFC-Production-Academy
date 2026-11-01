@@ -10,7 +10,7 @@ import { ArrowRightIcon, CheckIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
-import { getLearnerCourse, isActiveMember } from "@/lib/data/pathway";
+import { getLearnerCourse, canLearnIn } from "@/lib/data/pathway";
 import { getLearnerQuiz, getMyQuizAttempts } from "@/lib/data/quizzes";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
@@ -58,7 +58,7 @@ async function QuizContent({ params }: Pick<Props, "params">) {
   const [quiz, member] = placed
     ? await Promise.all([
         getLearnerQuiz(course.versionId, quizKey),
-        isActiveMember(user.id, course.department.id),
+        canLearnIn(user.id, course.department.id),
       ])
     : [null, false];
   if (!placed || !quiz) {

@@ -124,17 +124,14 @@ select throws_ok(
 reset role;
 
 select pg_temp.act_as('90000000-0000-4000-8000-000000000003');
-select is_empty($$ select 1 from public.sops $$, 'someone outside the department sees no SOPs');
-select is_empty($$ select 1 from storage.objects where bucket_id = 'sops' $$,
-  'someone outside the department cannot open SOP files');
-select is_empty(
-  $$ select 1 from public.sop_owner_names(array[(select id from ctx where key = 'sop')]) $$,
-  'and does not learn the owner'
-);
+-- Training is open to everyone in the Academy (decision 2026-11-01), SOPs included.
+select isnt_empty($$ select 1 from public.sops $$, 'anyone in the Academy can read a published SOP');
+select isnt_empty($$ select 1 from storage.objects where bucket_id = 'sops' $$,
+  'and open its file');
 reset role;
 
 select pg_temp.act_as('90000000-0000-4000-8000-000000000005');
-select is_empty($$ select 1 from public.sop_versions $$, 'another department''s leader cannot read camera SOPs');
+select isnt_empty($$ select 1 from public.sop_versions $$, 'another department''s leader can read camera SOPs, like anyone');
 select throws_ok(
   $$ select public.start_sop_draft((select id from ctx where key = 'sop')) $$,
   '42501', 'not_authorized', 'another department''s leader cannot edit camera SOPs'
@@ -247,7 +244,8 @@ select pg_temp.act_as('90000000-0000-4000-8000-000000000004');
 select lives_ok($$ select public.archive_sop((select id from ctx where key = 'sop')) $$, 'the leader archives the SOP');
 reset role;
 select pg_temp.act_as('90000000-0000-4000-8000-000000000001');
-select is_empty($$ select 1 from public.sops $$, 'members no longer see an archived SOP');
+select is_empty($$ select 1 from public.sops where id = (select id from ctx where key = 'sop') $$,
+  'members no longer see an archived SOP');
 select is_empty($$ select 1 from storage.objects where bucket_id = 'sops' $$, 'nor open its files');
 reset role;
 select is((select count(*)::int from public.sop_versions where sop_id = (select id from ctx where key = 'sop')), 2,

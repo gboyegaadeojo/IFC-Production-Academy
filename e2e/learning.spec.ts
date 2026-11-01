@@ -4,8 +4,8 @@ import { openAccountMenu } from "./support/account-menu";
 import { capture, ensureScreenshotDir, VIEWPORTS } from "./support/screenshots";
 
 // Learning journey (DESIGN-REQUIREMENTS Milestone C, §6.3–6.5; SRS-MEM-005, SRS-MEM-006): a member
-// goes from home to the department pathway, a course, and a lesson; a visitor can browse the
-// pathway but not open lessons. Uses fake seed data: Avery is a Camera Operations member, and Camera
+// goes from home to the department pathway, a course, and a lesson; anyone signed in can
+// open any course too: training is open to everyone (decision 2026-11-01). Uses fake seed data: Avery is a Camera Operations member, and Camera
 // Level 1 has the published "Sample course (seed data)".
 
 const SAMPLE_COURSE = "cccccccc-0000-4000-8000-000000000001";
@@ -80,7 +80,7 @@ for (const viewport of VIEWPORTS) {
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}$`));
   });
 
-  test(`a visitor browses the pathway but can't open lessons at ${viewport.name}px`, async ({
+  test(`a visitor who isn't a member opens a course and a lesson at ${viewport.name}px`, async ({
     page,
   }) => {
     await page.setViewportSize(viewport);
@@ -88,22 +88,25 @@ for (const viewport of VIEWPORTS) {
 
     await page.getByRole("link", { name: "Camera Operations", exact: true }).click();
     await expect(page).toHaveURL(/\/departments\/camera-operations$/);
-    await expect(page.getByText("Courses open once you're a member.")).toBeVisible();
-    await expect(page.getByRole("link", { name: /Sample course \(seed data\)/ })).toHaveCount(0);
-    await expect(page.getByText("Sample course (seed data)")).toBeVisible();
+    await expect(page.getByText("Courses open when the department does.")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Sample course \(seed data\)/ })).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Request to join Camera Operations" }),
     ).toBeVisible();
     await capture(page, `department-visitor-${viewport.name}`);
 
-    await page.goto(`/courses/${SAMPLE_COURSE}`);
-    await expect(page.getByText("For Camera Operations members")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Start the course" })).toHaveCount(0);
-    await capture(page, `course-locked-${viewport.name}`);
-
-    // A lesson link (any key) sends a visitor back to the course page, not to lesson content.
-    await page.goto(`/courses/${SAMPLE_COURSE}/lessons/00000000-0000-4000-8000-000000000000`);
+    await page.getByRole("link", { name: /Sample course \(seed data\)/ }).click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}$`));
+    await page.getByRole("link", { name: "Start the course" }).click();
+    await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}/lessons/`));
+    await expect(page.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
+    // Progress is saved for them too, not only for members.
+    await expect(page.getByRole("button", { name: "Mark lesson complete" })).toBeVisible();
+    await capture(page, `lesson-visitor-${viewport.name}`);
+
+    // A lesson that isn't in the course is not found, for members and visitors alike.
+    await page.goto(`/courses/${SAMPLE_COURSE}/lessons/00000000-0000-4000-8000-000000000000`);
+    await expect(page.getByText("This page could not be found.")).toBeVisible();
 
     // A department with nothing published shows an honest empty level.
     await page.goto("/departments/audio-engineering");

@@ -114,7 +114,7 @@ test("a new volunteer's pages are accessible", async ({ page }) => {
   await page.goto("/departments/audio-engineering");
   await expectAccessible(page, "department (visitor)");
   await page.goto(`/courses/${SAMPLE_COURSE}`);
-  await expectAccessible(page, "course (locked)");
+  await expectAccessible(page, "course (visitor)");
 });
 
 test("admin pages are accessible", async ({ page }) => {

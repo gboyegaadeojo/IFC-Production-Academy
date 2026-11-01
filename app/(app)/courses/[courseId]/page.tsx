@@ -11,7 +11,7 @@ import { ProgressBar } from "@/components/ui/progress-bar";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyCertificateForCourse } from "@/lib/data/certificates";
-import { getLearnerCourse, isActiveMember } from "@/lib/data/pathway";
+import { getLearnerCourse, canLearnIn } from "@/lib/data/pathway";
 import { getCourseProgress } from "@/lib/data/progress";
 import { getPassedPracticalKeys } from "@/lib/data/practicals";
 import { getPassedQuizKeys } from "@/lib/data/quizzes";
@@ -41,8 +41,8 @@ export default function CoursePage({ params }: PageProps<"/courses/[courseId]">)
 
 /**
  * Course landing (DESIGN §6.4): what the course covers, its real size, and where to start. Shows
- * only facts that exist: no invented instructor, rating, or duration. Members and curriculum staff
- * see the lessons; anyone else sees what the course is and how to get access (SRS-MEM-005).
+ * only facts that exist: no invented instructor, rating, or duration. Anyone signed in can open
+ * the lessons of an open department (decision 2026-11-01, open training).
  */
 async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, "params">) {
   const user = await requireActiveUser();
@@ -56,7 +56,7 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
   }
   const totals = courseTotals(course.modules);
   const first = flattenLessons(course.modules)[0];
-  const member = course.canOpen && (await isActiveMember(user.id, course.department.id));
+  const member = course.canOpen && (await canLearnIn(user.id, course.department.id));
   const [lessonProgress, passed, practicalsPassed] = member
     ? await Promise.all([
         getCourseProgress(user.id, course.id),
@@ -223,10 +223,10 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
             <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
               <p className="flex items-center gap-2 font-medium">
                 <LockIcon className="size-4 text-text-muted" />
-                For {course.department.name} members
+                Not open yet
               </p>
               <p className="text-small text-text-secondary">
-                Lessons open once you&apos;re a member of the department.
+                This course has no lessons yet, or its department isn&apos;t open. Check back soon.
               </p>
               <Link
                 href={`/departments/${course.department.slug}`}
@@ -253,7 +253,7 @@ function CourseSkeleton() {
       <LoadingStatus label="Loading the course…" />
       <Skeleton className="h-4 w-64" />
       <div className="grid gap-10 lg:grid-cols-[1fr_22rem]">
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-12 w-96 max-w-full" />
           <Skeleton className="h-6 w-[32rem] max-w-full" />

@@ -36,7 +36,7 @@ export type PathwayLevel = {
 export type DepartmentPathway = {
   department: DepartmentCard;
   levels: PathwayLevel[];
-  /** True for members and curriculum staff: lessons are readable. */
+  /** True wherever lessons can be opened: everyone in the Academy (open training, 2026-11-01). */
   canOpenCourses: boolean;
 };
 
@@ -99,7 +99,8 @@ export async function getDepartmentPathway(
     throw new Error("Could not load lessons", { cause: lessons.error.code });
   }
   const readable = lessons.data.length > 0;
-  const canOpenCourses = department.state.kind === "member" || readable;
+  // Training is open to everyone (decision 2026-11-01); a hidden department's lessons aren't readable.
+  const canOpenCourses = readable || department.state.kind !== "unavailable";
 
   return {
     department,
@@ -310,18 +311,19 @@ export async function getLearnerLesson(
     : null;
 }
 
-/** Whether the person is an active member: only members' lesson progress is recorded. */
-export async function isActiveMember(userId: string, departmentId: string): Promise<boolean> {
+/**
+ * Whether the person may learn in this department: anyone in the Academy, unless the department is
+ * hidden (open training, decision 2026-11-01). The database checks the same with private.can_learn.
+ */
+export async function canLearnIn(_userId: string, departmentId: string): Promise<boolean> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
-    .from("department_memberships")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("department_id", departmentId)
-    .eq("status", "active")
+    .from("departments")
+    .select("status")
+    .eq("id", departmentId)
     .maybeSingle();
   if (error) {
-    throw new Error("Could not load membership", { cause: error.code });
+    throw new Error("Could not load the department", { cause: error.code });
   }
-  return data !== null;
+  return data !== null && data.status !== "inactive";
 }

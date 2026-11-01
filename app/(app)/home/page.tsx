@@ -48,7 +48,11 @@ async function TrainingContent() {
   const memberIds = memberOf.map((d) => d.id);
   const [learning, continuing, achievements, onboardingRows, openDepartments] = await Promise.all([
     getDepartmentLearning(user.id, memberIds),
-    getContinueLearning(user.id, memberIds),
+    // Training is open to everyone (decision 2026-11-01): courses started in any department count.
+    getContinueLearning(
+      user.id,
+      departments.map((d) => d.id),
+    ),
     memberOf.length > 0 ? getMyAchievements(user.id) : null,
     getMyOnboarding(),
     getOpenDepartments(),
@@ -112,7 +116,10 @@ async function TrainingContent() {
           <ul className="grid gap-3 lg:grid-cols-2">
             {others.map((department) => (
               <li key={department.id} className="flex">
-                <ExploreRow department={department} />
+                <ExploreRow
+                  department={department}
+                  continuing={continuing.find((c) => c.course.department.id === department.id)}
+                />
               </li>
             ))}
           </ul>
