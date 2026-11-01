@@ -7,15 +7,20 @@ import { isCurrentSection, type AdminSection, type AdminSectionGroup } from "@/l
 
 export type AdminNavGroup = { group: AdminSectionGroup; sections: AdminSection[] };
 
+/** The most specific match, so /admin/checklists/activity is the Activity log, not Task lists. */
 function currentSection(groups: AdminNavGroup[], pathname: string): AdminSection | null {
+  let best: AdminSection | null = null;
   for (const entry of groups) {
     for (const section of entry.sections) {
-      if (isCurrentSection(section, pathname)) {
-        return section;
+      if (
+        isCurrentSection(section, pathname) &&
+        (!best || section.href.length > best.href.length)
+      ) {
+        best = section;
       }
     }
   }
-  return null;
+  return best;
 }
 
 /**

@@ -188,7 +188,10 @@ test("an admin chooses the service day the checklist opens for, and puts it back
   await signInByEmail(page, "emery.director@example.com");
 
   await page.goto("/admin/checklists");
-  await page.getByRole("link", { name: "Settings" }).click();
+  await page
+    .getByRole("navigation", { name: "Admin" })
+    .getByRole("link", { name: "Checklist settings" })
+    .click();
   await expect(page.getByRole("heading", { level: 1, name: "Checklist settings" })).toBeVisible();
   await expect(page.getByLabel("Service type")).toHaveValue("");
   await expect(page.getByLabel("Service day")).toHaveValue("0");

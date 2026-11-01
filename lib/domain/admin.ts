@@ -16,6 +16,10 @@ export type AdminSectionKey =
   | "schedule"
   | "teams"
   | "checklists"
+  | "checklist-activity"
+  | "checklist-history"
+  | "checklist-hidden"
+  | "checklist-settings"
   | "planning-center"
   | "reports"
   | "mentoring"
@@ -23,8 +27,13 @@ export type AdminSectionKey =
   | "departments"
   | "audit";
 
-/** Sidebar groups (DESIGN §3.2). */
-export type AdminSectionGroup = "Overview" | "People" | "Learning" | "System";
+/**
+ * Sidebar groups (DESIGN §3.2), one per part of the ministry's tools, so an admin knows where a
+ * setting lives (G, 2026-11-01): the pre-service Checklist, Services (Planning Center and the
+ * schedule), the Academy's training, People, and System.
+ */
+export type AdminSectionGroup =
+  "Overview" | "Checklist" | "Services" | "Academy" | "People" | "System";
 
 export type AdminSection = {
   key: AdminSectionKey;
@@ -34,35 +43,54 @@ export type AdminSection = {
 };
 
 const SECTIONS: readonly AdminSection[] = [
-  { key: "members", href: "/admin/members", label: "Membership requests", group: "People" },
-  { key: "people", href: "/admin/people", label: "People and roles", group: "People" },
-  { key: "schedule", href: "/admin/schedule", label: "Schedule", group: "People" },
-  { key: "teams", href: "/admin/teams", label: "Serving teams", group: "People" },
+  { key: "checklists", href: "/admin/checklists", label: "Task lists", group: "Checklist" },
+  {
+    key: "checklist-activity",
+    href: "/admin/checklists/activity",
+    label: "Activity log",
+    group: "Checklist",
+  },
+  {
+    key: "checklist-history",
+    href: "/admin/checklists/history",
+    label: "Service history",
+    group: "Checklist",
+  },
+  {
+    key: "checklist-hidden",
+    href: "/admin/checklists/hidden",
+    label: "Hidden items",
+    group: "Checklist",
+  },
+  {
+    key: "checklist-settings",
+    href: "/admin/checklists/settings",
+    label: "Checklist settings",
+    group: "Checklist",
+  },
   {
     key: "planning-center",
     href: "/admin/planning-center",
     label: "Planning Center",
-    group: "People",
+    group: "Services",
   },
-  {
-    key: "checklists",
-    href: "/admin/checklists",
-    label: "Pre-service checklists",
-    group: "People",
-  },
-  { key: "mentoring", href: "/admin/mentoring", label: "Mentoring", group: "People" },
-  { key: "invitations", href: "/admin/invitations", label: "Invitations", group: "People" },
-  { key: "curriculum", href: "/admin/curriculum", label: "Curriculum", group: "Learning" },
-  { key: "sops", href: "/admin/sops", label: "SOP library", group: "Learning" },
-  { key: "assessments", href: "/admin/assessments", label: "Assessments", group: "Learning" },
+  { key: "teams", href: "/admin/teams", label: "Serving teams", group: "Services" },
+  { key: "schedule", href: "/admin/schedule", label: "Schedule", group: "Services" },
+  { key: "curriculum", href: "/admin/curriculum", label: "Curriculum", group: "Academy" },
+  { key: "sops", href: "/admin/sops", label: "SOP library", group: "Academy" },
+  { key: "assessments", href: "/admin/assessments", label: "Assessments", group: "Academy" },
   {
     key: "competencies",
     href: "/admin/competencies",
     label: "Competencies and roles",
-    group: "Learning",
+    group: "Academy",
   },
-  { key: "departments", href: "/admin/departments", label: "Departments", group: "Learning" },
-  { key: "reports", href: "/admin/reports", label: "Reports", group: "Learning" },
+  { key: "members", href: "/admin/members", label: "Membership requests", group: "Academy" },
+  { key: "mentoring", href: "/admin/mentoring", label: "Mentoring", group: "Academy" },
+  { key: "departments", href: "/admin/departments", label: "Departments", group: "Academy" },
+  { key: "reports", href: "/admin/reports", label: "Reports", group: "Academy" },
+  { key: "people", href: "/admin/people", label: "People and roles", group: "People" },
+  { key: "invitations", href: "/admin/invitations", label: "Invitations", group: "People" },
   { key: "audit", href: "/admin/audit", label: "Audit log", group: "System" },
 ];
 
@@ -105,7 +133,13 @@ export function canOpenAdminSection(
     case "teams":
       return hasCapabilityAnywhere(grants, "team.manage");
     case "checklists":
+    case "checklist-activity":
+    case "checklist-history":
+    case "checklist-hidden":
       return hasCapabilityAnywhere(grants, "checklist.manage");
+    case "checklist-settings":
+      // Church-wide checklist managers only, as in the database.
+      return hasCapability(grants, "checklist.manage");
     case "planning-center":
       return (
         hasCapabilityAnywhere(grants, "team.manage") ||

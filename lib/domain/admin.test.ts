@@ -52,8 +52,8 @@ describe("adminSections", () => {
 
   it("follows SPEC §4: a Platform Admin does not approve members", () => {
     expect(adminSections(platformAdmin).map((s) => s.key)).toEqual([
-      "people",
       "departments",
+      "people",
       "audit",
     ]);
   });
@@ -65,11 +65,12 @@ describe("adminSections", () => {
         keys: entry.sections.map((s) => s.key),
       })),
     ).toEqual([
+      { group: "Academy", keys: ["departments"] },
       { group: "People", keys: ["people"] },
-      { group: "Learning", keys: ["departments"] },
       { group: "System", keys: ["audit"] },
     ]);
     expect(groupAdminSections(adminSections(cameraLeader)).map((entry) => entry.group)).toEqual([
+      "Academy",
       "People",
     ]);
   });
@@ -77,6 +78,7 @@ describe("adminSections", () => {
   it("puts the dashboard first for anyone with a section, and nowhere for volunteers", () => {
     expect(adminNavigation(cameraLeader).map((entry) => entry.group)).toEqual([
       "Overview",
+      "Academy",
       "People",
     ]);
     expect(adminNavigation(cameraLeader)[0]?.sections.map((s) => s.href)).toEqual(["/admin"]);
@@ -90,8 +92,30 @@ describe("adminSections", () => {
     const dashboard = overview?.sections[0];
     expect(dashboard && isCurrentSection(dashboard, "/admin")).toBe(true);
     expect(dashboard && isCurrentSection(dashboard, "/admin/people")).toBe(false);
-    const people = adminSections(platformAdmin)[0];
+    const people = adminSections(platformAdmin).find((s) => s.key === "people");
     expect(people && isCurrentSection(people, "/admin/people/123")).toBe(true);
+  });
+
+  it("groups the checklist's pages together, with settings for church-wide managers only", () => {
+    const churchWide: CapabilityGrant[] = [{ capability: "checklist.manage", departmentId: null }];
+    const cameraOnly: CapabilityGrant[] = [
+      { capability: "checklist.manage", departmentId: CAMERA },
+    ];
+    expect(groupAdminSections(adminSections(churchWide))).toEqual([
+      {
+        group: "Checklist",
+        sections: expect.arrayContaining([
+          expect.objectContaining({ label: "Task lists" }),
+          expect.objectContaining({ label: "Checklist settings" }),
+        ]),
+      },
+    ]);
+    expect(adminSections(cameraOnly).map((s) => s.key)).toEqual([
+      "checklists",
+      "checklist-activity",
+      "checklist-history",
+      "checklist-hidden",
+    ]);
   });
 
   it("does not let a department-scoped grant open organization-wide sections", () => {
