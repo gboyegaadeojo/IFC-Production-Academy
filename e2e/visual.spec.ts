@@ -105,7 +105,8 @@ for (const viewport of VIEWPORTS) {
     // Milestone D (DESIGN §7): one screenshot per admin page, with fake seed data only.
     await page.goto("/admin");
     await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Needs attention" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Needs you" })).toBeVisible();
+    await expect(page.getByRole("table", { name: "Training, by department" })).toBeVisible();
     await capture(page, `admin-dashboard-${viewport.name}`);
 
     await page.goto("/admin/members?view=members");

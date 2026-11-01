@@ -16,10 +16,25 @@ export function ensureScreenshotDir() {
 }
 
 export async function expectNoHorizontalOverflow(page: Page) {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow, "page should not scroll sideways").toBeLessThanOrEqual(0);
+  const { overflow, culprits } = await page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    // The outermost elements that stick out on the right: tag and classes only, never text, so
+    // the CI log stays free of data.
+    const wide = [...document.body.querySelectorAll<HTMLElement>("*")].filter(
+      (el) => el.getBoundingClientRect().right > width + 1,
+    );
+    const outermost = wide.filter((el) => !wide.includes(el.parentElement as HTMLElement));
+    return {
+      overflow: document.documentElement.scrollWidth - width,
+      culprits: outermost
+        .slice(0, 5)
+        .map((el) => `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 6).join(".")}`),
+    };
+  });
+  expect(
+    overflow,
+    `page should not scroll sideways; too wide: ${culprits.join(" | ") || "unknown"}`,
+  ).toBeLessThanOrEqual(0);
 }
 
 /** Checks for sideways scrolling, then saves a full-page screenshot. */

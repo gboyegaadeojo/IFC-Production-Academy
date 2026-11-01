@@ -12,7 +12,8 @@ import { listAuditEntries, type AuditEntry } from "./audit";
  */
 export type AdminOverview = {
   pendingRequests: number | null;
-  draftsInProgress: number | null;
+  /** Unpublished drafts of courses still in the curriculum, with up to two titles to name them. */
+  drafts: { count: number; titles: string[] } | null;
   awaitingReview: number | null;
   activeInvitations: number | null;
   people: { total: number; notActive: number } | null;
@@ -25,6 +26,9 @@ export type AdminOverview = {
 export type TrainingSummary = {
   departmentId: string;
   departmentName: string;
+  hue: string;
+  icon: string;
+  comingSoon: boolean;
   activeMembers: number;
   inProgress: number;
   awaitingAssessment: number;
@@ -47,44 +51,71 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
   const can = (key: Parameters<typeof canOpenAdminSection>[1]) => canOpenAdminSection(grants, key);
   const nowIso = new Date().toISOString();
 
-  const [requests, drafts, review, invitations, people, notActive, departments, audit, training] =
-    await Promise.all([
-      can("members")
-        ? supabase
-            .from("department_memberships")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "requested")
-        : null,
-      can("curriculum")
-        ? supabase
-            .from("course_versions")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "draft")
-        : null,
-      can("curriculum")
-        ? supabase
-            .from("course_versions")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "pending_review")
-        : null,
-      can("invitations")
-        ? supabase
-            .from("invitations")
-            .select("max_uses, use_count")
-            .is("revoked_at", null)
-            .gt("expires_at", nowIso)
-        : null,
-      can("people") ? supabase.from("profiles").select("id", { count: "exact", head: true }) : null,
-      can("people")
-        ? supabase
-            .from("profiles")
-            .select("id", { count: "exact", head: true })
-            .neq("status", "active")
-        : null,
-      can("departments") ? supabase.from("departments").select("status") : null,
-      can("audit") ? listAuditEntries(null) : null,
-      can("competencies") ? supabase.rpc("department_training_summary") : null,
-    ]);
+  const [
+    requests,
+    drafts,
+    archivedCourses,
+    review,
+    invitations,
+    people,
+    notActive,
+    departments,
+    audit,
+    training,
+    trainingDepartments,
+  ] = await Promise.all([
+    can("members")
+      ? supabase
+          .from("department_memberships")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "requested")
+      : null,
+    can("curriculum")
+      ? supabase
+          .from("course_versions")
+          .select("course_id, title, created_at")
+          .eq("status", "draft")
+          .order("created_at", { ascending: false })
+      : null,
+    can("curriculum") ? supabase.from("courses").select("id").not("archived_at", "is", null) : null,
+    can("curriculum")
+      ? supabase
+          .from("course_versions")
+          .select("id", { count: "exact", head: true })
+          .eq("status", "pending_review")
+      : null,
+    can("invitations")
+      ? supabase
+          .from("invitations")
+          .select("max_uses, use_count")
+          .is("revoked_at", null)
+          .gt("expires_at", nowIso)
+      : null,
+    can("people") ? supabase.from("profiles").select("id", { count: "exact", head: true }) : null,
+    can("people")
+      ? supabase
+          .from("profiles")
+          .select("id", { count: "exact", head: true })
+          .neq("status", "active")
+      : null,
+    can("departments") ? supabase.from("departments").select("status") : null,
+    can("audit") ? listAuditEntries(null) : null,
+    can("competencies") ? supabase.rpc("department_training_summary") : null,
+    can("competencies") ? supabase.from("departments").select("id, hue, icon, status") : null,
+  ]);
+
+  if (drafts?.error || archivedCourses?.error) {
+    throw new Error("Could not count drafts", {
+      cause: (drafts?.error ?? archivedCourses?.error)?.code,
+    });
+  }
+  if (trainingDepartments?.error) {
+    throw new Error("Could not load departments", { cause: trainingDepartments.error.code });
+  }
+  // A course archived or deleted keeps its draft row; it isn't waiting on anyone.
+  const archived = new Set((archivedCourses?.data ?? []).map((row) => row.id));
+  const liveDrafts = drafts ? drafts.data.filter((row) => !archived.has(row.course_id)) : null;
+  const departmentById = new Map((trainingDepartments?.data ?? []).map((d) => [d.id, d]));
 
   if (invitations?.error) {
     throw new Error("Could not count invitations", { cause: invitations.error.code });
@@ -98,7 +129,9 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
 
   return {
     pendingRequests: requests ? countOf(requests, "requests") : null,
-    draftsInProgress: drafts ? countOf(drafts, "drafts") : null,
+    drafts: liveDrafts
+      ? { count: liveDrafts.length, titles: liveDrafts.slice(0, 2).map((row) => row.title) }
+      : null,
     awaitingReview: review ? countOf(review, "reviews") : null,
     activeInvitations: invitations
       ? invitations.data.filter((row) => row.use_count < row.max_uses).length
@@ -119,6 +152,9 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
       ? training.data.map((row) => ({
           departmentId: row.department_id,
           departmentName: row.department_name,
+          hue: departmentById.get(row.department_id)?.hue ?? "",
+          icon: departmentById.get(row.department_id)?.icon ?? "",
+          comingSoon: departmentById.get(row.department_id)?.status === "coming_soon",
           activeMembers: row.active_members,
           inProgress: row.in_progress,
           awaitingAssessment: row.awaiting_assessment,
