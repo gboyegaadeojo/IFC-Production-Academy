@@ -271,6 +271,7 @@ returns void
 language plpgsql
 security definer
 set search_path = ''
+as $$
 declare
   v_rows integer;
 begin
