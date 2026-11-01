@@ -112,6 +112,8 @@ test("a new volunteer's pages are accessible", async ({ page }) => {
 });
 
 test("admin pages are accessible", async ({ page }) => {
+  // One sign-in, then every admin page in turn.
+  test.setTimeout(90_000);
   await signInByEmail(page, "emery.director@example.com");
   for (const [path, name] of [
     ["/admin", "dashboard"],

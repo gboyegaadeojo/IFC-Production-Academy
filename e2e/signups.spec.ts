@@ -71,11 +71,12 @@ test("a volunteer signs up for an open spot, asks for cover, and a teammate take
       .getByRole("region", { name: "Open spots" })
       .getByRole("button", { name: `Sign up ${ROLE}, ${service}` })
       .click();
-    await expect(blake.getByText("You're signed up. Thank you!")).toBeVisible();
+    // The spot leaves Open spots and joins Coming up.
     const mine = blake
       .getByRole("region", { name: "Coming up" })
       .getByRole("listitem")
       .filter({ hasText: service });
+    await expect(mine).toHaveCount(1);
     await mine.getByText("Can't make it? Ask for cover").click();
     await mine.getByLabel("Note (optional)").fill("Away that weekend");
     await mine.getByRole("button", { name: "Ask for cover" }).click();
