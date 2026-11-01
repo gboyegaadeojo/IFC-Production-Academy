@@ -92,12 +92,48 @@ export async function updateMyDisplayName(userId: string, displayName: string): 
   return !error && data.length === 1;
 }
 
-export type MyPlanningCenter = { linked: boolean; name: string | null };
+export type MyPlanningCenter = { linked: boolean; name: string | null; teams: string[] };
 
-/** Whether you sign in with Planning Center, and its name for you (for the name suggestion). */
+/**
+ * Whether you sign in with Planning Center, its name for you (for the name suggestion), and the
+ * Planning Center teams linked to positions you're on.
+ */
 export async function getMyPlanningCenter(): Promise<MyPlanningCenter> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("my_planning_center");
   const row = error ? undefined : data[0];
-  return { linked: row?.linked ?? false, name: row?.pco_name ?? null };
+  return { linked: row?.linked ?? false, name: row?.pco_name ?? null, teams: row?.pco_teams ?? [] };
+}
+
+/** The positions whose team you're on (decision record 9). Your own rows only (RLS). */
+export async function getMyPositionTeams(
+  userId: string,
+): Promise<{ roleId: string; roleName: string; departmentId: string }[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("serving_team_members")
+    .select("role_id, department_id")
+    .eq("user_id", userId)
+    .is("removed_at", null);
+  if (error) {
+    throw new Error("Could not load your teams", { cause: error.code });
+  }
+  if (data.length === 0) {
+    return [];
+  }
+  const roles = await supabase
+    .from("serving_roles")
+    .select("id, name")
+    .in(
+      "id",
+      data.map((row) => row.role_id),
+    )
+    .is("archived_at", null);
+  if (roles.error) {
+    throw new Error("Could not load your teams", { cause: roles.error.code });
+  }
+  return data.flatMap((row) => {
+    const role = roles.data.find((r) => r.id === row.role_id);
+    return role ? [{ roleId: role.id, roleName: role.name, departmentId: row.department_id }] : [];
+  });
 }

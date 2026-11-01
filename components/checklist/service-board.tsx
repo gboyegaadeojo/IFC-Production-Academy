@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { departmentHueVar } from "@/lib/domain/departments";
 import {
   boardSections,
   progressLabel,
@@ -14,6 +15,7 @@ import { ChecklistItem } from "./checklist-item";
 export type BoardChecklist = {
   id: string;
   name: string;
+  departmentHue: string;
   isMine: boolean;
   done: number;
   total: number;
@@ -76,10 +78,12 @@ export function ServiceBoard({
                   type="button"
                   aria-pressed={selected}
                   onClick={() => setCurrentId(checklist.id)}
-                  className={`grid min-h-touch w-48 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2.5 rounded-button border px-3 py-2.5 text-left transition-surface hover:bg-card lg:w-full ${
+                  style={{ "--dept": departmentHueVar(checklist.departmentHue) } as CSSProperties}
+                  className={`grid min-h-touch w-48 grid-cols-[0.5rem_minmax(0,1fr)_auto] items-center gap-x-2.5 rounded-button border px-3 py-2.5 text-left transition-surface hover:bg-card lg:w-full ${
                     selected ? "border-border bg-card" : "border-border lg:border-transparent"
                   }`}
                 >
+                  <span aria-hidden="true" className="size-2 rounded-pill bg-[var(--dept)]" />
                   <span className="flex min-w-0 flex-col gap-1.5">
                     <span className="flex items-center gap-1.5 text-small font-medium text-text">
                       <span className="truncate">{checklist.name}</span>
@@ -94,7 +98,7 @@ export function ServiceBoard({
                       className="h-[3px] overflow-hidden rounded-pill bg-hover"
                     >
                       <span
-                        className="block h-full rounded-pill bg-accent"
+                        className="block h-full rounded-pill bg-[var(--dept)]"
                         style={{ width: `${percentDone(checklist.done, checklist.total)}%` }}
                       />
                     </span>

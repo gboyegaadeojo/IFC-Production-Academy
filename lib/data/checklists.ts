@@ -603,6 +603,8 @@ export type ServiceChecklistState = {
   isScheduled: boolean;
   /** Sees every department by default ("Sees all departments" position). */
   seesAll: boolean;
+  /** The positions you're scheduled in for this service. */
+  myPositions: string[];
 };
 
 /** A service's checklists and what this person may do, or null if they can't see them. */
@@ -629,6 +631,7 @@ export async function getServiceChecklists(
         checklistId: row.checklist_id,
         checklistName: row.checklist_name,
         departmentName: row.department_name,
+        departmentHue: row.department_hue,
         isMine: row.is_mine,
         sectionId: row.section_id,
         sectionName: row.section_name,
@@ -645,6 +648,7 @@ export async function getServiceChecklists(
       undoAvailable: flags?.undo_available ?? false,
       isScheduled: flags?.is_scheduled ?? false,
       seesAll: flags?.sees_all ?? false,
+      myPositions: flags?.my_positions ?? [],
     },
   };
 }

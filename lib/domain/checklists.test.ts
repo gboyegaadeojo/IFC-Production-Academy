@@ -6,6 +6,7 @@ import {
   boardOrder,
   boardSections,
   canSwitchCurrentService,
+  servingLabel,
   teamProgress,
   checklistErrorMessage,
   groupServiceChecklists,
@@ -33,6 +34,12 @@ describe("the service-day board", () => {
       { id: "d", isMine: true },
     ]);
     expect(order.map((c) => c.id)).toEqual(["b", "d", "a", "c"]);
+  });
+
+  it("names the positions you're serving in", () => {
+    expect(servingLabel(["Camera 1"])).toBe("You're serving · Camera 1");
+    expect(servingLabel(["Audio", "Camera 1"])).toBe("You're serving · Audio, Camera 1");
+    expect(servingLabel([])).toBe("You're serving");
   });
 
   it("adds up the team's ticks", () => {
@@ -115,6 +122,7 @@ describe("groupServiceChecklists", () => {
     checklistId,
     checklistName: checklistId === "cam" ? "Camera Operators" : "Audio Engineer",
     departmentName: checklistId === "cam" ? "Camera Operations" : "Audio",
+    departmentHue: checklistId === "cam" ? "blue" : "teal",
     isMine: checklistId === "cam",
     sectionId,
     sectionName: sectionId,

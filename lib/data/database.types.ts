@@ -1335,7 +1335,10 @@ export type Database = {
       sync_planning_center: { Args: { p: Json }; Returns: Json };
       request_pco_refresh: { Args: never; Returns: undefined };
       pco_last_synced: { Args: never; Returns: string | null };
-      my_planning_center: { Args: never; Returns: { linked: boolean; pco_name: string | null }[] };
+      my_planning_center: {
+        Args: never;
+        Returns: { linked: boolean; pco_name: string | null; pco_teams: string[] }[];
+      };
       planning_center_sign_in: {
         Args: { p_pco_person_id: string; p_pco_organization_id: string; p_emails: string[] };
         Returns: { user_id: string; email: string }[];
@@ -1402,6 +1405,7 @@ export type Database = {
           checklist_id: string;
           checklist_name: string;
           department_name: string;
+          department_hue: string;
           is_mine: boolean;
           section_id: string;
           section_name: string;
@@ -1536,6 +1540,7 @@ export type Database = {
           undo_available: boolean;
           is_scheduled: boolean;
           sees_all: boolean;
+          my_positions: string[];
         }[];
       };
       current_service: { Args: never; Returns: string | null };

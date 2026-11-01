@@ -4,6 +4,7 @@ import {
   addableLabel,
   allTeamMembers,
   positionTeam,
+  stillLearningPositions,
   toTeamError,
   trainingLabel,
   type TeamPerson,
@@ -20,6 +21,23 @@ const person = (name: string, overrides: Partial<TeamPerson> = {}): TeamPerson =
 
 const wide = { id: "wide", name: "Camera 1" };
 const live = { id: "live", name: "Camera 2" };
+
+describe("stillLearningPositions", () => {
+  it("lists team positions you aren't approved in yet, once each", () => {
+    const teams = [
+      { roleId: "cam1", roleName: "Camera 1" },
+      { roleId: "audio", roleName: "Audio" },
+      { roleId: "audio", roleName: "Audio" },
+    ];
+    expect(stillLearningPositions(teams, new Set(["cam1"])).map((t) => t.roleName)).toEqual([
+      "Audio",
+    ]);
+  });
+
+  it("is empty when you're approved in every team position", () => {
+    expect(stillLearningPositions([{ roleId: "cam1" }], new Set(["cam1"]))).toEqual([]);
+  });
+});
 
 describe("position teams", () => {
   const people = [

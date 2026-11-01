@@ -47,6 +47,24 @@ export function trainingLabel(person: TeamPerson, roleId: string): string {
   return person.trainedRoleIds.includes(roleId) ? "Trained" : "Still learning";
 }
 
+/**
+ * Positions whose team you're on but aren't yet approved to serve in: "Still learning" on your
+ * profile. Being on a team never implies approval (SPEC §3); training is shown, never a gate.
+ */
+export function stillLearningPositions<T extends { roleId: string }>(
+  teams: readonly T[],
+  approvedRoleIds: ReadonlySet<string>,
+): T[] {
+  const seen = new Set<string>();
+  return teams.filter((team) => {
+    if (approvedRoleIds.has(team.roleId) || seen.has(team.roleId)) {
+      return false;
+    }
+    seen.add(team.roleId);
+    return true;
+  });
+}
+
 /** How someone shows in a position's "Add" list. */
 export function addableLabel(person: TeamPerson, roleId: string): string {
   const note = person.trainedRoleIds.includes(roleId)
