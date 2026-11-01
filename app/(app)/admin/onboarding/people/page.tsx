@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { QrCode } from "@/components/qr-code";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { PageHeader } from "@/components/ui/page-header";
@@ -15,6 +16,7 @@ import {
 import { formatDateTime } from "@/lib/domain/admin";
 import { cameInByLabel, eventLabel } from "@/lib/domain/onboarding";
 import { initials } from "@/lib/domain/people";
+import { publicEnv } from "@/lib/env";
 import { AccessDenied } from "../../access-denied";
 import { PageSkeleton } from "../../page-skeleton";
 import { addNoteAction, addPersonAction, stopEntryAction } from "../running-actions";
@@ -59,6 +61,7 @@ async function PeopleContent({
   const open = entryParam ? (people.find((p) => p.entryId === entryParam) ?? null) : null;
   const detail = open ? await getEntryDetail(open.entryId) : null;
   const now = new Date();
+  const signUpUrl = `${publicEnv().NEXT_PUBLIC_SITE_URL.replace(/\/+$/, "")}/serve-with-us`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -67,6 +70,24 @@ async function PeopleContent({
         title="People in pathways"
         description="Who's where, how long they've been there, and what happens next. Open someone for their history and notes."
       />
+
+      <details className="max-w-xl rounded-card border border-border bg-surface p-4">
+        <summary className="cursor-pointer font-medium">Share the sign-up page</summary>
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <QrCode value={signUpUrl} label="QR code for the “I want to serve” page" size={140} />
+          <div className="flex min-w-0 flex-col gap-1 text-small">
+            <span className="text-text-secondary">
+              Print it for the lobby or show it at a volunteer night.
+            </span>
+            <a
+              href="/serve-with-us"
+              className="font-medium break-all text-accent-light underline-offset-4 hover:underline"
+            >
+              {signUpUrl}
+            </a>
+          </div>
+        </div>
+      </details>
 
       {pathways.length > 0 ? (
         <details className="max-w-xl rounded-card border border-border bg-surface p-4">

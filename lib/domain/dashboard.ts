@@ -4,7 +4,7 @@
  */
 
 export type NeedsYouItem = {
-  key: "assessments" | "requests" | "review" | "drafts";
+  key: "follow_ups" | "assessments" | "requests" | "review" | "drafts";
   count: number;
   title: string;
   detail: string;
@@ -21,8 +21,24 @@ export function needsYou(input: {
   pendingRequests: number | null;
   awaitingReview: number | null;
   drafts: { count: number; titles: string[] } | null;
+  /** Onboarding follow-ups that are yours or anyone's to take. */
+  followUps?: number | null;
 }): NeedsYouItem[] {
   const items: NeedsYouItem[] = [];
+  if (input.followUps !== null && input.followUps !== undefined) {
+    const n = input.followUps;
+    items.push({
+      key: "follow_ups",
+      count: n,
+      title: "Onboarding follow-ups",
+      detail:
+        n === 0
+          ? "Nobody new is waiting on you."
+          : `${n === 1 ? "1 new person is" : `${n} new people are`} waiting for a leader to reach out.`,
+      href: "/admin/onboarding/follow-ups",
+      action: "Open follow-ups",
+    });
+  }
   if (input.awaitingAssessment !== null) {
     const n = input.awaitingAssessment;
     items.push({

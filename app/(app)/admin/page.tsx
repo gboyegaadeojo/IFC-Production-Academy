@@ -36,6 +36,7 @@ const NEEDS_ICON: Record<
   NeedsYouItem["key"],
   { icon: (p: { className?: string }) => ReactNode; tile: string }
 > = {
+  follow_ups: { icon: UsersIcon, tile: "bg-tile-pink text-tile-pink-ink" },
   assessments: { icon: UserCheckIcon, tile: "bg-tile-green text-tile-green-ink" },
   requests: { icon: UsersIcon, tile: "bg-tile-blue text-tile-blue-ink" },
   review: { icon: QuizIcon, tile: "bg-tile-violet text-tile-violet-ink" },
@@ -61,6 +62,7 @@ async function DashboardContent() {
     pendingRequests: overview.pendingRequests,
     awaitingReview: overview.awaitingReview,
     drafts: overview.drafts,
+    followUps: overview.followUps,
   });
 
   const glance = [

@@ -46,8 +46,9 @@ select is_empty(
     where n.nspname = 'public'
       and has_function_privilege('anon', p.oid, 'EXECUTE')
       -- The keep-alive read, the public certificate check behind the QR code (initials only), and
-      -- the public "I want to serve" form (onboarding decision, 2026-11-01; it reveals nothing).
-      and p.proname not in ('keepalive', 'check_certificate', 'submit_interest')
+      -- the public "I want to serve" form (onboarding decision, 2026-11-01; it reveals nothing),
+      -- and the open departments that form lists (names and icons only).
+      and p.proname not in ('keepalive', 'check_certificate', 'submit_interest', 'open_departments')
       -- Ignore functions owned by extensions such as pgTAP itself.
       and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
   $$,

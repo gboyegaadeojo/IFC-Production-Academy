@@ -11,12 +11,15 @@ import { getMyAchievements } from "@/lib/data/achievements";
 import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards, type DepartmentCard as CardData } from "@/lib/data/departments";
 import { getDepartmentLearning } from "@/lib/data/learning";
+import { getMyOnboarding, getOpenDepartments } from "@/lib/data/onboarding";
 import { getContinueLearning } from "@/lib/data/progress";
 import { formatDateTime } from "@/lib/domain/admin";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { homeState, type HomeState } from "@/lib/domain/home";
+import { volunteerPathways } from "@/lib/domain/onboarding";
 import { firstName } from "@/lib/domain/people";
 import { ExploreRow, MemberDepartmentCard } from "./department-card";
+import { NextSteps } from "./next-steps";
 
 export const metadata: Metadata = { title: "Training" };
 
@@ -43,16 +46,24 @@ async function TrainingContent() {
   const others = departments.filter((d) => d.state.kind !== "member");
   const requested = departments.filter((d) => d.state.kind === "requested");
   const memberIds = memberOf.map((d) => d.id);
-  const [learning, continuing, achievements] = await Promise.all([
+  const [learning, continuing, achievements, onboardingRows, openDepartments] = await Promise.all([
     getDepartmentLearning(user.id, memberIds),
     getContinueLearning(user.id, memberIds),
     memberOf.length > 0 ? getMyAchievements(user.id) : null,
+    getMyOnboarding(),
+    getOpenDepartments(),
   ]);
+  // Onboarding still in progress shows first; finished pathways drop off the Training page.
+  const onboarding = volunteerPathways(onboardingRows).filter((p) => !p.finished);
   const learningFor = new Map(learning.map((entry) => [entry.departmentId, entry]));
 
   return (
     <div className="page-container flex flex-col gap-12 py-8 lg:gap-14 lg:py-12">
       <Hero name={firstName(user.displayName) || user.displayName} state={state} />
+
+      {onboarding.map((pathway) => (
+        <NextSteps key={pathway.entryId} pathway={pathway} departments={openDepartments} />
+      ))}
 
       {requested.length > 0 ? <RequestStatus requests={requested} /> : null}
 

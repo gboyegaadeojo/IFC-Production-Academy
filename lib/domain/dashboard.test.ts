@@ -29,6 +29,23 @@ describe("needsYou", () => {
   });
 });
 
+describe("onboarding follow-ups", () => {
+  it("comes first, and only for people who look after onboarding", () => {
+    const base = {
+      awaitingAssessment: 0,
+      pendingRequests: null,
+      awaitingReview: null,
+      drafts: null,
+    };
+    expect(needsYou({ ...base, followUps: 2 })[0]).toMatchObject({
+      key: "follow_ups",
+      count: 2,
+      detail: "2 new people are waiting for a leader to reach out.",
+    });
+    expect(needsYou({ ...base, followUps: null }).map((i) => i.key)).toEqual(["assessments"]);
+  });
+});
+
 describe("draftNames", () => {
   it("names up to two drafts and counts the rest", () => {
     expect(draftNames(["Focus"], 1)).toBe("“Focus”");

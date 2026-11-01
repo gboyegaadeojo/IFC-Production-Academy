@@ -1,4 +1,5 @@
 import "server-only";
+import { getCurrentUser } from "@/lib/data/auth";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { getUnlinkedPlaces } from "@/lib/data/planning-center";
 import { canOpenAdminSection, type AdminSectionKey } from "@/lib/domain/admin";
@@ -12,6 +13,8 @@ import { listAuditEntries, type AuditEntry } from "./audit";
  */
 export type AdminOverview = {
   pendingRequests: number | null;
+  /** Onboarding follow-ups that are yours, or anyone's to take. */
+  followUps: number | null;
   /** Unpublished drafts of courses still in the curriculum, with up to two titles to name them. */
   drafts: { count: number; titles: string[] } | null;
   awaitingReview: number | null;
@@ -46,6 +49,22 @@ function countOf(result: Counted, what: string): number {
   return result.count ?? 0;
 }
 
+/** Open follow-ups that are yours, or not taken yet (row-level security limits it to your pathways). */
+async function countFollowUps(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+): Promise<number> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return 0;
+  }
+  const { count, error } = await supabase
+    .from("onboarding_tasks")
+    .select("id", { count: "exact", head: true })
+    .is("done_at", null)
+    .or(`assignee_id.eq.${user.id},assignee_id.is.null`);
+  return error ? 0 : (count ?? 0);
+}
+
 export async function getAdminOverview(grants: readonly CapabilityGrant[]): Promise<AdminOverview> {
   const supabase = await createSupabaseServerClient();
   const can = (key: Parameters<typeof canOpenAdminSection>[1]) => canOpenAdminSection(grants, key);
@@ -63,6 +82,7 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
     audit,
     training,
     trainingDepartments,
+    followUps,
   ] = await Promise.all([
     can("members")
       ? supabase
@@ -102,6 +122,7 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
     can("audit") ? listAuditEntries(null) : null,
     can("competencies") ? supabase.rpc("department_training_summary") : null,
     can("competencies") ? supabase.from("departments").select("id, hue, icon, status") : null,
+    can("onboarding-follow-ups") ? countFollowUps(supabase) : null,
   ]);
 
   if (drafts?.error || archivedCourses?.error) {
@@ -129,6 +150,7 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
 
   return {
     pendingRequests: requests ? countOf(requests, "requests") : null,
+    followUps,
     drafts: liveDrafts
       ? { count: liveDrafts.length, titles: liveDrafts.slice(0, 2).map((row) => row.title) }
       : null,
