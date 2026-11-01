@@ -117,13 +117,19 @@ export function percentDone(done: number, total: number): number {
 export type TickResult = { ok: true } | { ok: false; message: string };
 
 export type ChecklistError =
-  "not_authorized" | "checklist_closed" | "item_not_found" | "nothing_to_undo" | "unknown";
+  | "not_authorized"
+  | "checklist_closed"
+  | "item_not_found"
+  | "nothing_to_undo"
+  | "nothing_to_reset"
+  | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<ChecklistError>([
   "not_authorized",
   "checklist_closed",
   "item_not_found",
   "nothing_to_undo",
+  "nothing_to_reset",
 ]);
 
 export function toChecklistError(
@@ -138,13 +144,15 @@ export function toChecklistError(
 export function checklistErrorMessage(error: ChecklistError): string {
   switch (error) {
     case "not_authorized":
-      return "Only people serving at this service, or leading it, can do that.";
+      return "Only the media team, and whoever leads the service, can do that.";
     case "checklist_closed":
       return "This checklist opens two days before the service and closes after it.";
     case "item_not_found":
       return "That item has been removed from the checklist.";
     case "nothing_to_undo":
       return "There's no reset to undo.";
+    case "nothing_to_reset":
+      return "Nothing is ticked, so there's nothing to reset.";
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }

@@ -1246,8 +1246,10 @@ export type Database = {
           can_tick: boolean;
           open: boolean;
           undo_available: boolean;
+          is_scheduled: boolean;
         }[];
       };
+      current_service: { Args: never; Returns: string | null };
       save_service_type: {
         Args: {
           p_id: string | null;

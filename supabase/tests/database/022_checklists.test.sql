@@ -23,12 +23,14 @@ select pg_temp.new_user('a4000000-0000-4000-8000-000000000001', 'Test Camera Lea
 select pg_temp.new_user('a4000000-0000-4000-8000-000000000002', 'Test Operator');
 select pg_temp.new_user('a4000000-0000-4000-8000-000000000003', 'Test Director');
 select pg_temp.new_user('a4000000-0000-4000-8000-000000000004', 'Test Bystander');
+select pg_temp.new_user('a4000000-0000-4000-8000-000000000005', 'Test Sub');
 insert into public.user_roles (user_id, role_id, department_id) values
   ('a4000000-0000-4000-8000-000000000001', '297464be-2cae-430d-94bf-6038bd745384', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855');
 insert into public.department_memberships (department_id, user_id, status, decided_at) values
   ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000002', 'active', now()),
   ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000003', 'active', now()),
-  ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000004', 'active', now());
+  ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000004', 'active', now()),
+  ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000005', 'active', now());
 
 create temporary table ctx (key text primary key, id uuid);
 grant all on ctx to authenticated;
@@ -40,7 +42,8 @@ insert into ctx values
   ('td', (select id from public.serving_roles where name = 'Fake TD'));
 insert into public.serving_team_members (role_id, department_id, user_id) values
   ((select id from ctx where key = 'cam'), 'b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000002'),
-  ((select id from ctx where key = 'td'), 'b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000003');
+  ((select id from ctx where key = 'td'), 'b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000003'),
+  ((select id from ctx where key = 'cam'), 'b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a4000000-0000-4000-8000-000000000005');
 
 -- Volunteers can't edit checklists.
 select pg_temp.act_as('a4000000-0000-4000-8000-000000000002');
@@ -70,6 +73,15 @@ select is(
   'b7ba9dae-cab5-43e0-a996-8ae9d2436855'::uuid, 'items carry their checklist''s department'
 );
 
+-- A second checklist, for the leading position only.
+insert into public.checklists (department_id, name) values ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'Fake TD list');
+insert into ctx values ('tdlist', (select id from public.checklists where name = 'Fake TD list'));
+insert into public.checklist_sections (checklist_id, name, sort_order) values ((select id from ctx where key = 'tdlist'), 'Overview', 10);
+insert into public.checklist_items (section_id, text, sort_order) values
+  ((select id from public.checklist_sections where checklist_id = (select id from ctx where key = 'tdlist')), 'Walk every position', 10);
+insert into ctx values ('walk', (select id from public.checklist_items where text = 'Walk every position'));
+insert into public.checklist_positions (checklist_id, role_id) values ((select id from ctx where key = 'tdlist'), (select id from ctx where key = 'td'));
+
 -- A service tomorrow, with both scheduled.
 select pg_temp.act_as('a4000000-0000-4000-8000-000000000001');
 insert into public.events (title, starts_at, ends_at)
@@ -87,6 +99,19 @@ select ok(
   (select bool_and(is_mine) from public.event_checklists((select id from ctx where key = 'event'))
     where checklist_id = (select id from ctx where key = 'list')),
   'the operator''s checklist is marked as theirs'
+);
+select is(
+  (select count(distinct checklist_id)::int from public.event_checklists((select id from ctx where key = 'event'))
+    where is_mine),
+  1, 'one checklist is the operator''s own; the page shows it by default'
+);
+select lives_ok(
+  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'walk'), true) $$,
+  'they can still help with another department''s'
+);
+select lives_ok(
+  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'walk'), false) $$,
+  'and untick it'
 );
 select lives_ok(
   $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'power'), true) $$,
@@ -119,6 +144,22 @@ select throws_ok(
 );
 reset role;
 
+-- A team member who isn't scheduled can still help.
+select pg_temp.act_as('a4000000-0000-4000-8000-000000000005');
+select is(
+  (select bool_or(is_mine) from public.event_checklists((select id from ctx where key = 'event'))),
+  false, 'someone not scheduled has no checklist of their own'
+);
+select lives_ok(
+  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), true) $$,
+  'but a team member can still tick'
+);
+select lives_ok(
+  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), false) $$,
+  'and untick'
+);
+reset role;
+
 -- History keeps the text as it was.
 select pg_temp.act_as('a4000000-0000-4000-8000-000000000001');
 update public.checklist_items set text = 'Power on everything' where id = (select id from ctx where key = 'power');
@@ -128,12 +169,28 @@ select is(
   'Power on', 'a tick keeps the item''s text as it was'
 );
 
--- The director (leading position) resets and undoes.
+-- The director (leading position) sees every checklist, ticks any, resets, and undoes.
 select pg_temp.act_as('a4000000-0000-4000-8000-000000000003');
+select is(
+  (select count(distinct checklist_id)::int from public.event_checklists((select id from ctx where key = 'event'))),
+  2, 'whoever leads the service sees every checklist'
+);
+select lives_ok(
+  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), true) $$,
+  'and can tick anyone''s'
+);
+select lives_ok(
+  $$ select public.set_checklist_item((select id from ctx where key = 'event'), (select id from ctx where key = 'batt'), false) $$,
+  'or untick it'
+);
 select is(public.reset_service_checklists((select id from ctx where key = 'event')), 1, 'the director resets');
 select is(
   (select count(*)::int from public.event_checklists((select id from ctx where key = 'event')) where checked_at is not null),
   0, 'after a reset nothing is ticked'
+);
+select throws_ok(
+  $$ select public.reset_service_checklists((select id from ctx where key = 'event')) $$,
+  'P0001', 'nothing_to_reset', 'a reset with nothing ticked is refused, so the undo is kept'
 );
 select is(public.undo_checklist_reset((select id from ctx where key = 'event')), 1, 'and undoes it');
 select is(

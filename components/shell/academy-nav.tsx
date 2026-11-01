@@ -13,6 +13,7 @@ export function AcademyNav() {
   const links = [
     { href: "/home", label: "Home" },
     { href: "/schedule", label: "Schedule" },
+    { href: "/serve", label: "Checklist" },
     { href: "/sops", label: "SOPs" },
   ];
 
