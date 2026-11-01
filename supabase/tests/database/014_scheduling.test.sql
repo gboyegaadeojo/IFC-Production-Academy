@@ -45,6 +45,10 @@ insert into ctx values
 select public.set_role_competencies((select id from ctx where key = 'role'), array[(select id from ctx where key = 'comp')]);
 reset role;
 select private.grant_competency('e0000000-0000-4000-8000-000000000001', (select id from ctx where key = 'comp'), null);
+-- Both members are on the position's team (decision record 9); the outsider isn't.
+insert into public.serving_team_members (role_id, department_id, user_id) values
+  ((select id from ctx where key = 'role'), 'b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'e0000000-0000-4000-8000-000000000001'),
+  ((select id from ctx where key = 'role'), 'b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'e0000000-0000-4000-8000-000000000002');
 
 -- ---------------------------------------------------------------------------
 -- Events and positions (SRS-SCHED-001)
@@ -108,7 +112,7 @@ select throws_ok(
 );
 select throws_ok(
   $$ select public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000003') $$,
-  'P0001', 'volunteer_not_member', 'only members are scheduled'
+  'P0001', 'not_on_team', 'only people on the position''s team are scheduled'
 );
 reset role;
 
@@ -163,6 +167,40 @@ select ok(
   'assignments are audited'
 );
 
+-- One position a day across the production team, even at different times.
+select pg_temp.act_as('e0000000-0000-4000-8000-000000000004');
+insert into public.events (title, starts_at, ends_at) values
+  ('Fake morning', ((current_date + 20)::timestamp + time '09:00') at time zone 'America/Winnipeg',
+                   ((current_date + 20)::timestamp + time '10:00') at time zone 'America/Winnipeg'),
+  ('Fake evening', ((current_date + 20)::timestamp + time '18:00') at time zone 'America/Winnipeg',
+                   ((current_date + 20)::timestamp + time '19:00') at time zone 'America/Winnipeg');
+insert into ctx values
+  ('pos5', public.add_event_position((select id from public.events where title = 'Fake morning'), (select id from ctx where key = 'role'))),
+  ('pos6', public.add_event_position((select id from public.events where title = 'Fake evening'), (select id from ctx where key = 'role')));
+select is(
+  public.assign_to_position((select id from ctx where key = 'pos5'), 'e0000000-0000-4000-8000-000000000001')::text,
+  'approved', 'scheduled in the morning'
+);
+select throws_ok(
+  $$ select public.assign_to_position((select id from ctx where key = 'pos6'), 'e0000000-0000-4000-8000-000000000001') $$,
+  'P0001', 'schedule_conflict', 'not a second position the same day'
+);
+reset role;
+
+-- Taken off the team: no longer offered or scheduled.
+select pg_temp.act_as('e0000000-0000-4000-8000-000000000004');
+select ok(
+  exists (select 1 from public.schedule_candidates((select id from ctx where key = 'pos6'))
+          where user_id = 'e0000000-0000-4000-8000-000000000002'),
+  'team members are offered'
+);
+select is(
+  (select count(*)::int from public.schedule_candidates((select id from ctx where key = 'pos6'))
+    where user_id = 'e0000000-0000-4000-8000-000000000003'),
+  0, 'people off the team are not offered'
+);
+reset role;
+
 -- ---------------------------------------------------------------------------
 -- Volunteers respond; visibility
 -- ---------------------------------------------------------------------------
@@ -175,7 +213,7 @@ select lives_ok(
   $$ select public.respond_to_assignment((select id from public.event_assignments where position_id = (select id from ctx where key = 'pos1')), 'confirmed') $$,
   'a volunteer confirms'
 );
-select is((select count(*)::int from public.event_assignments), 2, 'volunteers see their own assignments');
+select is((select count(*)::int from public.event_assignments), 3, 'volunteers see their own assignments');
 reset role;
 select pg_temp.act_as('e0000000-0000-4000-8000-000000000002');
 select throws_ok(

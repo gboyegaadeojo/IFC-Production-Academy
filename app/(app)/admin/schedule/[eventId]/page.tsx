@@ -40,8 +40,9 @@ export default function EventPage({ params }: Props) {
 
 /**
  * One event (workflow D): positions by department, who's in each, and whether they're trained.
- * Training is shown, never enforced (decided 2026-10-31): any active member can be scheduled, with
- * an optional trained person alongside. Conflicts and days away still need schedule.override.
+ * Only people on the position's team can be scheduled (decided 2026-10-31); training is shown,
+ * with an optional trained person alongside. A second position that day, or a day away, needs
+ * schedule.override and a reason.
  */
 async function EventContent({ params }: Pick<Props, "params">) {
   const { grants, allowed } = await getAdminAccess("schedule");
@@ -206,7 +207,13 @@ async function Position({
             className="flex"
           />
         ) : candidates.length === 0 ? (
-          <p className="text-small text-text-muted">This department has no active members yet.</p>
+          <p className="text-small text-text-muted">
+            Nobody is on the {position.roleName} team yet. Add people in{" "}
+            <a href="/admin/teams" className="text-accent-light underline-offset-4 hover:underline">
+              Serving teams
+            </a>
+            .
+          </p>
         ) : (
           <details>
             <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-accent-light">

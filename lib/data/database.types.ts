@@ -554,6 +554,22 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      serving_team_members: {
+        Row: {
+          id: string;
+          role_id: string;
+          department_id: string;
+          user_id: string;
+          added_at: string;
+          added_by: string | null;
+          removed_at: string | null;
+          removed_by: string | null;
+        } & Timestamps;
+        // Changed only through add_to_serving_team and remove_from_serving_team.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       practicals: {
         Row: {
           id: string;
@@ -1061,6 +1077,24 @@ export type Database = {
         Returns: Database["public"]["Enums"]["assignment_readiness"];
       };
       cancel_assignment: { Args: { p_assignment_id: string }; Returns: undefined };
+      add_to_serving_team: {
+        Args: { p_role_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      remove_from_serving_team: {
+        Args: { p_role_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      serving_team_overview: {
+        Args: { p_department_id: string };
+        Returns: {
+          user_id: string;
+          display_name: string;
+          is_member: boolean;
+          team_role_ids: string[];
+          trained_role_ids: string[];
+        }[];
+      };
       cancel_event: { Args: { p_event_id: string }; Returns: undefined };
       respond_to_assignment: {
         Args: {

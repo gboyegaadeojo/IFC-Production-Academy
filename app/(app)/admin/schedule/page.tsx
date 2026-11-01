@@ -34,7 +34,7 @@ async function AdminScheduleContent() {
     <div className="flex flex-col gap-10">
       <PageHeader
         title="Schedule"
-        description="Add services and rehearsals, then the positions your department needs. The Academy checks each person is approved for the role, free at that time, and not away before they're scheduled."
+        description="Add services and rehearsals, then the positions they need. Each position is filled from its team in Serving teams. The Academy checks nobody is away that day or already serving in another position."
       />
 
       <section aria-labelledby="events-heading" className="flex flex-col gap-3">

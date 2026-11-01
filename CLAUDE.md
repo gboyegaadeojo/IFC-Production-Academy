@@ -9,7 +9,7 @@ A volunteer learning and competency platform for the production ministry at Imma
 ## Non-negotiable product rules
 
 - **Course completion, competency approval, and Approved to Serve are three separate records.** Watching videos or passing a quiz never makes someone Approved to Serve (SPEC §3, SRS-PROG-007, SRS-COMP-001).
-- **Training is shown, never a gate to serving** (decided 2026-10-31). Anyone in a department can be scheduled in any role; the scheduler sees "Trained" or "Still learning". A practical that isn't passed is "Not yet", with no waiting period. People learn at different paces.
+- **Position teams decide who serves; training is shown, never a gate** (decided 2026-10-31). As in Planning Center, each position (serving role) has a team, and a position is filled only from its team, never on a blocked day or in a second position the same day. Team managers add people when they're ready; "Trained" or "Still learning" shows beside each name. A practical that isn't passed is "Not yet", with no waiting period.
 - **The system decides results, not people** (decided 2026-10-30). Lessons are completed by the learner, quizzes are scored automatically, and a practical passes when the observer's checklist meets the leader's pass rule; the observer never picks the outcome. A pass grants the competency, and Approved to Serve follows automatically. Leaders publish their own department's curriculum with version history and rollback, with no approval gate.
 - **Departments, levels, courses, and rules are data, never code.** No `if (department === 'camera')`. Lighting Operations goes live by changing a status row.
 - **Never claim a video was fully watched.** Completion is a learner action; watch % is an informal signal only (SRS-LESSON-006).
