@@ -221,5 +221,22 @@ select throws_ok(
 );
 reset role;
 
+-- "Sees all departments" is its own switch, separate from the Director role.
+select pg_temp.act_as('a4000000-0000-4000-8000-000000000002');
+select throws_ok(
+  $$ select public.set_role_sees_all((select id from ctx where key = 'td'), true) $$,
+  '42501', 'not_authorized', 'volunteers cannot change position switches'
+);
+select is((select sees_all from public.service_checklist_state((select id from ctx where key = 'event'))),
+  false, 'an operator sees their own checklist first');
+reset role;
+select pg_temp.act_as('a4000000-0000-4000-8000-000000000001');
+select public.set_role_sees_all((select id from ctx where key = 'td'), true);
+reset role;
+select pg_temp.act_as('a4000000-0000-4000-8000-000000000003');
+select is((select sees_all from public.service_checklist_state((select id from ctx where key = 'event'))),
+  true, 'whoever is scheduled in a "sees all departments" position sees them all');
+reset role;
+
 select * from finish();
 rollback;

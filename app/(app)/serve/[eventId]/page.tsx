@@ -55,9 +55,10 @@ async function ServeContent({ params, searchParams }: Props) {
   const mine = data?.checklists.filter((c) => c.isMine) ?? [];
   const others = data?.checklists.filter((c) => !c.isMine) ?? [];
   const canTick = Boolean(data?.state.canTick && data.state.open);
-  // Leaders, and anyone without a checklist of their own here, see every department.
-  const showAll = Boolean(data?.state.canLead) || mine.length === 0 || all === "1";
-  const canChoose = mine.length > 0 && others.length > 0 && !data?.state.canLead;
+  // "Sees all departments" positions, and anyone without a checklist of their own here, see
+  // every department; everyone else can choose to.
+  const showAll = Boolean(data?.state.seesAll) || mine.length === 0 || all === "1";
+  const canChoose = mine.length > 0 && others.length > 0 && !data?.state.seesAll;
 
   return (
     <div className="page-container flex flex-col gap-8 py-8 lg:py-12">
@@ -83,7 +84,7 @@ async function ServeContent({ params, searchParams }: Props) {
         </EmptyState>
       ) : (
         <>
-          {!data.state.isScheduled && data.state.canTick && !data.state.canLead ? (
+          {!data.state.isScheduled && data.state.canTick && !data.state.seesAll ? (
             <p className="max-w-2xl rounded-card border border-border p-4 text-small text-text-secondary">
               You&apos;re not on the schedule for this service, but you can still help.
             </p>
