@@ -237,3 +237,18 @@ test("admin sidebar states at 390, 768, 1024 and 1440px", async ({ page }) => {
     await pressUntil(iconsOnly, "aria-pressed", "false");
   }
 });
+
+test("schedule at 390, 834 and 1440px", async ({ page }) => {
+  // Redesign approved 2026-11-01: the month board, the day panel, upcoming assignments.
+  await signInByEmail(page, "avery.volunteer@example.com");
+  for (const viewport of [
+    { name: "390", width: 390, height: 844 },
+    { name: "834", width: 834, height: 1112 },
+    { name: "1440", width: 1440, height: 900 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/schedule");
+    await expect(page.getByRole("heading", { level: 1, name: "Schedule" })).toBeVisible();
+    await capture(page, `schedule-${viewport.name}`);
+  }
+});

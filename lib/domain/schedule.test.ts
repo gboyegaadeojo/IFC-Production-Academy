@@ -4,6 +4,7 @@ import {
   eventDayLabel,
   eventSchema,
   eventTimeLabel,
+  syncedAgo,
   toScheduleError,
   unavailabilitySchema,
   utcToWinnipeg,
@@ -117,5 +118,17 @@ describe("toScheduleError", () => {
     expect(toScheduleError({ message: "schedule_conflict" })).toBe("schedule_conflict");
     expect(toScheduleError({ code: "42501", message: "x" })).toBe("not_authorized");
     expect(toScheduleError({ code: "XX000", message: "secret" })).toBe("unknown");
+  });
+});
+
+describe("syncedAgo", () => {
+  const now = new Date("2026-11-01T12:00:00Z");
+  it("says how long ago, in words", () => {
+    expect(syncedAgo("2026-11-01T11:59:40Z", now)).toBe("just now");
+    expect(syncedAgo("2026-11-01T11:59:00Z", now)).toBe("1 minute ago");
+    expect(syncedAgo("2026-11-01T11:45:00Z", now)).toBe("15 minutes ago");
+    expect(syncedAgo("2026-11-01T09:00:00Z", now)).toBe("3 hours ago");
+    expect(syncedAgo("2026-10-30T12:00:00Z", now)).toBe("2 days ago");
+    expect(syncedAgo("2026-11-01T12:05:00Z", now)).toBe("just now");
   });
 });

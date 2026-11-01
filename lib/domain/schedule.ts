@@ -259,3 +259,27 @@ export function scheduleErrorMessage(error: ScheduleError): string {
       return "That didn't save. Check your connection and try again.";
   }
 }
+
+/** "just now", "2 minutes ago", "3 hours ago", "2 days ago": for "Last synced". */
+export function syncedAgo(iso: string, now: Date = new Date()): string {
+  const minutes = Math.max(0, Math.floor((now.getTime() - Date.parse(iso)) / 60_000));
+  if (minutes < 1) {
+    return "just now";
+  }
+  if (minutes < 60) {
+    return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+  }
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  }
+  const days = Math.floor(hours / 24);
+  return `${days} ${days === 1 ? "day" : "days"} ago`;
+}
+
+/** How the Schedule page names an assignment's state (redesign approved 2026-11-01). */
+export const SERVING_LABELS = {
+  confirmed: "Serving",
+  pending: "Asked to serve",
+  declined: "Declined",
+} as const;
