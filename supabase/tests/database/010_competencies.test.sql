@@ -81,7 +81,8 @@ select throws_ok(
 reset role;
 
 select pg_temp.act_as('a0000000-0000-4000-8000-000000000001');
-select is((select count(*)::int from public.competencies where name like 'Fake %'), 3, 'members read their department''s competencies');
+select is((select count(*)::int from public.competencies where name like 'Fake %'), 4,
+  'learners read the competencies of every open department, their own and others (open training)');
 select is((select count(*)::int from public.serving_role_competencies where role_id = (select id from ctx where key = 'role')), 2,
   'and what each role needs');
 select throws_ok(

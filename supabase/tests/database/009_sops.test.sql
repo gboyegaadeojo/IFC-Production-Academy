@@ -244,7 +244,8 @@ select pg_temp.act_as('90000000-0000-4000-8000-000000000004');
 select lives_ok($$ select public.archive_sop((select id from ctx where key = 'sop')) $$, 'the leader archives the SOP');
 reset role;
 select pg_temp.act_as('90000000-0000-4000-8000-000000000001');
-select is_empty($$ select 1 from public.sops $$, 'members no longer see an archived SOP');
+select is_empty($$ select 1 from public.sops where id = (select id from ctx where key = 'sop') $$,
+  'members no longer see an archived SOP');
 select is_empty($$ select 1 from storage.objects where bucket_id = 'sops' $$, 'nor open its files');
 reset role;
 select is((select count(*)::int from public.sop_versions where sop_id = (select id from ctx where key = 'sop')), 2,
