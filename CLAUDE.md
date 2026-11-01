@@ -22,7 +22,7 @@ A volunteer learning and competency platform for the production ministry at Imma
 | --- | --- |
 | App | Next.js (App Router) + TypeScript (strict), responsive and an installable PWA |
 | Hosting | Cloudflare Workers / Pages via `@opennextjs/cloudflare` (not Vercel: Hobby is personal-use only) |
-| Database, auth, files | Supabase Free: Postgres with row-level security, Supabase Auth (email magic link only, decided 2026-10-30), Supabase Storage (private buckets, signed URLs) |
+| Database, auth, files | Supabase Free: Postgres with row-level security, Supabase Auth: Planning Center sign-in for the production team (decided 2026-11-01; server-side OAuth, `docs/runbooks/planning-center-sign-in.md`), and an email magic link for anyone else, Supabase Storage (private buckets, signed URLs) |
 | Email | Resend, server-side only; also set as Supabase Auth's SMTP sender |
 | Video | Unlisted YouTube via the official IFrame Player API, and the church video library on the UniFi NAS (decided 2026-10-30: streamed by the Worker through a Cloudflare Tunnel after an RLS check; off until the `MEDIA_*` secrets are set, see `docs/runbooks/nas-media.md`). Both sit behind a `VideoSource` abstraction so Vimeo or Mux can be added later |
 | Styling | Tailwind CSS driven by the design tokens in DESIGN-REQUIREMENTS §4 (CSS variables in `app/globals.css`, dark theme first) |

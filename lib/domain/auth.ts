@@ -50,7 +50,14 @@ export const authConfirmParamsSchema = z.object({
 });
 
 /** Sign-in error codes we put in the URL. Never put provider messages in a URL. */
-export const signInErrorSchema = z.enum(["link_invalid", "account_inactive"]);
+export const signInErrorSchema = z.enum([
+  "link_invalid",
+  "account_inactive",
+  "pco_cancelled",
+  "pco_not_on_team",
+  "pco_no_email",
+  "pco_failed",
+]);
 export type SignInError = z.infer<typeof signInErrorSchema>;
 
 export function signInErrorMessage(code: string | null | undefined): string | null {
@@ -63,5 +70,13 @@ export function signInErrorMessage(code: string | null | undefined): string | nu
       return "That sign-in link has expired or was already used. Ask for a new one below.";
     case "account_inactive":
       return "Your account isn't active right now. Talk to your department leader or the Production Director.";
+    case "pco_cancelled":
+      return "Planning Center sign-in was cancelled. Try again when you're ready.";
+    case "pco_not_on_team":
+      return "We couldn't find you on IFC's production teams in Planning Center. If you've just been added, try again in 15 minutes, or use an email link below.";
+    case "pco_no_email":
+      return "Your Planning Center profile has no email address. Add one in Planning Center, then try again.";
+    case "pco_failed":
+      return "Planning Center sign-in didn't work just now. Try again, or use an email link below.";
   }
 }

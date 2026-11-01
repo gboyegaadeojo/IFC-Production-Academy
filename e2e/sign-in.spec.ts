@@ -95,3 +95,20 @@ test("each device chooses Dark, Light or System, and keeps it", async ({ page })
   await expect(html).toHaveAttribute("data-theme", "light");
   await expect(html).toHaveAttribute("data-appearance", "system");
 });
+
+test("Planning Center sign-in fails safely without its setup or state", async ({ page }) => {
+  // Checklist app US-01. CI has no Planning Center app, so starting sign-in explains instead.
+  await page.goto("/auth/planning-center");
+  await expect(page).toHaveURL(/\/sign-in\?error=pco_failed$/);
+  await expect(page.getByRole("main").getByRole("alert")).toContainText(
+    "Planning Center sign-in didn't work",
+  );
+
+  // A callback that didn't start on this browser is refused.
+  await page.goto("/auth/planning-center/callback?code=forged&state=" + "x".repeat(43));
+  await expect(page).toHaveURL(/\/sign-in\?error=pco_failed$/);
+
+  // Cancelling at Planning Center says so.
+  await page.goto("/auth/planning-center/callback?error=access_denied");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("cancelled");
+});

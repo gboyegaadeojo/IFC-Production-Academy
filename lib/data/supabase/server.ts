@@ -6,8 +6,8 @@ import type { Database } from "@/lib/data/database.types";
 
 /**
  * Supabase client for Server Components, Server Actions, and Route Handlers. It acts as the
- * signed-in person, so row-level security applies to every query. Never use the service-role
- * key in the app.
+ * signed-in person, so row-level security applies to every query. The service-role key is used
+ * only by Planning Center sign-in (./admin.ts).
  */
 export async function createSupabaseServerClient() {
   const cookieStore = await cookies();
