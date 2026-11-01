@@ -39,9 +39,9 @@ export default function EventPage({ params }: Props) {
 }
 
 /**
- * One event (workflow D): positions by department, who's in each, and the check result. Leaders
- * schedule people who are Approved to Serve, or on supervised practice with a named approved
- * supervisor; anything else needs schedule.override and a reason (SRS-COMP-005..008).
+ * One event (workflow D): positions by department, who's in each, and whether they're trained.
+ * Training is shown, never enforced (decided 2026-10-31): any active member can be scheduled, with
+ * an optional trained person alongside. Conflicts and days away still need schedule.override.
  */
 async function EventContent({ params }: Pick<Props, "params">) {
   const { grants, allowed } = await getAdminAccess("schedule");
@@ -178,7 +178,7 @@ async function Position({
               {READINESS_LABELS[active.readiness]}
             </StatusBadge>
             {active.supervisorName ? (
-              <span className="text-text-muted">Supervisor: {active.supervisorName}</span>
+              <span className="text-text-muted">Alongside: {active.supervisorName}</span>
             ) : null}
           </div>
         ) : (
@@ -230,8 +230,8 @@ async function Position({
                 </Field>
                 <Field
                   id={`supervisor-${position.id}`}
-                  label="Supervisor (for supervised practice)"
-                  hint="Only needed if they aren't approved for this role yet. The supervisor must be."
+                  label="Someone alongside (optional)"
+                  hint="If they're still learning, you can pair them with someone trained for this role."
                 >
                   <select
                     id={`supervisor-${position.id}`}
@@ -239,7 +239,7 @@ async function Position({
                     aria-describedby={`supervisor-${position.id}-hint`}
                     className={fieldClasses}
                   >
-                    <option value="">No supervisor</option>
+                    <option value="">Nobody</option>
                     {supervisors.map((supervisor) => (
                       <option key={supervisor.id} value={supervisor.id}>
                         {supervisor.name}
@@ -251,7 +251,7 @@ async function Position({
                   <Field
                     id={`override-${position.id}`}
                     label="Override reason (only if you must)"
-                    hint="Lets you schedule someone who isn't approved, is already serving, or is away. Kept in the audit log."
+                    hint="Lets you schedule someone who is already serving then, or has said they're away. Kept in the audit log."
                   >
                     <input
                       id={`override-${position.id}`}

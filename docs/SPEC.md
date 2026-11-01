@@ -217,9 +217,9 @@ Quiz behaviour (built 2026-10-31): a course can hold several quizzes, each place
 | SRS-COMP-001–002 | Competency records separate from completion, scoped to skill or equipment, with date and the assessment that granted them. **A passed practical grants the competency automatically**; no separate approval (decided 2026-10-30) | M |
 | SRS-COMP-003 | States: Not Assessed, Supervised Practice, Approved, Suspended, Expired | S |
 | SRS-COMP-004 | Leaders define competencies required for serving roles. **Approved to Serve is granted automatically** when every required competency is approved, and withdrawn if one is suspended or expires; it stays its own record (decided 2026-10-30) | M |
-| SRS-COMP-005–006 | Scheduling checks competency; no silent unqualified assignment | M |
-| SRS-COMP-007 | Supervised-practice assignments with a named supervisor | S |
-| SRS-COMP-008 | Overrides need permission, reason, audit | M |
+| SRS-COMP-005–006 | Scheduling checks competency; no silent unqualified assignment. **Changed 2026-10-31:** training is shown to the scheduler ("Trained" or "Still learning") and recorded on the assignment, never a block (decision 5) | M |
+| SRS-COMP-007 | Supervised-practice assignments with a named supervisor (now optional: "someone alongside") | S |
+| SRS-COMP-008 | Overrides need permission, reason, audit (now only for conflicts and days away) | M |
 | SRS-COMP-009 | Expiry configurable, off by default | M |
 | ADD-ASSESS-01 | Volunteer can tap **Request assessment** when ready, which lands in the trainer's queue | S |
 
@@ -623,9 +623,9 @@ Measure baselines during the pilot before setting targets: share of enrolled vol
 | 4 | IFC brand assets and whether light theme ships at launch | Decided 2026-10-31: IFC pillars-and-dove mark with a "Production Academy" wordmark; dark only at launch; stays on its workers.dev address |
 | 5 | Competency names and rubrics per department | Decided 2026-10-31 for Camera: four competencies, three serving roles, observed checklists with required items ([curriculum](curriculum/camera-operations.md)); other departments follow the same pattern |
 | 6 | Course content and video inventory | Decided 2026-10-31: IFC films short lessons on its own equipment, unlisted on the church channel; written lessons stand in until each video exists |
-| 7 | Retention periods and privacy notice; under-18 volunteers? | Decided 2026-10-31, pending leadership sign-off: follow PIPEDA's principles; training records kept 7 years after deactivation, then anonymised; no age rules in the Academy (IFC's own process covers under-18 volunteers) |
+| 7 | Retention periods and privacy notice; under-18 volunteers? | Decided 2026-10-31: not needed. No privacy notice page, retention schedule, or age rules in the Academy |
 | 8 | Reminder schedule and certificate template | Decided 2026-10-31: serving reminder 2 days before at 10:00; learning nudges at 7 and 21 days; quiet hours 20:00 to 08:00; print-ready certificate with a QR code to a public check that shows initials only |
-| 9 | Calendar provider; Planning Center or another church system? | Decided 2026-10-31: calendar files (built); Planning Center stays the people database, with a one-way readiness sync in Phase 5; IFC's scheduling team keeps scheduling, and the Academy tells them who is approved |
+| 9 | Calendar provider; Planning Center or another church system? | Decided 2026-10-31: the Academy replaces Planning Center Services for production scheduling (calendars, repeating services, scheduler grid, swaps); Planning Center stays the church's people database; calendar files (built) |
 | 10 | Native apps | Decided 2026-10-31: only if the PWA hits limits set out in the decision record |
 
 Details, reasoning, and sources: [decisions/2026-10-31-open-decisions.md](decisions/2026-10-31-open-decisions.md).

@@ -77,8 +77,8 @@ async function PracticalEditorContent({ params }: Pick<Props, "params">) {
           <StatusBadge tone="info">{passRuleLabel(rule)}</StatusBadge>
         </div>
         <p className="max-w-2xl text-small text-text-muted">
-          The observer ticks what they saw. The Academy works out Pass or Further practice from your
-          rule; nobody picks the result. A pass grants{" "}
+          The observer ticks what they saw. The Academy works out Pass or Not yet from your rule;
+          nobody picks the result. A pass grants{" "}
           {practical.competency ? `“${practical.competency.name}”` : "no competency yet"}, and
           Approved to Serve follows for roles that need it.
         </p>
@@ -338,7 +338,7 @@ function SettingsForm({ practical }: { practical: PracticalEditor }) {
         <Field
           id="practical-wait"
           label="Days to wait before reassessing (optional)"
-          hint="After Further practice, how long to practise before the next assessment. 0 means any time."
+          hint="After Not yet, how long to practise before the next assessment. 0 means any time."
         >
           <input
             id="practical-wait"

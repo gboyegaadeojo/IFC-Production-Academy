@@ -264,7 +264,7 @@ function TrainingRow({ department }: { department: TrainingSummary }) {
       href: "/admin/assessments",
     },
     {
-      label: "Further practice",
+      label: "Not yet",
       value: department.furtherPractice,
       note: "Last practical needs another go",
       href: "/admin/assessments",

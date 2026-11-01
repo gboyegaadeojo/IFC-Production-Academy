@@ -73,7 +73,7 @@ async function ScheduleContent() {
                   <span className="text-small text-text-muted">
                     {assignment.roleName} · {assignment.departmentName}
                     {assignment.readiness === "supervised"
-                      ? ` · ${READINESS_LABELS.supervised}, with a supervisor alongside you`
+                      ? ` · ${READINESS_LABELS.supervised} you`
                       : ""}
                   </span>
                 </div>

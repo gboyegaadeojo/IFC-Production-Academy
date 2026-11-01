@@ -160,7 +160,7 @@ async function PracticalContent({ params }: Pick<Props, "params">) {
             <>
               <p className="text-text-secondary">
                 {state === "further_practice"
-                  ? "Keep practising the items below, then ask to be assessed again."
+                  ? "Not yet, and that's fine. Everyone learns at their own pace. Keep practising the items below, then ask to be assessed again whenever you're ready."
                   : "When you're comfortable with everything below, ask a trainer to watch you work."}
                 {waitUntil && waitUntil.getTime() > now.getTime()
                   ? ` The next assessment can be from ${formatDate(waitUntil.toISOString())}.`

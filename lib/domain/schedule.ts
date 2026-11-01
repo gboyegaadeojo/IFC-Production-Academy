@@ -137,7 +137,12 @@ export const overrideReasonSchema = z
 // ---------------------------------------------------------------------------
 
 export type AssignmentStatus = "pending" | "confirmed" | "declined" | "cancelled";
-export type AssignmentReadiness = "approved" | "supervised" | "override";
+/**
+ * What the scheduler saw about training when they scheduled someone. Training is shown, never
+ * enforced (decided 2026-10-31): "learning" is anyone not yet Approved to Serve in the role, and
+ * "override" is kept only for assignments made before that decision.
+ */
+export type AssignmentReadiness = "approved" | "supervised" | "learning" | "override";
 
 export const ASSIGNMENT_STATUS_LABELS: Record<AssignmentStatus, string> = {
   pending: "Waiting for a reply",
@@ -147,12 +152,13 @@ export const ASSIGNMENT_STATUS_LABELS: Record<AssignmentStatus, string> = {
 };
 
 export const READINESS_LABELS: Record<AssignmentReadiness, string> = {
-  approved: "Approved to serve",
-  supervised: "Supervised practice",
+  approved: "Trained",
+  supervised: "Learning, with someone alongside",
+  learning: "Still learning",
   override: "Override",
 };
 
-/** How a candidate shows in the "who to assign" list. */
+/** How a candidate shows in the "who to schedule" list. */
 export function candidateLabel(candidate: {
   name: string;
   approved: boolean;
@@ -160,7 +166,7 @@ export function candidateLabel(candidate: {
   unavailable: boolean;
 }): string {
   const notes = [
-    candidate.approved ? "approved" : "not approved for this role",
+    candidate.approved ? "trained" : "still learning",
     candidate.conflict ? "already serving then" : null,
     candidate.unavailable ? "unavailable that day" : null,
   ].filter(Boolean);
@@ -179,7 +185,6 @@ export type ScheduleError =
   | "schedule_conflict"
   | "volunteer_unavailable"
   | "supervisor_not_approved"
-  | "not_approved_for_role"
   | "position_has_history"
   | "assignment_closed"
   | "invalid_dates"
@@ -193,7 +198,6 @@ const KNOWN: ReadonlySet<string> = new Set<ScheduleError>([
   "schedule_conflict",
   "volunteer_unavailable",
   "supervisor_not_approved",
-  "not_approved_for_role",
   "position_has_history",
   "assignment_closed",
   "invalid_dates",
@@ -223,9 +227,7 @@ export function scheduleErrorMessage(error: ScheduleError): string {
     case "volunteer_unavailable":
       return "They've said they're unavailable that day. Choose someone else, or override with a reason if you're allowed to.";
     case "supervisor_not_approved":
-      return "The supervisor must be someone else who is Approved to Serve in this role.";
-    case "not_approved_for_role":
-      return "They aren't Approved to Serve in this role yet. Name a supervisor for supervised practice, or override with a reason if you're allowed to.";
+      return "The person alongside them must be someone else who is trained for this role.";
     case "position_has_history":
       return "This position has assignment history, so it stays. Cancel the assignment instead.";
     case "assignment_closed":

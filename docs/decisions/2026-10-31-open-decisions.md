@@ -1,8 +1,7 @@
 # Open decisions, settled (2026-10-31)
 
 This settles open decisions 3 to 10 in [SPEC §9](../SPEC.md#open-decisions). G asked for the best
-options after research. Anything that needs church leadership's sign-off is marked **Leadership
-sign-off**: the decision stands as the working default until they confirm or change it.
+options after research, and later answers from G are recorded in place with the date.
 
 ## Summary
 
@@ -10,11 +9,11 @@ sign-off**: the decision stands as the working default until they confirm or cha
 | --- | --- | --- |
 | 3 | Ownership, budget, launch | G owns it; $0 a month; Camera pilot 10 Jan to 7 Feb 2027; ministry-wide launch Sunday 21 Feb 2027 |
 | 4 | Brand and theme | "IFC Production Academy" with the IFC pillars-and-dove mark; dark only at launch; stays on its workers.dev address |
-| 5 | Camera competencies and rubrics | Four competencies, three serving roles; observed checklists with critical items ([curriculum](../curriculum/camera-operations.md)) |
+| 5 | Camera competencies and rubrics | Four competencies, three serving roles; observed checklists; training is shown to schedulers, never a gate to serving ([curriculum](../curriculum/camera-operations.md)) |
 | 6 | Content and videos | IFC films its own short lessons on its own cameras; written lessons stand in until each video exists |
-| 7 | Privacy, retention, under-18 | Follow PIPEDA's principles; keep training records 7 years after someone leaves; no age rules in the Academy |
+| 7 | Privacy, retention, under-18 | Not needed: no privacy notice, retention schedule, or age rules in the Academy |
 | 8 | Reminders and certificate | Serving reminder 2 days before at 10:00, learning nudges at 7 and 21 days, quiet hours 20:00 to 08:00; a print-ready certificate with a QR verification check |
-| 9 | Calendar and Planning Center | Calendar files stay (built); Planning Center remains the church database and where schedulers schedule; one-way readiness sync in Phase 5 |
+| 9 | Calendar and Planning Center | The Academy replaces Planning Center Services for production scheduling; Planning Center stays the church's people database |
 | 10 | Native apps | Not until the PWA hits clear limits (criteria below) |
 
 ## 3. Ownership, budget, and launch date
@@ -88,34 +87,39 @@ The full curriculum, quiz bank, and practical checklists are in
 
 | Competency | Granted by | Lets you serve as |
 | --- | --- | --- |
-| Camera Fundamentals | Level 1 practical | **Wide Camera Operator** (locked-off or slow wide shot) on your own; any other camera position as supervised practice |
+| Camera Fundamentals | Level 1 practical | **Wide Camera Operator** (locked-off or slow wide shot) |
 | Live Shot Operation | Level 2 practical | **Live Camera Operator** (tripod follow camera); needs Camera Fundamentals too |
 | Handheld and Gimbal | Level 3 practical | **Roaming Camera Operator**; needs Live Shot Operation too |
 | Camera Lead and Trainer | Level 3 practical | Records practical assessments for others (granted the Trainer role by a leader) |
 
-Why it works this way:
+**Training is shown, never a gate** (G, 2026-10-31). People learn at different paces, so not
+passing never stops anyone serving:
 
-- **Level 1 gives a real, safe serving outcome.** A wide shot is low-risk and on air the whole
-  service, so a Level 1 graduate can serve on their own straight away. Faster follow-camera work
-  needs Level 2. This matches SPEC §1 (Level 1 is "ready for supervised practice", Level 2 is
-  "independent assignments"). The scheduler already lets anyone serve any position as supervised
-  practice beside an approved operator.
+- **Anyone in the department can be scheduled in any role.** The scheduler sees "Trained" or
+  "Still learning" beside each name, and can pair someone still learning with a trained person
+  ("Someone alongside"). The assignment records which it was, for the department's own picture of
+  who is ready.
+- **"Not yet", not "fail".** A practical that doesn't meet the pass rule reads "Not yet, keep
+  practising", with the trainer's feedback. There is no waiting period: try again whenever you're
+  ready.
+- **Approved to Serve still means something.** It stays its own record (SPEC §3), shows on the
+  person's department page, the readiness reports, and in the scheduler, so leaders can see who is
+  trained. It informs scheduling instead of blocking it. This sets aside SRS-COMP-006's block.
+
+How the checklists work:
+
 - **Checklists, not graded scales.** Each item is observable ("Sets focus by zooming in on the
   speaker's eyes, focusing, then zooming back out"), ticked Observed or Not observed. Checklists
   are more consistent between assessors than graded scales, and the Academy's system-decided pass
   rule needs yes-or-no items.
-- **Critical items.** Some items are marked **required**: missing one means "Further practice
-  required", however well the rest went. These are the safety and on-air items, such as not
-  moving a camera that's live on tally unless directed, and securing the tripod. Good practice for
-  performance assessment is that a strong overall score never makes up for a missed critical
-  step.
+- **Required items.** Some items are marked **required**, such as not moving a camera that's live
+  on tally unless directed, and securing the tripod. Missing one means "Not yet", however well the
+  rest went, because those are the on-air and safety basics.
 - **Pass rule:** every required item, and at least 80% of all items. The rule is fixed before
   assessment, never changed during one.
-- **Reassessment:** after "Further practice required", wait at least 7 days, so there's at least
-  one more service to practise at.
 - **Calibration:** before the pilot, two trainers assess the same operator independently and
   compare. Any item they disagree on gets clearer wording.
-- **Expiry:** off (the SPEC default). Turn on 24-month expiry only if skills visibly fade.
+- **Expiry:** off (the SPEC default).
 
 ## 6. Course content and video inventory
 
@@ -136,54 +140,11 @@ Why it works this way:
 
 ## 7. Privacy, retention, and under-18 volunteers
 
-**Leadership sign-off** on privacy and retention. The under-18 question is settled: no age rules
-in the Academy (below).
-
-**Which law applies.** PIPEDA, Canada's federal private-sector privacy law, covers personal
-information collected in the course of *commercial activity*. A church training its own volunteers
-is very likely outside it. Manitoba passed its own private-sector law (PIPITPA) in 2013, but it has
-never been proclaimed in force. **Decision: follow PIPEDA's ten fair information principles
-anyway.** It's the right standard for a church, it costs nothing extra, and it keeps the Academy
-ready if Manitoba's law starts.
-
-- **Privacy officer:** the Production Director (G), named in the privacy notice.
-- **Privacy notice:** a plain-language page in the Academy, linked from sign-in and the profile
-  page. It says what is collected and why, who can see what, how long records are kept, and how to
-  ask for a copy, a correction, or deletion.
-- **Collect only what's needed:** name, email, departments, and training records. No birth dates,
-  phone numbers, addresses, or photos.
-
-**Retention schedule.** Manitoba's Limitations Act gives a 2-year basic limitation period from
-discovery and a 15-year ultimate limit. Training records aren't safeguarding records, so they don't
-need the decades-long retention that child-safety files do.
-
-| Record | Kept for | Then |
-| --- | --- | --- |
-| Training, competency, assessment, certificate, and serving-approval records | While active, then **7 years** after the account is deactivated | Anonymised: the person's name and email are removed; the records stay for counts |
-| Audit events | **7 years** | Deleted |
-| Mentoring private notes | **2 years** after the mentoring pairing ends | Deleted |
-| Shared mentoring feedback and goals | Same as training records | Anonymised |
-| Schedules and availability | **2 years** after the event | Deleted |
-| In-app notifications and email send records | **12 months** | Deleted |
-| Backups | 30 daily, 12 weekly, 12 monthly (SPEC §9) | Rotated out automatically |
-
-The clean-up job (`retention.yml`) has to be built before the first record reaches its limit. The
-earliest is notifications, on 31 Oct 2027.
-
-- **Deletion requests:** a volunteer can ask the privacy officer to delete their account. The
-  Academy anonymises it straight away instead of waiting 7 years, except audit events, which keep
-  the record that the deletion happened.
-- **Exports:** CSV exports never include mentoring notes (already built).
-
-**Under-18 volunteers: no age rules in the Academy** (G, 2026-10-31). The Academy doesn't ask for
-anyone's age, record guardian consent, or treat younger volunteers differently. Who may join the
-production team, and any consent that needs, stays with IFC's own volunteer and child-safety
-process, outside the app. This sets aside the SPEC §6 privacy addition about guardian consent and
-hidden profiles. Two things still hold, because they don't depend on the app knowing anyone's age:
-
-- Mentoring in the Academy is notes and goals, not private messaging, so nothing in the app creates
-  a one-to-one private channel.
-- Academy photography and lesson videos follow IFC's photo-release policy.
+**Not needed** (G, 2026-10-31). The Academy has no privacy notice page, no retention schedule or
+clean-up job, and no age rules. Training and serving records are kept. The draft privacy
+notice was withdrawn. What the app already does stays: it collects only names, emails,
+departments, and training and serving records; private mentoring notes are seen only by their
+author and never exported; and an administrator can deactivate an account on request.
 
 **Email law (CASL).** Canada's anti-spam law covers *commercial* electronic messages. The Academy's
 emails, such as sign-in links, assignments, and reminders, are about an existing volunteer
@@ -211,9 +172,8 @@ them. Every reminder can be turned off per person in Notification settings (buil
 overnight goes at 08:00. Sign-in links ignore quiet hours, because Supabase sends them straight
 away.
 
-**No double reminders with Planning Center:** the Academy only reminds people about assignments made
-in the Academy. A department that schedules in Planning Center has no Academy assignments, so
-nobody gets two reminders (decision 9).
+**No double reminders:** production stops scheduling in Planning Center (decision 9), so the
+Academy's reminders are the only ones volunteers get.
 
 **Certificate.**
 
@@ -235,27 +195,34 @@ nobody gets two reminders (decision 9).
 
 ## 9. Calendar provider and Planning Center
 
-IFC already uses **Planning Center** (Church Center forms on ifcwpg.com).
+**The Academy replaces Planning Center Services for production scheduling** (G, 2026-10-31).
+Production's schedulers build the schedule in the Academy, volunteers see and answer it there, and
+the Academy's reminders are the only ones they get. Planning Center stays the church's people
+database and keeps serving other ministries; the Academy copies nothing into or out of it.
 
-- **Planning Center stays the church's people database.** The Academy never copies anyone's
-  personal details into or out of Planning Center at launch, and makes no claim to replace it
-  (SPEC §1 scope).
-- **Calendar:** the calendar file download is built (Phase 5). No Google or Microsoft calendar
-  connection is needed.
-- **Phase 5 sync: one way, readiness only.** A nightly job writes each volunteer's Approved to Serve
-  roles into Planning Center Services, for example as team position tags, so whoever schedules in
-  Planning Center sees who is approved. It uses a Planning Center personal access token (correct
-  for a single church) held as a GitHub Actions secret, and it never reads volunteers' personal
-  details back.
-- **One scheduler per department.** If a department already schedules in Planning Center Services,
-  it keeps doing so. The Academy's scheduler is then used only for training and supervised-practice
-  slots, and its "Serving soon" reminder is off for that department.
-- **Answered (G, 2026-10-31):** IFC's scheduling team does the scheduling. So the schedulers keep
-  their current tool and process, and the Academy's job is to tell them who is Approved to Serve
-  for which role. At launch they read that from the Academy's team readiness view and reports; in
-  Phase 5 the readiness sync puts it into Planning Center for them. The Academy's own scheduler
-  stays available for training and supervised-practice slots, but nobody has to use it, and if it
-  holds no assignments it sends no serving reminders.
+Why this works better than keeping two systems: training and scheduling sit in one place, so a
+scheduler sees who is trained as they schedule, and volunteers have one app for learning and
+serving.
+
+What the Academy adds so schedulers and volunteers don't miss Planning Center (built in stages):
+
+1. **Calendars.** A month calendar for volunteers: tap a day to see what you're serving and who
+   with. A team calendar for schedulers, by department.
+2. **Repeating services.** Set up "Sunday service, 9:00 to 11:30, with these positions" once and
+   create the next weeks in one step.
+3. **Scheduler grid.** Weeks across, positions down, with who is in each, so a month is planned
+   on one screen; suggested people for each open position (trained first, then least recently
+   scheduled, never someone away).
+4. **Swaps and replacements.** A volunteer who can't make it asks for a replacement; the scheduler
+   approves a volunteer who offers.
+5. **Already built:** confirm or decline, days away, reminders (serving soon, please confirm),
+   calendar file download, and the service-day view with SOPs.
+
+**Switch-over:** schedulers run both for the pilot month, then production stops scheduling in
+Planning Center from the ministry-wide launch.
+
+**Calendar:** the calendar file download stays; no Google or Microsoft calendar connection is
+needed.
 
 ## 10. Native apps
 

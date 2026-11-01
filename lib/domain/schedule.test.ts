@@ -97,16 +97,16 @@ describe("candidateLabel", () => {
   it("says what the checks would find", () => {
     expect(
       candidateLabel({ name: "Avery", approved: true, conflict: false, unavailable: false }),
-    ).toBe("Avery (approved)");
+    ).toBe("Avery (trained)");
     expect(
       candidateLabel({ name: "Blake", approved: false, conflict: true, unavailable: true }),
-    ).toBe("Blake (not approved for this role, already serving then, unavailable that day)");
+    ).toBe("Blake (still learning, already serving then, unavailable that day)");
   });
 });
 
 describe("toScheduleError", () => {
   it("maps database errors", () => {
-    expect(toScheduleError({ message: "not_approved_for_role" })).toBe("not_approved_for_role");
+    expect(toScheduleError({ message: "schedule_conflict" })).toBe("schedule_conflict");
     expect(toScheduleError({ code: "42501", message: "x" })).toBe("not_authorized");
     expect(toScheduleError({ code: "XX000", message: "secret" })).toBe("unknown");
   });

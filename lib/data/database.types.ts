@@ -1226,7 +1226,7 @@ export type Database = {
       serving_approval_status: "approved" | "withdrawn";
       practical_outcome: "pass" | "further_practice";
       assignment_status: "pending" | "confirmed" | "declined" | "cancelled";
-      assignment_readiness: "approved" | "supervised" | "override";
+      assignment_readiness: "approved" | "supervised" | "override" | "learning";
       mentoring_note_visibility: "shared" | "private";
       mentoring_goal_status: "open" | "done";
       notification_kind:
