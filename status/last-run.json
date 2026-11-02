@@ -1,27 +1,30 @@
 {
-  "generated_at": "2026-10-31T20:01:11.321Z",
+  "generated_at": "2026-11-02T22:37:16.173Z",
   "jobs": {
     "keepalive": {
-      "last_run": "2026-10-30T22:08:16Z",
-      "last_success": "2026-10-30T22:08:16Z",
+      "last_run": "2026-11-01T21:54:14Z",
+      "last_success": "2026-11-01T21:54:14Z",
       "ok": true
     },
     "backup": {
-      "last_run": null,
-      "last_success": null,
+      "last_run": "2026-11-01T16:45:53Z",
+      "last_success": "2026-11-01T16:45:53Z",
       "ok": true
     },
     "restore-test": {
-      "last_run": null,
-      "last_success": null,
+      "last_run": "2026-11-01T16:47:05Z",
+      "last_success": "2026-11-01T16:47:05Z",
       "ok": true
     },
     "notifications": {
-      "last_run": "2026-10-31T20:01:06Z",
-      "last_success": null,
+      "last_run": "2026-11-02T14:36:45Z",
+      "last_success": "2026-11-02T14:36:45Z",
       "ok": true
     }
   },
-  "latest_backup_bytes": null,
+  "latest_backup_bytes": {
+    "db": 1247500,
+    "files": 543
+  },
   "healthy": true
 }
