@@ -407,7 +407,9 @@ async function main(): Promise<void> {
     console.error(`sync_service_plan_items failed with HTTP ${items.status}`);
   } else {
     const applied = (await items.json()) as { plans?: unknown; items?: unknown };
-    console.log(`Run of service: plans ${Number(applied.plans)}, items ${Number(applied.items)}.`);
+    console.log(
+      `Run of service: read ${planItems.length} plans in the next ${RUN_OF_SERVICE_DAYS} days with ${planItems.reduce((sum, plan) => sum + plan.items.length, 0)} items; applied plans ${Number(applied.plans)}, items ${Number(applied.items)}.`,
+    );
   }
   console.log(
     `Planning Center sync done in ${Math.round((Date.now() - started) / 1000)} s: ${Object.entries(
