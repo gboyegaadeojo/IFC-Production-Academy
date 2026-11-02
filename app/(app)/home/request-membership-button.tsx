@@ -27,6 +27,7 @@ export function RequestMembershipButton({
         disabled={pending}
         aria-describedby={state.status === "error" ? errorId : undefined}
         className="self-start"
+        size="sm"
       >
         {pending ? "Sending request…" : label}
         <span className="sr-only"> {departmentName}</span>
