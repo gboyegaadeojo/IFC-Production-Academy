@@ -19,6 +19,7 @@ import { departmentHueVar } from "@/lib/domain/departments";
 import { homeState, type HomeState } from "@/lib/domain/home";
 import { volunteerPathways } from "@/lib/domain/onboarding";
 import { greetingName } from "@/lib/domain/people";
+import { InstallApp } from "@/components/pwa/install-app";
 import { ExploreRow, MemberDepartmentCard } from "./department-card";
 import { NextSteps } from "./next-steps";
 
@@ -65,6 +66,8 @@ async function TrainingContent() {
   return (
     <div className="page-container flex flex-col gap-12 py-8 lg:gap-14 lg:py-12">
       <Hero name={greetingName(user.displayName, user.email)} state={state} />
+
+      <InstallApp variant="banner" />
 
       {onboarding.map((pathway) => (
         <NextSteps key={pathway.entryId} pathway={pathway} departments={openDepartments} />

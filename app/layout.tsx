@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
+import { ServiceWorkerSetup } from "@/components/pwa/service-worker-setup";
 import { getAppearance } from "@/lib/data/appearance";
 import {
   colorScheme,
@@ -69,6 +70,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           Skip to main content
         </a>
         {children}
+        <ServiceWorkerSetup />
       </body>
     </html>
   );
