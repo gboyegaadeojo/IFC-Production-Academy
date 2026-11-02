@@ -8,6 +8,58 @@
  */
 import { isQuietHours, notificationEmail } from "../lib/domain/notifications.ts";
 import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
+import { pushMessageFor, sendPush } from "../lib/domain/web-push.ts";
+
+type ClaimedPush = {
+  notification_id: string;
+  title: string;
+  body: string;
+  link: string | null;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  token: string;
+};
+
+/**
+ * Device alerts the app didn't send straight away (supabase/migrations/20261210120000_push_alerts.sql).
+ * Not held for quiet hours: phones have their own Do Not Disturb. Logs counts only.
+ */
+async function sendPendingPush(supabaseUrl: string, serviceKey: string, siteUrl: string) {
+  const publicKey = env("VAPID_PUBLIC_KEY");
+  const privateKey = env("VAPID_PRIVATE_KEY");
+  if (!publicKey || !privateKey) {
+    console.log("Device alerts are off: the VAPID keys are not set.");
+    return;
+  }
+  const vapid = { publicKey, privateKey, subject: siteUrl };
+  const claimed = await rpc<ClaimedPush[]>(supabaseUrl, serviceKey, "claim_push_batch", {
+    p_limit: 200,
+  });
+  const counts = { sent: 0, gone: 0, failed: 0 };
+  for (const item of claimed) {
+    const outcome = await sendPush(
+      item,
+      pushMessageFor({
+        id: item.notification_id,
+        title: item.title,
+        body: item.body,
+        link: item.link,
+      }),
+      vapid,
+    );
+    counts[outcome] += 1;
+    if (outcome === "gone") {
+      await rpc(supabaseUrl, serviceKey, "push_subscription_gone", {
+        p_endpoint: item.endpoint,
+        p_token: item.token,
+      });
+    }
+  }
+  console.log(
+    `Device alerts: ${counts.sent} sent, ${counts.gone} devices gone, ${counts.failed} failed.`,
+  );
+}
 
 type Claimed = { id: string; email: string; title: string; body: string; link: string | null };
 
@@ -46,6 +98,7 @@ async function main(): Promise<void> {
   // Onboarding pathways: waits that have run their time move on (counts only in the log).
   const onboarding = await rpc<number>(supabaseUrl, serviceKey, "run_onboarding", {});
   console.log(`Onboarding entries checked: ${onboarding}.`);
+  await sendPendingPush(supabaseUrl, serviceKey, siteUrl);
 
   if (!resendKey || !from) {
     console.log(

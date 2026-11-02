@@ -21,7 +21,8 @@
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-    "db:types": "supabase gen types typescript --local > lib/data/database.types.ts && prettier --write lib/data/database.types.ts"
+    "db:types": "supabase gen types typescript --local > lib/data/database.types.ts && prettier --write lib/data/database.types.ts",
+    "push:keys": "node scripts/setup-push-keys.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

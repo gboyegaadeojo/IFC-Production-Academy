@@ -28,6 +28,7 @@ import {
   type NotificationKind,
 } from "@/lib/domain/notifications";
 import { markAllReadAction } from "./actions";
+import { DeviceAlerts } from "./device-alerts";
 import { EmailChoices } from "./email-choices";
 
 export const metadata: Metadata = { title: "Notifications" };
@@ -65,7 +66,7 @@ async function NotificationsContent() {
         <h1 className="text-display font-semibold">Notifications</h1>
         <p className="max-w-[40rem] text-lead text-text-secondary">
           Updates about your training and serving. Everything shows here; choose what also comes by
-          email.
+          email, and turn on alerts for your phone.
         </p>
       </header>
 
@@ -104,7 +105,10 @@ async function NotificationsContent() {
           )}
         </section>
 
-        <EmailChoices groups={emailChoiceGroups(leads)} initial={initial} />
+        <div className="flex flex-col gap-6">
+          <DeviceAlerts />
+          <EmailChoices groups={emailChoiceGroups(leads)} initial={initial} />
+        </div>
       </div>
     </div>
   );
