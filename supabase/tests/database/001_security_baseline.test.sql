@@ -49,8 +49,9 @@ select is_empty(
       -- the public "I want to serve" form (onboarding decision, 2026-11-01; it reveals nothing),
       -- and the open departments that form lists (names and icons only). The push dispatch calls
       -- need the database's own secret token, so a visitor can't use them (039_push_alerts).
+      -- The app's name and icon, which show before sign-in (041_app_branding).
       and p.proname not in ('keepalive', 'check_certificate', 'submit_interest', 'open_departments',
-                            'claim_push', 'push_subscription_gone')
+                            'claim_push', 'push_subscription_gone', 'app_branding')
       -- Ignore functions owned by extensions such as pgTAP itself.
       and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
   $$,
