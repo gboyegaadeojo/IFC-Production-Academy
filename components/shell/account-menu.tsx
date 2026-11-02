@@ -10,6 +10,7 @@ import {
   ChevronUpDownIcon,
   LogOutIcon,
   ShieldIcon,
+  SmartphoneIcon,
   UserIcon,
   UsersIcon,
 } from "@/components/ui/icons";
@@ -195,6 +196,12 @@ export function AccountMenu({
                     <span className="sr-only"> unread</span>
                   </span>
                 ) : null}
+              </Link>
+            </li>
+            <li>
+              <Link href="/get-the-app" className={item}>
+                <SmartphoneIcon className="size-[18px] shrink-0" />
+                Get the app
               </Link>
             </li>
             <li>

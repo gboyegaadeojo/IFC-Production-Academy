@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { openAccountMenu } from "./support/account-menu";
 import { mailpitAvailable, signInByEmail } from "./support/email-sign-in";
 
 // SRS-NOTIF-002: people choose which notifications also come by email. Each switch saves on its
@@ -14,11 +15,23 @@ test("a volunteer turns an email off and it stays off", async ({ page }, testInf
   await page.goto("/notifications");
   await expect(page.getByRole("heading", { level: 1, name: "Notifications" })).toBeVisible();
 
-  // Device alerts (docs/runbooks/push-alerts.md): CI has no alert keys, so it says they're off,
-  // and still explains how to get the app.
-  const alerts = page.getByRole("region", { name: "Alerts on this device" });
-  await expect(alerts.getByText("Alerts aren't switched on yet.")).toBeVisible();
-  await expect(alerts.getByRole("heading", { name: "The app" })).toBeVisible();
+  // Device alerts live on Get the app (docs/runbooks/push-alerts.md), reached from here and from
+  // the account menu. CI has no alert keys, so it says they're off.
+  await page
+    .getByRole("region", { name: "Alerts on your phone" })
+    .getByRole("link", { name: "Get the app" })
+    .click();
+  await expect(page.getByRole("heading", { level: 1, name: "Get the app" })).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: "Alerts on this device" })
+      .getByText("Alerts aren't switched on yet."),
+  ).toBeVisible();
+  await expect(page.getByRole("group").filter({ hasText: "On iPhone or iPad" })).toBeVisible();
+  await expect(page.getByText("None yet. Turn on alerts above")).toBeVisible();
+  await openAccountMenu(page);
+  await expect(page.getByRole("link", { name: "Get the app" })).toBeVisible();
+  await page.goto("/notifications");
 
   const choices = page.getByRole("region", { name: "Email me" });
   await expect(choices.getByRole("group", { name: "Serving" })).toBeVisible();

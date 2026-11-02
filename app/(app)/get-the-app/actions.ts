@@ -1,8 +1,15 @@
 "use server";
 
+import { refresh } from "next/cache";
 import { z } from "zod";
+import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
-import { removeMySubscription, saveMySubscription, sendTestAlert } from "@/lib/data/push";
+import {
+  removeMyDevice,
+  removeMySubscription,
+  saveMySubscription,
+  sendTestAlert,
+} from "@/lib/data/push";
 
 const base64Url = (min: number, max: number) =>
   z
@@ -48,4 +55,18 @@ export async function sendTestAlertAction(
     return { outcome: "failed" };
   }
   return { outcome: await sendTestAlert(parsed.data) };
+}
+
+/** "Remove" beside a device in "Your devices with alerts". */
+export async function removeDeviceAction(_: FormState, formData: FormData): Promise<FormState> {
+  const user = await getCurrentUser();
+  const id = z.uuid().safeParse(formData.get("deviceId"));
+  if (!user || !id.success) {
+    return { status: "error", message: "That device couldn't be removed." };
+  }
+  if (!(await removeMyDevice(id.data))) {
+    return { status: "error", message: "That device couldn't be removed." };
+  }
+  refresh();
+  return { status: "done", message: "Removed." };
 }
