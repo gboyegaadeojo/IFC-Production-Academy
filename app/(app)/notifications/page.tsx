@@ -28,7 +28,6 @@ import {
   type NotificationKind,
 } from "@/lib/domain/notifications";
 import { markAllReadAction } from "./actions";
-import { DeviceAlerts } from "./device-alerts";
 import { EmailChoices } from "./email-choices";
 
 export const metadata: Metadata = { title: "Notifications" };
@@ -106,7 +105,23 @@ async function NotificationsContent() {
         </section>
 
         <div className="flex flex-col gap-6">
-          <DeviceAlerts />
+          <section
+            aria-labelledby="phone-alerts-heading"
+            className="flex flex-col gap-2 rounded-card border border-border bg-surface p-5"
+          >
+            <h2 id="phone-alerts-heading" className="font-semibold">
+              Alerts on your phone
+            </h2>
+            <p className="text-small text-text-secondary">
+              Install the Academy and turn on alerts, so updates drop down like any other app.
+            </p>
+            <Link
+              href="/get-the-app"
+              className="w-fit text-small font-medium text-accent-light underline-offset-4 hover:underline"
+            >
+              Get the app
+            </Link>
+          </section>
           <EmailChoices groups={emailChoiceGroups(leads)} initial={initial} />
         </div>
       </div>

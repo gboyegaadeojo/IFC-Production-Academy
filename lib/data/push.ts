@@ -114,3 +114,36 @@ export async function sendTestAlert(endpoint: string): Promise<"sent" | "gone" |
   }
   return outcome;
 }
+
+export type MyDevice = { id: string; label: string; addedAt: string };
+
+/** Your devices with alerts on, newest first (RLS shows only your own). */
+export async function getMyDevices(): Promise<MyDevice[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .select("id, device_label, created_at")
+    .order("created_at", { ascending: false });
+  if (error) {
+    return [];
+  }
+  return data.map((d) => ({
+    id: d.id,
+    label: d.device_label || "A device",
+    addedAt: d.created_at,
+  }));
+}
+
+/** Turns alerts off for one of your devices, by its id (for a device you no longer have). */
+export async function removeMyDevice(id: string): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .select("endpoint")
+    .eq("id", id)
+    .maybeSingle();
+  if (error || !data) {
+    return false;
+  }
+  return removeMySubscription(data.endpoint);
+}

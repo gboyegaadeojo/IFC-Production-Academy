@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { InstallApp } from "@/components/pwa/install-app";
 import { installKind } from "@/components/pwa/install-state";
 import { buttonClasses } from "@/components/ui/button";
+import { BellIcon } from "@/components/ui/icons";
+import { useRouter } from "next/navigation";
 import { base64UrlDecode } from "@/lib/domain/web-push";
 import {
   removePushSubscriptionAction,
   savePushSubscriptionAction,
   sendTestAlertAction,
-} from "./push-actions";
+} from "./actions";
 
 type State = "checking" | "unsupported" | "install-first" | "denied" | "off" | "on" | "unavailable";
 
@@ -34,11 +35,12 @@ async function registration(): Promise<ServiceWorkerRegistration> {
 }
 
 /**
- * "Alerts on this device" (SRS-NOTIF-005; G's request, 2026-11-01): turns on system alerts that
+ * "Alerts on this device" (SRS-NOTIF-005; G's request, 2026-11-01), on Get the app: turns on system alerts that
  * drop down like a native app's. On iPhone and iPad this works only once the Academy is on the
  * Home Screen (iOS 16.4 or later), so it asks for that first.
  */
 export function DeviceAlerts() {
+  const router = useRouter();
   const [state, setState] = useState<State>("checking");
   const [endpoint, setEndpoint] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -100,6 +102,7 @@ export function DeviceAlerts() {
       setEndpoint(sub.endpoint);
       setState("on");
       setMessage("Alerts are on for this device.");
+      router.refresh();
     } catch {
       setMessage("Alerts couldn't be turned on on this device.");
     } finally {
@@ -120,6 +123,7 @@ export function DeviceAlerts() {
       setEndpoint(null);
       setState("off");
       setMessage("Alerts are off for this device.");
+      router.refresh();
     } finally {
       setBusy(false);
     }
@@ -144,30 +148,16 @@ export function DeviceAlerts() {
   }
 
   return (
-    <section
-      aria-labelledby="device-alerts-heading"
-      className="flex flex-col gap-4 rounded-card border border-border bg-surface p-5"
-    >
-      <div className="flex flex-col gap-1">
-        <h2 id="device-alerts-heading" className="font-semibold">
-          Alerts on this device
-        </h2>
-        <p className="text-small text-text-secondary">
-          Updates drop down like a text message, even when the Academy isn&apos;t open. Each phone
-          or computer is turned on separately.
-        </p>
-      </div>
-
-      {state === "checking" ? null : state === "unavailable" ? (
+    <div className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4">
+      {state === "checking" ? (
+        <p className="text-small text-text-muted">Checking this device…</p>
+      ) : state === "unavailable" ? (
         <p className="text-small text-text-secondary">Alerts aren&apos;t switched on yet.</p>
       ) : state === "install-first" ? (
-        <>
-          <p className="text-small text-text-secondary">
-            On iPhone and iPad, add the Academy to your Home Screen first, then open it from there
-            and come back to this page.
-          </p>
-          <InstallApp variant="card" />
-        </>
+        <p className="text-small text-text-secondary">
+          On iPhone and iPad, alerts work once the Academy is on your Home Screen. Follow the steps
+          above, open IFC Academy from your Home Screen, and come back to this page.
+        </p>
       ) : state === "unsupported" ? (
         <p className="text-small text-text-secondary">
           This browser can&apos;t show alerts. Try Chrome, Edge, Firefox or Safari, or install the
@@ -180,7 +170,11 @@ export function DeviceAlerts() {
           page.
         </p>
       ) : state === "on" ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="mr-2 flex items-center gap-2 font-medium">
+            <BellIcon className="size-5 text-accent-light" />
+            Alerts are on
+          </p>
           <button
             type="button"
             onClick={() => void test()}
@@ -204,23 +198,16 @@ export function DeviceAlerts() {
             type="button"
             onClick={() => void turnOn()}
             disabled={busy}
-            className={buttonClasses("primary", "", "sm")}
+            className={buttonClasses("primary", "gap-2")}
           >
+            <BellIcon className="size-4" />
             Turn on alerts
           </button>
         </div>
       )}
-
       <p role="status" className="text-small text-text-secondary empty:hidden">
         {message}
       </p>
-
-      {state !== "install-first" && state !== "checking" ? (
-        <div className="flex flex-col gap-2 border-t border-border pt-4">
-          <h3 className="text-small font-semibold">The app</h3>
-          <InstallApp variant="card" />
-        </div>
-      ) : null}
-    </section>
+    </div>
   );
 }
