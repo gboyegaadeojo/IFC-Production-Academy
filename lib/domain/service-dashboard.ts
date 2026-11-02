@@ -1,0 +1,230 @@
+/**
+ * Service Dashboard (ADD-DASH-01 to 03, docs/decisions/2026-11-02-service-dashboard.md). Pure rules:
+ * which tiles exist, what makes a valid layout, and how tiles move on the 12-column grid.
+ */
+import { z } from "zod";
+
+export const TILE_KEYS = [
+  "preview",
+  "youtube",
+  "facebook",
+  "current",
+  "run",
+  "slides",
+  "timer",
+  "pptimers",
+  "encoder",
+  "team",
+  "checklist",
+  "notes",
+  "levels",
+  "sops",
+  "spl",
+] as const;
+export type TileKey = (typeof TILE_KEYS)[number];
+
+export const TILE_GROUPS = [
+  "Service",
+  "Timers",
+  "Slides",
+  "Audio",
+  "Video and stream",
+  "Tasks and notes",
+] as const;
+export type TileGroup = (typeof TILE_GROUPS)[number];
+
+export const TILES: Record<TileKey, { name: string; group: TileGroup; source: string }> = {
+  run: { name: "Run of service", group: "Service", source: "Planning Center" },
+  current: { name: "Current item", group: "Service", source: "The plan and ProPresenter" },
+  team: { name: "Who's serving", group: "Service", source: "Planning Center" },
+  timer: { name: "Service timer", group: "Timers", source: "Worked out from the plan" },
+  pptimers: { name: "ProPresenter timers", group: "Timers", source: "ProPresenter" },
+  slides: { name: "Slides", group: "Slides", source: "ProPresenter" },
+  levels: { name: "Mixer levels", group: "Audio", source: "The mixer" },
+  spl: { name: "Room loudness (SPL)", group: "Audio", source: "A measurement mic" },
+  preview: { name: "Stream preview", group: "Video and stream", source: "YouTube" },
+  encoder: { name: "Encoder health", group: "Video and stream", source: "Magewell Ultra Encode" },
+  youtube: { name: "YouTube viewers", group: "Video and stream", source: "YouTube" },
+  facebook: { name: "Facebook viewers", group: "Video and stream", source: "Facebook" },
+  checklist: { name: "Checklist", group: "Tasks and notes", source: "The Academy Checklist" },
+  notes: { name: "Producer notes", group: "Tasks and notes", source: "The team" },
+  sops: { name: "SOP shortcuts", group: "Tasks and notes", source: "The SOP library" },
+};
+
+export const GRID_COLUMNS = 12;
+export const MIN_TILE_WIDTH = 2;
+export const MIN_TILE_HEIGHT = 2;
+const MAX_TILE_HEIGHT = 40;
+const MAX_TILE_TOP = 400;
+
+export const MAX_EDITORS = 3;
+
+export type LayoutItem = { tile: TileKey; x: number; y: number; w: number; h: number };
+export type DashboardLayout = { name: string; items: LayoutItem[]; channels: string[] };
+
+const itemSchema = z
+  .object({
+    tile: z.enum(TILE_KEYS),
+    x: z
+      .number()
+      .int()
+      .min(0)
+      .max(GRID_COLUMNS - 1),
+    y: z.number().int().min(0).max(MAX_TILE_TOP),
+    w: z.number().int().min(MIN_TILE_WIDTH).max(GRID_COLUMNS),
+    h: z.number().int().min(MIN_TILE_HEIGHT).max(MAX_TILE_HEIGHT),
+  })
+  .refine((item) => item.x + item.w <= GRID_COLUMNS);
+
+export const layoutSchema = z.object({
+  name: z.string().trim().min(1).max(60),
+  items: z
+    .array(itemSchema)
+    .max(TILE_KEYS.length)
+    .refine((items) => new Set(items.map((item) => item.tile)).size === items.length),
+  channels: z
+    .array(z.string().regex(/^[a-z0-9-]{1,12}$/))
+    .max(100)
+    .refine((channels) => new Set(channels).size === channels.length),
+});
+
+const item = (tile: TileKey, x: number, y: number, w: number, h: number): LayoutItem => ({
+  tile,
+  x,
+  y,
+  w,
+  h,
+});
+
+/** What everyone sees until an editor saves a layout (the approved mock). */
+export const DEFAULT_LAYOUT: DashboardLayout = {
+  name: "Production dashboard",
+  items: [
+    item("preview", 0, 0, 3, 5),
+    item("team", 0, 5, 3, 8),
+    item("pptimers", 0, 13, 3, 3),
+    item("youtube", 3, 0, 2, 3),
+    item("facebook", 5, 0, 2, 3),
+    item("current", 3, 3, 4, 3),
+    item("run", 3, 6, 4, 10),
+    item("slides", 7, 0, 5, 7),
+    item("timer", 7, 7, 2, 3),
+    item("encoder", 9, 7, 3, 3),
+    item("checklist", 7, 10, 3, 6),
+    item("notes", 10, 10, 2, 6),
+    item("levels", 0, 16, 12, 5),
+  ],
+  channels: [],
+};
+
+/** A stored layout, or the default if nothing is saved or it no longer makes sense. */
+export function parseStoredLayout(
+  stored: { name: string; items: unknown; channels: unknown } | null,
+): DashboardLayout {
+  if (!stored) {
+    return DEFAULT_LAYOUT;
+  }
+  const parsed = layoutSchema.safeParse(stored);
+  return parsed.success ? parsed.data : DEFAULT_LAYOUT;
+}
+
+function overlaps(a: LayoutItem, b: LayoutItem): boolean {
+  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+}
+
+/**
+ * Makes room after a change: the tile just placed stays where it was put, anything it landed on
+ * moves down, and the rest close up any gaps. Never leaves two tiles overlapping.
+ */
+export function settle(items: readonly LayoutItem[], placedTile?: TileKey): LayoutItem[] {
+  const placed = items.find((entry) => entry.tile === placedTile);
+  const others = items
+    .filter((entry) => entry !== placed)
+    .map((entry) => ({ ...entry }))
+    .sort((a, b) => a.y - b.y || a.x - b.x);
+  const settled: LayoutItem[] = placed ? [{ ...placed }] : [];
+  for (const entry of others) {
+    let moved = true;
+    while (moved) {
+      moved = false;
+      for (const other of settled) {
+        if (overlaps(entry, other)) {
+          entry.y = other.y + other.h;
+          moved = true;
+        }
+      }
+    }
+    settled.push(entry);
+  }
+  for (const entry of others) {
+    while (entry.y > 0) {
+      const above = { ...entry, y: entry.y - 1 };
+      if (settled.some((other) => other !== entry && overlaps(above, other))) {
+        break;
+      }
+      entry.y -= 1;
+    }
+  }
+  return items.map((entry) => settled.find((other) => other.tile === entry.tile)!);
+}
+
+/** Where a tile may go: on the grid and inside its width. */
+export function placeTile(entry: LayoutItem, x: number, y: number): LayoutItem {
+  return {
+    ...entry,
+    x: Math.max(0, Math.min(GRID_COLUMNS - entry.w, x)),
+    y: Math.max(0, Math.min(MAX_TILE_TOP, y)),
+  };
+}
+
+/** How big a tile may be: at least the minimum, and never past the right edge. */
+export function sizeTile(entry: LayoutItem, w: number, h: number): LayoutItem {
+  return {
+    ...entry,
+    w: Math.max(MIN_TILE_WIDTH, Math.min(GRID_COLUMNS - entry.x, w)),
+    h: Math.max(MIN_TILE_HEIGHT, Math.min(MAX_TILE_HEIGHT, h)),
+  };
+}
+
+/** Adds a tile, at a spot if one is given, otherwise below everything else. */
+export function addTile(
+  items: readonly LayoutItem[],
+  tile: TileKey,
+  spot?: { x: number; y: number },
+): LayoutItem[] {
+  if (items.some((entry) => entry.tile === tile)) {
+    return [...items];
+  }
+  const bottom = items.reduce((lowest, entry) => Math.max(lowest, entry.y + entry.h), 0);
+  const added = placeTile({ tile, x: 0, y: 0, w: 4, h: 4 }, spot?.x ?? 0, spot?.y ?? bottom);
+  return settle([...items, added], tile);
+}
+
+export function removeTile(items: readonly LayoutItem[], tile: TileKey): LayoutItem[] {
+  return settle(items.filter((entry) => entry.tile !== tile));
+}
+
+/** How many rows the layout uses, so a screen can size itself. */
+export function layoutRows(items: readonly LayoutItem[]): number {
+  return items.reduce((lowest, entry) => Math.max(lowest, entry.y + entry.h), 0);
+}
+
+export type DashboardError = "not_authorized" | "dashboard_editor_limit" | "unknown";
+
+export function toDashboardError(error: { code?: string; message?: string }): DashboardError {
+  if (error.message === "dashboard_editor_limit") {
+    return "dashboard_editor_limit";
+  }
+  return error.code === "42501" ? "not_authorized" : "unknown";
+}
+
+export function dashboardErrorMessage(error: DashboardError): string {
+  switch (error) {
+    case "not_authorized":
+      return "Your role doesn't include this. Ask the Production Director or a Platform Admin.";
+    case "dashboard_editor_limit":
+      return `There can be up to ${MAX_EDITORS} editors. Remove someone first.`;
+    case "unknown":
+      return "That didn't save. Check your connection and try again.";
+  }
+}

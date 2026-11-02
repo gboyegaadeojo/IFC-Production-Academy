@@ -23,11 +23,29 @@ function isCurrent(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/** One link in the header nav, marking the current page with an underline as well as weight. */
+export function AcademyNavLink({ href, label }: { href: string; label: string }) {
+  const current = isCurrent(usePathname(), href);
+  return (
+    <Link
+      href={href}
+      aria-current={current ? "page" : undefined}
+      className={`relative flex min-h-touch items-center rounded-button px-3 text-small whitespace-nowrap transition-surface hover:bg-card hover:text-text ${
+        current
+          ? "font-medium text-text after:absolute after:inset-x-3 after:bottom-1.5 after:h-0.5 after:rounded-pill after:bg-accent"
+          : "text-text-secondary"
+      }`}
+    >
+      {label}
+    </Link>
+  );
+}
+
 /**
  * Learner navigation in the header (DESIGN §3.1). From 640px; phones use the tab bar instead. In
- * the admin workspace it shows that context.
+ * the admin workspace it shows that context. `extra` adds links the server decides on.
  */
-export function AcademyNav() {
+export function AcademyNav({ extra }: { extra?: ReactNode }) {
   const pathname = usePathname();
   const inAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
 
@@ -45,24 +63,12 @@ export function AcademyNav() {
   return (
     <nav aria-label="Academy" className="hidden min-w-0 sm:block">
       <ul className="flex items-center gap-1">
-        {LINKS.map((link) => {
-          const current = isCurrent(pathname, link.href);
-          return (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                aria-current={current ? "page" : undefined}
-                className={`relative flex min-h-touch items-center rounded-button px-3 text-small whitespace-nowrap transition-surface hover:bg-card hover:text-text ${
-                  current
-                    ? "font-medium text-text after:absolute after:inset-x-3 after:bottom-1.5 after:h-0.5 after:rounded-pill after:bg-accent"
-                    : "text-text-secondary"
-                }`}
-              >
-                {link.label}
-              </Link>
-            </li>
-          );
-        })}
+        {LINKS.map((link) => (
+          <li key={link.href}>
+            <AcademyNavLink href={link.href} label={link.label} />
+          </li>
+        ))}
+        {extra}
       </ul>
     </nav>
   );

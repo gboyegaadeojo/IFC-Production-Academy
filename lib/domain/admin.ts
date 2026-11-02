@@ -28,7 +28,8 @@ export type AdminSectionKey =
   | "audit"
   | "onboarding"
   | "onboarding-people"
-  | "onboarding-follow-ups";
+  | "onboarding-follow-ups"
+  | "service-dashboard";
 
 /**
  * Sidebar groups (DESIGN §3.2), one per part of the ministry's tools, so an admin knows where a
@@ -104,6 +105,12 @@ const SECTIONS: readonly AdminSection[] = [
   },
   { key: "teams", href: "/admin/teams", label: "Serving teams", group: "Services & Scheduling" },
   { key: "schedule", href: "/admin/schedule", label: "Schedule", group: "Services & Scheduling" },
+  {
+    key: "service-dashboard",
+    href: "/admin/service-dashboard",
+    label: "Service Dashboard setup",
+    group: "Services & Scheduling",
+  },
   { key: "curriculum", href: "/admin/curriculum", label: "Curriculum", group: "Training Academy" },
   { key: "sops", href: "/admin/sops", label: "SOP library", group: "Training Academy" },
   {
@@ -231,6 +238,8 @@ export function canOpenAdminSection(
     case "onboarding-people":
     case "onboarding-follow-ups":
       return hasCapabilityAnywhere(grants, "onboarding.manage");
+    case "service-dashboard":
+      return hasCapability(grants, "dashboard.edit") || hasCapability(grants, "dashboard.manage");
   }
 }
 
@@ -444,6 +453,8 @@ function word(status: string | null): string {
 export function describeAuditEvent(event: AuditEventSummary): string {
   const status = statusChange(event.metadata);
   switch (event.action) {
+    case "service_dashboard.layout_saved":
+      return "Saved the Service Dashboard layout";
     case "department_membership.created":
       return "Asked to join a department";
     case "department_membership.updated":

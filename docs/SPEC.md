@@ -249,6 +249,9 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ADD-NOTIF-01 | Gentle reminder after 14 days of inactivity (configurable) | S |
 | ADD-SCHED-01 | Quick reference: a service-day view with the SOPs for the volunteer's assigned role two taps from Home | S |
 | ADD-REPORT-01 | Readiness matrix for the Production Director: approved volunteers per role per department | S |
+| ADD-DASH-01 | Service Dashboard: one read-only screen showing the whole service while it runs ([decision](decisions/2026-11-02-service-dashboard.md)) | S |
+| ADD-DASH-02 | Computers and the wall TV only: not on phones or in the installed app. Access follows Planning Center teams, never training | S |
+| ADD-DASH-03 | One layout for everyone, changed by up to 3 editors with drag, resize, and keyboard. Every save writes an audit event | S |
 
 ## 3. Progression, business rules and workflows
 

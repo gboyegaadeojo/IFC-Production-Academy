@@ -883,6 +883,19 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      dashboard_layouts: {
+        Row: {
+          organization_id: string;
+          name: string;
+          items: Json;
+          channels: Json;
+          updated_by: string | null;
+        } & Timestamps;
+        // Changed only through save_dashboard_layout.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       checklist_sets: {
         Row: {
           id: string;
@@ -1652,6 +1665,22 @@ export type Database = {
       take_cover: { Args: { p_request_id: string }; Returns: undefined };
       set_role_sees_all: {
         Args: { p_role_id: string; p_sees_all: boolean };
+        Returns: undefined;
+      };
+      can_view_service_dashboard: {
+        Args: Record<string, never>;
+        Returns: boolean;
+      };
+      save_dashboard_layout: {
+        Args: { p_name: string; p_items: Json; p_channels: Json };
+        Returns: undefined;
+      };
+      service_dashboard_people: {
+        Args: Record<string, never>;
+        Returns: { user_id: string; display_name: string; is_editor: boolean }[];
+      };
+      set_dashboard_editor: {
+        Args: { p_user_id: string; p_is_editor: boolean };
         Returns: undefined;
       };
       set_role_leads_service: {

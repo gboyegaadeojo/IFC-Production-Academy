@@ -23,6 +23,8 @@ export const CAPABILITIES = [
   "report.view",
   "report.export",
   "onboarding.manage",
+  "dashboard.edit",
+  "dashboard.manage",
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];

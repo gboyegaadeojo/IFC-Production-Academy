@@ -4,7 +4,7 @@ Plain explanations of each part of the app for people joining the production tea
 
 | Guide                                      | Covers                                                  | Status                       |
 | ------------------------------------------ | ------------------------------------------------------- | ---------------------------- |
-| [Service Dashboard](service-dashboard.md)  | The live dashboard, the wall TV, and the app name and logo | Approved 2026-11-02, not built yet |
+| [Service Dashboard](service-dashboard.md)  | The live dashboard, the wall TV, and the app name and logo | Being built in stages |
 
 Guides for the features already built (Training, Schedule, Checklist, SOPs, Admin) haven't been written yet.
 

@@ -1,6 +1,8 @@
 # The Service Dashboard: a guide for new people
 
-**Status:** approved 2026-11-02 and not built yet. This guide describes what was approved. It gets updated every time the dashboard changes, and items still to be proven on real gear are listed at the end.
+**Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
+
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, and the layout editor. The tiles say "Not connected yet" until their stage is built. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
 
 ## What it is
 

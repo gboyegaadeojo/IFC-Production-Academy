@@ -390,3 +390,49 @@ body {
     background: white !important;
   }
 }
+
+/*
+ * Service Dashboard (ADD-DASH-01, 02). Computers only: a browser at 1024px or wider. Phones and the
+ * installed app get a message instead. This only chooses what to show; the server decides access.
+ */
+.only-on-computer {
+  display: none;
+}
+.only-on-small-screens {
+  display: flex;
+}
+@media (min-width: 1024px) and (display-mode: browser),
+  (min-width: 1024px) and (display-mode: fullscreen) {
+  li.only-on-computer {
+    display: list-item;
+  }
+  div.only-on-computer {
+    display: flex;
+  }
+  .only-on-small-screens {
+    display: none;
+  }
+}
+
+/* The wall of tiles: 12 columns, and each tile says where it sits (components/service-dashboard). */
+.service-wall {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-rows: 46px;
+}
+.service-wall > * {
+  grid-column: calc(var(--tile-x) + 1) / span var(--tile-w);
+  grid-row: calc(var(--tile-y) + 1) / span var(--tile-h);
+}
+
+/* The layout editor's grid lines and resize corner. */
+.service-canvas {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: calc(100% / 12) 46px;
+}
+.service-resize {
+  background: linear-gradient(135deg, transparent 50%, var(--border-strong) 50%);
+}
