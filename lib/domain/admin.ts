@@ -29,7 +29,8 @@ export type AdminSectionKey =
   | "onboarding"
   | "onboarding-people"
   | "onboarding-follow-ups"
-  | "service-dashboard";
+  | "service-dashboard"
+  | "branding";
 
 /**
  * Sidebar groups (DESIGN §3.2), one per part of the ministry's tools, so an admin knows where a
@@ -160,6 +161,12 @@ const SECTIONS: readonly AdminSection[] = [
   },
   { key: "invitations", href: "/admin/invitations", label: "Invitations", group: "People & Teams" },
   { key: "audit", href: "/admin/audit", label: "Audit log", group: "System & Settings" },
+  {
+    key: "branding",
+    href: "/admin/branding",
+    label: "App name and logo",
+    group: "System & Settings",
+  },
 ];
 
 /** Visible sections grouped for the sidebar, in order, skipping empty groups. */
@@ -238,6 +245,8 @@ export function canOpenAdminSection(
     case "onboarding-people":
     case "onboarding-follow-ups":
       return hasCapabilityAnywhere(grants, "onboarding.manage");
+    case "branding":
+      return hasCapability(grants, "branding.manage");
     case "service-dashboard":
       return hasCapability(grants, "dashboard.edit") || hasCapability(grants, "dashboard.manage");
   }

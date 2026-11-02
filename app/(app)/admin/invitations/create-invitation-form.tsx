@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "@/components/brand-context";
 import type { CSSProperties, ReactNode } from "react";
 import { useActionState, useId, useState } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
@@ -63,6 +64,7 @@ function Form({
   inviterName: string;
   onReset: () => void;
 }) {
+  const appName = useBrand().name;
   const [state, formAction, pending] = useActionState(createInvitationAction, idle);
   const [departmentId, setDepartmentId] = useState(departments[0]?.id ?? "");
   const [audience, setAudience] = useState<"one" | "group">("one");
@@ -273,7 +275,8 @@ function Form({
             )}
           </span>
           <p className="text-heading font-semibold">
-            You&apos;re invited to {department ? department.name : "the Production Academy"}
+            You&apos;re invited to{" "}
+            {department ? department.name : `the ${appName.replace(/^IFC /, "")}`}
           </p>
           <p className="text-small text-text-secondary">
             {inviterName} invited you to the production team&apos;s training at Immanuel Fellowship

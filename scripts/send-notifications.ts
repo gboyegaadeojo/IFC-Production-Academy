@@ -112,6 +112,11 @@ async function main(): Promise<void> {
     return;
   }
 
+  // The app's name for email subjects (ADD-DASH-04). Falls back to the original if this can't be read.
+  const appName = await rpc<{ app_name: string }[]>(supabaseUrl, serviceKey, "app_branding", {})
+    .then((rows) => rows[0]?.app_name)
+    .catch(() => undefined);
+
   let sent = 0;
   let failed = 0;
   for (let batch = 0; batch < 10; batch += 1) {
@@ -122,7 +127,7 @@ async function main(): Promise<void> {
       break;
     }
     for (const item of claimed) {
-      const email = notificationEmail(item, siteUrl);
+      const email = notificationEmail(item, siteUrl, appName);
       let ok = false;
       try {
         const response = await fetch("https://api.resend.com/emails", {

@@ -164,10 +164,11 @@ export function notificationUrl(siteUrl: string, link: string | null): string {
 export function notificationEmail(
   notification: { title: string; body: string; link: string | null },
   siteUrl: string,
+  appName = "IFC Production Academy",
 ): { subject: string; text: string; html: string } {
   const url = notificationUrl(siteUrl, notification.link);
   const settings = notificationUrl(siteUrl, "/notifications");
-  const subject = `IFC Production Academy: ${notification.title}`.slice(0, 200);
+  const subject = `${appName}: ${notification.title}`.slice(0, 200);
   const text = [
     notification.title,
     "",

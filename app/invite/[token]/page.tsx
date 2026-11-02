@@ -6,6 +6,7 @@ import { Wordmark } from "@/components/brand";
 import { DepartmentIcon } from "@/components/department-icon";
 import { buttonClasses } from "@/components/ui/button";
 import { SignInForm } from "@/app/sign-in/sign-in-form";
+import { getBranding } from "@/lib/data/branding";
 import { getCurrentUser } from "@/lib/data/auth";
 import { previewInvitation } from "@/lib/data/invitations";
 import { departmentHueVar } from "@/lib/domain/departments";
@@ -74,7 +75,7 @@ async function InviteContent({ params }: Pick<PageProps<"/invite/[token]">, "par
     );
   }
 
-  const preview = await previewInvitation(token);
+  const [preview, branding] = await Promise.all([previewInvitation(token), getBranding()]);
   const departmentName = preview.departmentName;
 
   switch (preview.status) {
@@ -88,7 +89,7 @@ async function InviteContent({ params }: Pick<PageProps<"/invite/[token]">, "par
           <p className="text-text-secondary">
             {departmentName
               ? `You've been invited to ${departmentName}. Accepting gives you its training straight away. Approval to serve comes later, after a practical assessment.`
-              : "You've been invited to the IFC Production Academy."}
+              : `You've been invited to the ${branding.name}.`}
           </p>
           <AcceptForm
             token={token}

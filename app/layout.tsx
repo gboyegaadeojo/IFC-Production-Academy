@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { ServiceWorkerSetup } from "@/components/pwa/service-worker-setup";
+import { BrandProvider } from "@/components/brand-context";
+import { getBranding, iconUrlFor } from "@/lib/data/branding";
 import { getAppearance } from "@/lib/data/appearance";
 import {
   colorScheme,
@@ -24,20 +26,26 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "IFC Production Academy",
-    template: "%s · IFC Production Academy",
-  },
-  description: "Training and readiness for the IFC production team.",
-  robots: { index: false, follow: false },
-  applicationName: "IFC Academy",
-  icons: {
-    icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
-    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
-  },
-  appleWebApp: { capable: true, title: "IFC Academy", statusBarStyle: "black-translucent" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getBranding();
+  const iconUrl = iconUrlFor(branding);
+  return {
+    title: {
+      default: branding.name,
+      template: `%s · ${branding.name}`,
+    },
+    description: "Training and readiness for the IFC production team.",
+    robots: { index: false, follow: false },
+    applicationName: branding.shortName,
+    icons: iconUrl
+      ? { icon: [{ url: iconUrl, type: "image/png" }], apple: [{ url: iconUrl }] }
+      : {
+          icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+          apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
+        },
+    appleWebApp: { capable: true, title: branding.shortName, statusBarStyle: "black-translucent" },
+  };
+}
 
 // Each device's appearance (checklist app US-08a): Light by default, Dark, or System.
 export async function generateViewport(): Promise<Viewport> {
@@ -49,7 +57,7 @@ export async function generateViewport(): Promise<Viewport> {
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const appearance = await getAppearance();
+  const [appearance, branding] = await Promise.all([getAppearance(), getBranding()]);
   return (
     // The System script may change data-theme before React hydrates.
     <html
@@ -69,7 +77,15 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to main content
         </a>
-        {children}
+        <BrandProvider
+          value={{
+            name: branding.name,
+            shortName: branding.shortName,
+            iconUrl: iconUrlFor(branding),
+          }}
+        >
+          {children}
+        </BrandProvider>
         <ServiceWorkerSetup />
       </body>
     </html>
