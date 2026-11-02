@@ -82,7 +82,7 @@ for (const viewport of VIEWPORTS) {
     } else {
       await page
         .getByRole("navigation", { name: "Lesson actions" })
-        .getByRole("link", { name: /Next: Sample quiz \(seed data\)/ })
+        .getByRole("link", { name: /^Next\b.*Sample quiz \(seed data\)/ })
         .click();
     }
     await expect(
