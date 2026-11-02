@@ -37,6 +37,11 @@ export const metadata: Metadata = { title: "Service Dashboard" };
 
 const serviceParam = z.uuid();
 
+/** The time on the server, so the first paint of the clock matches. */
+function serverNow(): number {
+  return Date.now();
+}
+
 export default function ServiceDashboardPage({ searchParams }: PageProps<"/service-dashboard">) {
   return (
     <div className="mx-auto flex w-full max-w-[92.5rem] flex-1 flex-col gap-3 px-4 py-4 lg:px-6">
@@ -136,7 +141,7 @@ async function ServiceDashboardContent({
     shows("checklist") ? getServiceChecklists(service.id) : null,
     shows("sops") ? getSopLibrary() : [],
   ]);
-  const renderedAt = Date.now();
+  const renderedAt = serverNow();
 
   return (
     <>
