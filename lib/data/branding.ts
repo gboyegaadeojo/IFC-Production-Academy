@@ -10,9 +10,11 @@ import { publicEnv } from "@/lib/env";
  * save clears it here, and other Worker instances catch up within the minute.
  */
 const HOLD_MS = 60_000;
-let held: { branding: Branding; until: number } | null = null;
+// On globalThis because each route gets its own copy of this module, and a save must reach them all.
+const shared = globalThis as { brandingHeld?: { branding: Branding; until: number } | null };
 
 async function readBranding(): Promise<Branding> {
+  const held = shared.brandingHeld;
   if (held && held.until > Date.now()) {
     return held.branding;
   }
@@ -35,7 +37,7 @@ async function readBranding(): Promise<Branding> {
       shortName: row.app_short_name,
       iconPath: row.app_icon_path,
     };
-    held = { branding, until: Date.now() + HOLD_MS };
+    shared.brandingHeld = { branding, until: Date.now() + HOLD_MS };
     return branding;
   } catch {
     // The name must never be what takes a page down.
@@ -84,7 +86,7 @@ export async function saveBranding(
   if (error) {
     return { ok: false };
   }
-  held = null;
+  shared.brandingHeld = null;
   if (previous && previous !== iconPath) {
     // Tidying up only: an old file left behind does no harm.
     await supabase.storage.from("branding").remove([previous]);
@@ -93,6 +95,6 @@ export async function saveBranding(
 }
 
 async function readFresh(): Promise<Branding> {
-  held = null;
+  shared.brandingHeld = null;
   return readBranding();
 }
