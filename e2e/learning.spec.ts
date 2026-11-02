@@ -37,7 +37,10 @@ for (const viewport of VIEWPORTS) {
     await expect(page.getByRole("heading", { name: "Practical skills and serving" })).toBeVisible();
     await capture(page, `department-member-${viewport.name}`);
 
-    await page.getByRole("link", { name: /Sample course \(seed data\)/ }).click();
+    await page
+      .getByRole("article", { name: "Foundations" })
+      .getByRole("link", { name: /Sample course \(seed data\)/ })
+      .click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}$`));
     await expect(
       page.getByRole("heading", { level: 1, name: "Sample course (seed data)" }),
@@ -101,13 +104,20 @@ for (const viewport of VIEWPORTS) {
     await page.getByRole("link", { name: "Camera Operations", exact: true }).click();
     await expect(page).toHaveURL(/\/departments\/camera-operations$/);
     await expect(page.getByText("Courses open when the department does.")).toHaveCount(0);
-    await expect(page.getByRole("link", { name: /Sample course \(seed data\)/ })).toBeVisible();
+    await expect(
+      page
+        .getByRole("article", { name: "Foundations" })
+        .getByRole("link", { name: /Sample course \(seed data\)/ }),
+    ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Request to join Camera Operations" }),
     ).toBeVisible();
     await capture(page, `department-visitor-${viewport.name}`);
 
-    await page.getByRole("link", { name: /Sample course \(seed data\)/ }).click();
+    await page
+      .getByRole("article", { name: "Foundations" })
+      .getByRole("link", { name: /Sample course \(seed data\)/ })
+      .click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}$`));
     await page.getByRole("link", { name: "Start the course" }).click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}/lessons/`));
