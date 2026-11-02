@@ -78,7 +78,9 @@ as $$
     or private.has_capability('dashboard.manage')
   );
 $$;
-revoke all on function private.can_view_service_dashboard() from public, anon, authenticated;
+revoke all on function private.can_view_service_dashboard() from public, anon;
+-- The layout's read policy runs as the person reading.
+grant execute on function private.can_view_service_dashboard() to authenticated;
 
 create function public.can_view_service_dashboard()
 returns boolean
