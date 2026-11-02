@@ -140,7 +140,7 @@ export function ExploreRow({
           </Link>
         ) : null}
       </div>
-      <div className="col-start-2 flex flex-col gap-1.5 sm:col-start-3 sm:items-end">
+      <div className="col-start-2 flex flex-wrap items-center gap-2 sm:col-start-3 sm:justify-end">
         {/* Anyone can take a department's courses; joining is for serving with its team. */}
         {department.state.kind !== "coming_soon" ? (
           <Link
