@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The other tiles say "Not connected yet" until their stage is built. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do the YouTube preview and viewers once their setup is done ([runbook](../runbooks/service-dashboard.md)). The other tiles say "Not connected yet" until their stage is built. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
@@ -90,9 +90,11 @@ The TV has no computer, mouse, or keyboard, and nobody signs in on it.
 
 Our TV is likely a Roku TV, and Roku has no proper web browser. So a small Android TV or Google TV stick plugs into the HDMI port and runs the dashboard full screen.
 
+On the TV, checklists show totals, such as "5 of 8", and notes can be read but not edited.
+
 **To set up a TV, one time:**
 
-1. Plug in the stick and open the screen address. The TV shows a 6-digit code.
+1. Plug in the stick and open the screen address, which is the Academy's address followed by `/screen`. The TV shows a 6-digit code.
 2. On your phone or computer, sign in and go to **Admin**, then **Service Dashboard setup**, then **Screens**. Enter the code.
 3. On the Roku TV, go to **Settings**, then **System**, **Power**, and **Power on**, and choose that HDMI input. The menu can differ by TV brand. This sends the TV back to the dashboard after a power cut.
 
@@ -103,7 +105,7 @@ The TV holds a view-only pass, not anyone's account. It can't tick checklists or
 **From the internet, with nothing to do each week:**
 
 - **Planning Center** provides the plan, the times, and who's serving. The Academy only reads from Planning Center and never changes it.
-- **YouTube** only needs our channel, because our stream is public. Nobody signs in.
+- **YouTube** only needs our channel and an API key, because our stream is public. Nobody signs in. Counts are read while a screen is open during the service, so keep the wall TV or a booth computer on.
 - **Facebook** needs someone who manages the Page to sign in once.
 
 Each Sunday, Planning Center tells the Academy when the service is. The Magewell goes live as usual, and the Academy asks YouTube and Facebook what's live. If it ever can't find the stream, an editor can paste that week's link as a backup.

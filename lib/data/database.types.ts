@@ -1719,6 +1719,50 @@ export type Database = {
         Args: { p_event_id: string; p_body: string };
         Returns: undefined;
       };
+      screen_start_pairing: {
+        Args: Record<string, never>;
+        Returns: { code: string; secret: string; expires_at: string }[];
+      };
+      screen_claim: { Args: { p_secret: string }; Returns: Json };
+      screen_dashboard: { Args: { p_token: string }; Returns: Json };
+      approve_screen: { Args: { p_code: string; p_name: string }; Returns: string };
+      remove_screen: { Args: { p_screen_id: string }; Returns: undefined };
+      service_dashboard_screens: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          name: string;
+          last_seen_at: string | null;
+          added_by_name: string | null;
+        }[];
+      };
+      service_dashboard_connections: {
+        Args: Record<string, never>;
+        Returns: { youtube_channel_id: string | null }[];
+      };
+      set_youtube_channel: { Args: { p_channel_id: string }; Returns: undefined };
+      service_stream_state: {
+        Args: { p_event_id: string; p_platform: string; p_screen_token?: string | null };
+        Returns: Json;
+      };
+      save_stream_search: {
+        Args: {
+          p_event_id: string;
+          p_platform: string;
+          p_external_id: string | null;
+          p_screen_token?: string | null;
+        };
+        Returns: undefined;
+      };
+      save_viewer_sample: {
+        Args: {
+          p_event_id: string;
+          p_platform: string;
+          p_viewers: number;
+          p_screen_token?: string | null;
+        };
+        Returns: undefined;
+      };
       can_view_service_dashboard: {
         Args: Record<string, never>;
         Returns: boolean;

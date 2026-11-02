@@ -436,3 +436,10 @@ body {
 .service-resize {
   background: linear-gradient(135deg, transparent 50%, var(--border-strong) 50%);
 }
+
+/* On the wall TV the tiles share the screen's height, so nothing needs scrolling (ADD-DASH-06). */
+.service-stage .service-wall {
+  height: 100%;
+  grid-auto-rows: auto;
+  grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+}

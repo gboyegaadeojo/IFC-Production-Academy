@@ -15,6 +15,8 @@ import {
   ServiceTimerTile,
 } from "@/components/service-dashboard/service-clock";
 import { ServicePicker } from "@/components/service-dashboard/service-picker";
+import { StreamPreviewTile, ViewersTile } from "@/components/service-dashboard/stream-tiles";
+import { TeamTile } from "@/components/service-dashboard/team-tile";
 import { TileWall } from "@/components/service-dashboard/tile-wall";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
@@ -26,12 +28,15 @@ import {
   getPlanItems,
   getServiceDashboardLayout,
   getServiceNote,
+  getStreamChannel,
 } from "@/lib/data/service-dashboard";
+import { getYoutubeView } from "@/lib/data/stream-viewers";
+import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { getSopLibrary, type SopSummary } from "@/lib/data/sops";
 import { canOpenAdminSection } from "@/lib/domain/admin";
 import { formatDate } from "@/lib/domain/dates";
 import { eventTimeLabel } from "@/lib/domain/schedule";
-import { type TeamRow, type TileKey, TILES } from "@/lib/domain/service-dashboard";
+import { type TileKey, TILES } from "@/lib/domain/service-dashboard";
 
 export const metadata: Metadata = { title: "Service Dashboard" };
 
@@ -134,14 +139,20 @@ async function ServiceDashboardContent({
   }
 
   const shows = (tile: TileKey) => layout.items.some((item) => item.tile === tile);
-  const [items, team, note, checklists, sops] = await Promise.all([
+  const renderedAt = serverNow();
+  const [items, team, note, checklists, sops, channel, youtube] = await Promise.all([
     getPlanItems(service.id),
     shows("team") ? getDashboardTeam(service.id) : [],
     shows("notes") ? getServiceNote(service.id) : "",
     shows("checklist") ? getServiceChecklists(service.id) : null,
     shows("sops") ? getSopLibrary() : [],
+    shows("preview") ? getStreamChannel(service.id) : null,
+    shows("youtube")
+      ? createSupabaseServerClient().then((client) =>
+          getYoutubeView(client, service, null, renderedAt),
+        )
+      : ({ status: "off" } as const),
   ]);
-  const renderedAt = serverNow();
 
   return (
     <>
@@ -200,6 +211,10 @@ async function ServiceDashboardContent({
                   );
                 case "sops":
                   return <SopsTile sops={sops} />;
+                case "preview":
+                  return <StreamPreviewTile channelId={channel} />;
+                case "youtube":
+                  return <ViewersTile view={youtube} platform="YouTube" />;
                 default:
                   return (
                     <p className="text-small text-text-secondary">
@@ -212,36 +227,6 @@ async function ServiceDashboardContent({
         </ServiceClock>
       </div>
     </>
-  );
-}
-
-function TeamTile({ team }: { team: TeamRow[] }) {
-  if (team.length === 0) {
-    return <p className="text-small text-text-secondary">Nobody is scheduled yet.</p>;
-  }
-  return (
-    <ul className="flex flex-col divide-y divide-border">
-      {team.map((row) => (
-        <li
-          key={row.positionId}
-          className="flex items-baseline justify-between gap-2 py-1 text-small"
-        >
-          <span className="min-w-0">
-            {row.name ?? "Open"}
-            <span className="block text-[0.6875rem] text-text-muted">{row.roleName}</span>
-          </span>
-          {row.label ? (
-            <span
-              className={`shrink-0 text-[0.6875rem] font-medium ${
-                row.label === "Trained" ? "text-success" : "text-warning"
-              }`}
-            >
-              {row.label}
-            </span>
-          ) : null}
-        </li>
-      ))}
-    </ul>
   );
 }
 
