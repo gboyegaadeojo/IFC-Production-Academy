@@ -76,7 +76,10 @@ export function TileWall({
             className="flex min-h-0 min-w-0 flex-col rounded-card border border-border bg-surface"
           >
             <h2 className="px-3 pt-2 eyebrow text-text-muted">{tile.name}</h2>
-            <div className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-auto px-3 pt-1.5 pb-2.5">
+            <div
+              tabIndex={0}
+              className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-auto px-3 pt-1.5 pb-2.5"
+            >
               {content(item)}
             </div>
           </section>

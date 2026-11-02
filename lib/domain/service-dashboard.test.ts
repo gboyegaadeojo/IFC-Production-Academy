@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   addTile,
+  buildRun,
+  clockLabel,
+  countdownLabel,
   dashboardErrorMessage,
   DEFAULT_LAYOUT,
   GRID_COLUMNS,
@@ -9,11 +12,14 @@ import {
   type LayoutItem,
   parseStoredLayout,
   placeTile,
+  type PlanItem,
   removeTile,
+  runProgress,
   settle,
   sizeTile,
   TILE_KEYS,
   TILES,
+  trainedLabel,
   toDashboardError,
 } from "./service-dashboard";
 
@@ -165,5 +171,115 @@ describe("errors", () => {
     expect(toDashboardError({ code: "42501", message: "not_authorized" })).toBe("not_authorized");
     expect(toDashboardError({ message: "connection reset" })).toBe("unknown");
     expect(dashboardErrorMessage("dashboard_editor_limit")).toContain("up to 3");
+  });
+});
+
+const planItem = (
+  id: string,
+  position: number,
+  lengthSeconds: number,
+  servicePosition: PlanItem["servicePosition"] = "during",
+  itemType = "item",
+): PlanItem => ({
+  id,
+  position,
+  itemType,
+  title: id,
+  lengthSeconds,
+  servicePosition,
+  notes: [],
+});
+const START = Date.parse("2026-11-08T16:00:00Z");
+const plan = [
+  planItem("countdown", 1, 300, "pre"),
+  planItem("Worship", 2, 0, "during", "header"),
+  planItem("song", 3, 300),
+  planItem("message", 4, 1800),
+  planItem("slides", 5, 120, "post"),
+];
+
+describe("buildRun", () => {
+  const run = buildRun(plan, START);
+  const entry = (id: string) => run.find((item) => item.id === id);
+
+  it("ends pre-service items as the service starts", () => {
+    expect(entry("countdown")?.startsAt).toBe(START - 300_000);
+    expect(entry("countdown")?.endsAt).toBe(START);
+  });
+
+  it("runs during items one after another from the start", () => {
+    expect(entry("song")?.startsAt).toBe(START);
+    expect(entry("message")?.startsAt).toBe(START + 300_000);
+  });
+
+  it("puts post items after the rest", () => {
+    expect(entry("slides")?.startsAt).toBe(START + 2_100_000);
+  });
+
+  it("gives headers no time, even if Planning Center has one", () => {
+    const withLength = buildRun(
+      [planItem("Head", 1, 60, "during", "header"), planItem("a", 2, 60)],
+      START,
+    );
+    expect(withLength[0]?.isHeader).toBe(true);
+    expect(withLength[1]?.startsAt).toBe(START);
+  });
+
+  it("follows Planning Center's order", () => {
+    expect(buildRun([planItem("b", 2, 60), planItem("a", 1, 60)], START).map((i) => i.id)).toEqual([
+      "a",
+      "b",
+    ]);
+  });
+});
+
+describe("runProgress", () => {
+  const run = buildRun(plan, START);
+
+  it("counts down before anything starts", () => {
+    const progress = runProgress(run, START - 400_000);
+    expect(progress.state).toBe("before");
+    expect(progress.current).toBeNull();
+    expect(progress.next?.id).toBe("countdown");
+    expect(progress.untilStartSeconds).toBe(100);
+  });
+
+  it("finds the current and next item, and the time left", () => {
+    const progress = runProgress(run, START + 60_000);
+    expect(progress.state).toBe("during");
+    expect(progress.current?.id).toBe("song");
+    expect(progress.next?.id).toBe("message");
+    expect(progress.itemLeftSeconds).toBe(240);
+    expect(progress.serviceLeftSeconds).toBe(2160);
+  });
+
+  it("says when the plan has finished", () => {
+    const progress = runProgress(run, START + 9_000_000);
+    expect(progress.state).toBe("after");
+    expect(progress.current).toBeNull();
+    expect(progress.serviceLeftSeconds).toBe(0);
+  });
+
+  it("copes with no plan", () => {
+    expect(runProgress([], START)).toMatchObject({ state: "before", current: null, next: null });
+  });
+});
+
+describe("labels", () => {
+  it("shows times in Winnipeg", () => {
+    expect(clockLabel(Date.parse("2026-11-08T15:55:00Z"))).toMatch(/^\d{1,2}:55 am$/);
+  });
+
+  it("formats countdowns", () => {
+    expect(countdownLabel(65)).toBe("1:05");
+    expect(countdownLabel(3744)).toBe("1:02:24");
+    expect(countdownLabel(-5)).toBe("0:00");
+  });
+
+  it("shows Trained or Still learning, and nothing for an open spot", () => {
+    expect(trainedLabel("approved")).toBe("Trained");
+    expect(trainedLabel("learning")).toBe("Still learning");
+    expect(trainedLabel("supervised")).toBe("Still learning");
+    expect(trainedLabel(null)).toBeNull();
   });
 });

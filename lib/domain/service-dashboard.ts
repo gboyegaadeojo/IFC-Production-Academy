@@ -3,6 +3,7 @@
  * which tiles exist, what makes a valid layout, and how tiles move on the 12-column grid.
  */
 import { z } from "zod";
+import { utcToWinnipeg } from "./schedule";
 
 export const TILE_KEYS = [
   "preview",
@@ -227,4 +228,131 @@ export function dashboardErrorMessage(error: DashboardError): string {
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }
+}
+
+// ---------------------------------------------------------------------------
+// The run of service (ADD-DASH-05)
+// ---------------------------------------------------------------------------
+
+export type PlanItem = {
+  id: string;
+  position: number;
+  /** "header" marks a section. Planning Center's others are "song", "media", and "item". */
+  itemType: string;
+  title: string;
+  lengthSeconds: number;
+  servicePosition: "pre" | "during" | "post";
+  notes: { category: string; content: string }[];
+};
+
+export type RunEntry = {
+  id: string;
+  title: string;
+  isHeader: boolean;
+  lengthSeconds: number;
+  startsAt: number;
+  endsAt: number;
+  notes: { category: string; content: string }[];
+};
+
+/**
+ * Gives each item its planned time. "During" items run from the service's start, "pre" items end
+ * as it starts, and "post" items follow. Section headers take no time.
+ */
+export function buildRun(items: readonly PlanItem[], serviceStart: number): RunEntry[] {
+  const ordered = items.toSorted((a, b) => a.position - b.position);
+  const seconds = (position: PlanItem["servicePosition"]) =>
+    ordered
+      .filter((item) => item.servicePosition === position && item.itemType !== "header")
+      .reduce((sum, item) => sum + item.lengthSeconds, 0);
+  const preStart = serviceStart - seconds("pre") * 1000;
+  let during = serviceStart;
+  let pre = preStart;
+  let post = serviceStart + seconds("during") * 1000;
+  return ordered.map((item) => {
+    const length = item.itemType === "header" ? 0 : item.lengthSeconds;
+    const startsAt =
+      item.servicePosition === "pre" ? pre : item.servicePosition === "post" ? post : during;
+    const endsAt = startsAt + length * 1000;
+    if (item.servicePosition === "pre") {
+      pre = endsAt;
+    } else if (item.servicePosition === "post") {
+      post = endsAt;
+    } else {
+      during = endsAt;
+    }
+    return {
+      id: item.id,
+      title: item.title,
+      isHeader: item.itemType === "header",
+      lengthSeconds: length,
+      startsAt,
+      endsAt,
+      notes: item.notes,
+    };
+  });
+}
+
+export type RunProgress = {
+  state: "before" | "during" | "after";
+  now: number;
+  current: RunEntry | null;
+  next: RunEntry | null;
+  itemLeftSeconds: number;
+  untilStartSeconds: number;
+  serviceLeftSeconds: number;
+  endsAt: number;
+};
+
+/** Where the service should be right now, going by the plan's times. */
+export function runProgress(run: readonly RunEntry[], now: number): RunProgress {
+  const timed = run.filter((entry) => !entry.isHeader && entry.lengthSeconds > 0);
+  const startsAt = timed.reduce((first, entry) => Math.min(first, entry.startsAt), Infinity);
+  const endsAt = timed.reduce((last, entry) => Math.max(last, entry.endsAt), 0);
+  const ordered = timed.toSorted((a, b) => a.startsAt - b.startsAt);
+  const current = ordered.find((entry) => entry.startsAt <= now && now < entry.endsAt) ?? null;
+  const next = ordered.find((entry) => entry.startsAt > now) ?? null;
+  const toSeconds = (ms: number) => Math.max(0, Math.ceil(ms / 1000));
+  return {
+    state: timed.length === 0 || now < startsAt ? "before" : now >= endsAt ? "after" : "during",
+    now,
+    current,
+    next,
+    itemLeftSeconds: current ? toSeconds(current.endsAt - now) : 0,
+    untilStartSeconds: timed.length === 0 ? 0 : toSeconds(startsAt - now),
+    serviceLeftSeconds: toSeconds(endsAt - now),
+    endsAt,
+  };
+}
+
+/** "9:55 am" in Winnipeg time. */
+export function clockLabel(ms: number): string {
+  const [, time] = utcToWinnipeg(new Date(ms).toISOString());
+  const [hour = 0, minute = 0] = time.split(":").map(Number);
+  const twelve = hour % 12 === 0 ? 12 : hour % 12;
+  return `${twelve}:${String(minute).padStart(2, "0")} ${hour < 12 ? "am" : "pm"}`;
+}
+
+/** "4:05", or "1:02:24" past an hour. */
+export function countdownLabel(seconds: number): string {
+  const whole = Math.max(0, Math.round(seconds));
+  const hours = Math.floor(whole / 3600);
+  const minutes = Math.floor((whole % 3600) / 60);
+  const rest = String(whole % 60).padStart(2, "0");
+  return hours > 0 ? `${hours}:${String(minutes).padStart(2, "0")}:${rest}` : `${minutes}:${rest}`;
+}
+
+/** Someone's position on the Who's serving tile, shown and never a gate. */
+export type TeamRow = {
+  positionId: string;
+  roleName: string;
+  name: string | null;
+  label: "Trained" | "Still learning" | null;
+};
+
+export function trainedLabel(readiness: string | null): TeamRow["label"] {
+  if (readiness === null) {
+    return null;
+  }
+  return readiness === "approved" ? "Trained" : "Still learning";
 }

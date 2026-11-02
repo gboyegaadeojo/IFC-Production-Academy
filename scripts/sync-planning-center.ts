@@ -21,11 +21,15 @@ import {
   relatedId,
   type PcoPayload,
   type Resource,
+  mapPlanItems,
+  type PcoPlanItem,
 } from "../lib/domain/planning-center.ts";
 import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
 
 const API = "https://api.planningcenteronline.com";
 const DAYS_AHEAD = 60;
+// The run of service changes close to the day, and each plan costs a request: only the next two weeks.
+const RUN_OF_SERVICE_DAYS = 14;
 const env = (name: string) => process.env[name]?.trim() ?? "";
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -117,6 +121,9 @@ async function firstFound(
   }
   return null;
 }
+
+/** Filled by read(), and applied after the plans so their events exist. */
+const planItems: { plan_id: string; items: PcoPlanItem[] }[] = [];
 
 async function read(authorization: string): Promise<PcoPayload> {
   const now = Date.now();
@@ -236,6 +243,17 @@ async function read(authorization: string): Promise<PcoPayload> {
       const window = planWindow(plan, times);
       if (!window) {
         continue;
+      }
+      if (sortDate < now + RUN_OF_SERVICE_DAYS * 86_400_000) {
+        const items = await orEmpty(async () => {
+          const found = await list(
+            `/services/v2/service_types/${st.id}/plans/${plan.id}/items?include=item_notes&per_page=100`,
+            authorization,
+            3,
+          );
+          return mapPlanItems(found.data, found.included);
+        });
+        planItems.push({ plan_id: plan.id, items });
       }
       payload.plans.push({
         id: plan.id,
@@ -376,6 +394,21 @@ async function main(): Promise<void> {
   }
   // Counts only: no names, emails, or ids.
   const counts = (await response.json()) as Record<string, number>;
+
+  // The Service Dashboard's run of service. A failure here shouldn't undo the sync above, so it's
+  // reported on its own, and the job still fails loudly.
+  const items = await fetch(`${supabaseUrl}/rest/v1/rpc/sync_service_plan_items`, {
+    method: "POST",
+    headers: { ...supabaseKeyHeaders(serviceKey), "Content-Type": "application/json" },
+    body: JSON.stringify({ p: { plans: planItems } }),
+  });
+  if (!items.ok) {
+    process.exitCode = 1;
+    console.error(`sync_service_plan_items failed with HTTP ${items.status}`);
+  } else {
+    const applied = (await items.json()) as { plans?: unknown; items?: unknown };
+    console.log(`Run of service: plans ${Number(applied.plans)}, items ${Number(applied.items)}.`);
+  }
   console.log(
     `Planning Center sync done in ${Math.round((Date.now() - started) / 1000)} s: ${Object.entries(
       counts,

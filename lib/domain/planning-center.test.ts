@@ -3,6 +3,7 @@ import {
   mapBlockout,
   mapMembers,
   mapPerson,
+  mapPlanItems,
   mapRoster,
   mapTeams,
   planTitle,
@@ -216,5 +217,81 @@ describe("Planning Center mapping", () => {
       ),
     ).toEqual([{ person_id: "u1", team_id: "t1", position_id: "p2" }]);
     expect(relatedId(res("X", "1"), "missing")).toBeNull();
+  });
+});
+
+describe("mapPlanItems", () => {
+  const item = (
+    id: string,
+    attributes: Record<string, unknown>,
+    noteIds: string[] = [],
+  ): Resource => ({
+    type: "Item",
+    id,
+    attributes,
+    relationships: { item_notes: { data: noteIds.map((n) => ({ type: "ItemNote", id: n })) } },
+  });
+
+  it("maps an item and its notes", () => {
+    const [mapped] = mapPlanItems(
+      [
+        item(
+          "1",
+          {
+            title: "Example Song",
+            item_type: "song",
+            length: 300,
+            sequence: 4,
+            service_position: "during",
+          },
+          ["n1"],
+        ),
+      ],
+      [
+        {
+          type: "ItemNote",
+          id: "n1",
+          attributes: { category_name: "Audio", content: "Watch the kick" },
+        },
+      ],
+    );
+    expect(mapped).toEqual({
+      id: "1",
+      position: 4,
+      item_type: "song",
+      title: "Example Song",
+      length_seconds: 300,
+      service_position: "during",
+      notes: [{ category: "Audio", content: "Watch the kick" }],
+    });
+  });
+
+  it("copes with what Planning Center leaves out", () => {
+    const [mapped] = mapPlanItems([{ type: "Item", id: "2", attributes: {} }]);
+    expect(mapped).toMatchObject({
+      position: 0,
+      item_type: "item",
+      title: "Untitled item",
+      length_seconds: 0,
+      service_position: "during",
+      notes: [],
+    });
+  });
+
+  it("keeps pre and post, and treats anything else as during", () => {
+    const positions = mapPlanItems([
+      item("a", { service_position: "pre" }),
+      item("b", { service_position: "post" }),
+      item("c", { service_position: "odd" }),
+    ]).map((mapped) => mapped.service_position);
+    expect(positions).toEqual(["pre", "post", "during"]);
+  });
+
+  it("ignores empty notes and notes it wasn't given", () => {
+    const [mapped] = mapPlanItems(
+      [item("1", {}, ["empty", "missing"])],
+      [{ type: "ItemNote", id: "empty", attributes: { content: "" } }],
+    );
+    expect(mapped?.notes).toEqual([]);
   });
 });

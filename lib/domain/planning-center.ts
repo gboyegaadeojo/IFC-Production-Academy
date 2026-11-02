@@ -244,3 +244,49 @@ export function mapRoster(
       : [];
   });
 }
+
+export type PcoPlanItem = {
+  id: string;
+  position: number;
+  item_type: string;
+  title: string;
+  length_seconds: number;
+  service_position: "pre" | "during" | "post";
+  notes: { category: string; content: string }[];
+};
+
+/**
+ * A plan's items for the Service Dashboard's run of service (ADD-DASH-05), with the notes
+ * Planning Center includes beside them.
+ */
+export function mapPlanItems(items: Resource[], included: Resource[] = []): PcoPlanItem[] {
+  const notesById = new Map(
+    included
+      .filter((resource) => resource.type === "ItemNote")
+      .map((note) => [
+        note.id,
+        {
+          category: text(note.attributes.category_name),
+          content: text(note.attributes.content).slice(0, 1000),
+        },
+      ]),
+  );
+  return items.map((item, index) => {
+    const position = text(item.attributes.service_position);
+    const related = item.relationships?.item_notes?.data;
+    const length = Number(item.attributes.length);
+    const sequence = Number(item.attributes.sequence);
+    return {
+      id: item.id,
+      position: Number.isFinite(sequence) ? sequence : index,
+      item_type: text(item.attributes.item_type) || "item",
+      title: text(item.attributes.title) || "Untitled item",
+      length_seconds: Number.isFinite(length) && length > 0 ? Math.round(length) : 0,
+      service_position: position === "pre" || position === "post" ? position : "during",
+      notes: (Array.isArray(related) ? related : []).flatMap((link) => {
+        const note = notesById.get(link.id);
+        return note && note.content !== "" ? [note] : [];
+      }),
+    };
+  });
+}
