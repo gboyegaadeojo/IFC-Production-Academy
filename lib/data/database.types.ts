@@ -886,6 +886,34 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      service_plan_items: {
+        Row: {
+          id: string;
+          event_id: string;
+          external_id: string;
+          position: number;
+          item_type: string;
+          title: string;
+          length_seconds: number;
+          service_position: string;
+          notes: Json;
+        } & Timestamps;
+        // Applied only by sync_service_plan_items.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      service_notes: {
+        Row: {
+          event_id: string;
+          body: string;
+          updated_by: string | null;
+        } & Timestamps;
+        // Changed only through save_service_note.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       dashboard_layouts: {
         Row: {
           organization_id: string;
@@ -1676,6 +1704,19 @@ export type Database = {
       };
       set_app_branding: {
         Args: { p_name: string; p_short_name: string; p_icon_path: string | null };
+        Returns: undefined;
+      };
+      service_dashboard_team: {
+        Args: { p_event_id: string };
+        Returns: {
+          position_id: string;
+          role_name: string;
+          display_name: string | null;
+          readiness: Database["public"]["Enums"]["assignment_readiness"] | null;
+        }[];
+      };
+      save_service_note: {
+        Args: { p_event_id: string; p_body: string };
         Returns: undefined;
       };
       can_view_service_dashboard: {

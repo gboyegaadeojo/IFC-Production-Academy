@@ -3,17 +3,41 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import { z } from "zod";
+import { AutoRefresh } from "@/components/checklist/auto-refresh";
+import { ChecklistTile } from "@/components/service-dashboard/checklist-tile";
+import { NotesTile } from "@/components/service-dashboard/notes-tile";
+import {
+  CurrentItemName,
+  CurrentItemTile,
+  RunOfServiceTile,
+  ServiceClock,
+  ServiceTimerTile,
+} from "@/components/service-dashboard/service-clock";
+import { ServicePicker } from "@/components/service-dashboard/service-picker";
 import { TileWall } from "@/components/service-dashboard/tile-wall";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
-import { canViewServiceDashboard, getServiceDashboardLayout } from "@/lib/data/service-dashboard";
+import { getCurrentServiceId, getServiceChecklists } from "@/lib/data/checklists";
+import {
+  canViewServiceDashboard,
+  getDashboardServices,
+  getDashboardTeam,
+  getPlanItems,
+  getServiceDashboardLayout,
+  getServiceNote,
+} from "@/lib/data/service-dashboard";
+import { getSopLibrary, type SopSummary } from "@/lib/data/sops";
 import { canOpenAdminSection } from "@/lib/domain/admin";
-import { hasCapability } from "@/lib/domain/capabilities";
-import { TILES } from "@/lib/domain/service-dashboard";
+import { formatDate } from "@/lib/domain/dates";
+import { eventTimeLabel } from "@/lib/domain/schedule";
+import { type TeamRow, type TileKey, TILES } from "@/lib/domain/service-dashboard";
 
 export const metadata: Metadata = { title: "Service Dashboard" };
 
-export default function ServiceDashboardPage() {
+const serviceParam = z.uuid();
+
+export default function ServiceDashboardPage({ searchParams }: PageProps<"/service-dashboard">) {
   return (
     <div className="mx-auto flex w-full max-w-[92.5rem] flex-1 flex-col gap-3 px-4 py-4 lg:px-6">
       <Suspense
@@ -24,7 +48,7 @@ export default function ServiceDashboardPage() {
           </>
         }
       >
-        <ServiceDashboardContent />
+        <ServiceDashboardContent searchParams={searchParams} />
       </Suspense>
     </div>
   );
@@ -34,7 +58,9 @@ export default function ServiceDashboardPage() {
  * One screen for the whole service (ADD-DASH-01). Computers only: phones and the installed app get
  * a message instead (ADD-DASH-02). It only ever reads, so it can't affect the live service.
  */
-async function ServiceDashboardContent() {
+async function ServiceDashboardContent({
+  searchParams,
+}: Pick<PageProps<"/service-dashboard">, "searchParams">) {
   await requireActiveUser();
   if (!(await canViewServiceDashboard())) {
     return (
@@ -51,47 +77,187 @@ async function ServiceDashboardContent() {
     );
   }
 
-  const [layout, grants] = await Promise.all([getServiceDashboardLayout(), getMyCapabilities()]);
-  const canEdit =
-    hasCapability(grants, "dashboard.edit") || canOpenAdminSection(grants, "service-dashboard");
+  const requested = serviceParam.safeParse((await searchParams).service);
+  const [layout, grants, services, currentId] = await Promise.all([
+    getServiceDashboardLayout(),
+    getMyCapabilities(),
+    getDashboardServices(),
+    getCurrentServiceId(),
+  ]);
+  const canEdit = canOpenAdminSection(grants, "service-dashboard");
+  const service =
+    services.find((entry) => entry.id === requested.data) ??
+    services.find((entry) => entry.id === currentId) ??
+    services[0] ??
+    null;
+
+  const smallScreen = (
+    <section className="only-on-small-screens flex max-w-xl flex-col gap-3 rounded-card border border-border bg-card p-6">
+      <h1 className="text-heading font-semibold">Open this on a computer</h1>
+      <p className="text-text-secondary">
+        The Service Dashboard is made for booth computers and the wall TV. Your training, schedule,
+        checklist, and SOPs all work here.
+      </p>
+      <Link href="/home" className={buttonClasses("primary", "self-start")}>
+        Go to Training
+      </Link>
+    </section>
+  );
+
+  const editLink = canEdit ? (
+    <Link href="/admin/service-dashboard" className={buttonClasses("secondary")}>
+      Edit layout
+    </Link>
+  ) : null;
+
+  if (!service) {
+    return (
+      <>
+        {smallScreen}
+        <div className="only-on-computer flex-col gap-3">
+          <header className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="text-title font-semibold">Service Dashboard</h1>
+            {editLink}
+          </header>
+          <p className="text-text-secondary">
+            No service on the schedule yet. The dashboard opens to the next one as soon as it&apos;s
+            in Planning Center.
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  const shows = (tile: TileKey) => layout.items.some((item) => item.tile === tile);
+  const [items, team, note, checklists, sops] = await Promise.all([
+    getPlanItems(service.id),
+    shows("team") ? getDashboardTeam(service.id) : [],
+    shows("notes") ? getServiceNote(service.id) : "",
+    shows("checklist") ? getServiceChecklists(service.id) : null,
+    shows("sops") ? getSopLibrary() : [],
+  ]);
+  const renderedAt = Date.now();
 
   return (
     <>
-      <section className="only-on-small-screens flex max-w-xl flex-col gap-3 rounded-card border border-border bg-card p-6">
-        <h1 className="text-heading font-semibold">Open this on a computer</h1>
-        <p className="text-text-secondary">
-          The Service Dashboard is made for booth computers and the wall TV. Your training,
-          schedule, checklist, and SOPs all work here.
-        </p>
-        <Link href="/home" className={buttonClasses("primary", "self-start")}>
-          Go to Training
-        </Link>
-      </section>
-
+      {smallScreen}
       <div className="only-on-computer flex-col gap-3">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-title font-semibold">Service Dashboard</h1>
-            <p className="text-small text-text-secondary">
-              One screen for the whole team. It only watches, so nothing here can change the
-              service.
-            </p>
-          </div>
-          {canEdit ? (
-            <Link href="/admin/service-dashboard" className={buttonClasses("secondary")}>
-              Edit layout
-            </Link>
-          ) : null}
-        </header>
-        <TileWall
-          items={layout.items}
-          content={(item) => (
-            <p className="text-small text-text-secondary">
-              Not connected yet. This will come from {TILES[item.tile].source}.
-            </p>
-          )}
-        />
+        <AutoRefresh />
+        <ServiceClock items={items} startsAt={service.startsAt} renderedAt={renderedAt}>
+          <header className="flex flex-wrap items-stretch gap-2">
+            <h1 className="sr-only">Service Dashboard</h1>
+            <ServicePicker
+              current={service.id}
+              services={services.map((entry) => ({
+                id: entry.id,
+                label: `${entry.title}, ${formatDate(entry.startsAt)}`,
+              }))}
+            />
+            <div className="flex flex-col justify-center rounded-card border border-border bg-surface px-3 py-1.5">
+              <span className="text-[0.6875rem] text-text-muted">Service time</span>
+              <span className="font-medium">
+                {eventTimeLabel(service.startsAt, service.endsAt)}
+              </span>
+            </div>
+            <div className="flex min-w-48 flex-1 flex-col justify-center rounded-card border border-border bg-surface px-3 py-1.5">
+              <span className="text-[0.6875rem] text-text-muted">Current item, by the plan</span>
+              <strong className="font-medium">
+                <CurrentItemName />
+              </strong>
+            </div>
+            {editLink}
+          </header>
+          <TileWall
+            items={layout.items}
+            content={(item) => {
+              switch (item.tile) {
+                case "run":
+                  return <RunOfServiceTile />;
+                case "current":
+                  return <CurrentItemTile />;
+                case "timer":
+                  return <ServiceTimerTile />;
+                case "team":
+                  return <TeamTile team={team} />;
+                case "notes":
+                  return <NotesTile eventId={service.id} body={note} />;
+                case "checklist":
+                  return checklists ? (
+                    <ChecklistTile
+                      eventId={service.id}
+                      checklists={checklists.checklists}
+                      canTick={checklists.state.canTick && checklists.state.open}
+                    />
+                  ) : (
+                    <p className="text-small text-text-secondary">
+                      The checklist isn&apos;t open to you for this service.
+                    </p>
+                  );
+                case "sops":
+                  return <SopsTile sops={sops} />;
+                default:
+                  return (
+                    <p className="text-small text-text-secondary">
+                      Not connected yet. This will come from {TILES[item.tile].source}.
+                    </p>
+                  );
+              }
+            }}
+          />
+        </ServiceClock>
       </div>
     </>
+  );
+}
+
+function TeamTile({ team }: { team: TeamRow[] }) {
+  if (team.length === 0) {
+    return <p className="text-small text-text-secondary">Nobody is scheduled yet.</p>;
+  }
+  return (
+    <ul className="flex flex-col divide-y divide-border">
+      {team.map((row) => (
+        <li
+          key={row.positionId}
+          className="flex items-baseline justify-between gap-2 py-1 text-small"
+        >
+          <span className="min-w-0">
+            {row.name ?? "Open"}
+            <span className="block text-[0.6875rem] text-text-muted">{row.roleName}</span>
+          </span>
+          {row.label ? (
+            <span
+              className={`shrink-0 text-[0.6875rem] font-medium ${
+                row.label === "Trained" ? "text-success" : "text-warning"
+              }`}
+            >
+              {row.label}
+            </span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function SopsTile({ sops }: { sops: SopSummary[] }) {
+  if (sops.length === 0) {
+    return <p className="text-small text-text-secondary">No SOPs published yet.</p>;
+  }
+  return (
+    <ul className="flex flex-col gap-1 text-small">
+      {sops.slice(0, 8).map((sop) => (
+        <li key={sop.id}>
+          <Link href={`/sops/${sop.id}`} className="text-accent-light underline">
+            {sop.current?.title}
+          </Link>
+        </li>
+      ))}
+      <li>
+        <Link href="/sops" className="text-text-secondary underline">
+          All SOPs
+        </Link>
+      </li>
+    </ul>
   );
 }

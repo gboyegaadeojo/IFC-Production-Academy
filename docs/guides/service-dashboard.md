@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, and the app name and logo setting. The tiles say "Not connected yet" until their stage is built. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The other tiles say "Not connected yet" until their stage is built. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
@@ -47,6 +47,9 @@ Service Producer, Audio, Graphics, Camera Director, and the wall TV all see the 
 Editors choose which tiles are on the layout, so you may not see all of these.
 
 ### A few things that are easy to misread
+
+- **Current item goes by the plan's clock for now.** It works out where the service should be from the times in Planning Center, not what is really on screen. It will follow ProPresenter once the bridge is connected.
+- **The plan updates every 15 minutes,** so a late change in Planning Center can take that long to appear. The next two weeks of plans are read.
 
 - **Mixer levels are not room loudness.** They show the signal on each channel. The mixer can't measure how loud the room is. That takes a measurement mic or SMAART, which we don't have yet, so the Room loudness tile is built and left switched off.
 - **The stream preview runs behind the room.** That's normal for a livestream. Don't use it to judge timing.

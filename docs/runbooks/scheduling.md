@@ -100,3 +100,7 @@ The Academy's own scheduler (service types, the Matrix, sign-ups, and swaps) is 
 off. An organisation-wide scheduler can switch it on under **Who schedules** on the Planning Center
 page. While Planning Center schedules, the Academy refuses schedule changes from anyone but the
 sync, so the two can't drift apart.
+
+## Service Dashboard run of service
+
+The same job reads each plan's items, songs, and item notes for the next 14 days, and applies them with `sync_service_plan_items()`. That's one extra request per plan, and it needs no new token or permission. It's read-only, like the rest. Past services keep the run of service they had.

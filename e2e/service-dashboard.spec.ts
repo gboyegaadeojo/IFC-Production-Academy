@@ -91,3 +91,36 @@ test("on a small screen it asks you to open a computer", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Open this on a computer" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Service Dashboard", exact: true })).toBeHidden();
 });
+
+test("the dashboard opens a service: notes save, and the checklist and team tiles show", async ({
+  page,
+}) => {
+  await signInByEmail(page, "emery.director@example.com");
+  const stamp = Date.now();
+  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  await page.goto("/admin/schedule");
+  await page.getByLabel("Name").fill(`Dashboard service ${stamp}`);
+  await page.getByLabel("Date").fill(tomorrow);
+  await page.getByLabel("Starts").fill("09:00");
+  await page.getByLabel("Ends").fill("11:00");
+  await page.getByRole("button", { name: "Add event" }).click();
+  await expect(page).toHaveURL(/\/admin\/schedule\/[0-9a-f-]{36}$/);
+  const eventId = page.url().split("/").at(-1)!;
+
+  await page.goto(`/service-dashboard?service=${eventId}`);
+  await expect(page.getByLabel("Service", { exact: true })).toHaveValue(eventId);
+  await expect(page.getByRole("region", { name: "Run of service" })).toContainText(
+    "No run of service yet",
+  );
+  await expect(page.getByRole("region", { name: "Who's serving" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Checklist" })).toBeVisible();
+
+  const notes = page.getByLabel("Shared with the team");
+  await notes.fill(`Fake note ${stamp}`);
+  await notes.blur();
+  await expect(
+    page.getByRole("region", { name: "Producer notes" }).getByText("Saved."),
+  ).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel("Shared with the team")).toHaveValue(`Fake note ${stamp}`);
+});
