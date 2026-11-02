@@ -6,7 +6,10 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   ASSIGN_MODE_LABELS,
   ASSIGN_MODES,
+  EMAIL_TEMPLATES,
+  offeredIds,
   STEP_KINDS,
+  stepNeedsSetup,
   type AssignMode,
   type StepKind,
 } from "@/lib/domain/onboarding";
@@ -26,6 +29,7 @@ export function StepSettings({
   people,
   courses,
   servingRoles,
+  departments,
 }: {
   pathwayId: string;
   step: { id: string; kind: StepKind; title: string; config: Record<string, unknown> };
@@ -33,11 +37,17 @@ export function StepSettings({
   people: Choice[];
   courses: Choice[];
   servingRoles: Choice[];
+  departments: (Choice & { pathwayId: string | null })[];
 }) {
   const meta = STEP_KINDS[step.kind];
   const c = step.config;
   const text = (key: string, fallback = "") => (c[key] === undefined ? fallback : String(c[key]));
   const [mode, setMode] = useState<AssignMode>((c.mode as AssignMode) ?? "turns");
+  const [subject, setSubject] = useState(text("subject"));
+  const [body, setBody] = useState(text("body"));
+  const [template, setTemplate] = useState("");
+  const needsSetup = stepNeedsSetup(step.kind, c);
+  const [offered, setOffered] = useState<string[]>(offeredIds(c));
   const id = (key: string) => `step-${step.id}-${key}`;
   const select = (key: string, label: string, choices: Choice[], hint?: string, empty?: string) => (
     <Field id={id(key)} label={label} hint={hint}>
@@ -74,6 +84,15 @@ export function StepSettings({
         </div>
       </div>
 
+      {needsSetup ? (
+        <p className="flex items-start gap-2 rounded-button border border-warning/40 bg-card p-2.5 text-small text-text-secondary">
+          <span aria-hidden="true" className="mt-1.5 size-2 shrink-0 rounded-full bg-warning" />
+          <span>
+            <span className="font-semibold text-text">Needs setup.</span> {needsSetup}
+          </span>
+        </p>
+      ) : null}
+
       <ActionForm
         key={step.id}
         action={saveStepAction}
@@ -94,11 +113,38 @@ export function StepSettings({
 
         {step.kind === "email" ? (
           <>
+            <Field
+              id={id("template")}
+              label="Start from a template"
+              hint="Fills in the subject and message below, ready to change. Nothing is saved until you press Save step."
+            >
+              <select
+                id={id("template")}
+                value={template}
+                onChange={(e) => {
+                  const chosen = EMAIL_TEMPLATES.find((t) => t.key === e.target.value);
+                  setTemplate(e.target.value);
+                  if (chosen) {
+                    setSubject(chosen.subject);
+                    setBody(chosen.body);
+                  }
+                }}
+                className={fieldClasses}
+              >
+                <option value="">Choose a template</option>
+                {EMAIL_TEMPLATES.map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+            </Field>
             <Field id={id("subject")} label="Subject">
               <input
                 id={id("subject")}
                 name="cfg_subject"
-                defaultValue={text("subject")}
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
                 maxLength={150}
                 className={fieldClasses}
               />
@@ -111,8 +157,9 @@ export function StepSettings({
               <textarea
                 id={id("body")}
                 name="cfg_body"
-                defaultValue={text("body")}
-                rows={7}
+                value={body}
+                onChange={(e) => setBody(e.target.value)}
+                rows={12}
                 maxLength={3000}
                 className={`${fieldClasses} py-2`}
               />
@@ -232,9 +279,60 @@ export function StepSettings({
         ) : null}
 
         {step.kind === "branch" ? (
-          <p className="text-small text-text-secondary">
-            The volunteer picks from the open departments; that department&apos;s pathway starts.
-          </p>
+          <>
+            <p className="text-small text-text-secondary">
+              The volunteer picks a department on their Training page, under &ldquo;Your next
+              steps&rdquo;. That department&apos;s pathway then starts, and this one moves on.
+            </p>
+            <input type="hidden" name="cfg_department_ids" value={offered.join(",")} />
+            <fieldset className="flex flex-col gap-2">
+              <legend className="mb-1 text-small font-medium text-text-secondary">
+                Departments to offer
+              </legend>
+              <p className="text-small text-text-muted">
+                Leave them all unticked to offer every open department, including ones opened later.
+              </p>
+              {departments.map((d) => (
+                <div
+                  key={d.id}
+                  className="flex items-center justify-between gap-3 rounded-button border border-border p-2.5 text-small has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
+                >
+                  <label className="flex cursor-pointer items-center gap-2.5 font-medium text-text">
+                    <input
+                      type="checkbox"
+                      checked={offered.includes(d.id)}
+                      onChange={(e) =>
+                        setOffered((now) =>
+                          e.target.checked ? [...now, d.id] : now.filter((x) => x !== d.id),
+                        )
+                      }
+                      className="accent-[var(--accent)]"
+                    />
+                    {d.name}
+                  </label>
+                  {d.pathwayId ? (
+                    <a
+                      href={`/admin/onboarding?pathway=${d.pathwayId}`}
+                      className="shrink-0 text-accent-light underline-offset-4 hover:underline"
+                    >
+                      Open its pathway
+                    </a>
+                  ) : (
+                    <span className="shrink-0 text-text-muted">No pathway yet</span>
+                  )}
+                </div>
+              ))}
+            </fieldset>
+            {departments.some(
+              (d) => !d.pathwayId && (offered.length === 0 || offered.includes(d.id)),
+            ) ? (
+              <p className="rounded-button border border-border bg-card p-2.5 text-small text-text-secondary">
+                <span className="font-semibold text-text">No pathway yet:</span> someone who picks
+                that department carries on with this pathway, but nothing starts for that
+                department. Set one up with &ldquo;Set up a pathway&rdquo; at the top of the page.
+              </p>
+            ) : null}
+          </>
         ) : null}
       </ActionForm>
 

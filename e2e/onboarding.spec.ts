@@ -50,6 +50,28 @@ test("a director builds Join the team, adds someone, and sees their follow-up", 
       .first(),
   ).toBeVisible();
 
+  // An email from a ready-made template; choosing a step opens it in place, with no page load.
+  await library.getByRole("button", { name: "Add Send an email" }).click();
+  const email = page.getByRole("region", { name: "Send an email" });
+  await expect(email.getByText("Needs setup.")).toBeVisible();
+  await email.getByLabel("Start from a template").selectOption({ label: "Let's meet" });
+  await expect(email.getByLabel("Subject")).toHaveValue("Let's meet, {first name}");
+  await email.getByRole("button", { name: "Save step" }).click();
+  await expect(email.getByText("Saved.")).toBeVisible();
+  await expect(
+    page
+      .getByRole("region", { name: "Pathway steps" })
+      .getByText("Subject: Let's meet, {first name}")
+      .first(),
+  ).toBeVisible();
+  await page
+    .getByRole("region", { name: "Pathway steps" })
+    .getByRole("link", { name: /Follow-up task/ })
+    .first()
+    .click();
+  await expect(page.getByRole("region", { name: "Follow-up task" })).toBeVisible();
+  await expect(page).toHaveURL(/[?&]step=/);
+
   // Someone from the lobby.
   await page.goto("/admin/onboarding/people");
   await page.getByText("Add someone").click();

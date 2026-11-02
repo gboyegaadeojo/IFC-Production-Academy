@@ -172,5 +172,35 @@ select pg_temp.act_as('b1000000-0000-4000-8000-000000000004');
 select ok((select count(*) from public.my_onboarding()) >= 1, 'a volunteer sees their own onboarding steps');
 reset role;
 
+-- "Choose a department" offers only the departments the step lists (migration 20261208120000).
+insert into ctx values ('audio', '8cd57d7d-1aab-4be6-b67b-e9bc606e0d73'), ('camera', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855');
+select pg_temp.act_as('b1000000-0000-4000-8000-000000000001');
+insert into public.onboarding_pathways (organization_id, department_id, name)
+select organization_id, id, 'Test audio onboarding' from public.departments where id = (select id from ctx where key = 'audio');
+reset role;
+insert into ctx values ('apath', (select id from public.onboarding_pathways where name = 'Test audio onboarding'));
+insert into public.onboarding_stages (pathway_id, name, sort_order) values ((select id from ctx where key = 'apath'), 'Pick', 10);
+insert into public.onboarding_steps (pathway_id, stage_id, kind, title, config, sort_order) values
+  ((select id from ctx where key = 'apath'), (select id from public.onboarding_stages where pathway_id = (select id from ctx where key = 'apath')),
+   'branch', 'Pick a team', jsonb_build_object('department_ids', jsonb_build_array((select id from ctx where key = 'camera'))), 10),
+  ((select id from ctx where key = 'apath'), (select id from public.onboarding_stages where pathway_id = (select id from ctx where key = 'apath')),
+   'finish', 'Done', '{}', 20);
+select pg_temp.act_as('b1000000-0000-4000-8000-000000000001');
+select lives_ok($$ select public.onboarding_add_person((select id from ctx where key = 'apath'), 'Test Volunteer', 'b1000000-0000-4000-8000-000000000004@example.com') $$,
+  'a director adds someone to a pathway with a department choice');
+reset role;
+insert into ctx values ('aentry', (select e.id from public.onboarding_entries e join public.onboarding_contacts c on c.id = e.contact_id
+  where c.user_id = 'b1000000-0000-4000-8000-000000000004' and e.pathway_id = (select id from ctx where key = 'apath')));
+select pg_temp.act_as('b1000000-0000-4000-8000-000000000004');
+select is((select offered_department_ids from public.my_onboarding() where entry_id = (select id from ctx where key = 'aentry') and step_kind = 'branch'),
+  array[(select id from ctx where key = 'camera')], 'the volunteer is offered only the departments the step lists');
+select throws_ok($$ select public.onboarding_choose_department((select id from ctx where key = 'aentry'), (select id from ctx where key = 'audio')) $$,
+  '42501', null, 'and cannot choose one it does not offer');
+select lives_ok($$ select public.onboarding_choose_department((select id from ctx where key = 'aentry'), (select id from ctx where key = 'camera')) $$,
+  'choosing an offered department works');
+reset role;
+select is((select status::text from public.onboarding_entries where id = (select id from ctx where key = 'aentry')), 'finished',
+  'and the pathway moves on');
+
 select * from finish();
 rollback;

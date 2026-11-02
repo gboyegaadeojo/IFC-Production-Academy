@@ -121,6 +121,8 @@ export type PathwayEditor = {
   people: Choice[];
   courses: Choice[];
   servingRoles: Choice[];
+  /** Open departments, for "Choose a department", with the pathway each one starts (if any). */
+  departments: (Choice & { pathwayId: string | null })[];
 };
 
 /** One pathway with its stages and steps in order, and the choices its settings need. */
@@ -139,41 +141,67 @@ export async function getPathwayEditor(pathwayId: string): Promise<PathwayEditor
     return null;
   }
   const departmentId = pathway.data.department_id;
-  const [stages, steps, entries, roles, courses, versions, servingRoles, people] =
-    await Promise.all([
-      supabase
-        .from("onboarding_stages")
-        .select("id, name, timing, sort_order, created_at")
-        .eq("pathway_id", pathwayId)
-        .is("archived_at", null)
-        .order("sort_order")
-        .order("created_at"),
-      supabase
-        .from("onboarding_steps")
-        .select("id, stage_id, kind, title, config, sort_order, created_at")
-        .eq("pathway_id", pathwayId)
-        .is("archived_at", null)
-        .order("sort_order")
-        .order("created_at"),
-      supabase
-        .from("onboarding_entries")
-        .select("current_step_id")
-        .eq("pathway_id", pathwayId)
-        .eq("status", "active"),
-      supabase.from("roles").select("id, name").order("name"),
-      supabase.from("courses").select("id, department_id").is("archived_at", null),
-      supabase.from("course_versions").select("course_id, title").eq("status", "published"),
-      departmentId
-        ? supabase
-            .from("serving_roles")
-            .select("id, name")
-            .eq("department_id", departmentId)
-            .is("archived_at", null)
-            .order("name")
-        : supabase.from("serving_roles").select("id, name").is("archived_at", null).order("name"),
-      supabase.rpc("onboarding_leaders", { p_pathway_id: pathwayId }),
-    ]);
-  for (const r of [stages, steps, entries, roles, courses, versions, servingRoles]) {
+  const [
+    stages,
+    steps,
+    entries,
+    roles,
+    courses,
+    versions,
+    servingRoles,
+    people,
+    departments,
+    departmentPathways,
+  ] = await Promise.all([
+    supabase
+      .from("onboarding_stages")
+      .select("id, name, timing, sort_order, created_at")
+      .eq("pathway_id", pathwayId)
+      .is("archived_at", null)
+      .order("sort_order")
+      .order("created_at"),
+    supabase
+      .from("onboarding_steps")
+      .select("id, stage_id, kind, title, config, sort_order, created_at")
+      .eq("pathway_id", pathwayId)
+      .is("archived_at", null)
+      .order("sort_order")
+      .order("created_at"),
+    supabase
+      .from("onboarding_entries")
+      .select("current_step_id")
+      .eq("pathway_id", pathwayId)
+      .eq("status", "active"),
+    supabase.from("roles").select("id, name").order("name"),
+    supabase.from("courses").select("id, department_id").is("archived_at", null),
+    supabase.from("course_versions").select("course_id, title").eq("status", "published"),
+    departmentId
+      ? supabase
+          .from("serving_roles")
+          .select("id, name")
+          .eq("department_id", departmentId)
+          .is("archived_at", null)
+          .order("name")
+      : supabase.from("serving_roles").select("id, name").is("archived_at", null).order("name"),
+    supabase.rpc("onboarding_leaders", { p_pathway_id: pathwayId }),
+    supabase.from("departments").select("id, name").eq("status", "active").order("sort_order"),
+    supabase
+      .from("onboarding_pathways")
+      .select("id, department_id")
+      .not("department_id", "is", null)
+      .is("archived_at", null),
+  ]);
+  for (const r of [
+    stages,
+    steps,
+    entries,
+    roles,
+    courses,
+    versions,
+    servingRoles,
+    departments,
+    departmentPathways,
+  ]) {
     if (r.error) {
       throw new Error("Could not load the pathway", { cause: r.error.code });
     }
@@ -213,6 +241,11 @@ export async function getPathwayEditor(pathwayId: string): Promise<PathwayEditor
       .map((c) => ({ id: c.id, name: courseTitle.get(c.id) ?? "" }))
       .toSorted((a, b) => a.name.localeCompare(b.name)),
     servingRoles: (servingRoles.data ?? []).map((r) => ({ id: r.id, name: r.name })),
+    departments: (departments.data ?? []).map((d) => ({
+      id: d.id,
+      name: d.name,
+      pathwayId: (departmentPathways.data ?? []).find((p) => p.department_id === d.id)?.id ?? null,
+    })),
   };
 }
 
@@ -732,6 +765,7 @@ export async function getMyOnboarding() {
     stepPosition: row.step_position,
     currentPosition: row.current_position,
     contactName: row.contact_name,
+    offeredDepartmentIds: row.offered_department_ids,
   }));
 }
 

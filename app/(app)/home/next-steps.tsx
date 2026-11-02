@@ -17,6 +17,8 @@ export function NextSteps({
   const total = pathway.steps.length;
   const now = pathway.steps.find((s) => s.state === "now");
   const first = pathway.contactName?.split(" ")[0] ?? null;
+  const offered = pathway.offeredDepartmentIds;
+  const choices = offered ? departments.filter((d) => offered.includes(d.id)) : departments;
   return (
     <section aria-labelledby={`next-${pathway.entryId}`} className="flex max-w-2xl flex-col gap-3">
       <div className="flex flex-col gap-1.5">
@@ -80,7 +82,7 @@ export function NextSteps({
                 <legend className="mb-1.5 text-small text-text-secondary">
                   Where would you like to serve?
                 </legend>
-                {departments.map((d, i) => (
+                {choices.map((d, i) => (
                   <label
                     key={d.id}
                     className="flex cursor-pointer items-center gap-2 rounded-button border border-border px-3 py-1.5 text-small has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
