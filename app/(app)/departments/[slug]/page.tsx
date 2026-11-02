@@ -161,13 +161,15 @@ function LevelStage({
                   {canOpen ? (
                     <Link
                       href={`/courses/${course.id}`}
-                      className="group -mx-2 flex items-center justify-between gap-3 rounded-button px-2 py-2 transition-surface hover:bg-hover"
+                      className="group -mx-3 flex lift items-center justify-between gap-3 rounded-[12px] px-3 py-2.5"
                     >
                       <span className="flex flex-col">
-                        <span className="font-medium text-text">{course.title}</span>
+                        <span className="font-medium text-text transition-surface group-hover:text-accent-light group-focus-visible:text-accent-light">
+                          {course.title}
+                        </span>
                         {meta ? <span className="text-small text-text-muted">{meta}</span> : null}
                       </span>
-                      <ChevronRightIcon className="size-4 shrink-0 text-text-muted group-hover:text-text" />
+                      <ChevronRightIcon className="size-4 shrink-0 text-text-muted transition-surface group-hover:translate-x-1 group-hover:text-accent-light group-focus-visible:translate-x-1 group-focus-visible:text-accent-light" />
                     </Link>
                   ) : (
                     <span className="flex flex-col py-2">

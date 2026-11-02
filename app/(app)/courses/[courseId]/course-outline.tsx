@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { CheckIcon, ClockIcon, QuizIcon, UserCheckIcon } from "@/components/ui/icons";
+import {
+  CheckIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  QuizIcon,
+  UserCheckIcon,
+} from "@/components/ui/icons";
 import {
   flattenLessons,
   formatMinutes,
@@ -90,21 +96,29 @@ export function CourseOutline({
                   <Link
                     href={`/courses/${courseId}/lessons/${lesson.key}`}
                     aria-current={current ? "page" : undefined}
-                    className={`relative flex items-baseline gap-3 transition-surface ${
+                    className={`relative flex items-baseline gap-3 ${
                       compact
-                        ? `min-h-touch rounded-button px-3 py-2 text-small lg:min-h-control ${
+                        ? `min-h-touch rounded-button px-3 py-2 text-small transition-surface lg:min-h-control ${
                             current
                               ? "bg-hover font-medium text-text before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-pill before:bg-accent"
                               : "text-text-secondary hover:bg-card hover:text-text"
                           }`
-                        : "min-h-touch px-1 py-3 hover:bg-card"
+                        : "group min-h-touch lift rounded-[12px] px-2 py-3"
                     }`}
                   >
                     <span className="tabular w-6 shrink-0 font-mono text-small text-text-muted">
                       {String(numbers.get(lesson.key) ?? 0).padStart(2, "0")}
                     </span>
                     <span className="flex flex-1 flex-col">
-                      <span className={compact ? "" : "font-medium text-text"}>{lesson.title}</span>
+                      <span
+                        className={
+                          compact
+                            ? ""
+                            : "font-medium text-text transition-surface group-hover:text-accent-light group-focus-visible:text-accent-light"
+                        }
+                      >
+                        {lesson.title}
+                      </span>
                       {!compact && (lesson.estimatedMinutes || !lesson.isRequired) ? (
                         <span className="text-small text-text-muted">
                           {[
@@ -122,6 +136,9 @@ export function CourseOutline({
                     {progress ? (
                       <LessonMarker state={progressFor(progress, lesson.key).state} />
                     ) : null}
+                    {compact ? null : (
+                      <ChevronRightIcon className="size-4 shrink-0 self-center text-text-muted transition-surface group-hover:translate-x-1 group-hover:text-accent-light group-focus-visible:translate-x-1 group-focus-visible:text-accent-light" />
+                    )}
                   </Link>
                 </li>
               );

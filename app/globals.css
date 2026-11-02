@@ -35,6 +35,8 @@
   --on-accent: #ffffff;
   /* A soft wash behind selected items and icon tiles. Never behind text that needs contrast alone. */
   --accent-soft: #241d3d;
+  /* A row or card lifted on hover ("Lift", approved 2026-11-02). */
+  --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 22px -8px rgb(0 0 0 / 0.6);
 
   /* Status. Always paired with words or an icon, never colour alone. */
   --success: #4ade80;
@@ -114,6 +116,7 @@
   --accent: #6d3fe0;
   --accent-light: #5b2fd0;
   --accent-soft: #efe9fd;
+  --shadow-lift: 0 1px 2px rgb(22 20 31 / 0.06), 0 6px 18px -6px rgb(22 20 31 / 0.14);
   --success: #12733a;
   --warning: #a15c07;
   --error: #c2331f;
@@ -342,6 +345,27 @@ body {
 }
 
 /* Shared transition for interactive surfaces (DESIGN §5: 120–180ms, no jitter). */
+/*
+ * "Lift" (approved mock, 2026-11-02): a course or lesson row rises onto a white card with a soft
+ * shadow on hover and keyboard focus. Pair with group-hover classes for the purple title and the
+ * arrow that slides right. With reduced motion the change is instant (--duration-fast is 0).
+ */
+@utility lift {
+  transition-property: background-color, box-shadow, transform, color;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-standard);
+  &:hover,
+  &:focus-visible {
+    background-color: var(--surface);
+    box-shadow: var(--shadow-lift);
+    transform: translateY(-1px);
+  }
+  &:active {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
 @utility transition-surface {
   transition-property: background-color, border-color, color, opacity, transform;
   transition-duration: var(--duration-fast);
