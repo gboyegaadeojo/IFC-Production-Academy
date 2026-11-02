@@ -70,11 +70,16 @@ export function AcademyNav() {
 
 /**
  * Phone tab bar (DESIGN §3, "bottom navigation for 3–4 high-frequency learner destinations";
- * approved mock, 2026-11-01). Below 640px only, and never in the admin workspace.
+ * approved mock, 2026-11-01). Below 640px only, never in the admin workspace, and not on lessons.
  */
 export function AcademyTabBar() {
   const pathname = usePathname();
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
+  // Lessons have their own bottom bar (back, Mark complete, next), so the tab bar steps aside.
+  if (
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    /^\/courses\/[^/]+\/lessons\//.test(pathname)
+  ) {
     return null;
   }
   return (

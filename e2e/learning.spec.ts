@@ -37,7 +37,10 @@ for (const viewport of VIEWPORTS) {
     await expect(page.getByRole("heading", { name: "Practical skills and serving" })).toBeVisible();
     await capture(page, `department-member-${viewport.name}`);
 
-    await page.getByRole("link", { name: /Sample course \(seed data\)/ }).click();
+    await page
+      .getByRole("article", { name: "Foundations" })
+      .getByRole("link", { name: /Sample course \(seed data\)/ })
+      .click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}$`));
     await expect(
       page.getByRole("heading", { level: 1, name: "Sample course (seed data)" }),
@@ -51,8 +54,8 @@ for (const viewport of VIEWPORTS) {
     await expect(page.getByText("Lesson 1 of 1")).toBeVisible();
     await expect(page.getByText("Fake lesson text for local development.")).toBeVisible();
     // Completion is the learner's call; nothing claims the lesson was watched (SRS-LESSON-006).
-    await expect(page.getByRole("button", { name: "Mark lesson complete" })).toBeVisible();
-    await expect(page.getByText("nothing checks how much of the video you watched")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^(Mark complete|Completed)/ })).toBeVisible();
+    await expect(page.getByText("Nothing checks how much you watched")).toBeVisible();
     if (viewport.width >= 1024) {
       await expect(
         page
@@ -60,16 +63,28 @@ for (const viewport of VIEWPORTS) {
           .getByRole("link", { name: /Sample lesson/ }),
       ).toHaveAttribute("aria-current", "page");
     } else {
-      await page.getByText(/Course outline · 1 of 1/).click();
-      await expect(page.getByRole("link", { name: /Sample lesson/ }).first()).toBeVisible();
+      // Phones and tablets: the outline opens in a panel.
+      await page.getByRole("button", { name: /Course outline/ }).click();
+      const panel = page.getByRole("dialog", { name: "Course outline" });
+      await expect(panel.getByRole("link", { name: /Sample lesson/ })).toBeVisible();
+      await page.keyboard.press("Escape");
+      await expect(panel).toBeHidden();
     }
     await capture(page, `lesson-member-${viewport.name}`);
 
-    // The quiz follows the last lesson; its rules show before starting (SRS-QUIZ-003).
-    await page
-      .getByRole("navigation", { name: "Lessons" })
-      .getByRole("link", { name: /Sample quiz \(seed data\)/ })
-      .click();
+    // The quiz follows the last lesson; its rules show before starting (SRS-QUIZ-003). Phones go
+    // there from the bottom bar, larger screens from the "Next, quiz" card.
+    if (viewport.width >= 640) {
+      await page
+        .getByRole("navigation", { name: "Lessons" })
+        .getByRole("link", { name: /Sample quiz \(seed data\)/ })
+        .click();
+    } else {
+      await page
+        .getByRole("navigation", { name: "Lesson actions" })
+        .getByRole("link", { name: /^Next\b.*Sample quiz \(seed data\)/ })
+        .click();
+    }
     await expect(
       page.getByRole("heading", { level: 1, name: "Sample quiz (seed data)" }),
     ).toBeVisible();
@@ -89,19 +104,26 @@ for (const viewport of VIEWPORTS) {
     await page.getByRole("link", { name: "Camera Operations", exact: true }).click();
     await expect(page).toHaveURL(/\/departments\/camera-operations$/);
     await expect(page.getByText("Courses open when the department does.")).toHaveCount(0);
-    await expect(page.getByRole("link", { name: /Sample course \(seed data\)/ })).toBeVisible();
+    await expect(
+      page
+        .getByRole("article", { name: "Foundations" })
+        .getByRole("link", { name: /Sample course \(seed data\)/ }),
+    ).toBeVisible();
     await expect(
       page.getByRole("button", { name: "Request to join Camera Operations" }),
     ).toBeVisible();
     await capture(page, `department-visitor-${viewport.name}`);
 
-    await page.getByRole("link", { name: /Sample course \(seed data\)/ }).click();
+    await page
+      .getByRole("article", { name: "Foundations" })
+      .getByRole("link", { name: /Sample course \(seed data\)/ })
+      .click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}$`));
     await page.getByRole("link", { name: "Start the course" }).click();
     await expect(page).toHaveURL(new RegExp(`/courses/${SAMPLE_COURSE}/lessons/`));
     await expect(page.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
     // Progress is saved for them too, not only for members.
-    await expect(page.getByRole("button", { name: "Mark lesson complete" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^(Mark complete|Completed)/ })).toBeVisible();
     await capture(page, `lesson-visitor-${viewport.name}`);
 
     // A lesson that isn't in the course is not found, for members and visitors alike.
@@ -110,7 +132,7 @@ for (const viewport of VIEWPORTS) {
 
     // A department with nothing published shows an honest empty level.
     await page.goto("/departments/audio-engineering");
-    await expect(page.getByText("No courses published in this level yet.").first()).toBeVisible();
+    await expect(page.getByText("Coming later").first()).toBeVisible();
     await capture(page, `department-empty-${viewport.name}`);
   });
 }
@@ -152,8 +174,9 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await volunteer.goto(`/courses/${SAMPLE_COURSE}`);
   await volunteer.getByRole("link", { name: "Start the course" }).click();
   await expect(volunteer.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
-  await volunteer.getByRole("button", { name: "Mark lesson complete" }).click();
-  await expect(volunteer.getByText(/You marked this lesson complete on/)).toBeVisible();
+  await volunteer.getByRole("button", { name: "Mark complete" }).click();
+  await expect(volunteer.getByRole("button", { name: /^Completed/ })).toBeVisible();
+  await expect(volunteer.getByText(/^Completed \w/)).toBeVisible();
   await expect(
     volunteer.getByRole("link", { name: /Sample lesson.*completed/ }).first(),
   ).toBeAttached();
@@ -373,13 +396,13 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
     .getByRole("link", { name: /Sample lesson/ })
     .first()
     .click();
-  await volunteer.getByRole("button", { name: "Mark as not complete" }).click();
-  await expect(volunteer.getByRole("button", { name: "Mark lesson complete" })).toBeVisible();
+  await volunteer.getByRole("button", { name: /^Completed/ }).click();
+  await expect(volunteer.getByRole("button", { name: "Mark complete" })).toBeVisible();
 
-  // Training picks up where they left off, on the department's card.
+  // Training picks up where they left off, in the Continue card at the top.
   await volunteer.goto("/home");
-  const card = volunteer.getByRole("article", { name: "Camera Operations" });
-  await expect(card.getByText("Next: Sample lesson")).toBeVisible();
-  await expect(card.getByRole("link", { name: /^Continue .*Sample lesson/ })).toBeVisible();
+  const resume = volunteer.getByRole("region", { name: "Sample course (seed data)" });
+  await expect(resume.getByText("Next: Sample lesson")).toBeVisible();
+  await expect(resume.getByRole("link")).toHaveAttribute("href", /\/lessons\//);
   await volunteerContext.close();
 });

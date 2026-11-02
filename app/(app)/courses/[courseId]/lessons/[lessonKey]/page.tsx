@@ -5,10 +5,11 @@ import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { RecordView } from "@/components/lesson/record-view";
 import { VideoPlayer } from "@/components/lesson/video-player";
-import { ActionForm } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, ChevronDownIcon } from "@/components/ui/icons";
+import { Drawer } from "@/components/ui/drawer";
+import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, ListIcon } from "@/components/ui/icons";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getLearnerCourse, getLearnerLesson, canLearnIn } from "@/lib/data/pathway";
@@ -29,7 +30,8 @@ import {
 import { progressFor } from "@/lib/domain/progress";
 import { SOP_STATE_LABELS } from "@/lib/domain/sops";
 import { CourseOutline } from "../../course-outline";
-import { completeLessonAction, recordLessonViewAction, reopenLessonAction } from "./actions";
+import { recordLessonViewAction } from "./actions";
+import { CompleteToggle } from "./complete-toggle";
 
 export const metadata: Metadata = { title: "Lesson" };
 
@@ -46,8 +48,9 @@ export default function LessonPage({ params }: Props) {
 }
 
 /**
- * Lesson view (DESIGN §6.5). Video first, then the lesson's content; the outline sits alongside on
- * desktop and in a disclosure on phones. Members mark the lesson complete themselves: nothing
+ * Lesson view (DESIGN §6.5; lesson page mock, approved 2026-11-02). Video first, then the title
+ * with Mark complete beside it; the outline sits alongside on desktop and in a panel on phones,
+ * where every action lives in one bar at the bottom. Members mark the lesson complete themselves: nothing
  * checks or claims the video was watched (SRS-LESSON-006), and completing lessons never approves
  * anyone to serve (SRS-PROG-007).
  */
@@ -88,254 +91,288 @@ async function LessonContent({ params }: Pick<Props, "params">) {
   const nextStep =
     steps[steps.findIndex((step) => step.kind === "lesson" && step.key === lessonKey) + 1] ?? null;
   const record = member ? recordLessonViewAction.bind(null, course.id, lessonKey) : null;
-  const ids = { courseId: course.id, lessonKey };
   const moduleTitle = course.modules.find((m) => m.lessons.some((l) => l.key === lessonKey))?.title;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
   const body = paragraphs(lesson.body);
 
+  const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
+  const doneCount = course.modules
+    .flatMap((m) => m.lessons)
+    .filter((l) => progressFor(courseProgress, l.key).state === "completed").length;
+  const done = progress.state === "completed";
+  const previousHref = position.previous
+    ? `/courses/${course.id}/lessons/${position.previous.key}`
+    : `/courses/${course.id}`;
+  const nextHref = nextStep ? stepHref(course.id, nextStep) : `/courses/${course.id}`;
+  const nextLabel = nextStep
+    ? nextStep.kind === "quiz"
+      ? "Next, quiz"
+      : nextStep.kind === "practical"
+        ? "Next, practical assessment"
+        : "Up next"
+    : "That's the last lesson";
+  const outline = (
+    <CourseOutline
+      courseId={course.id}
+      modules={course.modules}
+      quizzes={course.quizzes}
+      practicals={course.practicals}
+      passedPracticalKeys={practicalsPassed}
+      progress={courseProgress}
+      passedQuizKeys={passed}
+      currentKey={lessonKey}
+      compact
+    />
+  );
+  const doneLine = `${doneCount} of ${lessonCount} done`;
+
   return (
-    <div style={style} className="page-container flex flex-col gap-8 py-8 lg:py-10">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/home" },
-          { label: course.department.name, href: `/departments/${course.department.slug}` },
-          { label: course.title, href: `/courses/${course.id}` },
-          { label: lesson.title },
-        ]}
-      />
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-12">
-        <article aria-labelledby="lesson-heading" className="flex min-w-0 flex-col gap-8">
-          <header className="flex flex-col gap-3">
-            <p className="eyebrow">
-              Lesson {position.index + 1} of {position.total}
-              {moduleTitle ? ` · ${moduleTitle}` : ""}
-            </p>
-            <h1 id="lesson-heading" className="text-title font-semibold text-balance">
-              {lesson.title}
-            </h1>
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-text-muted">
-              <li>{lesson.isRequired ? "Required" : "Optional"}</li>
-              {lesson.estimatedMinutes ? (
-                <li>About {formatMinutes(lesson.estimatedMinutes)}</li>
+    <>
+      <div
+        style={style}
+        className="page-container flex flex-col gap-5 pt-2 pb-8 sm:gap-6 sm:py-8 lg:py-10"
+      >
+        {/* Phone: one line back to the course; larger screens keep the breadcrumbs. */}
+        <Link
+          href={`/courses/${course.id}`}
+          className="-ml-1 flex min-h-touch w-fit max-w-full items-center gap-1 rounded-button pr-2 pl-1 text-small font-medium text-text-secondary hover:text-text sm:hidden"
+        >
+          <ChevronLeftIcon className="size-4 shrink-0" />
+          <span className="truncate">{course.title}</span>
+          <span className="ml-1.5 shrink-0 font-normal text-text-muted">
+            {position.index + 1} of {position.total}
+          </span>
+        </Link>
+        <div className="hidden sm:block">
+          <Breadcrumbs
+            items={[
+              { label: "Home", href: "/home" },
+              { label: course.department.name, href: `/departments/${course.department.slug}` },
+              { label: course.title, href: `/courses/${course.id}` },
+              { label: lesson.title },
+            ]}
+          />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-10">
+          <article aria-labelledby="lesson-heading" className="flex min-w-0 flex-col gap-5">
+            {record ? <RecordView record={record} /> : null}
+            {lesson.video ? (
+              <div className="-mx-4 sm:mx-0">
+                <VideoPlayer
+                  video={lesson.video}
+                  fileUrl={mediaLibraryEnabled() ? `/media/lessons/${lesson.id}` : undefined}
+                  title={lesson.title}
+                  startSeconds={progress.positionSeconds}
+                  onPosition={record ?? undefined}
+                />
+              </div>
+            ) : null}
+
+            <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <p className="eyebrow">
+                  Lesson {position.index + 1} of {position.total}
+                  {moduleTitle ? ` · ${moduleTitle}` : ""}
+                </p>
+                <h1 id="lesson-heading" className="text-title font-semibold text-balance">
+                  {lesson.title}
+                </h1>
+                <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-text-muted">
+                  {lesson.estimatedMinutes ? (
+                    <li>About {formatMinutes(lesson.estimatedMinutes)}</li>
+                  ) : null}
+                  <li>{lesson.isRequired ? "Required" : "Optional"}</li>
+                  {done && progress.completedAt ? (
+                    <li className="font-medium text-success">
+                      Completed {formatDate(progress.completedAt)}
+                    </li>
+                  ) : null}
+                </ul>
+              </div>
+              {member ? (
+                <CompleteToggle
+                  done={done}
+                  courseId={course.id}
+                  lessonKey={lessonKey}
+                  className="hidden shrink-0 sm:block"
+                />
               ) : null}
-            </ul>
+            </header>
+
+            <p className="text-small text-text-muted">
+              {member
+                ? "Mark it complete when you've worked through it. Nothing checks how much you watched."
+                : "Progress isn't saved while you look after this course's training."}
+            </p>
+
+            {/* Phones and tablets: the outline opens in a panel. */}
+            <div className="lg:hidden">
+              <Drawer
+                title="Course outline"
+                triggerLabel={`, ${doneLine}`}
+                side="right"
+                triggerClassName="w-full justify-start gap-3 rounded-card border border-border bg-surface px-3 text-small font-medium text-text"
+                trigger={
+                  <>
+                    <ListIcon className="size-4 shrink-0" />
+                    Course outline
+                    <span className="ml-auto font-normal text-text-muted">{doneLine}</span>
+                  </>
+                }
+              >
+                {outline}
+              </Drawer>
+            </div>
+
             {lesson.summary ? (
               <p className="reading-width text-lead text-text-secondary">{lesson.summary}</p>
             ) : null}
-          </header>
 
-          {record ? <RecordView record={record} /> : null}
-          {lesson.video ? (
-            <VideoPlayer
-              video={lesson.video}
-              fileUrl={mediaLibraryEnabled() ? `/media/lessons/${lesson.id}` : undefined}
-              title={lesson.title}
-              startSeconds={progress.positionSeconds}
-              onPosition={record ?? undefined}
-            />
-          ) : null}
+            {lesson.objectives.length > 0 ? (
+              <section
+                aria-labelledby="lesson-objectives"
+                className="flex reading-width flex-col gap-2 rounded-card border border-border bg-card p-5"
+              >
+                <h2 id="lesson-objectives" className="font-medium">
+                  By the end of this lesson
+                </h2>
+                <ul className="flex flex-col gap-1.5">
+                  {lesson.objectives.map((objective) => (
+                    <li key={objective} className="flex gap-3 text-small text-text-secondary">
+                      <span
+                        aria-hidden="true"
+                        className="mt-2 size-1.5 shrink-0 rounded-pill bg-[var(--dept)]"
+                      />
+                      {objective}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
 
-          {/* Phone: the outline is one tap away, above the content. */}
-          <details className="group rounded-card border border-border lg:hidden">
-            <summary className="flex min-h-touch cursor-pointer list-none items-center justify-between gap-3 px-4 [&::-webkit-details-marker]:hidden">
-              <span className="text-small font-medium">
-                Course outline · {position.index + 1} of {position.total}
-              </span>
-              <ChevronDownIcon className="size-4 transition-surface group-open:rotate-180" />
-            </summary>
-            <div className="border-t border-border p-2">
-              <CourseOutline
-                courseId={course.id}
-                modules={course.modules}
-                quizzes={course.quizzes}
-                practicals={course.practicals}
-                passedPracticalKeys={practicalsPassed}
-                progress={courseProgress}
-                passedQuizKeys={passed}
-                currentKey={lessonKey}
-                compact
-              />
-            </div>
-          </details>
-
-          {lesson.objectives.length > 0 ? (
-            <section
-              aria-labelledby="lesson-objectives"
-              className="flex reading-width flex-col gap-2 rounded-card border border-border bg-card p-5"
-            >
-              <h2 id="lesson-objectives" className="font-medium">
-                By the end of this lesson
-              </h2>
-              <ul className="flex flex-col gap-1.5">
-                {lesson.objectives.map((objective) => (
-                  <li key={objective} className="flex gap-3 text-small text-text-secondary">
-                    <span
-                      aria-hidden="true"
-                      className="mt-2 size-1.5 shrink-0 rounded-pill bg-[var(--dept)]"
-                    />
-                    {objective}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-
-          <div className="flex reading-width flex-col gap-4 text-lead text-text">
             {body.length > 0 ? (
-              body.map((paragraph, index) => (
-                <p key={index} className="whitespace-pre-line">
-                  {paragraph}
-                </p>
-              ))
-            ) : (
-              <p className="text-text-secondary">This lesson doesn&apos;t have any text yet.</p>
-            )}
-          </div>
-
-          {resources.length > 0 ? (
-            <section
-              aria-labelledby="lesson-resources-heading"
-              className="flex reading-width flex-col gap-3"
-            >
-              <h2 id="lesson-resources-heading" className="text-subheading font-semibold">
-                Resources
-              </h2>
-              <ul className="flex flex-col divide-y divide-border rounded-card border border-border">
-                {resources.map((resource) => (
-                  <li key={resource.id}>
-                    <Link
-                      href={`/sops/${resource.sopId}`}
-                      className="flex min-h-touch flex-wrap items-center justify-between gap-2 px-4 py-3 hover:bg-card"
-                    >
-                      <span className="flex flex-col">
-                        <span className="text-small text-text-muted">SOP</span>
-                        <span className="font-medium text-text">{resource.title}</span>
-                      </span>
-                      <span className="text-small text-text-muted">
-                        {SOP_STATE_LABELS[resource.state]}
-                      </span>
-                    </Link>
-                  </li>
+              <div className="flex reading-width flex-col gap-4 text-lead text-text">
+                {body.map((paragraph, index) => (
+                  <p key={index} className="whitespace-pre-line">
+                    {paragraph}
+                  </p>
                 ))}
-              </ul>
-            </section>
-          ) : null}
+              </div>
+            ) : null}
 
-          <section
-            aria-labelledby="lesson-progress-heading"
-            className="flex reading-width flex-col gap-3 border-t border-border pt-6"
-          >
-            <h2 id="lesson-progress-heading" className="sr-only">
-              Your progress
-            </h2>
-            {!member ? (
-              <p className="text-small text-text-muted">
-                Progress is saved for members of {course.department.name}. You&apos;re seeing this
-                lesson as someone who looks after its training.
-              </p>
-            ) : progress.state === "completed" && progress.completedAt ? (
-              <>
-                <p className="flex items-center gap-2 font-medium">
-                  <CheckIcon className="size-5 text-success" />
-                  You marked this lesson complete on {formatDate(progress.completedAt)}.
-                </p>
-                <ActionForm
-                  action={reopenLessonAction}
-                  submitLabel="Mark as not complete"
-                  pendingLabel="Saving…"
-                  variant="secondary"
-                  hidden={ids}
-                />
-              </>
-            ) : (
-              <>
-                <p className="text-small text-text-secondary">
-                  When you&apos;ve worked through this lesson, mark it complete. It&apos;s your
-                  call: nothing checks how much of the video you watched.
-                </p>
-                <ActionForm
-                  action={completeLessonAction}
-                  submitLabel="Mark lesson complete"
-                  pendingLabel="Saving…"
-                  hidden={ids}
-                />
-              </>
-            )}
-          </section>
+            {resources.length > 0 ? (
+              <section
+                aria-labelledby="lesson-resources-heading"
+                className="flex reading-width flex-col gap-3"
+              >
+                <h2 id="lesson-resources-heading" className="text-subheading font-semibold">
+                  Resources
+                </h2>
+                <ul className="flex flex-col gap-2">
+                  {resources.map((resource) => (
+                    <li key={resource.id}>
+                      <Link
+                        href={`/sops/${resource.sopId}`}
+                        className="group flex min-h-touch lift flex-wrap items-center justify-between gap-2 rounded-[12px] border border-border bg-card px-4 py-3"
+                      >
+                        <span className="flex flex-col">
+                          <span className="text-small text-text-muted">SOP</span>
+                          <span className="font-medium text-text transition-surface group-hover:text-accent-light">
+                            {resource.title}
+                          </span>
+                        </span>
+                        <span className="text-small text-text-muted">
+                          {SOP_STATE_LABELS[resource.state]}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
 
-          <nav aria-label="Lessons" className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-            {position.previous ? (
+            {/* Larger screens: previous and up next as cards. Phones use the bottom bar. */}
+            <nav aria-label="Lessons" className="hidden gap-3 sm:flex">
               <Link
-                href={`/courses/${course.id}/lessons/${position.previous.key}`}
-                className={buttonClasses("secondary", "justify-start")}
+                href={previousHref}
+                className="group flex max-w-[45%] min-w-0 lift items-center gap-3 rounded-[12px] border border-border bg-card px-4 py-3"
               >
-                <ArrowLeftIcon className="size-4" />
-                <span className="truncate">
-                  <span className="sr-only">Previous lesson: </span>
-                  {position.previous.title}
-                </span>
-              </Link>
-            ) : (
-              <Link
-                href={`/courses/${course.id}`}
-                className={buttonClasses("secondary", "justify-start")}
-              >
-                <ArrowLeftIcon className="size-4" />
-                Course overview
-              </Link>
-            )}
-            {nextStep ? (
-              <Link
-                href={stepHref(course.id, nextStep)}
-                className={buttonClasses("primary", "justify-end")}
-              >
-                <span className="truncate">
-                  <span className="sr-only">
-                    {nextStep.kind === "quiz"
-                      ? "Next, quiz: "
-                      : nextStep.kind === "practical"
-                        ? "Next, practical assessment: "
-                        : "Next lesson: "}
+                <ArrowLeftIcon className="size-4 shrink-0 text-text-muted" />
+                <span className="flex min-w-0 flex-col">
+                  <span className="text-small text-text-muted">
+                    {position.previous ? "Previous" : "Course overview"}
                   </span>
-                  {nextStep.title}
+                  <span className="truncate font-medium transition-surface group-hover:text-accent-light">
+                    {position.previous ? position.previous.title : course.title}
+                  </span>
                 </span>
-                <ArrowRightIcon className="size-4" />
               </Link>
-            ) : (
               <Link
-                href={`/courses/${course.id}`}
-                className={buttonClasses("primary", "justify-end")}
+                href={nextHref}
+                className="group flex min-w-0 flex-1 lift items-center gap-3 rounded-[12px] border border-border bg-card px-4 py-3"
               >
-                Back to the course
-                <ArrowRightIcon className="size-4" />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="text-small text-text-muted">{nextLabel}</span>
+                  <span className="truncate font-medium transition-surface group-hover:text-accent-light">
+                    {nextStep ? nextStep.title : "Back to the course"}
+                  </span>
+                </span>
+                <ChevronRightIcon className="size-4 shrink-0 text-text-muted transition-surface group-hover:translate-x-1 group-hover:text-accent-light" />
               </Link>
-            )}
-          </nav>
-        </article>
+            </nav>
+          </article>
 
-        <aside aria-label="Course outline" className="hidden lg:block">
-          <div className="sticky top-24 flex max-h-[calc(100dvh-7rem)] flex-col gap-3 overflow-y-auto rounded-card border border-border p-3">
-            <Link
-              href={`/courses/${course.id}`}
-              className="rounded-button px-3 pt-1 text-small font-medium text-text underline-offset-4 hover:underline"
-            >
-              {course.title}
-            </Link>
-            <CourseOutline
-              courseId={course.id}
-              modules={course.modules}
-              quizzes={course.quizzes}
-              practicals={course.practicals}
-              passedPracticalKeys={practicalsPassed}
-              progress={courseProgress}
-              passedQuizKeys={passed}
-              currentKey={lessonKey}
-              compact
-            />
-          </div>
-        </aside>
+          <aside aria-label="Course outline" className="hidden lg:block">
+            <div className="sticky top-24 flex max-h-[calc(100dvh-7rem)] flex-col gap-3 overflow-y-auto rounded-card border border-border bg-card p-3">
+              <div className="flex flex-col gap-2 px-3 pt-1">
+                <Link
+                  href={`/courses/${course.id}`}
+                  className="text-small font-semibold text-text underline-offset-4 hover:underline"
+                >
+                  {course.title}
+                </Link>
+                <span className="text-small text-text-muted">{doneLine}</span>
+                <ProgressBar
+                  percent={lessonCount === 0 ? 0 : (doneCount / lessonCount) * 100}
+                  label={doneLine}
+                />
+              </div>
+              {outline}
+            </div>
+          </aside>
+        </div>
       </div>
-    </div>
+
+      {/* Phone: every action in one bar, within thumb reach (the tab bar steps aside here). */}
+      <nav
+        aria-label="Lesson actions"
+        className="sticky bottom-0 z-30 flex items-center gap-2 border-t border-border bg-surface px-3 pt-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:hidden print:hidden"
+      >
+        <Link href={previousHref} className={buttonClasses("secondary", "w-11 shrink-0 px-0")}>
+          <ArrowLeftIcon className="size-4" />
+          <span className="sr-only">
+            {position.previous ? `Previous lesson: ${position.previous.title}` : "Course overview"}
+          </span>
+        </Link>
+        {member ? (
+          <CompleteToggle
+            done={done}
+            courseId={course.id}
+            lessonKey={lessonKey}
+            className="min-w-0 flex-1"
+          />
+        ) : (
+          <span className="flex-1" />
+        )}
+        <Link href={nextHref} className={buttonClasses("secondary", "shrink-0")}>
+          {nextStep ? "Next" : "Done"}
+          <span className="sr-only">
+            {nextStep ? `: ${nextStep.title}` : ": back to the course"}
+          </span>
+          <ChevronRightIcon className="size-4" />
+        </Link>
+      </nav>
+    </>
   );
 }
 

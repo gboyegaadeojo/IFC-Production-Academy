@@ -5,7 +5,8 @@ import { Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ArrowRightIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, ChevronDownIcon } from "@/components/ui/icons";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getMyAchievements } from "@/lib/data/achievements";
@@ -13,10 +14,11 @@ import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards, type DepartmentCard as CardData } from "@/lib/data/departments";
 import { getDepartmentLearning } from "@/lib/data/learning";
 import { getMyOnboarding, getOpenDepartments } from "@/lib/data/onboarding";
-import { getContinueLearning } from "@/lib/data/progress";
+import { getContinueLearning, type ContinueCourse } from "@/lib/data/progress";
 import { formatDateTime } from "@/lib/domain/admin";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { homeState, type HomeState } from "@/lib/domain/home";
+import { stepHref } from "@/lib/domain/learning";
 import { volunteerPathways } from "@/lib/domain/onboarding";
 import { greetingName } from "@/lib/domain/people";
 import { InstallApp } from "@/components/pwa/install-app";
@@ -62,10 +64,41 @@ async function TrainingContent() {
   // Onboarding still in progress shows first; finished pathways drop off the Training page.
   const onboarding = volunteerPathways(onboardingRows).filter((p) => !p.finished);
   const learningFor = new Map(learning.map((entry) => [entry.departmentId, entry]));
+  const lessonsTotal = learning.reduce(
+    (n, entry) => n + entry.levels.reduce((m, level) => m + level.lessonsTotal, 0),
+    0,
+  );
+  const lessonsDone = learning.reduce(
+    (n, entry) => n + entry.levels.reduce((m, level) => m + level.lessonsDone, 0),
+    0,
+  );
+  const current = continuing[0];
 
   return (
-    <div className="page-container flex flex-col gap-12 py-8 lg:gap-14 lg:py-12">
-      <Hero name={greetingName(user.displayName, user.email)} state={state} />
+    <div className="page-container flex flex-col gap-8 py-6 sm:py-8 lg:gap-10 lg:py-10">
+      <Hero
+        name={greetingName(user.displayName, user.email)}
+        state={state}
+        stats={
+          state === "member"
+            ? [
+                {
+                  value: String(memberOf.length),
+                  label: memberOf.length === 1 ? "department" : "departments",
+                },
+                {
+                  value: String(continuing.length),
+                  label: continuing.length === 1 ? "course in progress" : "courses in progress",
+                },
+                ...(lessonsTotal > 0
+                  ? [{ value: `${lessonsDone}/${lessonsTotal}`, label: "lessons done" }]
+                  : []),
+              ]
+            : []
+        }
+      />
+
+      {current?.progress.next ? <ContinueCard continuing={current} /> : null}
 
       <InstallApp variant="banner" />
 
@@ -80,13 +113,12 @@ async function TrainingContent() {
           <SectionHeading id="my-departments-heading" eyebrow="Your departments">
             Keep learning
           </SectionHeading>
-          <ul className="grid gap-4 lg:grid-cols-2">
+          <ul className="grid gap-2 sm:gap-3 lg:grid-cols-2">
             {memberOf.map((department) => (
               <li key={department.id}>
                 <MemberDepartmentCard
                   department={department}
                   learning={learningFor.get(department.id)}
-                  continuing={continuing.find((c) => c.course.department.id === department.id)}
                   approvedRoles={(achievements?.approvedRoles ?? [])
                     .filter((role) => role.departmentId === department.id)
                     .map((role) => role.roleName)}
@@ -97,7 +129,7 @@ async function TrainingContent() {
         </section>
       ) : null}
 
-      <HowTrainingWorks />
+      <HowTrainingWorks open={state !== "member"} />
 
       <section
         id="departments"
@@ -152,19 +184,26 @@ function SectionHeading({
   );
 }
 
-function Hero({ name, state }: { name: string | null; state: HomeState }) {
+function Hero({
+  name,
+  state,
+  stats,
+}: {
+  name: string | null;
+  state: HomeState;
+  stats: { value: string; label: string }[];
+}) {
   const lead: Record<HomeState, string> = {
     new: "Learn the craft behind every service. Pick a department, learn its gear and routines at your own pace, and grow into serving with the production team.",
     pending:
       "Your request is with a department leader. While you wait, have a look at the other departments.",
-    member:
-      "Pick up where you left off. Courses appear in each department as leaders publish them.",
+    member: "",
   };
 
   return (
-    <section aria-labelledby="welcome-heading" className="flex flex-col gap-4">
+    <section aria-labelledby="welcome-heading" className="flex flex-col gap-3">
       <p className="eyebrow">Your training</p>
-      <h1 id="welcome-heading" className="text-display font-semibold text-balance">
+      <h1 id="welcome-heading" className="text-title font-semibold text-balance sm:text-display">
         {state === "member" ? "Welcome back" : "Welcome"}
         {name ? `, ${name}` : ""}
       </h1>
@@ -179,7 +218,21 @@ function Hero({ name, state }: { name: string | null; state: HomeState }) {
           </Link>
         </p>
       )}
-      <p className="max-w-[40rem] text-lead text-text-secondary">{lead[state]}</p>
+      {stats.length > 0 ? (
+        <ul className="flex flex-wrap gap-2">
+          {stats.map((stat) => (
+            <li
+              key={stat.label}
+              className="flex items-baseline gap-1.5 rounded-pill border border-border bg-surface px-3 py-1 text-small text-text-secondary"
+            >
+              <span className="tabular font-mono font-semibold text-text">{stat.value}</span>
+              {stat.label}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="max-w-[40rem] text-lead text-text-secondary">{lead[state]}</p>
+      )}
       {state === "new" ? (
         <div>
           <a href="#departments" className={buttonClasses("primary", "gap-2")}>
@@ -237,11 +290,11 @@ function RequestStatus({ requests }: { requests: CardData[] }) {
 }
 
 /** Keeps membership, completion, and approval to serve visibly separate (SPEC §3, DESIGN §10). */
-function HowTrainingWorks() {
+function HowTrainingWorks({ open }: { open: boolean }) {
   const steps = [
     {
       title: "Join a department",
-      body: "Ask to join, or accept a leader's invitation. Joining opens its training.",
+      body: "Ask to join, or accept a leader's invitation. Any course is open to try.",
     },
     {
       title: "Learn and practise",
@@ -253,13 +306,17 @@ function HowTrainingWorks() {
     },
   ];
   return (
-    <section aria-labelledby="how-heading" className="flex flex-col gap-4">
-      <SectionHeading id="how-heading" eyebrow="How it works">
-        From joining to serving
-      </SectionHeading>
-      <ol className="grid gap-px overflow-hidden rounded-card border border-border bg-border md:grid-cols-3">
+    <details
+      open={open}
+      className="group rounded-card border border-border bg-card [&_summary::-webkit-details-marker]:hidden"
+    >
+      <summary className="flex min-h-touch cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-semibold">
+        How serving works
+        <ChevronDownIcon className="size-4 text-text-muted transition-surface group-open:rotate-180" />
+      </summary>
+      <ol className="grid gap-px border-t border-border bg-border md:grid-cols-3">
         {steps.map((step, index) => (
-          <li key={step.title} className="flex flex-col gap-1.5 bg-bg p-5">
+          <li key={step.title} className="flex flex-col gap-1.5 bg-card p-4">
             <span className="tabular font-mono text-small text-accent-light">
               {String(index + 1).padStart(2, "0")}
             </span>
@@ -268,6 +325,55 @@ function HowTrainingWorks() {
           </li>
         ))}
       </ol>
+    </details>
+  );
+}
+
+/**
+ * The one thing to do next (Training mock, approved 2026-11-02): the most recently opened course,
+ * its next step, and progress, at the top of the page.
+ */
+function ContinueCard({ continuing }: { continuing: ContinueCourse }) {
+  const next = continuing.progress.next;
+  if (!next) {
+    return null;
+  }
+  const { course, progress } = continuing;
+  const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
+  const label = `${progress.countedCompleted} of ${progress.countedTotal} ${continuing.hasRequired ? "required lessons" : "lessons"}`;
+  return (
+    <section aria-labelledby="continue-heading">
+      <Link
+        href={stepHref(course.id, next)}
+        style={style}
+        className="group relative grid lift grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 overflow-hidden rounded-[18px] border border-border bg-surface p-4 pl-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:p-5 sm:pl-6"
+      >
+        <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5 bg-[var(--dept)]" />
+        <span
+          aria-hidden="true"
+          className="flex size-11 items-center justify-center rounded-[12px] bg-[color-mix(in_srgb,var(--dept)_12%,var(--surface))] text-[var(--dept)]"
+        >
+          <DepartmentIcon icon={course.department.icon} className="size-5" />
+        </span>
+        <span className="flex min-w-0 flex-col gap-1">
+          <span className="eyebrow">Continue · {course.department.name}</span>
+          <span
+            id="continue-heading"
+            className="text-subheading font-semibold transition-surface group-hover:text-accent-light"
+          >
+            {course.title}
+          </span>
+          <span className="text-small text-text-secondary">Next: {next.title}</span>
+          <span className="mt-1.5 flex max-w-sm flex-col gap-1">
+            <ProgressBar percent={progress.percent} label={`${course.title}: ${label}`} />
+            <span className="text-small text-text-muted">{label}</span>
+          </span>
+        </span>
+        <span className={buttonClasses("primary", "col-span-2 sm:col-span-1")}>
+          Continue
+          <ArrowRightIcon className="size-4" />
+        </span>
+      </Link>
     </section>
   );
 }
