@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { ActionForm } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
-import { ArrowRightIcon, LockIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, ChevronLeftIcon, LockIcon } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -98,69 +98,44 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
     : [`Version ${course.versionNumber}`];
 
   return (
-    <div style={style} className="page-container flex flex-col gap-10 py-8 lg:py-12">
-      <Breadcrumbs
-        items={[
-          { label: "Home", href: "/home" },
-          { label: course.department.name, href: `/departments/${course.department.slug}` },
-          { label: course.title },
-        ]}
-      />
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-14">
-        <div className="flex flex-col gap-10">
-          <header className="flex flex-col gap-4 border-l-2 border-[var(--dept)] pl-5">
-            <p className="eyebrow">
-              Level {course.level.number} · {course.level.name}
-            </p>
-            <h1 className="text-display font-semibold text-balance">{course.title}</h1>
-            {course.summary ? (
-              <p className="max-w-[40rem] text-lead text-text-secondary">{course.summary}</p>
-            ) : null}
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-text-muted">
-              {facts.map((fact) => (
-                <li key={fact}>{fact}</li>
-              ))}
-            </ul>
-          </header>
-
-          {course.objectives.length > 0 ? (
-            <section aria-labelledby="objectives-heading" className="flex flex-col gap-3">
-              <h2 id="objectives-heading" className="text-heading font-semibold">
-                What you&apos;ll learn
-              </h2>
-              <ul className="grid gap-2 sm:grid-cols-2">
-                {course.objectives.map((objective) => (
-                  <li key={objective} className="flex gap-3 text-text-secondary">
-                    <span
-                      aria-hidden="true"
-                      className="mt-2.5 size-1.5 shrink-0 rounded-pill bg-[var(--dept)]"
-                    />
-                    {objective}
-                  </li>
-                ))}
-              </ul>
-            </section>
+    <div
+      style={style}
+      className="page-container flex flex-col gap-6 py-4 sm:gap-10 sm:py-8 lg:py-12"
+    >
+      <Link
+        href={`/departments/${course.department.slug}`}
+        className="-ml-1 flex min-h-touch w-fit items-center gap-1 rounded-button pr-2 pl-1 text-small font-medium text-text-secondary hover:text-text sm:hidden"
+      >
+        <ChevronLeftIcon className="size-4" />
+        {course.department.name}
+      </Link>
+      <div className="hidden sm:block">
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/home" },
+            { label: course.department.name, href: `/departments/${course.department.slug}` },
+            { label: course.title },
+          ]}
+        />
+      </div>
+      {/* Phones: title, then the Start or Continue card, then the lessons. Desktop: the card sits
+          beside them. */}
+      <div className="grid gap-6 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-14">
+        <header className="flex flex-col gap-3 border-l-2 border-[var(--dept)] pl-4 sm:gap-4 sm:pl-5 lg:col-start-1">
+          <p className="eyebrow">
+            Level {course.level.number} · {course.level.name}
+          </p>
+          <h1 className="text-title font-semibold text-balance sm:text-display">{course.title}</h1>
+          {course.summary ? (
+            <p className="max-w-[40rem] text-lead text-text-secondary">{course.summary}</p>
           ) : null}
-
-          {course.canOpen ? (
-            <section aria-labelledby="outline-heading" className="flex flex-col gap-4">
-              <h2 id="outline-heading" className="text-heading font-semibold">
-                Lessons
-              </h2>
-              <CourseOutline
-                courseId={course.id}
-                modules={course.modules}
-                quizzes={course.quizzes}
-                practicals={course.practicals}
-                progress={lessonProgress ?? undefined}
-                passedQuizKeys={passed}
-                passedPracticalKeys={practicalsPassed}
-              />
-            </section>
-          ) : null}
-        </div>
-
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
+          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-text-muted">
+            {facts.map((fact) => (
+              <li key={fact}>{fact}</li>
+            ))}
+          </ul>
+        </header>
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
           {summary && summary.state !== "not_started" ? (
             <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
               <p className="font-medium">
@@ -242,6 +217,43 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
             trainer.
           </p>
         </aside>
+        <div className="flex flex-col gap-10 lg:col-start-1">
+          {course.objectives.length > 0 ? (
+            <section aria-labelledby="objectives-heading" className="flex flex-col gap-3">
+              <h2 id="objectives-heading" className="text-heading font-semibold">
+                What you&apos;ll learn
+              </h2>
+              <ul className="grid gap-2 sm:grid-cols-2">
+                {course.objectives.map((objective) => (
+                  <li key={objective} className="flex gap-3 text-text-secondary">
+                    <span
+                      aria-hidden="true"
+                      className="mt-2.5 size-1.5 shrink-0 rounded-pill bg-[var(--dept)]"
+                    />
+                    {objective}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {course.canOpen ? (
+            <section aria-labelledby="outline-heading" className="flex flex-col gap-4">
+              <h2 id="outline-heading" className="text-heading font-semibold">
+                Lessons
+              </h2>
+              <CourseOutline
+                courseId={course.id}
+                modules={course.modules}
+                quizzes={course.quizzes}
+                practicals={course.practicals}
+                progress={lessonProgress ?? undefined}
+                passedQuizKeys={passed}
+                passedPracticalKeys={practicalsPassed}
+              />
+            </section>
+          ) : null}
+        </div>
       </div>
     </div>
   );

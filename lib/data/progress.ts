@@ -192,3 +192,40 @@ export async function getContinueLearning(
     ];
   });
 }
+
+/**
+ * Each course's progress for one learner, by course id, using the same rule as the course page
+ * (required lessons and quizzes; SRS-PROG-002). For the department page's course cards.
+ */
+export async function getCourseProgressById(
+  userId: string,
+  courseIds: readonly string[],
+): Promise<Map<string, CourseProgress>> {
+  if (courseIds.length === 0) {
+    return new Map();
+  }
+  const [activity, courses, passed, practicalsPassed] = await Promise.all([
+    getLearnerActivity(userId, courseIds),
+    Promise.all(courseIds.map((id) => getLearnerCourse(id))),
+    getPassedQuizKeys(userId, [...courseIds]),
+    getPassedPracticalKeys(userId, [...courseIds]),
+  ]);
+  const out = new Map<string, CourseProgress>();
+  for (const course of courses) {
+    if (!course || !course.canOpen) {
+      continue;
+    }
+    out.set(
+      course.id,
+      courseProgress(
+        course.modules,
+        activity.get(course.id)?.lessons ?? new Map(),
+        course.quizzes,
+        passed.get(course.id),
+        course.practicals,
+        practicalsPassed.get(course.id),
+      ),
+    );
+  }
+  return out;
+}

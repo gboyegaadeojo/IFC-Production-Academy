@@ -32,7 +32,7 @@ for (const viewport of VIEWPORTS) {
 
     // New volunteer: one clear next step, every department discoverable.
     await expect(page.getByRole("link", { name: "Explore departments" })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "From joining to serving" })).toBeVisible();
+    await expect(page.getByText("How serving works")).toBeVisible();
     await capture(page, `home-new-${viewport.name}`);
 
     // Pending: the request status comes first; other departments stay discoverable.
