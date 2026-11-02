@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { firstName, initials } from "./people";
+import { firstName, greetingName, initials } from "./people";
 
 describe("firstName", () => {
   it("takes the first word", () => {
@@ -27,5 +27,23 @@ describe("initials", () => {
   it("handles accents and empty names", () => {
     expect(initials("élodie ñúñez")).toBe("ÉÑ");
     expect(initials("   ")).toBe("?");
+  });
+});
+
+describe("greetingName", () => {
+  it("greets by first name", () => {
+    expect(greetingName("Sam Example", "sam@example.com")).toBe("Sam");
+  });
+
+  it("leaves out a name made up from the email at sign-up", () => {
+    expect(greetingName("sam.example", "sam.example@example.com")).toBeNull();
+    expect(greetingName("Sam.Example", "sam.example@example.com")).toBeNull();
+    expect(greetingName("sam@example.com", null)).toBeNull();
+    expect(greetingName("New volunteer", "x@example.com")).toBeNull();
+    expect(greetingName("  ", null)).toBeNull();
+  });
+
+  it("keeps a one-word name they chose", () => {
+    expect(greetingName("Sam", "sam.example@example.com")).toBe("Sam");
   });
 });
