@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Wordmark } from "@/components/brand";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { getBranding } from "@/lib/data/branding";
 import { checkCertificate } from "@/lib/data/certificates";
 import { normaliseReference } from "@/lib/domain/certificates";
 import { formatDate } from "@/lib/domain/dates";
@@ -43,7 +44,10 @@ export default function VerifyCertificatePage({ params }: PageProps<"/verify/[re
 
 async function CheckResult({ params }: Pick<PageProps<"/verify/[reference]">, "params">) {
   const reference = normaliseReference((await params).reference);
-  const certificate = reference ? await checkCertificate(reference) : null;
+  const [certificate, branding] = await Promise.all([
+    reference ? checkCertificate(reference) : null,
+    getBranding(),
+  ]);
 
   if (!certificate) {
     return (
@@ -51,7 +55,7 @@ async function CheckResult({ params }: Pick<PageProps<"/verify/[reference]">, "p
         <h1 className="text-heading font-semibold">We couldn&apos;t find that certificate</h1>
         <p className="text-text-secondary">
           Check the reference printed on it. It looks like IFC-1A2B-3C4D-5E6F. A certificate that
-          isn&apos;t found here wasn&apos;t issued by the IFC Production Academy.
+          isn&apos;t found here wasn&apos;t issued by the {branding.name}.
         </p>
       </div>
     );

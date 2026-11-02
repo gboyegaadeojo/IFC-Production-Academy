@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "@/components/brand-context";
 import { useEffect, useState } from "react";
 import { installKind } from "@/components/pwa/install-state";
 import { buttonClasses } from "@/components/ui/button";
@@ -40,6 +41,7 @@ async function registration(): Promise<ServiceWorkerRegistration> {
  * Home Screen (iOS 16.4 or later), so it asks for that first.
  */
 export function DeviceAlerts() {
+  const { shortName } = useBrand();
   const router = useRouter();
   const [state, setState] = useState<State>("checking");
   const [endpoint, setEndpoint] = useState<string | null>(null);
@@ -156,7 +158,7 @@ export function DeviceAlerts() {
       ) : state === "install-first" ? (
         <p className="text-small text-text-secondary">
           On iPhone and iPad, alerts work once the Academy is on your Home Screen. Follow the steps
-          above, open IFC Academy from your Home Screen, and come back to this page.
+          above, open {shortName} from your Home Screen, and come back to this page.
         </p>
       ) : state === "unsupported" ? (
         <p className="text-small text-text-secondary">
@@ -166,7 +168,7 @@ export function DeviceAlerts() {
       ) : state === "denied" ? (
         <p className="text-small text-text-secondary">
           Alerts are blocked for the Academy on this device. To allow them, open your browser or
-          phone settings, find IFC Academy under Notifications, and turn them on. Then reload this
+          phone settings, find {shortName} under Notifications, and turn them on. Then reload this
           page.
         </p>
       ) : state === "on" ? (

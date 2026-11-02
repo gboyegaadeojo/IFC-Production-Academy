@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, and the layout editor. The tiles say "Not connected yet" until their stage is built. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, and the app name and logo setting. The tiles say "Not connected yet" until their stage is built. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
@@ -123,6 +123,7 @@ Platform administrators can change the app's name, short name, and logo under **
 - **Android** picks it up by itself, but it can take days, and the name may not change in every case.
 - **iPhone** will most likely need the app removed and added again.
 - **Certificates already issued** keep the name they were issued under.
+- **The sign-in email and the offline page** keep the original name for now, because they are fixed files.
 
 ## Words we use
 

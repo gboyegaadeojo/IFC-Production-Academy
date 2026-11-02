@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "@/components/brand-context";
 import { useSyncExternalStore } from "react";
 import {
   installKind,
@@ -60,6 +61,7 @@ function Steps({
  * steps open.
  */
 export function InstallCard() {
+  const { shortName } = useBrand();
   const kind = useSyncExternalStore<InstallKind | null>(subscribe, installKind, () => null);
   const here = useSyncExternalStore<Platform | null>(noop, platform, () => null);
 
@@ -93,7 +95,7 @@ export function InstallCard() {
           Choose <span className="font-medium text-text">Add to Home Screen</span>, then{" "}
           <span className="font-medium text-text">Add</span>.
         </li>
-        <li>Open IFC Academy from your Home Screen. Alerts need iOS 16.4 or later.</li>
+        <li>Open {shortName} from your Home Screen. Alerts need iOS 16.4 or later.</li>
       </Steps>
       <Steps title="On an Android phone" open={here === "android" && kind !== "installed"}>
         <li>
@@ -101,14 +103,14 @@ export function InstallCard() {
           <span className="font-medium text-text">Install the app</span> above, or open
           Chrome&apos;s menu and choose <span className="font-medium text-text">Install app</span>.
         </li>
-        <li>IFC Academy appears with your other apps.</li>
+        <li>{shortName} appears with your other apps.</li>
       </Steps>
       <Steps title="On a computer" open={here === "computer" && kind !== "installed"}>
         <li>
           In Chrome or Edge, select the install icon at the right of the address bar, or{" "}
           <span className="font-medium text-text">Install the app</span> above.
         </li>
-        <li>IFC Academy opens in its own window and appears with your other apps.</li>
+        <li>{shortName} opens in its own window and appears with your other apps.</li>
       </Steps>
     </div>
   );

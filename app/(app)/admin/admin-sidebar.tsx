@@ -12,7 +12,9 @@ import {
   useState,
   useSyncExternalStore,
 } from "react";
-import { IfcMark } from "@/components/brand";
+import { BrandMark } from "@/components/brand";
+import { useBrand } from "@/components/brand-context";
+import { wordmarkParts } from "@/lib/domain/branding";
 import { AccountMenu } from "@/components/shell/account-menu";
 import {
   ArrowLeftIcon,
@@ -177,6 +179,7 @@ export function AdminSidebar({
   /** The persistent sidebar from 1024px, or its contents inside the mobile drawer. */
   variant?: "rail" | "drawer";
 }) {
+  const { lead, soft } = wordmarkParts(useBrand().name);
   const pathname = usePathname();
   const active = currentSection(groups, pathname);
   const activeGroup = groups.find((g) => g.sections.some((s) => s.key === active?.key))?.group;
@@ -231,12 +234,14 @@ export function AdminSidebar({
             className="flex min-h-10 min-w-0 items-center gap-2.5 rounded-button"
             title="Admin dashboard"
           >
-            <IfcMark className="mark-on-theme shrink-0" height={16} />
+            <BrandMark className="shrink-0" height={16} />
             {compact ? (
-              <span className="sr-only">Production Academy admin</span>
+              <span className="sr-only">
+                {lead} {soft} admin
+              </span>
             ) : (
               <span className="truncate text-body font-semibold tracking-tight text-text">
-                Production <span className="font-medium text-text-secondary">Academy</span>
+                {lead} <span className="font-medium text-text-secondary">{soft}</span>
               </span>
             )}
           </Link>

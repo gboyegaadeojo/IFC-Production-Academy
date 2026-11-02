@@ -1,5 +1,6 @@
 "use client";
 
+import { useBrand } from "@/components/brand-context";
 import { useSyncExternalStore } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { CloseIcon, ShareIcon, SmartphoneIcon } from "@/components/ui/icons";
@@ -50,6 +51,7 @@ function dismiss() {
 }
 
 function IosSteps() {
+  const { shortName } = useBrand();
   return (
     <ol className="flex list-decimal flex-col gap-1 pl-5 text-small text-text-secondary">
       <li>
@@ -60,7 +62,7 @@ function IosSteps() {
         Choose <span className="font-medium text-text">Add to Home Screen</span>, then{" "}
         <span className="font-medium text-text">Add</span>.
       </li>
-      <li>Open IFC Academy from your Home Screen.</li>
+      <li>Open {shortName} from your Home Screen.</li>
     </ol>
   );
 }

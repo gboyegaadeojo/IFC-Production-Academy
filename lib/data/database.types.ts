@@ -21,6 +21,9 @@ export type Database = {
           pco_organization_id: string | null;
           checklist_service_type_id: string | null;
           service_weekday: number;
+          app_name: string;
+          app_short_name: string;
+          app_icon_path: string | null;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -1665,6 +1668,14 @@ export type Database = {
       take_cover: { Args: { p_request_id: string }; Returns: undefined };
       set_role_sees_all: {
         Args: { p_role_id: string; p_sees_all: boolean };
+        Returns: undefined;
+      };
+      app_branding: {
+        Args: Record<string, never>;
+        Returns: { app_name: string; app_short_name: string; app_icon_path: string | null }[];
+      };
+      set_app_branding: {
+        Args: { p_name: string; p_short_name: string; p_icon_path: string | null };
         Returns: undefined;
       };
       can_view_service_dashboard: {

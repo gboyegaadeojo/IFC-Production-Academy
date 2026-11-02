@@ -1,13 +1,18 @@
 import type { MetadataRoute } from "next";
+import { getBranding, iconUrlFor } from "@/lib/data/branding";
+import { manifestIcons } from "@/lib/domain/branding";
+
+export const dynamic = "force-dynamic";
 
 /**
- * Installable web app (SPEC §1 "responsive and an installable PWA", MVP checklist). The icon is a
- * placeholder lens mark in the Academy's colours until IFC's brand assets are decided (SPEC §9).
+ * Installable web app (SPEC §1 "responsive and an installable PWA", MVP checklist). The name and
+ * icon come from Admin, App name and logo (ADD-DASH-04).
  */
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const branding = await getBranding();
   return {
-    name: "IFC Production Academy",
-    short_name: "IFC Academy",
+    name: branding.name,
+    short_name: branding.shortName,
     description: "Training and readiness for the IFC production team.",
     id: "/home",
     start_url: "/home",
@@ -16,10 +21,6 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#000000",
     theme_color: "#000000",
     lang: "en-CA",
-    icons: [
-      { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
-    ],
+    icons: manifestIcons(iconUrlFor(branding)),
   };
 }
