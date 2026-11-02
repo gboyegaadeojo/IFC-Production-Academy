@@ -1,14 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState, useTransition, type DragEvent } from "react";
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { STEP_GROUPS, STEP_KINDS, type StepKind, type StepTone } from "@/lib/domain/onboarding";
 import { addStepAction, dropStepAction, moveStageAction, moveStepAction } from "./actions";
 import { StepIcon } from "./step-icon";
 
-export type BuilderStep = { id: string; kind: StepKind; title: string; summary: string };
+export type BuilderStep = {
+  id: string;
+  kind: StepKind;
+  title: string;
+  summary: string;
+  /** What it still needs before it works (stepNeedsSetup), or null. */
+  needsSetup: string | null;
+};
 export type BuilderStage = {
   id: string;
   name: string;
@@ -30,17 +36,21 @@ export const TONE: Record<StepTone, string> = {
  * Option A, Flow (approved mock, 2026-11-01): stages in order, each with its steps, and the step
  * library beside them. Steps move by drag and drop, or by the arrow buttons and Alt+Up/Down for
  * keyboards and touch screens. Every change saves straight away; the page refreshes from the server.
+ * Choosing a step or stage is handled by the parent in the browser, without a server round trip.
  */
 export function Builder({
   pathwayId,
   stages,
   selectedStepId,
+  onSelectStep,
+  onSelectStage,
 }: {
   pathwayId: string;
   stages: BuilderStage[];
   selectedStepId: string | null;
+  onSelectStep: (stepId: string) => void;
+  onSelectStage: (stageId: string) => void;
 }) {
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [over, setOver] = useState<string | null>(null);
   const [status, setStatus] = useState("");
@@ -63,7 +73,7 @@ export function Builder({
       const done = await addStepAction({ pathwayId, stageId, afterStepId, kind });
       setStatus(done.ok ? `Added “${STEP_KINDS[kind].label}”.` : "That step couldn't be added.");
       if (done.ok && done.stepId) {
-        router.push(href(done.stepId), { scroll: false });
+        onSelectStep(done.stepId);
       }
     });
   }
@@ -160,6 +170,12 @@ export function Builder({
                 <Link
                   href={`/admin/onboarding?pathway=${pathwayId}&stage=${stage.id}`}
                   scroll={false}
+                  onClick={(e) => {
+                    if (!opensElsewhere(e)) {
+                      e.preventDefault();
+                      onSelectStage(stage.id);
+                    }
+                  }}
                   className="flex min-h-8 items-center rounded-button px-2 text-small text-accent-light hover:bg-hover"
                 >
                   Edit<span className="sr-only"> stage {stage.name}</span>
@@ -200,6 +216,12 @@ export function Builder({
                         href={href(step.id)}
                         scroll={false}
                         aria-current={selected ? "true" : undefined}
+                        onClick={(e) => {
+                          if (!opensElsewhere(e)) {
+                            e.preventDefault();
+                            onSelectStep(step.id);
+                          }
+                        }}
                         onKeyDown={(e) => {
                           if (e.altKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
                             e.preventDefault();
@@ -212,6 +234,16 @@ export function Builder({
                         <span className="truncate text-small text-text-secondary">
                           {step.summary}
                         </span>
+                        {step.needsSetup ? (
+                          <span className="mt-0.5 flex items-center gap-1.5 text-small font-medium text-warning">
+                            <span
+                              aria-hidden="true"
+                              className="size-2 shrink-0 rounded-full bg-warning"
+                            />
+                            Needs setup
+                            <span className="sr-only">: {step.needsSetup}</span>
+                          </span>
+                        ) : null}
                       </Link>
                       <span className="flex opacity-60 group-focus-within:opacity-100 group-hover:opacity-100">
                         <button
@@ -297,4 +329,14 @@ export function Builder({
       </aside>
     </div>
   );
+}
+
+/** Ctrl, Cmd, Shift or middle click opens the link in a new tab or window, as usual. */
+function opensElsewhere(event: {
+  metaKey: boolean;
+  ctrlKey: boolean;
+  shiftKey: boolean;
+  button: number;
+}) {
+  return event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0;
 }

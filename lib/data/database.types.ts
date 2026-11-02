@@ -1404,6 +1404,7 @@ export type Database = {
           current_position: number | null;
           contact_name: string | null;
           chosen_department_id: string | null;
+          offered_department_ids: string[] | null;
         }[];
       };
       delete_course_module: { Args: { p_module_id: string }; Returns: undefined };

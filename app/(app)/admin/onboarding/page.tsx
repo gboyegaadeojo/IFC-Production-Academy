@@ -4,25 +4,17 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { UsersIcon } from "@/components/ui/icons";
 import { PageHeader } from "@/components/ui/page-header";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getPathwayEditor, getPathways, type PathwayEditor } from "@/lib/data/onboarding";
 import { departmentHueVar } from "@/lib/domain/departments";
-import { stepSummary } from "@/lib/domain/onboarding";
+import { stepNeedsSetup, stepSummary } from "@/lib/domain/onboarding";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
-import {
-  addStageAction,
-  createPathwayAction,
-  removeStageAction,
-  updatePathwayAction,
-  updateStageAction,
-} from "./actions";
-import { Builder } from "./builder";
-import { StepSettings } from "./step-settings";
+import { createPathwayAction, updatePathwayAction } from "./actions";
+import { Workspace } from "./workspace";
 
 export const metadata: Metadata = { title: "Onboarding pathways" };
 
@@ -52,9 +44,18 @@ async function OnboardingContent({
     const value = params[key];
     return typeof value === "string" && UUID.test(value) ? value : null;
   };
-  const { pathways, canCreateGeneral, departmentsWithout } = await getPathways(grants);
-  const selected = pathways.find((p) => p.id === param("pathway")) ?? pathways[0] ?? null;
-  const editor = selected ? await getPathwayEditor(selected.id) : null;
+  // When the address names a pathway, load it alongside the list rather than after it.
+  const asked = param("pathway");
+  const [{ pathways, canCreateGeneral, departmentsWithout }, askedEditor] = await Promise.all([
+    getPathways(grants),
+    asked ? getPathwayEditor(asked) : null,
+  ]);
+  const selected = pathways.find((p) => p.id === asked) ?? pathways[0] ?? null;
+  const editor = !selected
+    ? null
+    : askedEditor?.id === selected.id
+      ? askedEditor
+      : await getPathwayEditor(selected.id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -102,6 +103,11 @@ async function OnboardingContent({
       {canCreateGeneral || departmentsWithout.length > 0 ? (
         <details className="max-w-xl rounded-card border border-border bg-surface p-4">
           <summary className="cursor-pointer font-medium">Set up a pathway</summary>
+          <p className="mt-2 text-small text-text-secondary">
+            {canCreateGeneral
+              ? "Start with “Join the team”, the pathway everyone goes through first. Then add one for each department: people move into it when they choose that department."
+              : "One pathway per department. People move into it when they choose that department in “Join the team”, or when a leader adds them."}
+          </p>
           <ActionForm
             action={createPathwayAction}
             submitLabel="Create pathway"
@@ -126,6 +132,7 @@ async function OnboardingContent({
                 required
                 maxLength={120}
                 defaultValue={pathways.length === 0 && canCreateGeneral ? "Join the team" : ""}
+                placeholder="For example: Camera onboarding"
                 className={fieldClasses}
               />
             </Field>
@@ -160,6 +167,7 @@ function Editor({
     people: map(editor.people),
     courses: map(editor.courses),
     servingRoles: map(editor.servingRoles),
+    departments: map(editor.departments),
   };
   const stages = editor.stages.map((stage) => ({
     id: stage.id,
@@ -171,14 +179,29 @@ function Editor({
       kind: s.kind,
       title: s.title,
       summary: stepSummary(s.kind, s.config, names),
+      needsSetup: stepNeedsSetup(s.kind, s.config),
     })),
   }));
-  const step = editor.stages.flatMap((s) => s.steps).find((s) => s.id === stepId) ?? null;
-  const stage = editor.stages.find((s) => s.id === stageId) ?? null;
+  const steps = editor.stages.flatMap((s) => s.steps);
+  const initial = steps.some((s) => s.id === stepId)
+    ? { kind: "step" as const, id: stepId as string }
+    : editor.stages.some((s) => s.id === stageId)
+      ? { kind: "stage" as const, id: stageId as string }
+      : null;
 
   return (
-    <div className="grid items-start gap-5 2xl:grid-cols-[minmax(0,1fr)_22rem]">
-      <div className="flex min-w-0 flex-col gap-4">
+    <Workspace
+      key={editor.id}
+      pathwayId={editor.id}
+      stages={stages}
+      steps={steps.map((s) => ({ id: s.id, kind: s.kind, title: s.title, config: s.config }))}
+      roles={editor.roles}
+      people={editor.people}
+      courses={editor.courses}
+      servingRoles={editor.servingRoles}
+      departments={editor.departments}
+      initial={initial}
+      header={
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div className="flex flex-col gap-1">
             <h2 className="text-title font-semibold">{editor.name}</h2>
@@ -217,119 +240,7 @@ function Editor({
             </ActionForm>
           </details>
         </div>
-        <Builder pathwayId={editor.id} stages={stages} selectedStepId={step?.id ?? null} />
-      </div>
-
-      <div className="flex flex-col gap-4 2xl:sticky 2xl:top-6">
-        {step ? (
-          <StepSettings
-            pathwayId={editor.id}
-            step={step}
-            roles={editor.roles}
-            people={editor.people}
-            courses={editor.courses}
-            servingRoles={editor.servingRoles}
-          />
-        ) : stage ? (
-          <section
-            aria-labelledby="stage-heading"
-            className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4"
-          >
-            <h2 id="stage-heading" className="font-semibold">
-              Edit stage
-            </h2>
-            <ActionForm
-              key={stage.id}
-              action={updateStageAction}
-              submitLabel="Save stage"
-              hidden={{ stageId: stage.id }}
-              className="flex flex-col gap-3"
-            >
-              <Field id="stage-name" label="Name">
-                <input
-                  id="stage-name"
-                  name="name"
-                  required
-                  maxLength={80}
-                  defaultValue={stage.name}
-                  className={fieldClasses}
-                />
-              </Field>
-              <Field id="stage-timing" label="When" hint="For example “Within 3 days” or “Week 2”.">
-                <input
-                  id="stage-timing"
-                  name="timing"
-                  maxLength={40}
-                  defaultValue={stage.timing}
-                  className={fieldClasses}
-                />
-              </Field>
-            </ActionForm>
-            {stage.steps.length === 0 ? (
-              <ConfirmDialog
-                triggerLabel="Remove stage"
-                variant="secondary"
-                title={`Remove “${stage.name}”?`}
-                message="It has no steps, so nobody is affected."
-              >
-                <ActionForm
-                  action={removeStageAction}
-                  submitLabel="Remove stage"
-                  variant="destructive"
-                  hidden={{ stageId: stage.id }}
-                />
-              </ConfirmDialog>
-            ) : (
-              <p className="text-small text-text-muted">
-                To remove this stage, move or remove its steps first.
-              </p>
-            )}
-          </section>
-        ) : (
-          <section className="flex flex-col gap-2 rounded-card border border-border bg-surface p-4 text-small text-text-secondary">
-            <h2 className="font-semibold text-text">Edit a step</h2>
-            <p>
-              Select a step to change what it does. Steps marked &ldquo;waits here&rdquo; pause
-              until they&apos;re done.
-            </p>
-          </section>
-        )}
-
-        <section
-          aria-labelledby="add-stage-heading"
-          className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4"
-        >
-          <h2 id="add-stage-heading" className="font-semibold">
-            Add a stage
-          </h2>
-          <ActionForm
-            action={addStageAction}
-            submitLabel="Add stage"
-            hidden={{ pathwayId: editor.id }}
-            className="flex flex-col gap-3"
-          >
-            <Field id="new-stage-name" label="Name">
-              <input
-                id="new-stage-name"
-                name="name"
-                required
-                maxLength={80}
-                placeholder="Getting started"
-                className={fieldClasses}
-              />
-            </Field>
-            <Field id="new-stage-timing" label="When (optional)">
-              <input
-                id="new-stage-timing"
-                name="timing"
-                maxLength={40}
-                placeholder="Week 1"
-                className={fieldClasses}
-              />
-            </Field>
-          </ActionForm>
-        </section>
-      </div>
-    </div>
+      }
+    />
   );
 }

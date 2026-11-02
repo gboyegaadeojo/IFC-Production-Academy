@@ -201,7 +201,14 @@ export const STEP_CONFIG = {
   course: z.object({ course_id: uuid }),
   wait: z.object({ days: z.coerce.number().int().min(1).max(60).default(3) }),
   pco_team: z.object({ serving_role_id: uuid }),
-  branch: z.object({}),
+  // Which departments to offer; none means every open department.
+  branch: z.object({
+    department_ids: z
+      .string()
+      .optional()
+      .transform((v) => (v ?? "").split(",").filter(Boolean))
+      .pipe(z.array(uuid).max(50)),
+  }),
   finish: z.object({}),
 } satisfies Record<StepKind, z.ZodType>;
 
@@ -216,6 +223,7 @@ export function stepSummary(
     people?: ReadonlyMap<string, string>;
     courses?: ReadonlyMap<string, string>;
     servingRoles?: ReadonlyMap<string, string>;
+    departments?: ReadonlyMap<string, string>;
   } = {},
 ): string {
   const text = (key: string) => (typeof config[key] === "string" ? (config[key] as string) : "");
@@ -239,6 +247,16 @@ export function stepSummary(
     }
     case "pco_team":
       return names.servingRoles?.get(text("serving_role_id")) ?? "Choose a position";
+    case "branch": {
+      const ids = offeredIds(config);
+      if (ids.length === 0) {
+        return "They pick from every open department";
+      }
+      const picked = ids.map((id) => names.departments?.get(id)).filter(Boolean);
+      return picked.length > 0 && picked.length <= 3
+        ? `They pick from ${picked.join(", ")}`
+        : `They pick from ${ids.length} departments`;
+    }
     default:
       return STEP_KINDS[kind].hint;
   }
@@ -373,6 +391,8 @@ export type MyOnboardingRow = {
   stepPosition: number;
   currentPosition: number | null;
   contactName: string | null;
+  /** On a "Choose a department" step: what it offers (the database fills in "every open one"). */
+  offeredDepartmentIds?: readonly string[] | null;
 };
 
 export type VolunteerStep = { title: string; state: "done" | "now" | "next" | "later" };
@@ -385,6 +405,8 @@ export type VolunteerPathway = {
   nowNumber: number | null;
   contactName: string | null;
   choosing: boolean;
+  /** While choosing: the departments they may pick, or null for every open one. */
+  offeredDepartmentIds: readonly string[] | null;
 };
 
 /** Plain words for the volunteer: leaders' internal steps become what they'll notice. */
@@ -440,6 +462,8 @@ export function volunteerPathways(rows: readonly MyOnboardingRow[]): VolunteerPa
       nowNumber,
       contactName: first.contactName,
       choosing: nowRow?.stepKind === "branch",
+      offeredDepartmentIds:
+        nowRow?.stepKind === "branch" ? (nowRow.offeredDepartmentIds ?? null) : null,
     };
   });
 }
@@ -494,4 +518,140 @@ export function eventLabel(kind: string, detail: string): string {
     default:
       return detail || kind;
   }
+}
+
+/**
+ * What a step still needs before it works, or null when it's ready. A course step without a course
+ * never finishes, so people would stop there; the builder shows "Needs setup" until it's fixed.
+ */
+export function stepNeedsSetup(kind: StepKind, config: StepConfig): string | null {
+  const text = (key: string) => (typeof config[key] === "string" ? (config[key] as string) : "");
+  switch (kind) {
+    case "email":
+      return text("subject") && text("body") ? null : "Write the subject and message.";
+    case "course":
+      return text("course_id") ? null : "Choose a course. Until then, people stop at this step.";
+    case "pco_team":
+      return text("serving_role_id") ? null : "Choose a position.";
+    case "task":
+    case "mentor":
+      return config.mode === "person" && !text("person_id") ? "Choose a person." : null;
+    default:
+      return null;
+  }
+}
+
+export type EmailTemplate = { key: string; label: string; subject: string; body: string };
+
+/**
+ * Ready-made emails for the "Send an email" step. Choosing one fills in the subject and message,
+ * which can then be changed. {first name} becomes the volunteer's first name when it's sent.
+ */
+export const EMAIL_TEMPLATES: readonly EmailTemplate[] = [
+  {
+    key: "thanks",
+    label: "Thanks for wanting to serve",
+    subject: "Thanks for wanting to serve, {first name}",
+    body: `Hi {first name},
+
+Thanks for letting us know you'd like to serve with the production team. We're really glad you reached out.
+
+Someone from the team will get in touch in the next few days to say hello and hear a little about you. There's nothing you need to do before then.
+
+See you soon,
+The IFC Production team`,
+  },
+  {
+    key: "meet",
+    label: "Let's meet",
+    subject: "Let's meet, {first name}",
+    body: `Hi {first name},
+
+We'd love to meet you. The easiest time is usually just after a Sunday service: come and find us at the production desk at the back of the auditorium.
+
+If Sunday doesn't work, reply to this email with a time that suits you and we'll sort something out.
+
+Talk soon,
+The IFC Production team`,
+  },
+  {
+    key: "training",
+    label: "Your training is ready",
+    subject: "Your training is ready, {first name}",
+    body: `Hi {first name},
+
+Your first course is waiting for you in the Production Academy. Sign in, open Training, and start with the first lesson.
+
+The lessons are short, and you can go at your own pace. Mark each one complete when you've finished it, and come back any time.
+
+If anything is unclear, just reply to this email.
+
+The IFC Production team`,
+  },
+  {
+    key: "choose",
+    label: "Which team interests you?",
+    subject: "Which team interests you, {first name}?",
+    body: `Hi {first name},
+
+Now that you've had a look around, which part of production interests you most? You'll find every department on the Training page in the Production Academy, with what each one does.
+
+You're welcome to try any course before you decide. When you're ready, choose a department and we'll take it from there.
+
+The IFC Production team`,
+  },
+  {
+    key: "welcome",
+    label: "Welcome to the department",
+    subject: "Welcome to the team, {first name}",
+    body: `Hi {first name},
+
+Welcome to the team. We're glad to have you.
+
+A leader from the department will be in touch soon. In the meantime, your training is in the Production Academy, and you're welcome to come and watch at a service to see how it all works.
+
+The IFC Production team`,
+  },
+  {
+    key: "mentor",
+    label: "Meet your mentor",
+    subject: "Meet your mentor, {first name}",
+    body: `Hi {first name},
+
+We've paired you with a mentor: someone experienced on the team who'll help you settle in, answer questions, and stand beside you for your first few services.
+
+They'll reach out to you soon. You can see who they are on your Training page in the Production Academy.
+
+The IFC Production team`,
+  },
+  {
+    key: "check-in",
+    label: "Checking in",
+    subject: "How's it going, {first name}?",
+    body: `Hi {first name},
+
+Just checking in to see how things are going. Is there anything you're stuck on, or anything we can help with?
+
+Reply to this email any time. We're glad you're here.
+
+The IFC Production team`,
+  },
+  {
+    key: "team",
+    label: "You're on the team in Planning Center",
+    subject: "You're on the team, {first name}",
+    body: `Hi {first name},
+
+You've been added to the team in Planning Center. When you're scheduled, you'll get a request from Planning Center: accept it if you can serve, or decline if you can't.
+
+Keep your blocked dates up to date there so we only ask when you're free.
+
+The IFC Production team`,
+  },
+];
+
+/** The department ids a "Choose a department" step lists; empty means every open department. */
+export function offeredIds(config: StepConfig): string[] {
+  const value = config.department_ids;
+  return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
 }

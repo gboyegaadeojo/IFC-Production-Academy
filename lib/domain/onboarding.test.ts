@@ -4,10 +4,12 @@ import {
   dueLabel,
   eventLabel,
   dueWithin,
+  EMAIL_TEMPLATES,
   planStepDrop,
   planStepMove,
   STEP_CONFIG,
   STEP_KINDS,
+  stepNeedsSetup,
   stepSummary,
   volunteerPathways,
   whoReachesOut,
@@ -157,5 +159,105 @@ describe("history wording", () => {
     expect(eventLabel("started", "form")).toBe("Came in through the “I want to serve” page");
     expect(eventLabel("task_assigned", "Alex Example")).toBe("Handed to Alex Example");
     expect(eventLabel("finished", "")).toBe("Onboarding complete");
+  });
+});
+
+describe("steps that need setting up", () => {
+  it("flags a course step without a course, since people would stop there", () => {
+    expect(stepNeedsSetup("course", {})).toMatch(/Choose a course/);
+    expect(stepNeedsSetup("course", { course_id: "c1" })).toBeNull();
+  });
+
+  it("flags an email without a subject or message", () => {
+    expect(stepNeedsSetup("email", { subject: "Hi" })).not.toBeNull();
+    expect(stepNeedsSetup("email", { subject: "Hi", body: "Hello" })).toBeNull();
+  });
+
+  it("flags a Planning Center step without a position", () => {
+    expect(stepNeedsSetup("pco_team", {})).not.toBeNull();
+    expect(stepNeedsSetup("pco_team", { serving_role_id: "r1" })).toBeNull();
+  });
+
+  it("flags a follow-up given to one person without choosing them", () => {
+    expect(stepNeedsSetup("task", { mode: "person" })).not.toBeNull();
+    expect(stepNeedsSetup("task", { mode: "turns" })).toBeNull();
+    expect(stepNeedsSetup("mentor", { mode: "person", person_id: "p1" })).toBeNull();
+  });
+
+  it("never flags steps with nothing to set", () => {
+    for (const kind of ["notify", "wait", "branch", "finish", "trigger_form"] as const) {
+      expect(stepNeedsSetup(kind, {})).toBeNull();
+    }
+  });
+});
+
+describe("email templates", () => {
+  it("each has a unique key, a subject, and a message that passes the step's own rules", () => {
+    const keys = new Set(EMAIL_TEMPLATES.map((t) => t.key));
+    expect(keys.size).toBe(EMAIL_TEMPLATES.length);
+    for (const t of EMAIL_TEMPLATES) {
+      expect(STEP_CONFIG.email.safeParse({ subject: t.subject, body: t.body }).success).toBe(true);
+      expect(stepNeedsSetup("email", { subject: t.subject, body: t.body })).toBeNull();
+    }
+  });
+
+  it("only uses the {first name} placeholder, the one the sender fills in", () => {
+    for (const t of EMAIL_TEMPLATES) {
+      const placeholders = `${t.subject} ${t.body}`.match(/\{[^}]*\}/g) ?? [];
+      expect(placeholders.every((p) => p === "{first name}")).toBe(true);
+    }
+  });
+});
+
+describe("choose a department", () => {
+  const CAM = "33333333-3333-4333-8333-333333333333";
+  const AUD = "44444444-4444-4444-8444-444444444444";
+
+  it("saves the offered departments from the form's comma-separated list", () => {
+    expect(STEP_CONFIG.branch.parse({ department_ids: `${CAM},${AUD}` })).toEqual({
+      department_ids: [CAM, AUD],
+    });
+    expect(STEP_CONFIG.branch.parse({ department_ids: "" })).toEqual({ department_ids: [] });
+    expect(STEP_CONFIG.branch.parse({})).toEqual({ department_ids: [] });
+    expect(STEP_CONFIG.branch.safeParse({ department_ids: "not-a-uuid" }).success).toBe(false);
+  });
+
+  it("reads as every open department, or the ones it offers", () => {
+    const departments = new Map([
+      [CAM, "Camera Operations"],
+      [AUD, "Audio Engineering"],
+    ]);
+    expect(stepSummary("branch", {})).toBe("They pick from every open department");
+    expect(stepSummary("branch", { department_ids: [CAM] }, { departments })).toBe(
+      "They pick from Camera Operations",
+    );
+  });
+
+  it("gives the volunteer the offered list only while they're choosing", () => {
+    const row = {
+      entryId: "e1",
+      pathwayName: "Join the team",
+      status: "active" as const,
+      contactName: null,
+      currentPosition: 1,
+    };
+    const [pathway] = volunteerPathways([
+      {
+        ...row,
+        stepTitle: "Pick",
+        stepKind: "branch",
+        stepPosition: 1,
+        offeredDepartmentIds: [CAM],
+      },
+      {
+        ...row,
+        stepTitle: "Done",
+        stepKind: "finish",
+        stepPosition: 2,
+        offeredDepartmentIds: null,
+      },
+    ]);
+    expect(pathway?.choosing).toBe(true);
+    expect(pathway?.offeredDepartmentIds).toEqual([CAM]);
   });
 });
