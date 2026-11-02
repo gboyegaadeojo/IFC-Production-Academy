@@ -148,6 +148,9 @@ test("admin pages are accessible", async ({ page }) => {
     [`/admin/curriculum/${SAMPLE_COURSE}?tab=practicals`, "course editor: practicals"],
     ["/admin/people", "people"],
     ["/admin/audit", "audit log"],
+    ["/admin/service-dashboard", "Service Dashboard setup"],
+    ["/admin/service-dashboard/editors", "Service Dashboard editors"],
+    ["/service-dashboard", "Service Dashboard"],
   ] as const) {
     await page.goto(path);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

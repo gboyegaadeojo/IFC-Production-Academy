@@ -11,6 +11,7 @@ import { adminSections } from "@/lib/domain/admin";
 import { initials } from "@/lib/domain/people";
 import { AccountMenu } from "./account-menu";
 import { AcademyNav } from "./academy-nav";
+import { ServiceDashboardNavLink } from "./service-dashboard-nav-link";
 
 /** Compact top bar shared by the Academy and Admin workspaces (DESIGN §3). */
 export function AcademyHeader() {
@@ -21,7 +22,13 @@ export function AcademyHeader() {
           <Link href="/home" className="flex min-h-touch items-center rounded-button">
             <Wordmark />
           </Link>
-          <AcademyNav />
+          <AcademyNav
+            extra={
+              <Suspense fallback={null}>
+                <ServiceDashboardNavLink />
+              </Suspense>
+            }
+          />
         </div>
         <Suspense fallback={<div className="size-8 rounded-pill bg-card" aria-hidden="true" />}>
           <Account />

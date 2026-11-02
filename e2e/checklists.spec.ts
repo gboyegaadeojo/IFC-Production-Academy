@@ -61,7 +61,12 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await expect(page.getByText(/done across the team/)).toBeVisible();
   await openDepartment();
   const item = page.getByLabel(first);
+  // The box ticks straight away; wait for the save, or the reload would cancel it.
+  const saved = page.waitForResponse(
+    (response) => response.request().method() === "POST" && response.url().includes("/serve/"),
+  );
   await item.check();
+  await saved;
   await page.reload();
   await openDepartment();
   await expect(page.getByLabel(first)).toBeChecked();
