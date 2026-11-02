@@ -81,6 +81,14 @@ Any failed job emails G and the Platform Admin via Resend. Details are in SPEC ย
 - Use small, focused commits and PRs. Reference SPEC IDs in messages.
 - Use conventional names: kebab-case files, PascalCase components, snake_case database columns.
 
+## Documentation (G, 2026-11-02)
+
+**Every change to the app updates its documentation in the same PR.** No exceptions for small changes that alter what someone sees or does.
+
+- `docs/guides/`: plain guides for new people, one per part of the app. Update the matching guide when screens, wording, or behaviour change, and create one when a new feature ships.
+- `docs/runbooks/`: setup and operations. Update when a secret, workflow, or setup step changes.
+- `docs/decisions/`, `docs/SPEC.md`: record decisions and requirements.
+
 ## Build order (SPEC ยง9 "Delivery phases")
 
 1. **Phase 1, foundation:** app shell, tokens, components, auth, RBAC, users and departments, audit, environments, migrations, keep-alive and backup jobs.
@@ -89,7 +97,7 @@ Any failed job emails G and the Platform Admin via Resend. Details are in SPEC ย
 4. **Phase 4, pilot:** Camera Operations Level 1 with a small group.
 5. **Phase 5, expansion:** other departments, Lighting, PWA push, calendar, native apps.
 
-Don't start a later phase's features until the earlier phase's exit criteria pass.
+Don't start a later phase's features until the earlier phase's exit criteria pass. Exception: G moved the Service Dashboard ahead of the pilot ([decision, 2026-11-02](docs/decisions/2026-11-02-service-dashboard.md)).
 
 ### First task: scaffold and foundation
 
