@@ -47,6 +47,9 @@ select throws_ok(
   '42501', null, 'the run of service cannot be written directly');
 reset role;
 
+-- As the scheduled job: nobody is signed in.
+select set_config('request.jwt.claims', '', true);
+
 select is(
   public.sync_service_plan_items($${"plans":[
     {"plan_id":"fake-plan-1","items":[
