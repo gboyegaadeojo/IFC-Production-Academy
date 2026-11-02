@@ -70,6 +70,22 @@ test("the Academy is installable: manifest, icons, and theme", async ({ page, re
   await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveCount(1);
 });
 
+test("the service worker and offline page are served, and the worker never caches data", async ({
+  request,
+}) => {
+  // SPEC §PWA: a cached shell and an offline page, with no caching of private records.
+  const worker = await request.get("/sw.js");
+  expect(worker.status()).toBe(200);
+  expect(worker.headers()["content-type"]).toContain("javascript");
+  expect(worker.headers()["cache-control"]).toContain("no-cache");
+  const source = await worker.text();
+  expect(source).toContain('"/offline.html"');
+  expect(source).toContain("showNotification");
+  const offline = await request.get("/offline.html");
+  expect(offline.status()).toBe(200);
+  expect(await offline.text()).toContain("You're offline");
+});
+
 test("each device chooses Dark, Light or System, and keeps it", async ({ page }) => {
   // Checklist app US-08a: Light by default (new look, 2026-11-01).
   await page.goto("/sign-in");

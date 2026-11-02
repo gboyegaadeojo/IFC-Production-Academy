@@ -238,3 +238,16 @@ export const LogOutIcon = (props: IconProps) => (
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
   </Icon>
 );
+/** iOS's Share symbol: a box with an arrow up, so install steps match what people see. */
+export const ShareIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3v12M8 7l4-4 4 4" />
+    <path d="M8 11H6a1 1 0 00-1 1v8a1 1 0 001 1h12a1 1 0 001-1v-8a1 1 0 00-1-1h-2" />
+  </Icon>
+);
+export const SmartphoneIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="7" y="2.5" width="10" height="19" rx="2" />
+    <path d="M11 18.5h2" />
+  </Icon>
+);

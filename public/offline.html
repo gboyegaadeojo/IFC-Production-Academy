@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en-CA">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>You're offline · IFC Production Academy</title>
+    <style>
+      /* A static page shown by the service worker with no connection, so the app's stylesheet and
+         tokens aren't available; these values copy the light theme in app/globals.css. */
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: system-ui, sans-serif;
+        background: #f6f5fa;
+        color: #16141f;
+      }
+      main {
+        max-width: 22rem;
+        padding: 1.5rem;
+        text-align: center;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 1rem 0 0.5rem;
+      }
+      p {
+        color: #4f4b63;
+        line-height: 1.5;
+      }
+      button {
+        margin-top: 1rem;
+        min-height: 44px;
+        padding: 0 1.25rem;
+        border: 0;
+        border-radius: 10px;
+        background: #6d3fe0;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+      }
+      button:focus-visible {
+        outline: 3px solid #16141f;
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icons/icon-192.png" alt="" width="64" height="64" />
+      <h1>You're offline</h1>
+      <p>The Academy needs a connection. Check your Wi-Fi or data, then try again.</p>
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>
