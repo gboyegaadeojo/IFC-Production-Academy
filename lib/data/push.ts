@@ -1,0 +1,116 @@
+import "server-only";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/data/database.types";
+import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { publicEnv } from "@/lib/env";
+import { pushMessageFor, sendPush, type PushMessage, type VapidKeys } from "@/lib/domain/web-push";
+
+/**
+ * Web push for the Academy (supabase/migrations/20261210120000_push_alerts.sql). The VAPID private
+ * key is a Cloudflare secret; the public key is public by design. Nothing here logs addresses,
+ * names, or content.
+ */
+export function vapidKeys(): VapidKeys | null {
+  const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY?.trim();
+  const privateKey = process.env.VAPID_PRIVATE_KEY?.trim();
+  if (!publicKey || !privateKey) {
+    return null;
+  }
+  return { publicKey, privateKey, subject: publicEnv().NEXT_PUBLIC_SITE_URL };
+}
+
+/** A client with only the public key and no session: the dispatch calls check the token instead. */
+function anonClient() {
+  const env = publicEnv();
+  return createClient<Database>(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    },
+  );
+}
+
+export type DispatchResult = { ok: boolean; sent: number; gone: number; failed: number };
+
+/** Sends the alerts for one new notification, once. Called by the database through pg_net. */
+export async function dispatchNotification(id: string, token: string): Promise<DispatchResult> {
+  const vapid = vapidKeys();
+  if (!vapid) {
+    // Leave it pending for the 15-minute job, which may have the keys.
+    return { ok: false, sent: 0, gone: 0, failed: 0 };
+  }
+  const supabase = anonClient();
+  const { data, error } = await supabase.rpc("claim_push", {
+    p_notification_id: id,
+    p_token: token,
+  });
+  if (error) {
+    return { ok: false, sent: 0, gone: 0, failed: 0 };
+  }
+  const result: DispatchResult = { ok: true, sent: 0, gone: 0, failed: 0 };
+  await Promise.all(
+    data.map(async (row) => {
+      const outcome = await sendPush(
+        row,
+        pushMessageFor({ id, title: row.title, body: row.body, link: row.link }),
+        vapid,
+      );
+      result[outcome === "sent" ? "sent" : outcome === "gone" ? "gone" : "failed"] += 1;
+      if (outcome === "gone") {
+        await supabase.rpc("push_subscription_gone", { p_endpoint: row.endpoint, p_token: token });
+      }
+    }),
+  );
+  return result;
+}
+
+export type DeviceSubscription = { endpoint: string; p256dh: string; auth: string };
+
+export async function saveMySubscription(
+  subscription: DeviceSubscription,
+  label: string,
+): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("save_push_subscription", {
+    p_endpoint: subscription.endpoint,
+    p_p256dh: subscription.p256dh,
+    p_auth: subscription.auth,
+    p_label: label,
+  });
+  return !error;
+}
+
+export async function removeMySubscription(endpoint: string): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("remove_push_subscription", { p_endpoint: endpoint });
+  return !error;
+}
+
+/** "Send a test alert": straight to one of your own devices, with no notification written. */
+export async function sendTestAlert(endpoint: string): Promise<"sent" | "gone" | "failed" | "off"> {
+  const vapid = vapidKeys();
+  if (!vapid) {
+    return "off";
+  }
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("push_subscriptions")
+    .select("endpoint, p256dh, auth")
+    .eq("endpoint", endpoint)
+    .maybeSingle();
+  if (error || !data) {
+    return "failed";
+  }
+  const message: PushMessage = {
+    title: "Alerts are on",
+    body: "This is how updates from the Academy will look on this device.",
+    url: "/notifications",
+    tag: "test-alert",
+  };
+  const outcome = await sendPush(data, message, vapid);
+  if (outcome === "gone") {
+    await removeMySubscription(endpoint);
+  }
+  return outcome;
+}

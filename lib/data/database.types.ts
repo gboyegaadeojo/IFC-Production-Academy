@@ -1268,6 +1268,22 @@ export type Database = {
           email_status: Database["public"]["Enums"]["email_status"];
           email_attempts: number;
           emailed_at: string | null;
+          push_status: "pending" | "sent" | "none";
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+          device_label: string;
+          created_at: string;
+          last_sent_at: string | null;
         };
         Insert: never;
         Update: never;
@@ -1389,6 +1405,23 @@ export type Database = {
         Args: { p_task_ids: string[] };
         Returns: { task_id: string; user_id: string; display_name: string }[];
       };
+      save_push_subscription: {
+        Args: { p_endpoint: string; p_p256dh: string; p_auth: string; p_label: string };
+        Returns: undefined;
+      };
+      remove_push_subscription: { Args: { p_endpoint: string }; Returns: undefined };
+      claim_push: {
+        Args: { p_notification_id: string; p_token: string };
+        Returns: {
+          title: string;
+          body: string;
+          link: string | null;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+        }[];
+      };
+      push_subscription_gone: { Args: { p_endpoint: string; p_token: string }; Returns: undefined };
       my_onboarding: {
         Args: never;
         Returns: {

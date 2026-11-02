@@ -28,6 +28,7 @@ jobs:
             .github/actions
             lib/domain/notifications.ts
             lib/domain/supabase-keys.ts
+            lib/domain/web-push.ts
             scripts/send-notifications.ts
           sparse-checkout-cone-mode: false
 
@@ -42,6 +43,8 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           NOTIFY_FROM: ${{ secrets.NOTIFY_FROM }}
           SITE_URL: ${{ vars.SITE_URL }}
+          VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
         run: node scripts/send-notifications.ts
 
       - name: Email the admins

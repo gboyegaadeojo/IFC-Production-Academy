@@ -47,8 +47,10 @@ select is_empty(
       and has_function_privilege('anon', p.oid, 'EXECUTE')
       -- The keep-alive read, the public certificate check behind the QR code (initials only), and
       -- the public "I want to serve" form (onboarding decision, 2026-11-01; it reveals nothing),
-      -- and the open departments that form lists (names and icons only).
-      and p.proname not in ('keepalive', 'check_certificate', 'submit_interest', 'open_departments')
+      -- and the open departments that form lists (names and icons only). The push dispatch calls
+      -- need the database's own secret token, so a visitor can't use them (039_push_alerts).
+      and p.proname not in ('keepalive', 'check_certificate', 'submit_interest', 'open_departments',
+                            'claim_push', 'push_subscription_gone')
       -- Ignore functions owned by extensions such as pgTAP itself.
       and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
   $$,

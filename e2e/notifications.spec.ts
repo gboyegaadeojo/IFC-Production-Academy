@@ -14,6 +14,12 @@ test("a volunteer turns an email off and it stays off", async ({ page }, testInf
   await page.goto("/notifications");
   await expect(page.getByRole("heading", { level: 1, name: "Notifications" })).toBeVisible();
 
+  // Device alerts (docs/runbooks/push-alerts.md): CI has no alert keys, so it says they're off,
+  // and still explains how to get the app.
+  const alerts = page.getByRole("region", { name: "Alerts on this device" });
+  await expect(alerts.getByText("Alerts aren't switched on yet.")).toBeVisible();
+  await expect(alerts.getByRole("heading", { name: "The app" })).toBeVisible();
+
   const choices = page.getByRole("region", { name: "Email me" });
   await expect(choices.getByRole("group", { name: "Serving" })).toBeVisible();
   // Volunteers aren't asked about leaders' emails.
