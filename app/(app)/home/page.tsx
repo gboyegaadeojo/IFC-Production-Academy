@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
 import { buttonClasses } from "@/components/ui/button";
@@ -17,7 +18,7 @@ import { formatDateTime } from "@/lib/domain/admin";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { homeState, type HomeState } from "@/lib/domain/home";
 import { volunteerPathways } from "@/lib/domain/onboarding";
-import { firstName } from "@/lib/domain/people";
+import { greetingName } from "@/lib/domain/people";
 import { ExploreRow, MemberDepartmentCard } from "./department-card";
 import { NextSteps } from "./next-steps";
 
@@ -63,7 +64,7 @@ async function TrainingContent() {
 
   return (
     <div className="page-container flex flex-col gap-12 py-8 lg:gap-14 lg:py-12">
-      <Hero name={firstName(user.displayName) || user.displayName} state={state} />
+      <Hero name={greetingName(user.displayName, user.email)} state={state} />
 
       {onboarding.map((pathway) => (
         <NextSteps key={pathway.entryId} pathway={pathway} departments={openDepartments} />
@@ -148,7 +149,7 @@ function SectionHeading({
   );
 }
 
-function Hero({ name, state }: { name: string; state: HomeState }) {
+function Hero({ name, state }: { name: string | null; state: HomeState }) {
   const lead: Record<HomeState, string> = {
     new: "Learn the craft behind every service. Pick a department, learn its gear and routines at your own pace, and grow into serving with the production team.",
     pending:
@@ -161,8 +162,20 @@ function Hero({ name, state }: { name: string; state: HomeState }) {
     <section aria-labelledby="welcome-heading" className="flex flex-col gap-4">
       <p className="eyebrow">Your training</p>
       <h1 id="welcome-heading" className="text-display font-semibold text-balance">
-        {state === "member" ? `Welcome back, ${name}` : `Welcome, ${name}`}
+        {state === "member" ? "Welcome back" : "Welcome"}
+        {name ? `, ${name}` : ""}
       </h1>
+      {name ? null : (
+        <p className="text-small text-text-secondary">
+          What should we call you?{" "}
+          <Link
+            href="/profile"
+            className="font-medium text-accent-light underline-offset-4 hover:underline"
+          >
+            Add your name
+          </Link>
+        </p>
+      )}
       <p className="max-w-[40rem] text-lead text-text-secondary">{lead[state]}</p>
       {state === "new" ? (
         <div>
