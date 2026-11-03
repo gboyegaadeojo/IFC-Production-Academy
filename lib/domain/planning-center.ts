@@ -253,6 +253,8 @@ export type PcoPlanItem = {
   length_seconds: number;
   service_position: "pre" | "during" | "post";
   notes: { category: string; content: string }[];
+  /** How long it really ran, when someone ran the plan with Services LIVE. */
+  actual_seconds: number | null;
 };
 
 /**
@@ -271,8 +273,23 @@ export function mapPlanItems(items: Resource[], included: Resource[] = []): PcoP
         },
       ]),
   );
+  const secondsById = new Map(
+    included
+      .filter((resource) => resource.type === "ItemTime")
+      .map((time) => {
+        const started = Date.parse(text(time.attributes.live_start_at));
+        const ended = Date.parse(text(time.attributes.live_end_at));
+        return [
+          time.id,
+          Number.isFinite(started) && Number.isFinite(ended) && ended >= started
+            ? Math.round((ended - started) / 1000)
+            : null,
+        ] as const;
+      }),
+  );
   return items.map((item, index) => {
     const position = text(item.attributes.service_position);
+    const times = item.relationships?.item_times?.data;
     const related = item.relationships?.item_notes?.data;
     const length = Number(item.attributes.length);
     const sequence = Number(item.attributes.sequence);
@@ -287,6 +304,11 @@ export function mapPlanItems(items: Resource[], included: Resource[] = []): PcoP
         const note = notesById.get(link.id);
         return note && note.content !== "" ? [note] : [];
       }),
+      // A plan can run more than once; the first recorded run is the one that counts.
+      actual_seconds:
+        (Array.isArray(times) ? times : [])
+          .map((link) => secondsById.get(link.id) ?? null)
+          .find((seconds) => seconds !== null) ?? null,
     };
   });
 }

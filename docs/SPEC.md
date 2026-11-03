@@ -257,6 +257,7 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ADD-DASH-07 | YouTube preview and viewer counts from the public channel, with nothing to do each week | S |
 | ADD-DASH-08 | Editors choose which mixer channels show, in order. Levels are signal levels, not room loudness. Room loudness is built and left off | S |
 | ADD-DASH-09 | Church bridge and live room: slides (on screen and next three), ProPresenter timers, mixer levels, encoder health. Read only, connects outward only, and tiles say when it's offline | S |
+| ADD-DASH-10 | After the service: planned against actual by item, from Services LIVE, and viewers over time. It builds itself and says what wasn't recorded | S |
 | ADD-DASH-03 | One layout for everyone, changed by up to 3 editors with drag, resize, and keyboard. Every save writes an audit event | S |
 
 ## 3. Progression, business rules and workflows

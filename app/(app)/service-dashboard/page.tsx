@@ -191,6 +191,9 @@ async function ServiceDashboardContent({
                   <CurrentItemName />
                 </strong>
               </div>
+              <Link href="/service-dashboard/review" className={buttonClasses("secondary")}>
+                After the service
+              </Link>
               {editLink}
             </header>
             <TileWall

@@ -31,3 +31,33 @@ export function ServicePicker({
     </div>
   );
 }
+
+/** Which past service After the service shows. */
+export function ReviewPicker({
+  current,
+  services,
+}: {
+  current: string;
+  services: { id: string; label: string }[];
+}) {
+  const router = useRouter();
+  return (
+    <div className="flex max-w-xl flex-col gap-1">
+      <label htmlFor="review-service" className="text-small font-medium text-text-secondary">
+        Service
+      </label>
+      <select
+        id="review-service"
+        value={current}
+        onChange={(event) => router.push(`/service-dashboard/review?service=${event.target.value}`)}
+        className="min-h-touch rounded-button border border-border-strong bg-card px-2"
+      >
+        {services.map((service) => (
+          <option key={service.id} value={service.id}>
+            {service.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}

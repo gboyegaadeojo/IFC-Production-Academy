@@ -209,3 +209,10 @@ test("an editor chooses the mixer channels, in order", async ({ page }) => {
   await page.getByRole("button", { name: "Save channels" }).click();
   await expect(page.getByText("Channels saved.")).toBeVisible();
 });
+
+test("After the service says plainly what wasn't recorded", async ({ page }) => {
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/service-dashboard/review");
+  await expect(page.getByRole("heading", { level: 1, name: "After the service" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to the dashboard" })).toBeVisible();
+});

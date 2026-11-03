@@ -110,7 +110,9 @@ export async function getPlanItems(eventId: string): Promise<PlanItem[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("service_plan_items")
-    .select("id, position, item_type, title, length_seconds, service_position, notes")
+    .select(
+      "id, position, item_type, title, length_seconds, service_position, notes, actual_seconds",
+    )
     .eq("event_id", eventId)
     .order("position");
   if (error) {
@@ -127,6 +129,7 @@ export async function getPlanItems(eventId: string): Promise<PlanItem[]> {
         ? row.service_position
         : "during",
     notes: planNotes.safeParse(row.notes).data ?? [],
+    actualSeconds: row.actual_seconds,
   }));
 }
 
@@ -186,4 +189,40 @@ export async function getStreamChannel(eventId: string): Promise<string | null> 
 export async function getLiveTicket(now: number): Promise<string | null> {
   const secret = process.env.LIVE_ROOM_SECRET;
   return secret ? mintLiveTicket(secret, now) : null;
+}
+
+/** Services that have started, most recent first, for After the service. */
+export async function getReviewServices(): Promise<DashboardService[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("events")
+    .select("id, title, starts_at, ends_at")
+    .is("cancelled_at", null)
+    .lte("starts_at", new Date().toISOString())
+    .order("starts_at", { ascending: false })
+    .limit(30);
+  if (error) {
+    throw new Error("Could not load past services.");
+  }
+  return data.map((event) => ({
+    id: event.id,
+    title: event.title,
+    startsAt: event.starts_at,
+    endsAt: event.ends_at,
+  }));
+}
+
+export async function getViewerHistory(
+  eventId: string,
+): Promise<{ platform: string; viewers: number; at: string }[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("service_viewer_history", { p_event_id: eventId });
+  if (error) {
+    throw new Error("Could not load the viewer history.");
+  }
+  return (data ?? []).map((row) => ({
+    platform: row.platform,
+    viewers: row.viewers,
+    at: row.sampled_at,
+  }));
 }
