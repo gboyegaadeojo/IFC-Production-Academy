@@ -154,7 +154,7 @@ for (const viewport of VIEWPORTS) {
     await page.getByRole("button", { name: "Edit Lighting Operations", exact: true }).click();
     const drawer = page.getByRole("dialog", { name: "Edit Lighting Operations" });
     await expect(drawer).toHaveCSS("opacity", "1");
-    await expect(drawer.getByText(/can't join yet/)).toBeVisible();
+    await expect(drawer.getByText(/can't join yet.$/)).toBeVisible();
     await page.screenshot({ path: `${DIR}/admin-department-edit-${viewport.name}.png` });
     await page.keyboard.press("Escape");
     await expect(drawer).toBeHidden();
