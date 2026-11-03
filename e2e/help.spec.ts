@@ -10,7 +10,7 @@ test("anyone can read the guides, signed in or not", async ({ page }) => {
   await expect(page).toHaveURL(/\/help$/);
 
   await page.getByLabel("Search the guides").fill("practical");
-  await expect(page.getByRole("link", { name: /^Training/ })).toBeVisible();
+  await expect(page.getByRole("main").getByRole("link", { name: /^Training/ })).toBeVisible();
   await page.getByLabel("Search the guides").fill("zzzznothing");
   await expect(page.getByText("Nothing matches.", { exact: false })).toBeVisible();
   await page.getByLabel("Search the guides").fill("");
