@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { openAccountMenu } from "./support/account-menu";
-import { adminNavLink } from "./support/admin-nav";
+import { adminNavLink, pressUntil } from "./support/admin-nav";
 import {
   clearMailFor,
   mailpitAvailable,
@@ -485,6 +485,24 @@ test("a Platform Admin manages people and departments but not memberships", asyn
 
   await (await adminNavLink(page, "System & Settings", "Audit log")).click();
   await expect(page.getByRole("heading", { level: 1, name: "Audit log" })).toBeVisible();
+});
+
+test("the admin sidebar opens one section at a time, and collapses", async ({ page, isMobile }) => {
+  test.skip(isMobile, "The phone menu shares this sidebar; the rules are the same.");
+  await signInByEmail(page, "frankie.admin@example.com");
+  await page.goto("/admin/people");
+  const nav = page.getByRole("navigation", { name: "Admin" });
+  const people = nav.getByRole("button", { name: "People & Teams" });
+  const system = nav.getByRole("button", { name: "System & Settings" });
+  await expect(people).toHaveAttribute("aria-expanded", "true");
+
+  await pressUntil(system, "aria-expanded", "true");
+  await expect(people).toHaveAttribute("aria-expanded", "false");
+
+  await page.getByRole("button", { name: "Collapse all" }).click();
+  await expect(system).toHaveAttribute("aria-expanded", "false");
+  await expect(page.getByRole("button", { name: "Collapse all" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Back to Academy" }).first()).toBeVisible();
 });
 
 test("a volunteer can't open the admin area", async ({ page }) => {

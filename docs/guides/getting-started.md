@@ -20,7 +20,7 @@ The top bar has four places. On a phone they're along the bottom.
 
 If you're on a production team and using a computer, you also get the [Service Dashboard](service-dashboard.md).
 
-Your name, at the top right, opens a menu with the rest: your profile, notifications, getting the app, mentoring, help, appearance, and signing out. Leaders also see **Admin** there.
+Your name, at the top right, opens a menu with the rest: your profile, notifications, getting the app, mentoring, help, and signing out. Leaders also see **Admin** there.
 
 ## Three things that are kept separate
 
@@ -54,7 +54,7 @@ On the same page, choose **Turn on alerts** to get updates that drop down like a
 
 ## Dark or light
 
-Open your name and choose **Dark**, **Light**, or **System**. It's remembered on each device.
+Use the sun and moon switch beside your name to change between light and dark. It's remembered on each device.
 
 ## Want to join the team?
 

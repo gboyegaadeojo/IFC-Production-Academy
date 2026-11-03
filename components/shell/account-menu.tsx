@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { helpHrefFor } from "@/lib/domain/help";
 import { HELP_ADMIN_PATHS } from "@/lib/domain/admin";
 import { useEffect, useId, useRef, useState } from "react";
-import { AppearancePicker } from "@/components/appearance-picker";
 import {
   BellIcon,
   ChevronDownIcon,
@@ -17,7 +16,6 @@ import {
   InfoIcon,
   UsersIcon,
 } from "@/components/ui/icons";
-import type { Appearance } from "@/lib/domain/appearance";
 
 /**
  * Account menu (DESIGN §3.2; approved mock, 2026-11-01): who you are and how you sign in, then
@@ -32,7 +30,6 @@ export function AccountMenu({
   planningCenter = false,
   showAdmin,
   unread = 0,
-  appearance,
   signOut,
   placement = "header",
   compact = false,
@@ -46,8 +43,6 @@ export function AccountMenu({
   showAdmin: boolean;
   /** Unread notifications, shown on the button and the Notifications link. */
   unread?: number;
-  /** This device's appearance. */
-  appearance: Appearance;
   signOut: () => Promise<void>;
   /** In the admin sidebar's footer the menu opens upwards, or sideways when it's icons only. */
   placement?: "header" | "sidebar";
@@ -229,9 +224,6 @@ export function AccountMenu({
               </li>
             ) : null}
           </ul>
-          <div className="mx-1.5 border-t border-border px-2.5 py-2">
-            <AppearancePicker initial={appearance} />
-          </div>
           <div className="mx-1.5 border-t border-border py-1.5">
             <form action={signOut}>
               <button type="submit" className={`${item} w-full`}>

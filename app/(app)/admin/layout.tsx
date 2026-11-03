@@ -67,7 +67,6 @@ async function Navigation() {
     planningCenter: planningCenter.linked,
     showAdmin: true,
     unread,
-    appearance,
     signOut: signOutAction,
   };
   const collapsed = cookieStore.get(ADMIN_SIDEBAR_COOKIE)?.value === "collapsed";
@@ -77,7 +76,13 @@ async function Navigation() {
       {/* Below 1024px: a slim bar with the current page, and the sidebar in a drawer. */}
       <div className="sticky top-0 z-20 flex min-h-14 items-center gap-2 border-b border-border bg-bg px-2 md:px-6 lg:hidden">
         <Drawer title="Admin menu" triggerLabel="Open admin menu">
-          <AdminSidebar groups={groups} counts={counts} account={account} variant="drawer" />
+          <AdminSidebar
+            groups={groups}
+            counts={counts}
+            account={account}
+            appearance={appearance}
+            variant="drawer"
+          />
         </Drawer>
         <AdminCurrentLabel groups={groups} />
       </div>
@@ -89,6 +94,7 @@ async function Navigation() {
           groups={groups}
           counts={counts}
           account={account}
+          appearance={appearance}
           initialCollapsed={collapsed}
         />
       </aside>

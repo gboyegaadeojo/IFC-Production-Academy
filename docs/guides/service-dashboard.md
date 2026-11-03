@@ -88,7 +88,7 @@ The TV has no computer, mouse, or keyboard, and nobody signs in on it.
 
 Our TV is likely a Roku TV, and Roku has no proper web browser. So a small Android TV or Google TV stick plugs into the HDMI port and runs the dashboard full screen.
 
-The TV is always in the black theme. On a computer, the dashboard follows your own Appearance setting, in your account menu.
+The TV is always in the black theme. On a computer, the dashboard follows the light and dark switch beside your name.
 
 On the TV, checklists show totals, such as "5 of 8", and notes can be read but not edited.
 
