@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do the YouTube preview and viewers once their setup is done ([runbook](../runbooks/service-dashboard.md)). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Only Facebook viewers is still to come. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do the YouTube preview and viewers once their setup is done (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Only Facebook viewers is still to come. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
 
 ## What it is
 

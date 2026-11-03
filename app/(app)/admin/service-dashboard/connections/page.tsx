@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getYoutubeChannel } from "@/lib/data/screens";
@@ -49,7 +50,12 @@ async function ServiceDashboardConnectionsContent() {
           <ChannelForm initial={channel} />
           <p className="text-small">
             <strong className="font-medium">API key: </strong>
-            {keySet ? "Set." : "Not set yet. See docs/runbooks/service-dashboard.md."}
+            {keySet ? "Set." : "Not set yet. See the "}
+            {keySet ? null : (
+              <Link href="/help/runbook-service-dashboard" className="text-accent-light underline">
+                setup guide
+              </Link>
+            )}
           </p>
         </section>
 
@@ -68,7 +74,12 @@ async function ServiceDashboardConnectionsContent() {
           </p>
           <p className="text-small">
             <strong className="font-medium">Live room: </strong>
-            {liveSet ? "Ready." : "Not set up yet."} See docs/runbooks/service-dashboard.md.
+            {liveSet ? "Ready. " : "Not set up yet. "}
+            See the{" "}
+            <Link href="/help/runbook-service-dashboard" className="text-accent-light underline">
+              setup guide
+            </Link>
+            .
           </p>
         </section>
 

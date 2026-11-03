@@ -36,6 +36,9 @@ async function ServiceDashboardSetupContent() {
           Everyone on the team and the wall TV see this one layout.{" "}
           <Link href="/service-dashboard" className="text-accent-light underline">
             Open the Service Dashboard
+          </Link>{" "}
+          <Link href="/help/runbook-service-dashboard" className="text-accent-light underline">
+            Setup guide
           </Link>
         </p>
       </header>

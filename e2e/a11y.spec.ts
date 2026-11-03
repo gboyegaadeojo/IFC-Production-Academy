@@ -161,6 +161,12 @@ test("admin pages are accessible", async ({ page }) => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expectAccessible(page, name);
   }
+  await page.goto("/help");
+  await expectAccessible(page, "help and guides");
+  await page.goto("/help/admin-overview");
+  await expectAccessible(page, "a guide with tables");
+  await page.goto("/help/runbook-service-dashboard");
+  await expectAccessible(page, "a setup guide with code");
   await page.goto("/admin/people");
   await page.getByRole("link", { name: /Avery Example/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Avery Example" })).toBeVisible();

@@ -5,7 +5,7 @@ Volunteers join departments, work through three levels, and are approved to serv
 
 - Requirements: [docs/SPEC.md](docs/SPEC.md)
 - How we build: [CLAUDE.md](CLAUDE.md)
-- Guides for new people: [docs/guides/](docs/guides/README.md)
+- Guides for new people: in the app at `/help`, from [docs/guides/](docs/guides/README.md) and [docs/runbooks/](docs/runbooks/)
 
 > This repository is public. Never commit secrets, real volunteer data, or YouTube links.
 > See "Security rules" in CLAUDE.md.

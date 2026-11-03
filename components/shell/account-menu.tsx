@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { helpHrefFor } from "@/lib/domain/help";
+import { HELP_ADMIN_PATHS } from "@/lib/domain/admin";
 import { useEffect, useId, useRef, useState } from "react";
 import { AppearancePicker } from "@/components/appearance-picker";
 import {
@@ -12,6 +14,7 @@ import {
   ShieldIcon,
   SmartphoneIcon,
   UserIcon,
+  InfoIcon,
   UsersIcon,
 } from "@/components/ui/icons";
 import type { Appearance } from "@/lib/domain/appearance";
@@ -208,6 +211,12 @@ export function AccountMenu({
               <Link href="/mentoring" className={item}>
                 <UsersIcon className="size-[18px] shrink-0" />
                 Mentoring
+              </Link>
+            </li>
+            <li>
+              <Link href={helpHrefFor(pathname, HELP_ADMIN_PATHS)} className={item}>
+                <InfoIcon className="size-[18px] shrink-0" />
+                Help
               </Link>
             </li>
             {/* The sidebar has its own workspace switcher. */}

@@ -86,7 +86,8 @@ Any failed job emails G and the Platform Admin via Resend. Details are in SPEC Â
 
 **Every change to the app updates its documentation in the same PR.** No exceptions for small changes that alter what someone sees or does.
 
-- `docs/guides/`: plain guides for new people, one per part of the app. Update the matching guide when screens, wording, or behaviour change, and create one when a new feature ships.
+- `docs/guides/`: plain guides for new people, one per part of the app, readable at `/help` by anyone. Update the matching guide when screens, wording, or behaviour change, and create one when a new feature ships, listing it in `lib/domain/help.ts`.
+- After changing a guide or runbook, run `npm run help:build`. `lib/domain/help.test.ts` fails if the bundle is stale, a link is broken, or a screen or Admin section has no guide. Guides are public, so no secrets, real names, or private links.
 - `docs/runbooks/`: setup and operations. Update when a secret, workflow, or setup step changes.
 - `docs/decisions/`, `docs/SPEC.md`: record decisions and requirements.
 

@@ -1,0 +1,50 @@
+# Admin: start here
+
+If you lead something, **Admin** is where you do it. Open your name, then **Admin**. The sidebar only shows what your role allows, and every page checks that again on the server. If a page says it isn't open to you, your role doesn't include it.
+
+## The Dashboard
+
+The first page answers two questions.
+
+- **Needs you:** things only you can move forward, such as requests waiting or assessments to do. Each one opens the page where you do it.
+- **Training, by department:** read each row left to right. People join, learn, get checked, then serve. A big drop between two numbers shows where people are getting stuck.
+
+Below that is recent activity from the audit log.
+
+## Who can do what
+
+| Role | What it's for |
+| --- | --- |
+| **Volunteer** | Learns and serves. No admin abilities |
+| **Trainer or Evaluator** | Watches practical assessments for their department |
+| **Department Leader** | Runs one department: members, curriculum, SOPs, assessments, reports |
+| **Production Director** | The same across every department, plus choosing Service Dashboard editors |
+| **Scheduling Administrator** | Schedules and teams |
+| **Platform Administrator** | Accounts, roles, departments, and app settings. It doesn't approve memberships or publish training |
+| **Service Dashboard Editor** | Changes the dashboard layout. Up to 3 people |
+
+Someone can hold different roles in different departments, such as leading Audio while learning in Camera. You give out roles under [People and roles](admin-people.md).
+
+## How the app decides things
+
+- **The system decides results, not people.** Quizzes score themselves. A practical passes when the observer's checklist meets your pass rule, and the observer never picks the outcome. A pass grants the competency, and Approved to Serve follows automatically.
+- **Teams decide who serves, not training.** Training shows beside each name, and never blocks anyone.
+- **History is never rewritten.** People's progress stays linked to the version they earned it on.
+- **Sensitive changes are logged.** See the [audit log](admin-reports-mentoring-audit.md).
+
+## Where things are
+
+| Sidebar group | Pages | Guide |
+| --- | --- | --- |
+| **Checklists** | Task lists, Activity log, Service history, Hidden items, Checklist settings | [Checklists](admin-checklists.md) |
+| **Services & Scheduling** | Planning Center, Serving teams, Schedule | [Scheduling](admin-scheduling.md) |
+| **Services & Scheduling** | Service Dashboard setup | [Service Dashboard](service-dashboard.md) |
+| **Training Academy** | Curriculum | [Curriculum](admin-curriculum.md) |
+| **Training Academy** | SOP library | [SOP library](admin-sops.md) |
+| **Training Academy** | Assessments, Competencies and roles | [Assessments and competencies](admin-assessments.md) |
+| **Training Academy** | Membership requests, Departments | [People and departments](admin-people.md) |
+| **Training Academy** | Mentoring, Reports | [Reports, mentoring, and the audit log](admin-reports-mentoring-audit.md) |
+| **People & Teams** | People and roles, Invitations | [People and departments](admin-people.md) |
+| **People & Teams** | Onboarding pathways, People in pathways, Follow-ups | [Onboarding](admin-onboarding.md) |
+| **System & Settings** | Audit log | [Reports, mentoring, and the audit log](admin-reports-mentoring-audit.md) |
+| **System & Settings** | App name and logo | [Service Dashboard](service-dashboard.md) |
