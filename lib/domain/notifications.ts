@@ -186,3 +186,28 @@ export function notificationEmail(
   ].join("");
   return { subject, text, html };
 }
+
+/**
+ * An onboarding pathway email, as its leader wrote it. Many people have no account yet, so they
+ * can't reach notification settings: they're told to reply instead (decision 7, CASL).
+ */
+export function onboardingEmail(
+  email: { subject: string; body: string; hasAccount: boolean },
+  siteUrl: string,
+  appName = "IFC Production Academy",
+): { subject: string; text: string; html: string } {
+  const footer = email.hasAccount
+    ? `You can choose which emails you get at ${notificationUrl(siteUrl, "/notifications")}`
+    : "If you'd rather not get these emails, reply and let us know.";
+  const text = [email.body, "", `From ${appName}. ${footer}`].join("\n");
+  const paragraphs = email.body
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph.length > 0)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replaceAll("\n", "<br>")}</p>`);
+  const html = [
+    ...paragraphs,
+    `<p style="color:#666;font-size:12px">From ${escapeHtml(appName)}. ${escapeHtml(footer)}</p>`,
+  ].join("");
+  return { subject: email.subject.slice(0, 200), text, html };
+}
