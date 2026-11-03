@@ -10,14 +10,17 @@ export function RequestMembershipButton({
   departmentId,
   departmentName,
   again,
+  join = false,
 }: {
   departmentId: string;
   departmentName: string;
   again: boolean;
+  /** An open department: they join straight away, with nothing to wait for. */
+  join?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(requestMembershipAction, initialState);
   const errorId = useId();
-  const label = again ? "Request again" : "Request to join";
+  const label = join ? "Join" : again ? "Request again" : "Request to join";
 
   return (
     <form action={formAction} className="flex flex-col gap-2">
@@ -29,7 +32,7 @@ export function RequestMembershipButton({
         className="self-start"
         size="sm"
       >
-        {pending ? "Sending request…" : label}
+        {pending ? (join ? "Joining…" : "Sending request…") : label}
         <span className="sr-only"> {departmentName}</span>
       </Button>
       {state.status === "error" ? (

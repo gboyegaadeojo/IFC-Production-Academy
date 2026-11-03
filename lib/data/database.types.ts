@@ -2141,7 +2141,7 @@ export type Database = {
     Enums: {
       account_status: "active" | "suspended" | "deactivated";
       department_status: "active" | "coming_soon" | "inactive";
-      enrolment_mode: "request" | "invite_only";
+      enrolment_mode: "request" | "invite_only" | "open";
       membership_status: "requested" | "active" | "declined" | "removed";
       course_version_status: "draft" | "pending_review" | "published" | "superseded" | "archived";
       video_provider: "youtube" | "nas";

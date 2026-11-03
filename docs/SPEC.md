@@ -137,6 +137,7 @@ IDs come from your package. Rows marked **ADD-** are additions from my draft tha
 | SRS-MEM-004 | Membership changes never delete training history | M |
 | SRS-MEM-005 | Restricted content only while membership or explicit permission is active | M |
 | SRS-MEM-006 | Department pages browsable before joining; member resources protected | Y |
+| SRS-MEM-007 | A department can let anyone join with no approval (G, 2026-11-03). Joining is recorded and audited, never makes someone Approved to Serve, and someone a leader removed has to ask | S |
 | ADD-MEM-01 | Onboarding lets a new volunteer pick departments of interest from photo tiles | S |
 
 ### Curriculum

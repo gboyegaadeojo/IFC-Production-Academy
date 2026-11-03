@@ -98,7 +98,7 @@ export function MemberDepartmentCard({
 /**
  * A department you haven't joined, in "Other departments": icon, name, value line, and its one
  * next step. Every membership state stays distinct: requested, can request (first time, after a
- * decline, after removal), coming soon, invite only. Inactive departments never reach here.
+ * decline, after removal), can join, coming soon, invite only. Inactive departments never reach here.
  */
 export function ExploreRow({
   department,
@@ -244,6 +244,15 @@ export function MembershipStatus({
             again={state.previously !== null}
           />
         </>
+      );
+    case "can_join":
+      return (
+        <RequestMembershipButton
+          departmentId={department.id}
+          departmentName={department.name}
+          again={false}
+          join
+        />
       );
     case "unavailable":
       return null;

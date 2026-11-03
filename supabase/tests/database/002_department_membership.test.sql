@@ -250,5 +250,42 @@ select is(
 );
 reset role;
 
+-- ---------------------------------------------------------------------------
+-- A department anyone can join (SRS-MEM-007)
+-- ---------------------------------------------------------------------------
+select pg_temp.new_user('10000000-0000-4000-8000-000000000007', 'Test Volunteer Three');
+update public.departments set enrolment_mode = 'open'
+ where id = 'b7ba9dae-cab5-43e0-a996-8ae9d2436855';
+
+select pg_temp.act_as('10000000-0000-4000-8000-000000000007');
+select is(
+  (select (public.request_membership('b7ba9dae-cab5-43e0-a996-8ae9d2436855')).status::text),
+  'active', 'in an open department, a person joins straight away');
+select is(
+  (select count(*)::int from public.department_memberships m
+    where m.department_id = 'b7ba9dae-cab5-43e0-a996-8ae9d2436855'
+      and m.user_id = '10000000-0000-4000-8000-000000000007'),
+  1, 'joining again changes nothing');
+reset role;
+select ok(
+  (select m.decided_at is not null and m.decided_by = m.user_id
+     from public.department_memberships m
+    where m.department_id = 'b7ba9dae-cab5-43e0-a996-8ae9d2436855'
+      and m.user_id = '10000000-0000-4000-8000-000000000007'),
+  'it records that they joined themselves');
+select is(
+  (select count(*)::int from public.audit_events a
+    where a.actor_id = '10000000-0000-4000-8000-000000000007'),
+  1, 'joining writes an audit event');
+
+update public.department_memberships set status = 'removed', decided_at = now()
+ where department_id = 'b7ba9dae-cab5-43e0-a996-8ae9d2436855'
+   and user_id = '10000000-0000-4000-8000-000000000007';
+select pg_temp.act_as('10000000-0000-4000-8000-000000000007');
+select is(
+  (select (public.request_membership('b7ba9dae-cab5-43e0-a996-8ae9d2436855')).status::text),
+  'requested', 'someone a leader removed has to ask to come back');
+reset role;
+
 select * from finish();
 rollback;

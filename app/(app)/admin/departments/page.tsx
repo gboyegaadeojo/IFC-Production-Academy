@@ -26,6 +26,7 @@ const STATUS_TONES: Record<DepartmentStatus, StatusTone> = {
 };
 const ENROLMENT_LABELS: Record<EnrolmentMode, string> = {
   request: "Volunteers request to join",
+  open: "Anyone can join",
   invite_only: "By invitation only",
 };
 import { AccessDenied } from "../access-denied";

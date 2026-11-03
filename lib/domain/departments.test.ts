@@ -50,6 +50,17 @@ describe("departmentCardState", () => {
     });
   });
 
+  it("lets anyone join an open department, unless a leader removed them", () => {
+    const open = { status: "active", enrolmentMode: "open" } as const;
+    expect(departmentCardState(open, null)).toEqual({ kind: "can_join" });
+    expect(departmentCardState(open, { status: "declined" })).toEqual({ kind: "can_join" });
+    expect(departmentCardState(open, { status: "active" })).toEqual({ kind: "member" });
+    expect(departmentCardState(open, { status: "removed" })).toEqual({
+      kind: "can_request",
+      previously: "removed",
+    });
+  });
+
   it("hides inactive departments", () => {
     expect(departmentCardState({ status: "inactive", enrolmentMode: "request" }, null)).toEqual({
       kind: "unavailable",
