@@ -8,7 +8,6 @@ import { useEffect, useId, useRef, useState } from "react";
 import {
   BellIcon,
   ChevronDownIcon,
-  ChevronUpDownIcon,
   LogOutIcon,
   ShieldIcon,
   SmartphoneIcon,
@@ -96,10 +95,10 @@ export function AccountMenu({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        title={compact ? displayName : undefined}
+        title={inSidebar ? displayName : undefined}
         className={
           inSidebar
-            ? `flex min-h-11 items-center gap-2.5 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
+            ? `flex min-h-11 items-center gap-2 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
                 compact ? "relative w-11 justify-center" : "w-full px-2"
               }`
             : "flex min-h-touch items-center gap-2 rounded-button px-1.5 text-text-secondary transition-surface hover:bg-hover hover:text-text sm:px-2"
@@ -142,13 +141,7 @@ export function AccountMenu({
             : ""}
           , account menu
         </span>
-        {inSidebar ? (
-          compact ? null : (
-            <ChevronUpDownIcon className="size-4 shrink-0 text-text-muted" />
-          )
-        ) : (
-          <ChevronDownIcon className="hidden size-4 sm:block" />
-        )}
+        {inSidebar ? null : <ChevronDownIcon className="hidden size-4 sm:block" />}
       </button>
       {open ? (
         <div
