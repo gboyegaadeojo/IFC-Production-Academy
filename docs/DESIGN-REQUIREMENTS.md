@@ -155,6 +155,7 @@ Motion must explain navigation, status, or completion—not decorate the screen.
 |---|---|---|
 | Hover/focus | 120–180ms | Surface or border transition, no jitter |
 | Card hover | 160–200ms | Subtle background shift; imagery scale max ~1.02 |
+| Header navigation | 200ms | One purple underline glides to the hovered or focused link, then back to the current page (G, 2026-11-03) |
 | Sidebar selection | 150–200ms | Active highlight and indicator |
 | Drawer/dialog | 180–240ms | Opacity plus small translation; managed focus |
 | Page content entry | 180–240ms | Optional opacity and <=6px translation |
