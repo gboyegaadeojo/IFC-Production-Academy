@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import {
   ClockIcon,
-  DashboardIcon,
   FileTextIcon,
   InfoIcon,
   LayersIcon,
@@ -28,10 +27,9 @@ export const TILE_ICONS: Record<TileKey, (props: { className?: string }) => Reac
   slides: MonitorIcon,
   levels: LayersIcon,
   spl: InfoIcon,
+  youtube: MonitorIcon,
   preview: MonitorIcon,
   encoder: SettingsIcon,
-  youtube: DashboardIcon,
-  facebook: DashboardIcon,
   checklist: ListChecksIcon,
   notes: FileTextIcon,
   sops: FileTextIcon,

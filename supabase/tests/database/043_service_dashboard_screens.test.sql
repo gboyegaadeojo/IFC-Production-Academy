@@ -1,4 +1,4 @@
--- Service Dashboard, stage 3 (ADD-DASH-06, 07): the wall TV's pass, and viewer numbers.
+-- Service Dashboard, stage 3 (ADD-DASH-06, 07): the wall TV's pass, and whether YouTube is live.
 begin;
 select no_plan();
 
@@ -63,10 +63,10 @@ select throws_ok(
   $$select count(*) from public.display_screens$$,
   '42501', null, 'a visitor cannot read screens');
 select throws_ok(
-  $$select count(*) from public.service_viewer_samples$$,
-  '42501', null, 'a visitor cannot read viewer numbers directly');
+  $$select count(*) from public.service_youtube_checks$$,
+  '42501', null, 'a visitor cannot read YouTube checks directly');
 select throws_ok(
-  $$select public.service_stream_state((select value::uuid from ctx where key = 'event'), 'youtube')$$,
+  $$select public.service_youtube_state((select value::uuid from ctx where key = 'event'))$$,
   '42501', 'not_authorized', 'a visitor with no pass gets no stream data');
 reset role;
 
@@ -105,34 +105,26 @@ select ok(
   public.screen_dashboard((select value from ctx where key = 'token')) ? 'items',
   'with a pass, the TV reads the dashboard');
 select lives_ok(
-  $$select public.save_viewer_sample((select value::uuid from ctx where key = 'event'), 'youtube', 42,
+  $$select public.save_youtube_check((select value::uuid from ctx where key = 'event'), 'fakeVideoId', true, true,
       (select value from ctx where key = 'token'))$$,
-  'with a pass, the TV can record the viewer count');
-select lives_ok(
-  $$select public.save_viewer_sample((select value::uuid from ctx where key = 'event'), 'youtube', 99,
-      (select value from ctx where key = 'token'))$$,
-  'a second reading straight away is ignored, not an error');
+  'with a pass, the TV can save that the stream is live');
 select is(
-  jsonb_array_length(public.service_stream_state(
-    (select value::uuid from ctx where key = 'event'), 'youtube',
-    (select value from ctx where key = 'token')) -> 'samples'),
-  1, 'readings within 20 seconds count once');
+  public.service_youtube_state(
+    (select value::uuid from ctx where key = 'event'),
+    (select value from ctx where key = 'token')) ->> 'live',
+  'true', 'every screen reads the same answer');
+select lives_ok(
+  $$select public.save_youtube_check((select value::uuid from ctx where key = 'event'), null, false, false,
+      (select value from ctx where key = 'token'))$$,
+  'the TV can save that the stream ended');
+select ok(
+  public.service_youtube_state(
+    (select value::uuid from ctx where key = 'event'),
+    (select value from ctx where key = 'token')) ->> 'lastSearchAt' is not null,
+  'a check that did not search keeps the last search time');
 select throws_ok(
-  $$select public.save_viewer_sample((select value::uuid from ctx where key = 'event'), 'youtube', 5, 'wrong')$$,
-  '42501', 'not_authorized', 'a wrong pass cannot record numbers');
-select lives_ok(
-  $$select public.save_stream_search((select value::uuid from ctx where key = 'event'), 'youtube', 'fakeVideoId',
-      (select value from ctx where key = 'token'))$$,
-  'with a pass, the TV can save which stream it found');
-select lives_ok(
-  $$select public.save_stream_search((select value::uuid from ctx where key = 'event'), 'youtube', null,
-      (select value from ctx where key = 'token'))$$,
-  'a later empty search keeps the stream already found');
-select is(
-  public.service_stream_state(
-    (select value::uuid from ctx where key = 'event'), 'youtube',
-    (select value from ctx where key = 'token')) ->> 'externalId',
-  'fakeVideoId', 'the stream found is remembered');
+  $$select public.save_youtube_check((select value::uuid from ctx where key = 'event'), null, true, false, 'wrong')$$,
+  '42501', 'not_authorized', 'a wrong pass cannot save anything');
 reset role;
 
 -- The pass is stored only as a hash.

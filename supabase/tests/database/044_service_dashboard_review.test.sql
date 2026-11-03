@@ -45,18 +45,16 @@ select is(
 select is((select actual_seconds from public.service_plan_items where external_id = 'r1'), 318, 'a recorded time is kept');
 select is((select actual_seconds from public.service_plan_items where external_id = 'r2'), null, 'an unrecorded time stays empty');
 
-insert into public.service_viewer_samples (event_id, platform, viewers, sampled_at)
-select id, 'youtube', 12, now() - interval '2 hours' from ctx;
-
+-- Viewer counts are gone. The stream preview only needs the channel.
+select hasnt_table('public', 'service_viewer_samples', 'viewer readings are no longer kept');
 select pg_temp.act_as('a9000000-0000-4000-8000-000000000001');
-select is(
-  (select count(*)::int from public.service_viewer_history((select id from ctx))),
-  1, 'a team member reads the viewer history');
+select lives_ok(
+  $$select public.service_stream_channel()$$, 'a team member reads the stream channel');
 reset role;
 select pg_temp.act_as('a9000000-0000-4000-8000-000000000002');
 select throws_ok(
-  $$select * from public.service_viewer_history((select id from ctx))$$,
-  '42501', 'not_authorized', 'someone on no team cannot read the viewer history');
+  $$select public.service_stream_channel()$$,
+  '42501', 'not_authorized', 'someone on no team cannot read the stream channel');
 reset role;
 
 select * from finish();

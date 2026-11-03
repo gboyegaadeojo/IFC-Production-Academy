@@ -45,7 +45,7 @@ async function ServiceDashboardConnectionsContent() {
           <h2 className="text-heading font-semibold">YouTube</h2>
           <p className="text-small text-text-secondary">
             Your stream is public, so nobody signs in and there&apos;s nothing to do each week. The
-            preview needs the channel. Viewer counts also need an API key.
+            preview needs the channel. Showing whether you&apos;re live also needs an API key.
           </p>
           <ChannelForm initial={channel} />
           <p className="text-small">

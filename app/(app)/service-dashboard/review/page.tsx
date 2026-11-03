@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { z } from "zod";
-import { ViewersChart } from "@/components/service-dashboard/viewers-chart";
 import { ReviewPicker } from "@/components/service-dashboard/service-picker";
 import { buttonClasses } from "@/components/ui/button";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
@@ -11,16 +10,9 @@ import {
   canViewServiceDashboard,
   getPlanItems,
   getReviewServices,
-  getViewerHistory,
 } from "@/lib/data/service-dashboard";
 import { formatDate } from "@/lib/domain/dates";
-import {
-  clockLabel,
-  countdownLabel,
-  differenceLabel,
-  reviewTiming,
-  viewerSeries,
-} from "@/lib/domain/service-dashboard";
+import { countdownLabel, differenceLabel, reviewTiming } from "@/lib/domain/service-dashboard";
 
 export const metadata: Metadata = { title: "After the service" };
 
@@ -74,9 +66,7 @@ async function ServiceReviewContent({
     <header className="flex flex-wrap items-center justify-between gap-3">
       <div>
         <h1 className="text-title font-semibold">After the service</h1>
-        <p className="text-small text-text-secondary">
-          How the timing went against the plan, and when people were watching.
-        </p>
+        <p className="text-small text-text-secondary">How the timing went against the plan.</p>
       </div>
       <Link href="/service-dashboard" className={buttonClasses("secondary")}>
         Back to the dashboard
@@ -92,13 +82,8 @@ async function ServiceReviewContent({
     );
   }
 
-  const [items, history] = await Promise.all([
-    getPlanItems(service.id),
-    getViewerHistory(service.id),
-  ]);
+  const items = await getPlanItems(service.id);
   const timing = reviewTiming(items);
-  const series = viewerSeries(history);
-  const hasViewers = series.length > 0;
   const stat = "flex flex-col rounded-card border border-border bg-surface p-4";
 
   return (
@@ -112,7 +97,7 @@ async function ServiceReviewContent({
         }))}
       />
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <div className={stat}>
           <span className="text-small text-text-muted">Planned length</span>
           <span className="text-title font-bold tabular-nums">
@@ -130,35 +115,7 @@ async function ServiceReviewContent({
             </span>
           ) : null}
         </div>
-        <div className={stat}>
-          <span className="text-small text-text-muted">Peak viewers</span>
-          <span className="text-title font-bold tabular-nums">
-            {hasViewers ? series.map((line) => line.peak.viewers).join(" + ") : "Not recorded"}
-          </span>
-          {hasViewers ? (
-            <span className="text-small text-text-secondary">
-              {series.map((line) => `${line.platform} at ${clockLabel(line.peak.at)}`).join(", ")}
-            </span>
-          ) : null}
-        </div>
       </div>
-
-      <section
-        aria-labelledby="viewers-heading"
-        className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4"
-      >
-        <h2 id="viewers-heading" className="text-heading font-semibold">
-          Viewers during the service
-        </h2>
-        {hasViewers ? (
-          <ViewersChart series={series} />
-        ) : (
-          <p className="text-small text-text-secondary">
-            Nothing recorded for this service. Counts are saved while the wall TV or a computer has
-            the dashboard open during the service, once viewers are connected.
-          </p>
-        )}
-      </section>
 
       <section
         aria-labelledby="timing-heading"

@@ -50,7 +50,7 @@ export async function clearMailFor(email: string): Promise<void> {
   await fetch(`${MAILPIT_URL}/api/v1/search?query=${query}`, { method: "DELETE" });
 }
 
-export async function signInByEmail(page: Page, email: string) {
+async function requestSignInLink(page: Page, email: string) {
   await clearMailFor(email);
   await page.goto("/sign-in");
   const sent = page.getByRole("heading", { name: "Check your email" });
@@ -67,7 +67,7 @@ export async function signInByEmail(page: Page, email: string) {
     await expect(sent.or(problem)).toBeVisible();
     // Sent wins: once the link is on its way the form (and its field) is gone.
     if (await sent.isVisible()) {
-      break;
+      return;
     }
     if (attempt === 3) {
       // Surface the app's message instead of a bare timeout.
@@ -75,6 +75,23 @@ export async function signInByEmail(page: Page, email: string) {
     }
     await page.waitForTimeout(2_000);
   }
-  await page.goto(await signInLinkFor(email));
+}
+
+export async function signInByEmail(page: Page, email: string) {
+  // Tests running side by side can sign in to the same seeded account. A newer link cancels an older
+  // one, and clearing mail can remove another test's link, so a link lost that way is asked for again.
+  for (let attempt = 1; ; attempt += 1) {
+    await requestSignInLink(page, email);
+    const link = await signInLinkFor(email).catch(() => null);
+    if (link) {
+      await page.goto(link);
+      if (!page.url().includes("error=link_invalid")) {
+        break;
+      }
+    }
+    if (attempt === 3) {
+      throw new Error(`Sign-in for ${email} failed: no working link after 3 tries.`);
+    }
+  }
   await expect(page).toHaveURL(/\/home$/);
 }

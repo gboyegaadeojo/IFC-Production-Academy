@@ -13,7 +13,7 @@ import {
   type DashboardLayout,
   layoutSchema,
 } from "@/lib/domain/service-dashboard";
-import { youtubeChannelSchema } from "@/lib/domain/stream-viewers";
+import { youtubeChannelSchema } from "@/lib/domain/youtube-stream";
 
 // Service Dashboard setup (ADD-DASH-03). The database checks who may do each of these and logs it.
 

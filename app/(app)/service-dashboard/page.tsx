@@ -22,7 +22,7 @@ import {
   ServiceTimerTile,
 } from "@/components/service-dashboard/service-clock";
 import { ServicePicker } from "@/components/service-dashboard/service-picker";
-import { StreamPreviewTile, ViewersTile } from "@/components/service-dashboard/stream-tiles";
+import { StreamPreviewTile, YoutubeLiveTile } from "@/components/service-dashboard/stream-tiles";
 import { TeamTile } from "@/components/service-dashboard/team-tile";
 import { TileWall } from "@/components/service-dashboard/tile-wall";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -38,13 +38,13 @@ import {
   getServiceNote,
   getStreamChannel,
 } from "@/lib/data/service-dashboard";
-import { getYoutubeView } from "@/lib/data/stream-viewers";
-import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { getSopLibrary, type SopSummary } from "@/lib/data/sops";
 import { canOpenAdminSection } from "@/lib/domain/admin";
 import { formatDate } from "@/lib/domain/dates";
 import { eventTimeLabel } from "@/lib/domain/schedule";
-import { type TileKey, TILES } from "@/lib/domain/service-dashboard";
+import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { getYoutubeStatus } from "@/lib/data/youtube-status";
+import { type TileKey } from "@/lib/domain/service-dashboard";
 
 export const metadata: Metadata = { title: "Service Dashboard" };
 
@@ -154,12 +154,12 @@ async function ServiceDashboardContent({
     shows("notes") ? getServiceNote(service.id) : "",
     shows("checklist") ? getServiceChecklists(service.id) : null,
     shows("sops") ? getSopLibrary() : [],
-    shows("preview") ? getStreamChannel(service.id) : null,
+    shows("preview") ? getStreamChannel() : null,
     shows("youtube")
       ? createSupabaseServerClient().then((client) =>
-          getYoutubeView(client, service, null, renderedAt),
+          getYoutubeStatus(client, service, null, renderedAt),
         )
-      : ({ status: "off" } as const),
+      : ("off" as const),
     getLiveTicket(renderedAt),
   ]);
 
@@ -260,13 +260,7 @@ async function ServiceDashboardContent({
                   case "preview":
                     return <StreamPreviewTile channelId={channel} />;
                   case "youtube":
-                    return <ViewersTile view={youtube} platform="YouTube" />;
-                  default:
-                    return (
-                      <p className="text-small text-text-secondary">
-                        Not connected yet. This will come from {TILES[item.tile].source}.
-                      </p>
-                    );
+                    return <YoutubeLiveTile status={youtube} />;
                 }
               }}
             />

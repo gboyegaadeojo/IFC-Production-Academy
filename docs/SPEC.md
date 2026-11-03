@@ -255,10 +255,10 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ADD-DASH-04 | App name and logo: platform admins change the name, short name, and icon, with previews. Issued certificates keep their name | S |
 | ADD-DASH-05 | Run of service from Planning Center (items, songs, notes), current item and service timer by the plan's clock, who's serving, checklist, producer notes, SOP shortcuts | S |
 | ADD-DASH-06 | Wall TV connects by a 6-digit code and holds a revocable, view-only pass. It fits one screen with no scrolling | S |
-| ADD-DASH-07 | YouTube preview and viewer counts from the public channel, with nothing to do each week | S |
+| ADD-DASH-07 | Whether YouTube is live, and a preview, from the public channel, with nothing to do each week. No viewer counts (G, 2026-11-03) | S |
 | ADD-DASH-08 | Editors choose which mixer channels show, in order. Levels are signal levels, not room loudness. Room loudness is built and left off | S |
 | ADD-DASH-09 | Church bridge and live room: slides (on screen and next three), ProPresenter timers, mixer levels, encoder health. Read only, connects outward only, and tiles say when it's offline | S |
-| ADD-DASH-10 | After the service: planned against actual by item, from Services LIVE, and viewers over time. It builds itself and says what wasn't recorded | S |
+| ADD-DASH-10 | After the service: planned against actual by item, from Services LIVE. It builds itself and says what wasn't recorded | S |
 | ADD-DASH-03 | One layout for everyone, changed by up to 3 editors with drag, resize, and keyboard. Every save writes an audit event | S |
 
 ## 3. Progression, business rules and workflows

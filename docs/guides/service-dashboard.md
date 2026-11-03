@@ -2,11 +2,11 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do the YouTube preview and viewers once their setup is done (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Only Facebook viewers is still to come. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do YouTube live and the stream preview once their setup is done (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
-The Service Dashboard is one screen that shows the whole service while it runs: where we are in the plan, what's on the slides, how the stream is doing, and how many people are watching.
+The Service Dashboard is one screen that shows the whole service while it runs: where we are in the plan, what's on the slides, and how the stream is doing.
 
 You don't have to ask around or open six different apps. If you're serving, you can look up and see what's happening.
 
@@ -28,9 +28,8 @@ Service Producer, Audio, Graphics, Camera Director, and the wall TV all see the 
 
 | Tile                | What it shows                                                        | Where it comes from              |
 | ------------------- | -------------------------------------------------------------------- | -------------------------------- |
-| Stream preview      | The YouTube stream, a little behind the room                         | YouTube                          |
-| YouTube viewers     | How many people are watching now, and the trend                      | YouTube                          |
-| Facebook viewers    | The same for Facebook                                                | Facebook                         |
+| YouTube live        | **Live** or **Not live**                                             | YouTube                          |
+| Stream preview      | The YouTube live stream, a little behind the room                    | YouTube                          |
 | Current item        | What we're on, how long is left, and what's next                     | The plan and ProPresenter        |
 | Run of service      | Every item with its time, and the current one marked NOW             | Planning Center                  |
 | Slides              | The slide on screen and the next three                               | ProPresenter                     |
@@ -61,8 +60,6 @@ Editors choose which tiles are on the layout, so you may not see all of these.
 | You see                     | What it means                                                                | What to do                                                       |
 | --------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | **Offline, last seen 10:12** | The tile lost its connection to the church gear. It shows the last reading   | Check that the bridge computer is on. The service isn't affected |
-| **Waiting for the stream**  | The platform doesn't show a live stream yet                                  | Nothing, unless you've been live for a few minutes. Then tell an editor |
-| **Not available**           | Facebook can't provide this number                                           | Nothing. Check Facebook directly if you need it                  |
 | **Ready, switched off**     | The tile is built, but the gear it needs isn't connected                     | Nothing                                                          |
 
 ## Changing the layout
@@ -108,10 +105,9 @@ The TV holds a view-only pass, not anyone's account. It can't tick checklists or
 **From the internet, with nothing to do each week:**
 
 - **Planning Center** provides the plan, the times, and who's serving. The Academy only reads from Planning Center and never changes it.
-- **YouTube** only needs our channel and an API key, because our stream is public. Nobody signs in. Counts are read while a screen is open during the service, so keep the wall TV or a booth computer on.
-- **Facebook** needs someone who manages the Page to sign in once.
+- **YouTube** only needs our channel and an API key, because our stream is public. Nobody signs in. The Magewell goes live as usual, and the YouTube live tile says so. It checks from 30 minutes before the service until 30 minutes after, while a screen is open, so keep the wall TV or a booth computer on. It can take a couple of minutes to change to **Live**.
 
-Each Sunday, Planning Center tells the Academy when the service is. The Magewell goes live as usual, and the Academy asks YouTube and Facebook what's live. If it ever can't find the stream, an editor can paste that week's link as a backup.
+The dashboard doesn't count viewers. To see how many people are watching, check YouTube Studio or Facebook directly.
 
 **From the church network, through the bridge:**
 
@@ -121,10 +117,9 @@ If that computer is off, the tiles that depend on it go faded and say **Offline*
 
 ## After the service
 
-Choose **After the service** at the top of the dashboard. It builds itself from what was recorded: how long each item ran against the plan, and viewers over time. Use it to see where the service ran long and when people joined or left.
+Choose **After the service** at the top of the dashboard. It builds itself from what was recorded: how long each item ran against the plan. Use it to see where the service ran long.
 
 - **Actual times** come from Planning Center, and appear only when someone runs the plan with Services LIVE. Without that, an item says "Not recorded".
-- **Viewers** are saved while the wall TV or a computer has the dashboard open during the service.
 
 ## App name and logo
 
@@ -152,11 +147,10 @@ Platform administrators can change the app's name, short name, and logo under **
 
 These were approved knowing they need a real test. This guide will change once they're done.
 
-- **Facebook:** we couldn't confirm from Meta's documentation that the Academy can find the live video or read its viewer count. If it can't, the tile says **Not available**.
 - **ProPresenter:** the exact way to read slide status, and whether it can send pictures of the next three slides. If it only sends text, those tiles show the words.
 - **X32:** the exact meter format, and reading channel names from the scribble strips.
 - **Magewell:** whether its web API needs a sign-in.
-- **YouTube:** how soon after going live the stream can be found.
+- **YouTube:** how soon after going live the YouTube live tile changes, on our real channel.
 - **The TV stick:** that it reopens the dashboard by itself after a power cut.
 - **Services LIVE times:** that they arrive as expected, the first time someone runs a plan live.
 - **Text size on the TV:** whether it can be read from where people stand.

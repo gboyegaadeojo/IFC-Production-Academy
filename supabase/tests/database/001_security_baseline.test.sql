@@ -54,7 +54,7 @@ select is_empty(
       and p.proname not in ('keepalive', 'check_certificate', 'submit_interest', 'open_departments',
                             'claim_push', 'push_subscription_gone', 'app_branding',
                             'screen_start_pairing', 'screen_claim', 'screen_dashboard',
-                            'service_stream_state', 'save_stream_search', 'save_viewer_sample')
+                            'service_youtube_state', 'save_youtube_check')
       -- Ignore functions owned by extensions such as pgTAP itself.
       and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
   $$,
