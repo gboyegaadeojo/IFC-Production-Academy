@@ -67,7 +67,7 @@ async function CourseContent({
   params,
   searchParams,
 }: Pick<PageProps<"/admin/curriculum/[courseId]">, "params" | "searchParams">) {
-  const { user, grants, allowed } = await getAdminAccess("curriculum");
+  const { grants, allowed } = await getAdminAccess("curriculum");
   if (!allowed) {
     return <AccessDenied />;
   }

@@ -46,7 +46,6 @@ describe("courseState", () => {
     expect(state && courseStateLabel(state)).toBe("Version 2 live · unpublished changes");
   });
 
-
   it("reads archived courses as archived", () => {
     const state = courseState([v("a", "archived", 3)], true);
     expect(state?.kind).toBe("archived");
