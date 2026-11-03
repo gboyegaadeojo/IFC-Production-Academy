@@ -32,7 +32,7 @@ The page leads with the key numbers, then has tabs for position links, people no
 ## The sidebar and theme switch (2026-11-03, approved in a mock)
 
 - **Back to Academy** is solid purple with one arrow, at the top of the Admin sidebar and the phone menu.
-- **One section open at a time.** Opening one closes the last, **Collapse all** closes them all, and a dot marks the closed section you're in.
+- **One section open at a time.** Opening one closes the last, **Collapse all** closes them all, and a dot marks a closed section you're in, or one with something waiting.
 - **Light and dark** is a sliding switch beside your name, in the top bar and the Admin sidebar, and on the sign-in page. It replaces Appearance in the account menu. System is gone, so a device that had it starts light.
 
 ## The rest of the work
