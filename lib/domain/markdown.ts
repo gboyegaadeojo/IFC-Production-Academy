@@ -15,6 +15,8 @@ export type ListItem = { content: Inline[]; children: Block | null };
 export type Block =
   | { kind: "heading"; level: 1 | 2 | 3; text: string; id: string }
   | { kind: "paragraph"; content: Inline[] }
+  /** A line starting "! ": a warning, for SOPs written in the app. */
+  | { kind: "note"; content: Inline[] }
   | { kind: "list"; ordered: boolean; items: ListItem[] }
   | { kind: "table"; header: Inline[][]; rows: Inline[][][] }
   | { kind: "code"; text: string };
@@ -66,7 +68,7 @@ function tableCells(line: string): string[] {
 }
 
 const ITEM = /^(\s*)([-*]|\d+\.)\s+(.*)$/;
-const BLOCK_START = /^(#{1,3}\s|```|\||\s*(?:[-*]|\d+\.)\s)/;
+const BLOCK_START = /^(#{1,3}\s|```|\||!\s|\s*(?:[-*]|\d+\.)\s)/;
 
 export function parseMarkdown(source: string): Block[] {
   const lines = source.replace(/\r\n/g, "\n").split("\n");
@@ -121,6 +123,11 @@ export function parseMarkdown(source: string): Block[] {
         text,
         id: headingId(text),
       });
+      index += 1;
+      continue;
+    }
+    if (line.startsWith("! ")) {
+      blocks.push({ kind: "note", content: parseInline(line.slice(2).trim()) });
       index += 1;
       continue;
     }

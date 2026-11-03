@@ -79,27 +79,59 @@ export async function startSopDraftAction(_: FormState, formData: FormData): Pro
   };
 }
 
-export async function updateSopDraftAction(_: FormState, formData: FormData): Promise<FormState> {
+/** Saves everything on the editor at once: the draft's words and the SOP's settings. */
+async function saveDraft(formData: FormData): Promise<FormState | null> {
   const versionId = id.safeParse(formData.get("versionId"));
+  const sopId = id.safeParse(formData.get("sopId"));
   const details = sopDetailsSchema.safeParse({
     title: text(formData.get("title")),
     summary: text(formData.get("summary")),
+    body: text(formData.get("body")),
   });
-  if (!versionId.success) {
+  const settings = sopSettingsSchema.safeParse({
+    category: text(formData.get("category")),
+    reviewIntervalMonths: formData.get("reviewIntervalMonths"),
+  });
+  if (!versionId.success || !sopId.success) {
     return failed("unknown");
   }
   if (!details.success) {
     return firstIssue(details);
   }
+  if (!settings.success) {
+    return firstIssue(settings);
+  }
   if (!(await allowed())) {
     return failed("not_authorized");
   }
-  const result = await sops.updateSopDraft(versionId.data, details.data);
+  const draft = await sops.updateSopDraft(versionId.data, details.data);
+  if (!draft.ok) {
+    return failed(draft.error);
+  }
+  const saved = await sops.updateSopSettings(sopId.data, settings.data);
+  return saved.ok ? null : failed(saved.error);
+}
+
+export async function saveSopDraftAction(_: FormState, formData: FormData): Promise<FormState> {
+  const problem = await saveDraft(formData);
+  if (problem) {
+    return problem;
+  }
+  refresh();
+  return { status: "done", message: "Saved to the draft." };
+}
+
+export async function removeSopFileAction(_: FormState, formData: FormData): Promise<FormState> {
+  const versionId = id.safeParse(formData.get("versionId"));
+  if (!versionId.success || !(await allowed())) {
+    return failed("not_authorized");
+  }
+  const result = await sops.removeSopFile(versionId.data);
   if (!result.ok) {
     return failed(result.error);
   }
   refresh();
-  return { status: "done", message: "Saved to the draft." };
+  return { status: "done", message: "File removed from the draft." };
 }
 
 export async function uploadSopFileAction(_: FormState, formData: FormData): Promise<FormState> {
@@ -166,8 +198,10 @@ export async function publishSopAction(_: FormState, formData: FormData): Promis
   if (!note.success) {
     return firstIssue(note);
   }
-  if (!(await allowed())) {
-    return failed("not_authorized");
+  // What's on the screen is what gets published, saved or not.
+  const problem = await saveDraft(formData);
+  if (problem) {
+    return problem;
   }
   const result = await sops.publishSopVersion(versionId.data, note.data);
   if (!result.ok) {

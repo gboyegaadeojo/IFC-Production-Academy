@@ -455,6 +455,7 @@ export type Database = {
           status: Database["public"]["Enums"]["sop_version_status"];
           title: string;
           summary: string;
+          body: string;
           file_path: string | null;
           file_name: string | null;
           file_size: number | null;
@@ -469,6 +470,7 @@ export type Database = {
         Update: {
           title?: string;
           summary?: string;
+          body?: string;
           file_path?: string | null;
           file_name?: string | null;
           file_size?: number | null;

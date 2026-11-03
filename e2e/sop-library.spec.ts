@@ -53,3 +53,45 @@ test("a department leader can't add an SOP for all of production", async ({ page
   const options = page.getByRole("dialog").getByLabel("Who it's for").getByRole("option");
   await expect(options.filter({ hasText: "All of production" })).toHaveCount(0);
 });
+
+test("an SOP written in the app, with no file, reaches volunteers", async ({ page, browser }) => {
+  const name = `E2E written SOP ${Date.now()}`;
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin/sops");
+  await page.getByRole("button", { name: /Add (your first )?SOP/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Add an SOP" });
+  await dialog.getByLabel("SOP title").fill(name);
+  await dialog.getByLabel("Who it's for").selectOption({ label: "All of production" });
+  await dialog.getByRole("button", { name: "Create SOP" }).click();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue(name);
+
+  // It can't be published until it has steps or a file.
+  await page.getByRole("button", { name: "Publish", exact: true }).click();
+  const publish = page.getByRole("dialog", { name: "Publish this SOP" });
+  await expect(publish.getByRole("button", { name: "Publish" })).toBeDisabled();
+  await publish.getByRole("button", { name: "Keep editing" }).click();
+
+  await page.getByLabel("The procedure").fill("## Steps\n1. Fake first step\n! Fake warning");
+  await expect(page.getByText("Unsaved changes")).toBeVisible();
+  await page.getByRole("button", { name: "Save draft" }).click();
+  await expect(page.getByText("All changes saved")).toBeVisible();
+  await page.getByRole("button", { name: "Preview" }).click();
+  await expect(page.getByRole("listitem").filter({ hasText: "Fake first step" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Publish", exact: true }).click();
+  await publish.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Current · Version 1")).toBeVisible();
+
+  const volunteerContext = await browser.newContext();
+  const volunteer = await volunteerContext.newPage();
+  await signInByEmail(volunteer, "avery.volunteer@example.com");
+  await volunteer.goto("/sops");
+  await volunteer.getByLabel("Search SOPs").fill(name);
+  await volunteer.getByRole("link", { name }).click();
+  await expect(volunteer.getByRole("heading", { level: 1, name })).toBeVisible();
+  await expect(volunteer.getByRole("heading", { name: "Steps" })).toBeVisible();
+  await expect(volunteer.getByText("Fake first step")).toBeVisible();
+  await expect(volunteer.getByText("Fake warning")).toBeVisible();
+  await expect(volunteer.getByRole("link", { name: /^Open the/ })).toHaveCount(0);
+  await volunteerContext.close();
+});

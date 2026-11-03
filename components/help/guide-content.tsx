@@ -96,6 +96,13 @@ function GuideBlock({ block, source }: { block: Block; source: string }) {
           <InlineParts parts={block.content} source={source} />
         </p>
       );
+    case "note":
+      return (
+        <p className="rounded-button border border-warning-line bg-warning-soft px-3 py-2 text-text">
+          <strong className="font-semibold">Careful: </strong>
+          <InlineParts parts={block.content} source={source} />
+        </p>
+      );
     case "list":
       return <ListBlock ordered={block.ordered} items={block.items} source={source} />;
     case "code":

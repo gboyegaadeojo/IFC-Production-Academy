@@ -9,9 +9,15 @@ SOPs are grouped by category. Select a category's heading to collapse or open it
 ## Adding an SOP
 
 1. Choose **Add SOP**. Give it a title, say who it's for, and choose a category or create a new one.
-2. In the draft, add a summary saying what it's for and when to use it, and the procedure.
-3. Upload a file if it has one: a PDF, PNG, or JPEG, up to 10 MB. It's stored privately.
-4. **Publish.** The draft becomes the current version.
+2. Write the steps in the page, attach a file, or do both. A file can be a PDF, PNG, or JPEG up to 10 MB, and it's stored privately.
+3. Add a summary saying what it's for and when to use it. **Save draft** keeps your work.
+4. Choose **Publish** and say what changed. The draft becomes the current version.
+
+An SOP needs written steps or a file before it can be published.
+
+## Writing the steps
+
+Type in the page, and use the buttons above it to add headings, numbered steps, bullets, bold, and warnings. **Use a template** gives you a starting shape, and **Preview** shows what volunteers will see.
 
 ## SOPs for all of production
 

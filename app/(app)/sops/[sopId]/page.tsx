@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { GuideContent } from "@/components/help/guide-content";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
 import { ArrowRightIcon, InfoIcon } from "@/components/ui/icons";
@@ -12,6 +13,7 @@ import { requireActiveUser } from "@/lib/data/auth";
 import { getSop, sopTitle } from "@/lib/data/sops";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
+import { parseMarkdown } from "@/lib/domain/markdown";
 import {
   formatFileSize,
   reviewDueAt,
@@ -100,13 +102,22 @@ async function SopContent({ params, searchParams }: Props) {
           </p>
         ) : null}
 
-        {sop.current && sop.state !== "archived" ? (
+        {sop.current?.body.trim() && sop.state !== "archived" ? (
+          <section aria-labelledby="sop-steps-heading" className="flex flex-col gap-3">
+            <h2 id="sop-steps-heading" className="sr-only">
+              The procedure
+            </h2>
+            <GuideContent blocks={parseMarkdown(sop.current.body)} source="" />
+          </section>
+        ) : null}
+
+        {sop.current?.fileName && sop.state !== "archived" ? (
           <section
             aria-labelledby="sop-file-heading"
             className="flex flex-col gap-3 rounded-card border border-border bg-card p-5"
           >
             <h2 id="sop-file-heading" className="font-medium">
-              The procedure
+              {sop.current.body.trim() ? "Attached file" : "The procedure"}
             </h2>
             <p className="text-small text-text-secondary">
               {sop.current.fileName}
