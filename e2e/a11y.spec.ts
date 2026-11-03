@@ -151,6 +151,7 @@ test("admin pages are accessible", async ({ page }) => {
     ["/admin/branding", "app name and logo"],
     ["/admin/service-dashboard", "Service Dashboard setup"],
     ["/admin/service-dashboard/editors", "Service Dashboard editors"],
+    ["/admin/service-dashboard/channels", "Service Dashboard mixer channels"],
     ["/admin/service-dashboard/connections", "Service Dashboard connections"],
     ["/admin/service-dashboard/screens", "Service Dashboard screens"],
     ["/service-dashboard", "Service Dashboard"],

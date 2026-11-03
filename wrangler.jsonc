@@ -1,7 +1,8 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ifc-production-academy",
-  "main": ".open-next/worker.js",
+  // The app plus the live room (ADD-DASH-09). See workers/entry.ts.
+  "main": "workers/entry.ts",
   "compatibility_date": "2026-10-29",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
@@ -15,6 +16,10 @@
       "service": "ifc-production-academy",
     },
   ],
+  "durable_objects": {
+    "bindings": [{ "name": "LIVE_ROOM", "class_name": "LiveRoom" }],
+  },
+  "migrations": [{ "tag": "live-room-v1", "new_sqlite_classes": ["LiveRoom"] }],
   "observability": {
     "enabled": true,
   },

@@ -6,6 +6,13 @@ import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { z } from "zod";
 import { AutoRefresh } from "@/components/checklist/auto-refresh";
 import { ChecklistTile } from "@/components/service-dashboard/checklist-tile";
+import {
+  EncoderTile,
+  LiveProvider,
+  MixerLevelsTile,
+  ProPresenterTimersTile,
+  SlidesTile,
+} from "@/components/service-dashboard/live-tiles";
 import { NotesTile } from "@/components/service-dashboard/notes-tile";
 import {
   CurrentItemName,
@@ -25,6 +32,7 @@ import {
   canViewServiceDashboard,
   getDashboardServices,
   getDashboardTeam,
+  getLiveTicket,
   getPlanItems,
   getServiceDashboardLayout,
   getServiceNote,
@@ -140,7 +148,7 @@ async function ServiceDashboardContent({
 
   const shows = (tile: TileKey) => layout.items.some((item) => item.tile === tile);
   const renderedAt = serverNow();
-  const [items, team, note, checklists, sops, channel, youtube] = await Promise.all([
+  const [items, team, note, checklists, sops, channel, youtube, ticket] = await Promise.all([
     getPlanItems(service.id),
     shows("team") ? getDashboardTeam(service.id) : [],
     shows("notes") ? getServiceNote(service.id) : "",
@@ -152,6 +160,7 @@ async function ServiceDashboardContent({
           getYoutubeView(client, service, null, renderedAt),
         )
       : ({ status: "off" } as const),
+    getLiveTicket(renderedAt),
   ]);
 
   return (
@@ -159,72 +168,104 @@ async function ServiceDashboardContent({
       {smallScreen}
       <div className="only-on-computer flex-col gap-3">
         <AutoRefresh />
-        <ServiceClock items={items} startsAt={service.startsAt} renderedAt={renderedAt}>
-          <header className="flex flex-wrap items-stretch gap-2">
-            <h1 className="sr-only">Service Dashboard</h1>
-            <ServicePicker
-              current={service.id}
-              services={services.map((entry) => ({
-                id: entry.id,
-                label: `${entry.title}, ${formatDate(entry.startsAt)}`,
-              }))}
+        <LiveProvider ticket={ticket}>
+          <ServiceClock items={items} startsAt={service.startsAt} renderedAt={renderedAt}>
+            <header className="flex flex-wrap items-stretch gap-2">
+              <h1 className="sr-only">Service Dashboard</h1>
+              <ServicePicker
+                current={service.id}
+                services={services.map((entry) => ({
+                  id: entry.id,
+                  label: `${entry.title}, ${formatDate(entry.startsAt)}`,
+                }))}
+              />
+              <div className="flex flex-col justify-center rounded-card border border-border bg-surface px-3 py-1.5">
+                <span className="text-[0.6875rem] text-text-muted">Service time</span>
+                <span className="font-medium">
+                  {eventTimeLabel(service.startsAt, service.endsAt)}
+                </span>
+              </div>
+              <div className="flex min-w-48 flex-1 flex-col justify-center rounded-card border border-border bg-surface px-3 py-1.5">
+                <span className="text-[0.6875rem] text-text-muted">Current item, by the plan</span>
+                <strong className="font-medium">
+                  <CurrentItemName />
+                </strong>
+              </div>
+              {editLink}
+            </header>
+            <TileWall
+              items={layout.items}
+              content={(item) => {
+                switch (item.tile) {
+                  case "run":
+                    return <RunOfServiceTile />;
+                  case "current":
+                    return <CurrentItemTile />;
+                  case "timer":
+                    return <ServiceTimerTile />;
+                  case "team":
+                    return <TeamTile team={team} />;
+                  case "notes":
+                    return <NotesTile eventId={service.id} body={note} />;
+                  case "checklist":
+                    return checklists ? (
+                      <ChecklistTile
+                        eventId={service.id}
+                        checklists={checklists.checklists}
+                        canTick={checklists.state.canTick && checklists.state.open}
+                      />
+                    ) : (
+                      <p className="text-small text-text-secondary">
+                        The checklist isn&apos;t open to you for this service.
+                      </p>
+                    );
+                  case "sops":
+                    return <SopsTile sops={sops} />;
+                  case "slides":
+                    return <SlidesTile />;
+                  case "pptimers":
+                    return <ProPresenterTimersTile />;
+                  case "encoder":
+                    return <EncoderTile />;
+                  case "levels":
+                    return (
+                      <MixerLevelsTile
+                        chosen={layout.channels}
+                        editLink={
+                          canEdit ? (
+                            <Link
+                              href="/admin/service-dashboard/channels"
+                              className="text-accent-light underline"
+                            >
+                              Choose channels
+                            </Link>
+                          ) : null
+                        }
+                      />
+                    );
+                  case "spl":
+                    return (
+                      <p className="text-small text-text-secondary">
+                        <strong className="block font-medium text-text">Ready, switched off</strong>
+                        This turns on when a measurement mic or SMAART is connected. The mixer
+                        can&apos;t measure room loudness.
+                      </p>
+                    );
+                  case "preview":
+                    return <StreamPreviewTile channelId={channel} />;
+                  case "youtube":
+                    return <ViewersTile view={youtube} platform="YouTube" />;
+                  default:
+                    return (
+                      <p className="text-small text-text-secondary">
+                        Not connected yet. This will come from {TILES[item.tile].source}.
+                      </p>
+                    );
+                }
+              }}
             />
-            <div className="flex flex-col justify-center rounded-card border border-border bg-surface px-3 py-1.5">
-              <span className="text-[0.6875rem] text-text-muted">Service time</span>
-              <span className="font-medium">
-                {eventTimeLabel(service.startsAt, service.endsAt)}
-              </span>
-            </div>
-            <div className="flex min-w-48 flex-1 flex-col justify-center rounded-card border border-border bg-surface px-3 py-1.5">
-              <span className="text-[0.6875rem] text-text-muted">Current item, by the plan</span>
-              <strong className="font-medium">
-                <CurrentItemName />
-              </strong>
-            </div>
-            {editLink}
-          </header>
-          <TileWall
-            items={layout.items}
-            content={(item) => {
-              switch (item.tile) {
-                case "run":
-                  return <RunOfServiceTile />;
-                case "current":
-                  return <CurrentItemTile />;
-                case "timer":
-                  return <ServiceTimerTile />;
-                case "team":
-                  return <TeamTile team={team} />;
-                case "notes":
-                  return <NotesTile eventId={service.id} body={note} />;
-                case "checklist":
-                  return checklists ? (
-                    <ChecklistTile
-                      eventId={service.id}
-                      checklists={checklists.checklists}
-                      canTick={checklists.state.canTick && checklists.state.open}
-                    />
-                  ) : (
-                    <p className="text-small text-text-secondary">
-                      The checklist isn&apos;t open to you for this service.
-                    </p>
-                  );
-                case "sops":
-                  return <SopsTile sops={sops} />;
-                case "preview":
-                  return <StreamPreviewTile channelId={channel} />;
-                case "youtube":
-                  return <ViewersTile view={youtube} platform="YouTube" />;
-                default:
-                  return (
-                    <p className="text-small text-text-secondary">
-                      Not connected yet. This will come from {TILES[item.tile].source}.
-                    </p>
-                  );
-              }
-            }}
-          />
-        </ServiceClock>
+          </ServiceClock>
+        </LiveProvider>
       </div>
     </>
   );

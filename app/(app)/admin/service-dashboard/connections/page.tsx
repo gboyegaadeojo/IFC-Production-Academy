@@ -26,6 +26,7 @@ async function ServiceDashboardConnectionsContent() {
   }
   const channel = await getYoutubeChannel();
   const keySet = Boolean(process.env.YOUTUBE_API_KEY);
+  const liveSet = Boolean(process.env.LIVE_ROOM_SECRET);
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,11 +61,20 @@ async function ServiceDashboardConnectionsContent() {
         </section>
 
         <section className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
-          <h2 className="text-heading font-semibold">Still to come</h2>
+          <h2 className="text-heading font-semibold">The church bridge</h2>
           <p className="text-small text-text-secondary">
             ProPresenter, the mixer, and the Magewell encoder connect through a small program on a
-            church computer. Facebook comes after that, once it&apos;s been tested.
+            church computer. It only connects outward, and it only reads.
           </p>
+          <p className="text-small">
+            <strong className="font-medium">Live room: </strong>
+            {liveSet ? "Ready." : "Not set up yet."} See docs/runbooks/service-dashboard.md.
+          </p>
+        </section>
+
+        <section className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
+          <h2 className="text-heading font-semibold">Still to come</h2>
+          <p className="text-small text-text-secondary">Facebook, once it&apos;s been tested.</p>
         </section>
       </div>
     </div>

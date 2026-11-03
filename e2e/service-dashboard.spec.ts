@@ -187,3 +187,25 @@ test("a manager saves the YouTube channel, and the preview follows it", async ({
   await page.getByRole("button", { name: "Save channel" }).click();
   await expect(page.getByText("Channel cleared.")).toBeVisible();
 });
+
+test("an editor chooses the mixer channels, in order", async ({ page }) => {
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin/service-dashboard/editors");
+  await expect(page.getByRole("heading", { name: /^Editors \(/ })).toBeVisible();
+  if ((await page.getByRole("button", { name: "Remove Emery" }).count()) === 0) {
+    await page.getByLabel("Find a person").fill("Emery");
+    await page.getByRole("button", { name: /^Add Emery/ }).click();
+    await expect(page.getByText(/can now edit/)).toBeVisible();
+  }
+  await page.goto("/admin/service-dashboard/channels");
+  await page.getByRole("checkbox", { name: "Ch 13" }).check();
+  await expect(page.getByRole("button", { name: "Move Ch 13 up" })).toBeEnabled();
+  await page.getByRole("button", { name: "Move Ch 13 up" }).click();
+  await page.getByRole("button", { name: "Save channels" }).click();
+  await expect(page.getByText("Channels saved.")).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("checkbox", { name: "Ch 13" })).toBeChecked();
+  await page.getByRole("checkbox", { name: "Ch 13" }).uncheck();
+  await page.getByRole("button", { name: "Save channels" }).click();
+  await expect(page.getByText("Channels saved.")).toBeVisible();
+});

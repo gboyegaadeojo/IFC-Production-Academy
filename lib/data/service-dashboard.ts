@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { mintLiveTicket } from "@/lib/domain/live-room";
 import {
   type DashboardError,
   type DashboardLayout,
@@ -176,4 +177,13 @@ export async function getStreamChannel(eventId: string): Promise<string | null> 
     return null;
   }
   return z.object({ channel: z.string().nullable() }).safeParse(data).data?.channel ?? null;
+}
+
+/**
+ * A short-lived ticket for this page's live link, or null until the live room's secret is set. Only
+ * call it once the person or screen has been checked.
+ */
+export async function getLiveTicket(now: number): Promise<string | null> {
+  const secret = process.env.LIVE_ROOM_SECRET;
+  return secret ? mintLiveTicket(secret, now) : null;
 }
