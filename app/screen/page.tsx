@@ -23,6 +23,7 @@ import { createScreenClient, getScreenDashboard, SCREEN_TOKEN_COOKIE } from "@/l
 import { getLiveTicket } from "@/lib/data/service-dashboard";
 import { getYoutubeView } from "@/lib/data/stream-viewers";
 import { layoutRows, TILES } from "@/lib/domain/service-dashboard";
+import { AlwaysDark } from "./always-dark";
 import { ScreenPairing } from "./pairing";
 import { ScreenStage } from "./stage";
 
@@ -40,7 +41,12 @@ export default async function ScreenPage() {
   const token = (await cookies()).get(SCREEN_TOKEN_COOKIE)?.value;
   const dashboard = token ? await getScreenDashboard(token) : null;
   if (!token || !dashboard) {
-    return <ScreenPairing />;
+    return (
+      <>
+        <AlwaysDark />
+        <ScreenPairing />
+      </>
+    );
   }
 
   const { layout, service, items, team, note, checklists, channel } = dashboard;
@@ -54,6 +60,7 @@ export default async function ScreenPage() {
 
   return (
     <ScreenStage>
+      <AlwaysDark />
       <AutoRefresh />
       <LiveProvider ticket={ticket}>
         <ServiceClock

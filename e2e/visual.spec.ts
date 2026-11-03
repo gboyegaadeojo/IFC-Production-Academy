@@ -258,3 +258,50 @@ test("schedule at 390, 834 and 1440px", async ({ page }) => {
     await capture(page, `schedule-${viewport.name}`);
   }
 });
+
+test("Service Dashboard: every screen, for design review", async ({ page, browser }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await signInByEmail(page, "emery.director@example.com");
+
+  await page.goto("/service-dashboard");
+  await expect(page.getByRole("heading", { name: "Service Dashboard" }).first()).toBeAttached();
+  await page.waitForLoadState("networkidle");
+  await capture(page, "service-dashboard-1440");
+  await page.goto("/service-dashboard/review");
+  await expect(page.getByRole("heading", { level: 1, name: "After the service" })).toBeVisible();
+  await capture(page, "service-review-1440");
+  for (const [path, name] of [
+    ["", "layout"],
+    ["/channels", "channels"],
+    ["/editors", "editors"],
+    ["/connections", "connections"],
+    ["/screens", "screens"],
+  ]) {
+    await page.goto(`/admin/service-dashboard${path}`);
+    await expect(page.getByRole("heading", { name: "Service Dashboard setup" })).toBeVisible();
+    await capture(page, `service-setup-${name}-1440`);
+  }
+
+  // The wall TV: its code, then the dashboard filling the screen.
+  const tvContext = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const tv = await tvContext.newPage();
+  await tv.goto("/screen");
+  const code = tv.getByTestId("screen-code");
+  await expect(code).toHaveText(/^\d{3} \d{3}$/);
+  await capture(tv, "service-tv-code-1920");
+  await page.goto("/admin/service-dashboard/screens");
+  await page.getByLabel("Code on the TV").fill((await code.textContent()) ?? "");
+  await page.getByRole("button", { name: "Add this screen" }).click();
+  await expect(tv.getByRole("region", { name: "Run of service" })).toBeVisible({ timeout: 15_000 });
+  await capture(tv, "service-tv-1920");
+  await tvContext.close();
+});
+
+test("App name and logo, for design review", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await signInByEmail(page, "frankie.admin@example.com");
+  await page.goto("/admin/branding");
+  await expect(page.getByRole("heading", { level: 1, name: "App name and logo" })).toBeVisible();
+  await page.getByRole("button", { name: "IFC mark" }).click();
+  await capture(page, "branding-1440");
+});

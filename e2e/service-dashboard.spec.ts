@@ -133,6 +133,8 @@ test("a wall TV connects by code, shows the dashboard read only, and can be remo
   const tv = await tvContext.newPage();
   await tv.goto("/screen");
   await expect(tv.getByRole("heading", { name: "Connect this screen" })).toBeVisible();
+  // Nobody signs in on a TV to choose a theme, so it is always the black one.
+  await expect(tv.locator("html")).toHaveAttribute("data-theme", "dark");
   const code = tv.getByTestId("screen-code");
   await expect(code).toHaveText(/^\d{3} \d{3}$/);
   const shown = (await code.textContent()) ?? "";
