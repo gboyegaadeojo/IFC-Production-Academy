@@ -17,7 +17,7 @@ SOPs are grouped by category. Select a category's heading to collapse or open it
 
 Choose **All of production** for a procedure that isn't about one department, such as how to do a copyright review. Everyone signed in can read the current version.
 
-Only someone with organisation-wide rights, such as the Production Director, can add or change these. Department leaders can attach them to their lessons.
+Only someone with organisation-wide rights, such as the Production Director or a Platform Administrator, can add or change these. Department leaders can attach them to their lessons.
 
 ## Changing an SOP
 

@@ -11,12 +11,12 @@
 ## Who can do what
 
 - **Reading:** anyone active can read the current version of an all-of-production SOP, as with the rest of the training ([open training](2026-11-01-open-training.md)).
-- **Managing:** adding, editing, publishing, reviewing and archiving need an organisation-wide grant of `course.draft` or `course.publish`. Today that's the Production Director.
+- **Managing:** adding, editing, publishing, reviewing and archiving need an organisation-wide grant of `course.draft` or `course.publish`. Today that's the Production Director and Platform Administrators.
 - **Department leaders** can read these SOPs and attach them to their lessons, but can't change them.
 
 ## Platform Administrators
 
-G approved a recommendation that included Platform Administrators. The role doesn't hold `course.draft` or `course.publish`, and it's defined as not publishing training, so it wasn't widened. Someone needs the Production Director role to manage these SOPs, and a role change would give that without changing the code.
+G decided Platform Administrators should draft and publish training. The role now holds `course.draft` and `course.publish`, organisation-wide, so this reaches every department's curriculum and SOPs as well as these. It replaces the earlier rule that the role doesn't publish training. They still don't approve memberships.
 
 ## Also changed
 

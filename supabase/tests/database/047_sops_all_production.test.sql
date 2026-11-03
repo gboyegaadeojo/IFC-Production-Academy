@@ -75,6 +75,18 @@ update public.sop_versions
  where id = (select id from ctx where key = 'v1');
 reset role;
 
+-- Platform Administrators draft and publish too (G, 2026-11-03), and still can't approve members.
+select pg_temp.new_user('a4000000-0000-4000-8000-000000000005', 'Test Platform Admin');
+insert into public.user_roles (user_id, role_id) values
+  ('a4000000-0000-4000-8000-000000000005', (select id from public.roles where key = 'platform_admin'));
+select pg_temp.act_as('a4000000-0000-4000-8000-000000000005');
+select lives_ok($$ select public.create_sop(null, 'Fake admin SOP') $$, 'a Platform Admin adds an SOP for all of production');
+select lives_ok($$ select public.create_sop('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'Fake admin camera SOP') $$,
+  'and one in any department');
+select is(private.has_capability('course.publish', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855'), true, 'and can publish');
+select is(private.has_capability('member.approve', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855'), false, 'but still can''t approve members');
+reset role;
+
 -- A draft stays with the people who manage it.
 select pg_temp.act_as('a4000000-0000-4000-8000-000000000003');
 select is((select count(*)::int from public.sop_versions where sop_id = (select id from ctx where key = 'sop')), 0,
