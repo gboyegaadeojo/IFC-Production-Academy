@@ -138,7 +138,7 @@ reset role;
 -- The pass is stored only as a hash.
 select is(
   (select count(*)::int from public.display_screens
-   where convert_from(token_hash, 'LATIN1') = (select value from ctx where key = 'token')),
+   where token_hash = convert_to((select value from ctx where key = 'token'), 'UTF8')),
   0, 'the pass itself is never stored');
 
 -- Removing a screen ends its pass straight away.

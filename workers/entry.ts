@@ -1,12 +1,30 @@
 // The Worker's entry (ADD-DASH-09): the Next.js app, plus the live room, which OpenNext can't
 // export by itself. This folder is left out of tsconfig: it needs Cloudflare's runtime types and
 // the built app. The rules it uses are typed and tested in lib/domain/live-room.ts.
+import { withSentry } from "@sentry/nextjs/cloudflare";
 import handler from "../.open-next/worker.js";
 import { bridgeTokenFrom, bridgeTokenMatches, verifyLiveTicket } from "../lib/domain/live-room";
+import { scrubEvent, SENTRY_DATA_COLLECTION } from "../lib/domain/monitoring";
 
 export { LiveRoom } from "./live-room";
 
-type Env = { LIVE_ROOM: DurableObjectNamespace; LIVE_ROOM_SECRET?: string };
+type Env = {
+  LIVE_ROOM: DurableObjectNamespace;
+  LIVE_ROOM_SECRET?: string;
+  SENTRY_DSN?: string;
+};
+
+// The app's errors go to Sentry once SENTRY_DSN is set; with no address it does nothing. The live
+// room stays outside this. See docs/runbooks/monitoring.md.
+const app = withSentry(
+  (env: Env) => ({
+    dsn: env.SENTRY_DSN,
+    dataCollection: SENTRY_DATA_COLLECTION,
+    tracesSampleRate: 0,
+    beforeSend: (event) => scrubEvent(event),
+  }),
+  handler,
+);
 
 async function live(request: Request, env: Env, url: URL): Promise<Response> {
   const secret = env.LIVE_ROOM_SECRET;
@@ -33,7 +51,7 @@ const worker = {
     if (url.pathname.startsWith("/live/")) {
       return live(request, env, url);
     }
-    return handler.fetch(request, env, ctx);
+    return app.fetch(request, env, ctx);
   },
 };
 

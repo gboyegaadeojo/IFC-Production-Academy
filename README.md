@@ -152,5 +152,8 @@ in [docs/runbooks/nas-media.md](docs/runbooks/nas-media.md).
 Variable (not secret): `SITE_URL`, the app's public address, for example
 `https://ifc-production-academy.<subdomain>.workers.dev`.
 
+Optional variables `SENTRY_DSN`, `POSTHOG_KEY`, and `POSTHOG_HOST` turn on error reports and usage
+counts. See [docs/runbooks/monitoring.md](docs/runbooks/monitoring.md).
+
 The backup job (`backup.yml`) is a skeleton until the Google service account and the
 "IFC Academy Backups" Shared Drive exist; its planned secrets are listed in the workflow file.

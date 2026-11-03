@@ -101,9 +101,27 @@ jobs:
           printf '%s' "$VAPID_PRIVATE_KEY" | npx wrangler secret put VAPID_PRIVATE_KEY > /dev/null
           echo "Device alerts: key set"
 
+      # Error reports (docs/runbooks/monitoring.md). Off until the SENTRY_DSN variable is set.
+      - name: Give the app its error reporting address
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+        run: |
+          set -euo pipefail
+          if [ -z "$SENTRY_DSN" ]; then
+            echo "Error reports: off (SENTRY_DSN is not set)"
+            exit 0
+          fi
+          printf '%s' "$SENTRY_DSN" | npx wrangler secret put SENTRY_DSN > /dev/null
+          echo "Error reports: address set"
+
       - name: Build and deploy
         run: npm run deploy
         env:
+          NEXT_PUBLIC_SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+          NEXT_PUBLIC_POSTHOG_KEY: ${{ vars.POSTHOG_KEY }}
+          NEXT_PUBLIC_POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
