@@ -21,7 +21,7 @@ import { TeamTile } from "@/components/service-dashboard/team-tile";
 import { TileWall } from "@/components/service-dashboard/tile-wall";
 import { getScreenDashboard, SCREEN_TOKEN_COOKIE } from "@/lib/data/screens";
 import { getLiveTicket } from "@/lib/data/service-dashboard";
-import { layoutRows, TILES } from "@/lib/domain/service-dashboard";
+import { layoutRows } from "@/lib/domain/service-dashboard";
 import { AlwaysDark } from "./always-dark";
 import { ScreenPairing } from "./pairing";
 import { ScreenStage } from "./stage";

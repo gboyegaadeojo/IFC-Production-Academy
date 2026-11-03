@@ -42,7 +42,7 @@ import { getSopLibrary, type SopSummary } from "@/lib/data/sops";
 import { canOpenAdminSection } from "@/lib/domain/admin";
 import { formatDate } from "@/lib/domain/dates";
 import { eventTimeLabel } from "@/lib/domain/schedule";
-import { type TileKey, TILES } from "@/lib/domain/service-dashboard";
+import { type TileKey } from "@/lib/domain/service-dashboard";
 
 export const metadata: Metadata = { title: "Service Dashboard" };
 

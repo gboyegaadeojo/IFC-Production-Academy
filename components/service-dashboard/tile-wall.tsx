@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import {
   ClockIcon,
-  DashboardIcon,
   FileTextIcon,
   InfoIcon,
   LayersIcon,
