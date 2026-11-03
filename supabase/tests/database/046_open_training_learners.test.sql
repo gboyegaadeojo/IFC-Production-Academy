@@ -75,10 +75,12 @@ select is((select s.in_progress - b.in_progress from public.department_training_
   'and as in progress');
 reset role;
 
--- A week later, they get a nudge like anyone else.
+-- A week later, they get a nudge like anyone else. Backdate without the updated_at trigger.
+set local session_replication_role = replica;
 update public.lesson_progress
    set last_viewed_at = now() - interval '8 days', updated_at = now() - interval '8 days'
  where user_id = 'f2000000-0000-4000-8000-000000000001';
+set local session_replication_role = origin;
 select public.queue_reminders();
 select is((select count(*)::int from public.notifications
            where user_id = 'f2000000-0000-4000-8000-000000000001' and kind = 'learning_nudge'), 1,
