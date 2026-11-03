@@ -528,6 +528,7 @@ body {
   .stack-table td[data-label]::before {
     content: attr(data-label);
     flex: none;
+    font-family: var(--font-sans);
     color: var(--text-muted);
     text-align: left;
   }
@@ -543,7 +544,7 @@ details > summary {
 details > summary::-webkit-details-marker {
   display: none;
 }
-details > summary:not(:has(svg))::before {
+details > summary:not(:has(svg)):not([class*="bg-accent"])::before {
   content: "";
   flex: none;
   display: inline-block;
@@ -555,11 +556,11 @@ details > summary:not(:has(svg))::before {
   transform: translateY(-0.1em) rotate(-45deg);
   transition: transform 120ms ease;
 }
-details[open] > summary:not(:has(svg))::before {
+details[open] > summary:not(:has(svg)):not([class*="bg-accent"])::before {
   transform: translateY(-0.2em) rotate(45deg);
 }
 @media (prefers-reduced-motion: reduce) {
-  details > summary:not(:has(svg))::before {
+  details > summary:not(:has(svg)):not([class*="bg-accent"])::before {
     transition: none;
   }
 }
