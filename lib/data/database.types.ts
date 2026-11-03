@@ -1606,6 +1606,7 @@ export type Database = {
           department_id: string;
           department_name: string;
           active_members: number;
+          learners: number;
           in_progress: number;
           awaiting_assessment: number;
           further_practice: number;

@@ -19,6 +19,5 @@ G: anyone allowed into the Academy should be able to take and try any course the
 ## Spec conflict
 SRS-MEM-005 ("Restricted content only while membership or explicit permission is active") no longer holds for training content; this decision supersedes it. Admin and leader tools are still restricted by capability.
 
-## Known gaps (later)
-- The practical observer's learner list (`assessable_members`) shows members only; a non-member reaches it through their own assessment request.
-- Leader dashboards and learning nudges count members only.
+## Gaps closed (2026-11-03)
+The observer's learner list, reports, leader dashboards and learning nudges used to cover members only. They now cover a department's learners: its active members, and active people who have started training there (`private.department_learners`, migration `20261218120000_open_training_learners.sql`). The dashboard's Members column still counts members.

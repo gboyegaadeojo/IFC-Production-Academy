@@ -33,6 +33,8 @@ export type TrainingSummary = {
   icon: string;
   comingSoon: boolean;
   activeMembers: number;
+  /** Members, plus people training here who haven't joined. */
+  learners: number;
   inProgress: number;
   awaitingAssessment: number;
   furtherPractice: number;
@@ -178,6 +180,7 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
           icon: departmentById.get(row.department_id)?.icon ?? "",
           comingSoon: departmentById.get(row.department_id)?.status === "coming_soon",
           activeMembers: row.active_members,
+          learners: row.learners,
           inProgress: row.in_progress,
           awaitingAssessment: row.awaiting_assessment,
           furtherPractice: row.further_practice,

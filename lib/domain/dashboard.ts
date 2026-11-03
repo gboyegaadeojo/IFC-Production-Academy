@@ -117,16 +117,17 @@ export type PipelineSegments = {
 
 /**
  * One department's bar, read left to right: approved to serve, waiting for an assessment, learning,
- * then members who haven't started. People can be counted in more than one stage (approved in one
- * role, learning another), so each stage takes only what's left, and the bar never passes 100%.
+ * then members who haven't started. The whole bar is everyone learning here, including people who
+ * haven't joined. People can be counted in more than one stage (approved in one role, learning
+ * another), so each stage takes only what's left, and the bar never passes 100%.
  */
 export function pipelineSegments(row: {
-  activeMembers: number;
+  learners: number;
   inProgress: number;
   awaitingAssessment: number;
   approvedToServe: number;
 }): PipelineSegments {
-  const total = row.activeMembers;
+  const total = row.learners;
   if (total <= 0) {
     return { approved: 0, waiting: 0, learning: 0, joined: 0 };
   }
