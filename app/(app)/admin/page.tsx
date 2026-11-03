@@ -7,7 +7,6 @@ import { EmptyState } from "@/components/ui/empty-state";
 import {
   ArrowRightIcon,
   GraduationCapIcon,
-  QuizIcon,
   UserCheckIcon,
   UsersIcon,
 } from "@/components/ui/icons";
@@ -39,7 +38,6 @@ const NEEDS_ICON: Record<
   follow_ups: { icon: UsersIcon, tile: "bg-tile-pink text-tile-pink-ink" },
   assessments: { icon: UserCheckIcon, tile: "bg-tile-green text-tile-green-ink" },
   requests: { icon: UsersIcon, tile: "bg-tile-blue text-tile-blue-ink" },
-  review: { icon: QuizIcon, tile: "bg-tile-violet text-tile-violet-ink" },
   drafts: { icon: GraduationCapIcon, tile: "bg-tile-orange text-tile-orange-ink" },
 };
 
@@ -60,7 +58,6 @@ async function DashboardContent() {
       ? overview.training.reduce((sum, d) => sum + d.awaitingAssessment, 0)
       : null,
     pendingRequests: overview.pendingRequests,
-    awaitingReview: overview.awaitingReview,
     drafts: overview.drafts,
     followUps: overview.followUps,
   });

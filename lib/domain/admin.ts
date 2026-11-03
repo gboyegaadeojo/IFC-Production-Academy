@@ -465,13 +465,37 @@ function word(status: string | null): string {
 }
 
 /** One plain sentence for an audit event, without names (the screen adds who and what). */
+const AUDIT_VERBS: Record<string, string> = {
+  created: "Created",
+  updated: "Updated",
+  deleted: "Deleted",
+  archived: "Archived",
+  restored: "Restored",
+  published: "Published",
+};
+
+/** "sop_version.updated" becomes "Updated an SOP version". */
+export function plainAuditWords(action: string): string {
+  const [noun = "", verb = ""] = action.split(".");
+  const words = noun.replaceAll("_", " ").replace(/\bsop\b/, "SOP");
+  const known = AUDIT_VERBS[verb];
+  if (!known) {
+    const text = action
+      .replace(".", " ")
+      .replaceAll("_", " ")
+      .replace(/\bsop\b/, "SOP");
+    return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+  return `${known} ${/^[aeiouAEIOU]|^SOP/.test(words) ? "an" : "a"} ${words}`;
+}
+
 export function describeAuditEvent(event: AuditEventSummary): string {
   const status = statusChange(event.metadata);
   switch (event.action) {
     case "service_dashboard.layout_saved":
       return "Saved the Service Dashboard layout";
     case "department_membership.created":
-      return "Asked to join a department";
+      return "Joined or asked to join a department";
     case "department_membership.updated":
       switch (status?.to) {
         case "active":
@@ -544,7 +568,7 @@ export function describeAuditEvent(event: AuditEventSummary): string {
       }
       return "Edited a department";
     default:
-      return event.action.replace(".", " ").replaceAll("_", " ");
+      return plainAuditWords(event.action);
   }
 }
 

@@ -17,7 +17,6 @@ export type AdminOverview = {
   followUps: number | null;
   /** Unpublished drafts of courses still in the curriculum, with up to two titles to name them. */
   drafts: { count: number; titles: string[] } | null;
-  awaitingReview: number | null;
   activeInvitations: number | null;
   people: { total: number; notActive: number } | null;
   departments: { active: number; comingSoon: number; inactive: number } | null;
@@ -76,7 +75,6 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
     requests,
     drafts,
     archivedCourses,
-    review,
     invitations,
     people,
     notActive,
@@ -100,12 +98,6 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
           .order("created_at", { ascending: false })
       : null,
     can("curriculum") ? supabase.from("courses").select("id").not("archived_at", "is", null) : null,
-    can("curriculum")
-      ? supabase
-          .from("course_versions")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "pending_review")
-      : null,
     can("invitations")
       ? supabase
           .from("invitations")
@@ -156,7 +148,6 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
     drafts: liveDrafts
       ? { count: liveDrafts.length, titles: liveDrafts.slice(0, 2).map((row) => row.title) }
       : null,
-    awaitingReview: review ? countOf(review, "reviews") : null,
     activeInvitations: invitations
       ? invitations.data.filter((row) => row.use_count < row.max_uses).length
       : null,

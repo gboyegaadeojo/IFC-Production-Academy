@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do YouTube live and the stream preview once their setup is done (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so does YouTube live once its setup is done (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
@@ -29,7 +29,7 @@ Service Producer, Audio, Graphics, Camera Director, and the wall TV all see the 
 | Tile                | What it shows                                                        | Where it comes from              |
 | ------------------- | -------------------------------------------------------------------- | -------------------------------- |
 | YouTube live        | **Live** or **Not live**                                             | YouTube                          |
-| Stream preview      | The YouTube live stream, a little behind the room                    | YouTube                          |
+| Stream preview      | The YouTube live stream, a little behind the room. Off by default; an editor can add it | YouTube                          |
 | Current item        | What we're on, how long is left, and what's next                     | The plan and ProPresenter        |
 | Run of service      | Every item with its time, and the current one marked NOW             | Planning Center                  |
 | Slides              | The slide on screen and the next three                               | ProPresenter                     |

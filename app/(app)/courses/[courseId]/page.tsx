@@ -112,7 +112,7 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
       <div className="hidden sm:block">
         <Breadcrumbs
           items={[
-            { label: "Home", href: "/home" },
+            { label: "Training", href: "/home" },
             { label: course.department.name, href: `/departments/${course.department.slug}` },
             { label: course.title },
           ]}

@@ -99,8 +99,7 @@ const item = (tile: TileKey, x: number, y: number, w: number, h: number): Layout
 export const DEFAULT_LAYOUT: DashboardLayout = {
   name: "Production dashboard",
   items: [
-    item("preview", 0, 0, 3, 5),
-    item("team", 0, 5, 3, 8),
+    item("team", 0, 0, 3, 13),
     item("pptimers", 0, 13, 3, 3),
     item("youtube", 3, 0, 4, 2),
     item("current", 3, 2, 4, 3),

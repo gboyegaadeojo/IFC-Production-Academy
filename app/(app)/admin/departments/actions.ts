@@ -18,7 +18,6 @@ const departmentSchema = z.object({
   summary: z.string().trim().max(300, "Keep the summary under 300 characters."),
   status: z.enum(["active", "coming_soon", "inactive"]),
   enrolmentMode: z.enum(["request", "open", "invite_only"]),
-  curriculumRequiresReview: z.boolean(),
 });
 
 /** SRS-CUR-009: opening or closing a department is a data change, recorded in the audit log. */
@@ -32,7 +31,6 @@ export async function updateDepartmentAction(
     summary: formData.get("summary") ?? "",
     status: formData.get("status"),
     enrolmentMode: formData.get("enrolmentMode"),
-    curriculumRequiresReview: formData.get("curriculumRequiresReview") === "on",
   });
   if (!parsed.success) {
     return {

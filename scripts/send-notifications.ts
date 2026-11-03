@@ -72,13 +72,20 @@ type ClaimedOnboarding = {
 
 const env = (name: string) => process.env[name]?.trim() ?? "";
 
-/** True when Resend accepted the email. Never throws, so one bad send doesn't stop the batch. */
+/** Resend allows 2 requests a second on its free plan. */
+const SEND_GAP_MS = 600;
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * What Resend said. "limit" means its daily or per-second limit: the email is fine and goes back in
+ * the queue for a later run. Never throws, so one bad send doesn't stop the batch.
+ */
 async function sendEmail(
   resendKey: string,
   from: string,
   to: string,
   email: { subject: string; text: string; html: string },
-): Promise<boolean> {
+): Promise<"sent" | "failed" | "limit"> {
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -91,9 +98,9 @@ async function sendEmail(
         html: email.html,
       }),
     });
-    return response.ok;
+    return response.ok ? "sent" : response.status === 429 ? "limit" : "failed";
   } catch {
-    return false;
+    return "failed";
   }
 }
 
@@ -151,7 +158,9 @@ async function main(): Promise<void> {
 
   let sent = 0;
   let failed = 0;
-  for (let batch = 0; batch < 10; batch += 1) {
+  // Once Resend says it's at its limit, everything else waits for a later run.
+  let held = false;
+  for (let batch = 0; batch < 10 && !held; batch += 1) {
     const claimed = await rpc<Claimed[]>(supabaseUrl, serviceKey, "claim_email_notifications", {
       p_limit: 50,
     });
@@ -159,8 +168,19 @@ async function main(): Promise<void> {
       break;
     }
     for (const item of claimed) {
+      if (held) {
+        await rpc(supabaseUrl, serviceKey, "release_email_notification", { p_id: item.id });
+        continue;
+      }
       const email = notificationEmail(item, siteUrl, appName);
-      const ok = await sendEmail(resendKey, from, item.email, email);
+      const result = await sendEmail(resendKey, from, item.email, email);
+      await pause(SEND_GAP_MS);
+      if (result === "limit") {
+        held = true;
+        await rpc(supabaseUrl, serviceKey, "release_email_notification", { p_id: item.id });
+        continue;
+      }
+      const ok = result === "sent";
       await rpc(supabaseUrl, serviceKey, "complete_email_notification", {
         p_id: item.id,
         p_sent: ok,
@@ -172,15 +192,17 @@ async function main(): Promise<void> {
       }
     }
   }
-  console.log(`Notification emails: ${sent} sent, ${failed} failed.`);
-  if (failed > 0 && sent === 0) {
+  console.log(
+    `Notification emails: ${sent} sent, ${failed} failed${held ? ", rest held by the limit" : ""}.`,
+  );
+  if (failed > 0) {
     process.exitCode = 1;
   }
 
   // Onboarding pathway emails. The database only hands these over once they're switched on at launch.
   let onboardingSent = 0;
   let onboardingFailed = 0;
-  for (let batch = 0; batch < 10; batch += 1) {
+  for (let batch = 0; batch < 10 && !held; batch += 1) {
     const claimed = await rpc<ClaimedOnboarding[]>(
       supabaseUrl,
       serviceKey,
@@ -191,12 +213,23 @@ async function main(): Promise<void> {
       break;
     }
     for (const item of claimed) {
+      if (held) {
+        await rpc(supabaseUrl, serviceKey, "release_onboarding_email", { p_id: item.id });
+        continue;
+      }
       const email = onboardingEmail(
         { subject: item.subject, body: item.body, hasAccount: item.has_account },
         siteUrl,
         appName,
       );
-      const ok = await sendEmail(resendKey, from, item.email, email);
+      const result = await sendEmail(resendKey, from, item.email, email);
+      await pause(SEND_GAP_MS);
+      if (result === "limit") {
+        held = true;
+        await rpc(supabaseUrl, serviceKey, "release_onboarding_email", { p_id: item.id });
+        continue;
+      }
+      const ok = result === "sent";
       await rpc(supabaseUrl, serviceKey, "complete_onboarding_email", {
         p_id: item.id,
         p_sent: ok,
@@ -209,7 +242,7 @@ async function main(): Promise<void> {
     }
   }
   console.log(`Onboarding emails: ${onboardingSent} sent, ${onboardingFailed} failed.`);
-  if (onboardingFailed > 0 && onboardingSent === 0) {
+  if (onboardingFailed > 0) {
     process.exitCode = 1;
   }
 }

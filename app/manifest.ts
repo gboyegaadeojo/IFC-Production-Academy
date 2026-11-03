@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getBranding, iconUrlFor } from "@/lib/data/branding";
+import { THEME_COLORS } from "@/lib/domain/appearance";
 import { manifestIcons } from "@/lib/domain/branding";
 
 export const dynamic = "force-dynamic";
@@ -18,8 +19,8 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
     start_url: "/home",
     scope: "/",
     display: "standalone",
-    background_color: "#000000",
-    theme_color: "#000000",
+    background_color: THEME_COLORS.light,
+    theme_color: THEME_COLORS.light,
     lang: "en-CA",
     icons: manifestIcons(iconUrlFor(branding)),
   };

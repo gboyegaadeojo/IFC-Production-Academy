@@ -25,9 +25,7 @@ import {
   moveAction,
   publishAction,
   restoreAction,
-  returnAction,
   startDraftAction,
-  submitAction,
   updateCourseDetailsAction,
   updateModuleAction,
 } from "../actions";
@@ -86,7 +84,6 @@ async function CourseContent({
   const canDraft = hasCapability(grants, "course.draft", course.departmentId);
   const canPublish = hasCapability(grants, "course.publish", course.departmentId);
   const draft = course.open?.status === "draft" ? course.open : null;
-  const inReview = course.open?.status === "pending_review" ? course.open : null;
   const shown = course.open ?? course.live;
   const title = shown?.title ?? "Untitled course";
   const tabHref = (next: Tab) =>
@@ -121,7 +118,6 @@ async function CourseContent({
                 <StatusBadge tone="pending">Not published yet</StatusBadge>
               )}
               {draft ? <StatusBadge tone="pending">You&apos;re editing a draft</StatusBadge> : null}
-              {inReview ? <StatusBadge tone="pending">Waiting for review</StatusBadge> : null}
             </div>
           </div>
           <div className="flex flex-col gap-1 lg:items-end">
@@ -141,16 +137,11 @@ async function CourseContent({
             ) : null}
             {draft && tab !== "publish" ? (
               <Link href={tabHref("publish")} className={buttonClasses("secondary")}>
-                {course.requiresReview ? "Submit for review" : "Review and publish"}
+                Review and publish
               </Link>
             ) : null}
           </div>
         </div>
-        {course.requiresReview ? (
-          <p className="text-small text-text-muted">
-            This department asks for a second person to publish changes.
-          </p>
-        ) : null}
       </header>
 
       <Tabs
@@ -235,52 +226,8 @@ async function CourseContent({
 
       {tab === "publish" ? (
         <div className="flex flex-col gap-6">
-          {draft ? (
-            <PublishPanel
-              versionId={draft.id}
-              requiresReview={course.requiresReview}
-              canPublish={canPublish}
-              canDraft={canDraft}
-            />
-          ) : null}
-          {inReview ? (
-            <section className="flex max-w-2xl flex-col gap-4 rounded-card border border-border bg-card p-5">
-              <h2 className="text-subheading font-semibold">Waiting for review</h2>
-              {inReview.changeNote ? (
-                <p className="text-text-secondary">Change note: {inReview.changeNote}</p>
-              ) : null}
-              {canPublish && inReview.submittedBy !== user.id ? (
-                <>
-                  <ActionForm
-                    action={publishAction}
-                    submitLabel="Publish"
-                    pendingLabel="Publishing…"
-                    hidden={{ versionId: inReview.id, inReview: "true", changeNote: "" }}
-                  />
-                  <ActionForm
-                    action={returnAction}
-                    submitLabel="Return for changes"
-                    variant="secondary"
-                    hidden={{ versionId: inReview.id }}
-                  >
-                    <Field id="return-reason" label="What needs changing (optional)">
-                      <input
-                        id="return-reason"
-                        name="reason"
-                        maxLength={300}
-                        className={fieldClasses}
-                      />
-                    </Field>
-                  </ActionForm>
-                </>
-              ) : (
-                <p className="text-text-secondary">
-                  Someone else with publishing rights for {course.departmentName} needs to publish
-                  it.
-                </p>
-              )}
-            </section>
-          ) : null}
+          {draft ? <PublishPanel versionId={draft.id} canPublish={canPublish} /> : null}
+
           {!course.open ? (
             <EmptyState title="Nothing waiting to publish">
               {course.live
@@ -659,7 +606,7 @@ function ReadOnlyOutline({ courseId, version }: { courseId: string; version: Ver
   return (
     <section aria-labelledby="outline-heading" className="flex flex-col gap-4">
       <h2 id="outline-heading" className="text-heading font-semibold">
-        {version.status === "pending_review" ? "Submitted content" : "Live content"}
+        Live content
       </h2>
       {version.summary ? <p className="max-w-2xl text-text-secondary">{version.summary}</p> : null}
       {version.modules.map((courseModule) => (
@@ -689,20 +636,11 @@ function ReadOnlyOutline({ courseId, version }: { courseId: string; version: Ver
   );
 }
 
-function PublishPanel({
-  versionId,
-  requiresReview,
-  canPublish,
-  canDraft,
-}: {
-  versionId: string;
-  requiresReview: boolean;
-  canPublish: boolean;
-  canDraft: boolean;
-}) {
-  const direct = !requiresReview && canPublish;
-  if (!direct && !canDraft) {
-    return null;
+function PublishPanel({ versionId, canPublish }: { versionId: string; canPublish: boolean }) {
+  if (!canPublish) {
+    return (
+      <p className="text-text-secondary">Someone with publishing rights can publish this draft.</p>
+    );
   }
   return (
     <section
@@ -710,17 +648,16 @@ function PublishPanel({
       className="flex max-w-2xl flex-col gap-4 rounded-card border border-border bg-card p-5"
     >
       <h2 id="publish-heading" className="text-subheading font-semibold">
-        {direct ? "Publish" : "Submit for review"}
+        Publish
       </h2>
       <p className="text-text-secondary">
-        {direct
-          ? "Publishing makes this draft the live version. The current version stays in the history, and progress people already made is kept."
-          : "A second person with publishing rights will publish it."}
+        Publishing makes this draft the live version. The current version stays in the history, and
+        you can go back to it.
       </p>
       <ActionForm
-        action={direct ? publishAction : submitAction}
-        submitLabel={direct ? "Publish" : "Submit for review"}
-        pendingLabel={direct ? "Publishing…" : "Submitting…"}
+        action={publishAction}
+        submitLabel="Publish"
+        pendingLabel="Publishing…"
         hidden={{ versionId }}
       >
         <Field

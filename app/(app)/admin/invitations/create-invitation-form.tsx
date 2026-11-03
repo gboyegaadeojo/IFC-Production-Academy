@@ -288,7 +288,7 @@ function Form({
           <p className="text-small text-text-muted">This link works until {until}.</p>
         </div>
         <p className="text-small text-text-muted">
-          Joining gives them the training. Approval to serve still comes after the hands-on checks.
+          Joining puts them on the team. Approval to serve still comes after the hands-on checks.
         </p>
       </aside>
     </div>

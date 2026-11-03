@@ -1,7 +1,7 @@
 /**
  * Curriculum rules (SRS-CUR-001..008). Pure functions: no department or course is special.
  * Decided 2026-10-30: leaders publish their own department's curriculum; every publish is a
- * version with a change note, and old versions can be restored. Review is optional per department.
+ * version with a change note, and old versions can be restored. There's no approval step (G, 2026-10-30).
  */
 import { z } from "zod";
 import { parseVideo, type VideoRef } from "@/lib/domain/video";
@@ -23,7 +23,6 @@ export type CourseState =
       versionNumber: number;
       title: string;
       draftId: string | null;
-      inReview: boolean;
     }
   | { kind: "archived"; title: string; draftId: string | null };
 
@@ -51,7 +50,6 @@ export function courseState(
       versionNumber: published.versionNumber,
       title: published.title,
       draftId: open?.id ?? null,
-      inReview: open?.status === "pending_review",
     };
   }
   if (open) {
@@ -65,9 +63,6 @@ export function courseStateLabel(state: CourseState): string {
     case "unpublished":
       return "Not published yet";
     case "published":
-      if (state.inReview) {
-        return `Version ${state.versionNumber} live · changes waiting for review`;
-      }
       return state.draftId
         ? `Version ${state.versionNumber} live · unpublished changes`
         : `Version ${state.versionNumber} live`;
@@ -228,10 +223,7 @@ export type CurriculumError =
   | "invalid_title"
   | "change_note_required"
   | "course_has_no_lessons"
-  | "review_required"
-  | "cannot_publish_own_submission"
   | "version_not_publishable"
-  | "version_not_in_review"
   | "version_not_restorable"
   | "draft_exists"
   | "quiz_has_no_questions"
@@ -244,10 +236,7 @@ const KNOWN: ReadonlySet<string> = new Set<CurriculumError>([
   "invalid_title",
   "change_note_required",
   "course_has_no_lessons",
-  "review_required",
-  "cannot_publish_own_submission",
   "version_not_publishable",
-  "version_not_in_review",
   "version_not_restorable",
   "draft_exists",
   "quiz_has_no_questions",
@@ -277,14 +266,8 @@ export function curriculumErrorMessage(error: CurriculumError): string {
       return "Say briefly what changed, so people can follow the history.";
     case "course_has_no_lessons":
       return "Add at least one lesson before publishing.";
-    case "review_required":
-      return "This department asks for a second person to publish. Submit it for review instead.";
-    case "cannot_publish_own_submission":
-      return "Someone else needs to publish what you submitted.";
     case "version_not_publishable":
       return "This version has already been published. Refresh to see the latest.";
-    case "version_not_in_review":
-      return "This version isn't waiting for review any more. Refresh to see the latest.";
     case "version_not_restorable":
       return "Only versions that were published can be restored.";
     case "draft_exists":

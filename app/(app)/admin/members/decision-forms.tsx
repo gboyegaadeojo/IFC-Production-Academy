@@ -150,7 +150,7 @@ export function RemoveMemberForm({
         </label>
         <input id={reasonId} name="reason" maxLength={500} className={`${fieldClasses} w-full`} />
         <p className="text-small text-text-muted">
-          They lose access to this department&apos;s training. Their progress and history are kept.
+          They leave this department&apos;s team. Their progress and history are kept.
         </p>
         <Button
           type="submit"

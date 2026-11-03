@@ -20,7 +20,7 @@ const decisionSchema = z.object({
 });
 
 const DONE: Record<"active" | "declined" | "removed", string> = {
-  active: "Approved. They can start the department's training.",
+  active: "Approved. They're on the department's team.",
   declined: "Request declined.",
   removed: "Removed from the department. Their training history is kept.",
 };

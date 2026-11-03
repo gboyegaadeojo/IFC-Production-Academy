@@ -47,7 +47,3 @@ A practical is a checklist an observer ticks while watching someone work.
 2. **Settings:** where it sits, which competency a pass grants, and the pass rule. The usual rule is that every required item must be observed.
 
 The observer ticks what they saw, and the Academy works out **Pass** or **Not yet** from your rule. See [Assessments and competencies](admin-assessments.md).
-
-## Reviewing before publishing
-
-If your department has **Review before publishing** on, someone else with publishing rights for the department has to publish. It's set under [Departments](admin-people.md).

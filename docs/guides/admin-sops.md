@@ -29,8 +29,6 @@ Only someone with organisation-wide rights, such as the Production Director or a
 
 Choose **Edit SOP**. That starts a draft from the current version, and members keep seeing the current one until you publish. Say what changed. The previous version is kept and marked as replaced, and only the current version can be opened, so nobody follows an old procedure by mistake.
 
-If your department has review before publishing on, someone else with publishing rights has to publish.
-
 ## Keeping them current
 
 Under **Settings**, set the owner, category, and how often it needs reviewing. When a review comes up, the owner is reminded.

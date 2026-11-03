@@ -90,7 +90,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
         Training
       </Link>
       <div className="hidden sm:block">
-        <Breadcrumbs items={[{ label: "Home", href: "/home" }, { label: department.name }]} />
+        <Breadcrumbs items={[{ label: "Training", href: "/home" }, { label: department.name }]} />
       </div>
 
       <section

@@ -282,8 +282,7 @@ function RequestStatus({ requests }: { requests: CardData[] }) {
         ))}
       </ul>
       <p className="text-small text-text-secondary">
-        A leader reviews each request. When it&apos;s approved, the department&apos;s training
-        appears on this page.
+        A leader reviews each request. You can start any course while you wait.
       </p>
     </section>
   );

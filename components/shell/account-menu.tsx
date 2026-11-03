@@ -107,14 +107,14 @@ export function AccountMenu({
         <span aria-hidden="true" className={avatar}>
           {initials}
         </span>
-        {/* Visible from 640px; always part of the name, so the label matches what's shown. */}
+        {/* Visible from 1024px, so the bar never overlaps; always part of the button's name. */}
         <span
           className={
             inSidebar
               ? compact
                 ? "sr-only"
                 : "min-w-0 flex-1 truncate text-small font-medium text-text"
-              : "sr-only text-small sm:not-sr-only sm:max-w-40 sm:truncate"
+              : "sr-only text-small lg:not-sr-only lg:max-w-40 lg:truncate"
           }
         >
           {displayName}
@@ -141,7 +141,7 @@ export function AccountMenu({
             : ""}
           , account menu
         </span>
-        {inSidebar ? null : <ChevronDownIcon className="hidden size-4 sm:block" />}
+        {inSidebar ? null : <ChevronDownIcon className="hidden size-4 lg:block" />}
       </button>
       {open ? (
         <div

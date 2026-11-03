@@ -146,7 +146,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
         <div className="hidden sm:block">
           <Breadcrumbs
             items={[
-              { label: "Home", href: "/home" },
+              { label: "Training", href: "/home" },
               { label: course.department.name, href: `/departments/${course.department.slug}` },
               { label: course.title, href: `/courses/${course.id}` },
               { label: lesson.title },

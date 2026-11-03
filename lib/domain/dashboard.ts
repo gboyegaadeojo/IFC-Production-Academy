@@ -4,7 +4,7 @@
  */
 
 export type NeedsYouItem = {
-  key: "follow_ups" | "assessments" | "requests" | "review" | "drafts";
+  key: "follow_ups" | "assessments" | "requests" | "drafts";
   count: number;
   title: string;
   detail: string;
@@ -19,7 +19,6 @@ export type NeedsYouItem = {
 export function needsYou(input: {
   awaitingAssessment: number | null;
   pendingRequests: number | null;
-  awaitingReview: number | null;
   drafts: { count: number; titles: string[] } | null;
   /** Onboarding follow-ups that are yours or anyone's to take. */
   followUps?: number | null;
@@ -65,16 +64,6 @@ export function needsYou(input: {
           : `${n === 1 ? "1 person is" : `${n} people are`} waiting to join.`,
       href: "/admin/members",
       action: "Review requests",
-    });
-  }
-  if (input.awaitingReview) {
-    items.push({
-      key: "review",
-      count: input.awaitingReview,
-      title: "Curriculum waiting for review",
-      detail: "Submitted changes that need a second person to publish.",
-      href: "/admin/curriculum",
-      action: "Review",
     });
   }
   if (input.drafts !== null) {

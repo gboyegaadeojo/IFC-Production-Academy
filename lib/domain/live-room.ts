@@ -136,5 +136,5 @@ export function isBridgeOffline(bridgeSeenAt: number | null, now: number): boole
 /** One message at most this big, so a mistake can't swamp every screen. */
 export const MAX_BRIDGE_MESSAGE_BYTES = 900_000;
 
-/** How many screens the room serves. Far more than the booth has. */
-export const MAX_VIEWERS = 25;
+/** How many screens the room serves, so a full team can have it open at once. */
+export const MAX_VIEWERS = 60;
