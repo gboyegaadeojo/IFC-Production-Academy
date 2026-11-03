@@ -630,7 +630,7 @@ Measure baselines during the pilot before setting targets: share of enrolled vol
 | --- | --- | --- |
 | 1 | Email sign-in: password or passwordless? | Decided 2026-10-30: passwordless magic link, and no Google sign-in |
 | 2 | Hosting, database, identity, email vendors | Decided: Supabase Free with daily keep-alive, Cloudflare Pages, Resend, Google Drive backups |
-| 3 | Who builds and maintains it, and the budget and launch date | Decided 2026-10-31: G owns it; $0 a month plus a CA$400 yearly contingency; Camera pilot 10 Jan to 7 Feb 2027; ministry-wide launch 21 Feb 2027; add a second person as Platform Admin |
+| 3 | Who builds and maintains it, and the budget and launch date | Decided 2026-10-31: G owns it; $0 a month plus a CA$400 yearly contingency; Camera pilot 10 Jan to 7 Feb 2027; ministry-wide launch 21 Feb 2027; add a second person as Platform Admin. Revised 2026-11-03: [a first pilot of Video Directing Concepts](decisions/2026-11-03-first-pilot.md) starts 17 Nov 2026, and the later dates are not yet confirmed |
 | 4 | IFC brand assets and whether light theme ships at launch | Decided 2026-10-31: IFC pillars-and-dove mark with a "Production Academy" wordmark; dark only at launch; stays on its workers.dev address |
 | 5 | Competency names and rubrics per department | Decided 2026-10-31 for Camera: four competencies, three serving roles, observed checklists with required items ([curriculum](curriculum/camera-operations.md)); other departments follow the same pattern |
 | 6 | Course content and video inventory | Decided 2026-10-31: IFC films short lessons on its own equipment, unlisted on the church channel; written lessons stand in until each video exists |
