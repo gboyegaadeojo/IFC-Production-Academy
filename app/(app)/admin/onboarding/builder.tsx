@@ -199,7 +199,7 @@ export function Builder({
                     <div
                       draggable
                       onDragStart={(e) => e.dataTransfer.setData("text/plain", `step:${step.id}`)}
-                      className={`group grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-[12px] border bg-surface p-2.5 transition-surface ${
+                      className={`group grid grid-cols-[2rem_minmax(0,1fr)_auto] items-center gap-3 rounded-card border bg-surface p-2.5 transition-surface ${
                         selected
                           ? "border-accent shadow-[0_0_0_1px_var(--accent)]"
                           : "border-border hover:border-border-strong"
@@ -207,7 +207,7 @@ export function Builder({
                     >
                       <span
                         aria-hidden="true"
-                        className={`flex size-8 items-center justify-center rounded-[9px] ${TONE[meta.tone]}`}
+                        className={`flex size-8 items-center justify-center rounded-button ${TONE[meta.tone]}`}
                       >
                         <StepIcon kind={step.kind} className="size-4" />
                       </span>
@@ -308,7 +308,7 @@ export function Builder({
                 >
                   <span
                     aria-hidden="true"
-                    className={`flex size-6 items-center justify-center rounded-[7px] ${TONE[STEP_KINDS[k].tone]}`}
+                    className={`flex size-6 items-center justify-center rounded-button ${TONE[STEP_KINDS[k].tone]}`}
                   >
                     <StepIcon kind={k} className="size-3.5" />
                   </span>

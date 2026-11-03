@@ -332,7 +332,7 @@ export function LayoutEditor({ initial, canEdit }: { initial: DashboardLayout; c
                           type="button"
                           onClick={() => remove(item.tile)}
                           aria-label={`Remove ${tile.name}`}
-                          className="absolute top-0.5 right-1 rounded-button px-1 text-[0.6875rem] font-medium text-error hover:bg-hover"
+                          className="absolute top-0.5 right-1 rounded-button px-1 text-small font-medium text-error hover:bg-hover"
                         >
                           Remove
                         </button>
@@ -354,7 +354,7 @@ export function LayoutEditor({ initial, canEdit }: { initial: DashboardLayout; c
                       <Icon className="size-4" />
                     </span>
                     <strong className="font-medium">{tile.name}</strong>
-                    <span className="text-[0.6875rem] text-text-muted">
+                    <span className="text-small text-text-muted">
                       {item.w} by {item.h}
                     </span>
                   </div>

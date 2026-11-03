@@ -36,7 +36,7 @@ export function NotesTile({ eventId, body }: { eventId: string; body: string }) 
 
   return (
     <>
-      <label htmlFor="producer-notes" className="text-[0.6875rem] text-text-muted">
+      <label htmlFor="producer-notes" className="text-small text-text-muted">
         Shared with the team
       </label>
       <textarea
@@ -53,7 +53,7 @@ export function NotesTile({ eventId, body }: { eventId: string; body: string }) 
       />
       <p
         role="status"
-        className={`min-h-4 text-[0.6875rem] ${message?.failed ? "text-error" : "text-text-muted"}`}
+        className={`min-h-4 text-small ${message?.failed ? "text-error" : "text-text-muted"}`}
       >
         {message?.text}
       </p>

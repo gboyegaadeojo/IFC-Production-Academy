@@ -125,6 +125,8 @@ Light palette proposal: canvas `#F7F8FA`, surface `#FFFFFF`, card `#FFFFFF`, hov
 Department identity: Camera `#4F8CFF`, Audio `#2BD4A4`, Graphics `#B07CFF`, Directing `#FF6B57`, Lighting `#FFC23D`. Use these as **minor** accent colours on icons, rails, covers, tags, and progress; never create five competing primary button colours. Status colours must never be the sole status indicator.
 
 ### 4.2 Typography
+
+> **Updated 2026-11-03.** [One set of sizes across the app](decisions/2026-11-03-ui-consistency.md) replaces the sizes below: title 20px, section 15px, body 13px (14px on phones), small 12px. Controls are 32px with a mouse and 44px on touch, with cards at 12px corners and controls at 9px.
 Keep IBM Plex Sans and IBM Plex Mono initially to minimize churn; evaluate Geist/Inter as an alternative display face only after visual comparison. Use Plex Mono sparingly for timecodes, technical identifiers, small uppercase labels, and equipment tags.
 
 - Hero 36–48px desktop / 28–34px mobile; line-height 1.1–1.2.

@@ -273,7 +273,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
                     <li key={resource.id}>
                       <Link
                         href={`/sops/${resource.sopId}`}
-                        className="group flex min-h-touch lift flex-wrap items-center justify-between gap-2 rounded-[12px] border border-border bg-card px-4 py-3"
+                        className="group flex min-h-touch lift flex-wrap items-center justify-between gap-2 rounded-card border border-border bg-card px-4 py-3"
                       >
                         <span className="flex flex-col">
                           <span className="text-small text-text-muted">SOP</span>
@@ -295,7 +295,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
             <nav aria-label="Lessons" className="hidden gap-3 sm:flex">
               <Link
                 href={previousHref}
-                className="group flex max-w-[45%] min-w-0 lift items-center gap-3 rounded-[12px] border border-border bg-card px-4 py-3"
+                className="group flex max-w-[45%] min-w-0 lift items-center gap-3 rounded-card border border-border bg-card px-4 py-3"
               >
                 <ArrowLeftIcon className="size-4 shrink-0 text-text-muted" />
                 <span className="flex min-w-0 flex-col">
@@ -309,7 +309,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               </Link>
               <Link
                 href={nextHref}
-                className="group flex min-w-0 flex-1 lift items-center gap-3 rounded-[12px] border border-border bg-card px-4 py-3"
+                className="group flex min-w-0 flex-1 lift items-center gap-3 rounded-card border border-border bg-card px-4 py-3"
               >
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="text-small text-text-muted">{nextLabel}</span>

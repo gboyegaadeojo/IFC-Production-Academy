@@ -103,7 +103,7 @@ export function CourseOutline({
                               ? "bg-hover font-medium text-text before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-pill before:bg-accent"
                               : "text-text-secondary hover:bg-card hover:text-text"
                           }`
-                        : "group min-h-touch lift rounded-[12px] px-2 py-3"
+                        : "group min-h-touch lift rounded-card px-2 py-3"
                     }`}
                   >
                     <span className="tabular w-6 shrink-0 font-mono text-small text-text-muted">

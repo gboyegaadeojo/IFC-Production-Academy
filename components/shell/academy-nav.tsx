@@ -180,7 +180,7 @@ export function AcademyTabBar() {
               <Link
                 href={link.href}
                 aria-current={current ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-1 text-[0.6875rem] transition-surface ${
+                className={`flex min-h-14 flex-col items-center justify-center gap-1 text-small transition-surface ${
                   current ? "font-medium text-text" : "text-text-muted hover:text-text"
                 }`}
               >

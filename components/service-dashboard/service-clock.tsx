@@ -90,12 +90,12 @@ function RunRow({ entry, isNow, isDone }: { entry: RunEntry; isNow: boolean; isD
       <div className="grid grid-cols-[4.25rem_minmax(0,1fr)_auto] items-baseline gap-2">
         <span className="text-text-muted tabular-nums">{clockLabel(entry.startsAt)}</span>
         <span className={isDone && !isNow ? "text-text-muted" : ""}>
-          {entry.title} {isNow ? <span className="text-[0.6875rem] font-bold">NOW</span> : null}
+          {entry.title} {isNow ? <span className="text-small font-bold">NOW</span> : null}
         </span>
         <span className="text-text-muted tabular-nums">{countdownLabel(entry.lengthSeconds)}</span>
       </div>
       {entry.notes.map((note, index) => (
-        <p key={index} className="pl-[4.75rem] text-[0.6875rem] text-text-secondary">
+        <p key={index} className="pl-[4.75rem] text-small text-text-secondary">
           {note.category ? `${note.category}: ` : ""}
           {note.content}
         </p>

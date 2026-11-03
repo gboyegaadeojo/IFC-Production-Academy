@@ -13,7 +13,7 @@ export function ServicePicker({
   const router = useRouter();
   return (
     <div className="flex min-w-0 flex-col rounded-card border border-border bg-surface px-3 py-1.5">
-      <label htmlFor="dashboard-service" className="text-[0.6875rem] text-text-muted">
+      <label htmlFor="dashboard-service" className="text-small text-text-muted">
         Service
       </label>
       <select

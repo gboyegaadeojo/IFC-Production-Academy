@@ -11,6 +11,11 @@
 :root {
   color-scheme: dark;
 
+  /* The sizes that change with the screen. See the type notes further down. */
+  --fs-body: 0.8125rem;
+  --fs-button: 0.8125rem;
+  --fs-field: 0.8125rem;
+
   /* Dark surfaces: true black and neutral greys, no tint (G, 2026-11-01; DESIGN §4.1). */
   --bg: #000000;
   --surface: #0a0a0a;
@@ -247,38 +252,61 @@
   --font-serif: var(--font-literata), ui-serif, Georgia, serif;
 
   /*
-   * Type (DESIGN §4.2), two steps smaller than before (approved 2026-11-01). Sizes scale between
-   * mobile and desktop: display 26→32 (hero), title 21→24 (page), heading 17→18 (section),
-   * subheading 15 (card), lead 15, body 14, small 12. Weights 400/500/600/700.
+   * Type (DESIGN §4.2), one set of sizes for the whole app (G, 2026-11-03): title 20 (page), heading
+   * and subheading 15 (sections), body 13 (14 on phones), small 12, and nothing smaller. Display stays
+   * for the few hero lines. Fields use 16 on touch screens, because iPhones zoom the page below that.
    */
   --text-*: initial;
   --text-display: clamp(1.625rem, 1.3rem + 1.4vw, 2rem);
   --text-display--line-height: 1.12;
   --text-display--letter-spacing: -0.03em;
-  --text-title: clamp(1.3125rem, 1.2rem + 0.5vw, 1.5rem);
+  --text-title: 1.25rem;
   --text-title--line-height: 1.2;
   --text-title--letter-spacing: -0.022em;
-  --text-heading: clamp(1.0625rem, 1.03rem + 0.15vw, 1.125rem);
+  --text-heading: 0.9375rem;
   --text-heading--line-height: 1.3;
   --text-heading--letter-spacing: -0.015em;
   --text-subheading: 0.9375rem;
   --text-subheading--line-height: 1.35;
   --text-subheading--letter-spacing: -0.01em;
-  --text-lead: 0.9375rem;
+  --text-lead: 0.875rem;
   --text-lead--line-height: 1.6;
-  --text-body: 0.875rem;
+  --text-body: var(--fs-body);
   --text-body--line-height: 1.55;
-  --text-button: 0.8125rem;
+  --text-button: var(--fs-button);
+  --text-field: var(--fs-field);
+  --text-field--line-height: 1.5;
   --text-button--line-height: 1.5;
   --text-small: 0.75rem;
   --text-small--line-height: 1.5;
 
-  /* Geometry (DESIGN §4.3): cards 14, buttons and inputs 10, pills fully round. */
-  --radius-button: 10px;
-  --radius-card: 14px;
+  /* Geometry (DESIGN §4.3): cards 12, buttons and inputs 9, pills fully round. */
+  --radius-button: 9px;
+  --radius-card: 12px;
   --radius-pill: 9999px;
 
   --ease-standard: var(--ease-standard);
+}
+
+@media (width < 40rem) {
+  :root {
+    --fs-body: 0.875rem;
+  }
+}
+@media (pointer: coarse) {
+  :root {
+    --fs-button: 0.875rem;
+    --fs-field: 1rem;
+  }
+}
+
+/* One dropdown arrow on every device. Outside any layer, so a field's own padding can't undo it. */
+select:not([multiple]) {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237f7a96' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
 }
 
 html {
@@ -302,17 +330,15 @@ body {
 }
 
 /*
- * Controls are 36px with a mouse and 44px on touch screens (DESIGN §9, SPEC §6: touch targets of
- * at least 44 by 44 px).
+ * Fields and buttons are the same height: 32px with a mouse, and 44px on touch screens (DESIGN §9,
+ * SPEC §6: touch targets of at least 44 by 44 px). Small ones are 28px with a mouse.
  */
 @utility min-h-control {
-  min-height: 2.25rem;
+  min-height: 2rem;
   @media (pointer: coarse) {
     min-height: 2.75rem;
   }
 }
-
-/* Buttons are smaller than form fields with a mouse (G, 2026-11-03), and still 44px on touch. */
 @utility min-h-button {
   min-height: 2rem;
   @media (pointer: coarse) {
@@ -343,23 +369,6 @@ body {
   @media (width >= 80rem) {
     padding-inline: 3rem;
   }
-}
-
-/* The admin SOP library's type, one step smaller (G, 2026-11-03). That page only. */
-.sop-compact {
-  font-size: 0.8125rem;
-}
-.sop-compact .text-title {
-  font-size: 1.25rem;
-}
-.sop-compact .text-subheading {
-  font-size: 0.875rem;
-}
-.sop-compact .text-body {
-  font-size: 0.8125rem;
-}
-.sop-compact .text-small {
-  font-size: 0.6875rem;
 }
 
 /* Reading and form width: about 70 characters of body text. */

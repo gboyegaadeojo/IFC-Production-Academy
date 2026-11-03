@@ -92,7 +92,7 @@ export function InstallApp({ variant }: { variant: "banner" | "card" }) {
         <div className="flex items-center gap-3">
           <span
             aria-hidden="true"
-            className="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-accent-soft text-accent-light"
+            className="flex size-9 shrink-0 items-center justify-center rounded-button bg-accent-soft text-accent-light"
           >
             <SmartphoneIcon className="size-5" />
           </span>

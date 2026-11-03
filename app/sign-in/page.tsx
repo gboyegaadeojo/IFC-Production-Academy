@@ -91,7 +91,7 @@ function Hero() {
         aria-hidden="true"
         className="absolute inset-0 bg-[radial-gradient(120%_90%_at_60%_40%,transparent_50%,rgb(0_0_0/0.55)_100%),linear-gradient(to_top,rgb(0_0_0/0.65),transparent_45%)]"
       />
-      <p className="text-white absolute top-4 left-4 flex items-center gap-2.5 text-[0.7rem] font-semibold tracking-[0.16em] lg:hidden">
+      <p className="text-white absolute top-4 left-4 flex items-center gap-2.5 text-small font-semibold tracking-[0.16em] lg:hidden">
         <IfcMark height={14} />
         IFC PRODUCTION ACADEMY
       </p>
@@ -117,7 +117,7 @@ function SignInSkeleton() {
       <p role="status" className="sr-only">
         Loading sign-in…
       </p>
-      <div className="h-[54px] rounded-[11px] bg-hover motion-safe:animate-pulse" />
+      <div className="h-[54px] rounded-button bg-hover motion-safe:animate-pulse" />
     </div>
   );
 }

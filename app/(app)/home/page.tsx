@@ -346,12 +346,12 @@ function ContinueCard({ continuing }: { continuing: ContinueCourse }) {
       <Link
         href={stepHref(course.id, next)}
         style={style}
-        className="group relative grid lift grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 overflow-hidden rounded-[18px] border border-border bg-surface p-4 pl-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:p-5 sm:pl-6"
+        className="group relative grid lift grid-cols-[auto_minmax(0,1fr)] items-center gap-x-4 gap-y-3 overflow-hidden rounded-card border border-border bg-surface p-4 pl-5 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:p-5 sm:pl-6"
       >
         <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1.5 bg-[var(--dept)]" />
         <span
           aria-hidden="true"
-          className="flex size-11 items-center justify-center rounded-[12px] bg-[color-mix(in_srgb,var(--dept)_12%,var(--surface))] text-[var(--dept)]"
+          className="flex size-11 items-center justify-center rounded-card bg-[color-mix(in_srgb,var(--dept)_12%,var(--surface))] text-[var(--dept)]"
         >
           <DepartmentIcon icon={course.department.icon} className="size-5" />
         </span>

@@ -329,7 +329,7 @@ function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
               const style = { "--dept": departmentHueVar(row.hue) } as CSSProperties;
               const name = (
                 <span className="flex items-center gap-2.5 font-semibold">
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-[8px] bg-hover text-[var(--dept)]">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-button bg-hover text-[var(--dept)]">
                     <DepartmentIcon icon={row.icon} className="size-4" />
                   </span>
                   {row.departmentName}
@@ -411,7 +411,7 @@ function Th({ label, note }: { label: string; note: string }) {
   return (
     <th scope="col" className="px-4 py-3 text-right align-bottom font-medium">
       {label}
-      <span className="block text-[0.6875rem] font-normal">{note}</span>
+      <span className="block text-small font-normal">{note}</span>
     </th>
   );
 }

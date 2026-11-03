@@ -105,7 +105,7 @@ function Tick({
         <span className={optimistic ? "text-text-muted line-through" : ""}>{text}</span>
       </label>
       {error ? (
-        <p role="alert" className="text-[0.6875rem] text-error">
+        <p role="alert" className="text-small text-error">
           {error}
         </p>
       ) : null}

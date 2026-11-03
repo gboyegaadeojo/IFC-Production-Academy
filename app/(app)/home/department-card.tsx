@@ -38,11 +38,11 @@ export function MemberDepartmentCard({
     <article
       aria-labelledby={headingId}
       style={style}
-      className="group relative flex h-full lift items-center gap-4 rounded-[14px] border border-border bg-card p-3 focus-within:bg-surface focus-within:shadow-[var(--shadow-lift)] sm:p-4"
+      className="group relative flex h-full lift items-center gap-4 rounded-card border border-border bg-card p-3 focus-within:bg-surface focus-within:shadow-[var(--shadow-lift)] sm:p-4"
     >
       <span
         aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center rounded-[12px] bg-[color-mix(in_srgb,var(--dept)_12%,var(--surface))] text-[var(--dept)] sm:size-11"
+        className="flex size-10 shrink-0 items-center justify-center rounded-card bg-[color-mix(in_srgb,var(--dept)_12%,var(--surface))] text-[var(--dept)] sm:size-11"
       >
         <DepartmentIcon icon={department.icon} className="size-5" />
       </span>
@@ -50,7 +50,7 @@ export function MemberDepartmentCard({
         <h3 id={headingId} className="font-semibold">
           <Link
             href={`/departments/${department.slug}`}
-            className="rounded-button transition-surface group-hover:text-accent-light after:absolute after:inset-0 after:rounded-[14px] focus-visible:outline-none"
+            className="rounded-button transition-surface group-hover:text-accent-light after:absolute after:inset-0 after:rounded-card focus-visible:outline-none"
           >
             {department.name}
           </Link>
@@ -115,7 +115,7 @@ export function ExploreRow({
     <article
       aria-labelledby={headingId}
       style={style}
-      className="grid h-full grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 rounded-[14px] border border-dashed border-border-strong/50 p-4 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] sm:items-center"
+      className="grid h-full grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 rounded-card border border-dashed border-border-strong/50 p-4 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] sm:items-center"
     >
       <span className="flex size-11 items-center justify-center rounded-button border border-border bg-card text-[var(--dept)]">
         <DepartmentIcon icon={department.icon} className="size-5" />

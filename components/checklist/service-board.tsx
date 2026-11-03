@@ -103,7 +103,7 @@ export function ServiceBoard({
                       />
                     </span>
                   </span>
-                  <span className="tabular font-mono text-[0.75rem] text-text-secondary">
+                  <span className="tabular font-mono text-small text-text-secondary">
                     <span aria-hidden="true">
                       {checklist.done}/{checklist.total}
                     </span>
@@ -162,7 +162,7 @@ export function ServiceBoard({
                       {section.name}
                     </h3>
                     <span
-                      className={`tabular font-mono text-[0.75rem] ${complete ? "text-success" : "text-text-muted"}`}
+                      className={`tabular font-mono text-small ${complete ? "text-success" : "text-text-muted"}`}
                     >
                       <span aria-hidden="true">
                         {complete ? "✓ " : ""}

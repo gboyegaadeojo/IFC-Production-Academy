@@ -175,7 +175,7 @@ export function AccountMenu({
               <span className="truncate font-medium text-text">{displayName}</span>
               {email ? <span className="truncate text-small text-text-muted">{email}</span> : null}
               {planningCenter ? (
-                <span className="mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-pill border border-border px-2 py-0.5 text-[0.71875rem] text-text-secondary">
+                <span className="mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-pill border border-border px-2 py-0.5 text-small text-text-secondary">
                   <span aria-hidden="true" className="size-1.5 rounded-pill bg-success" />
                   Signed in with Planning Center
                 </span>
@@ -194,7 +194,7 @@ export function AccountMenu({
                 <BellIcon className="size-[18px] shrink-0" />
                 Notifications
                 {unread > 0 ? (
-                  <span className="tabular ml-auto rounded-pill bg-accent px-2 font-mono text-[0.71875rem] text-on-accent">
+                  <span className="tabular ml-auto rounded-pill bg-accent px-2 font-mono text-small text-on-accent">
                     {unread > 99 ? "99+" : unread}
                     <span className="sr-only"> unread</span>
                   </span>

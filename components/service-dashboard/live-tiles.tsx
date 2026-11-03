@@ -93,7 +93,7 @@ function BridgeNotice() {
     return null;
   }
   return (
-    <p className="text-[0.6875rem] font-medium text-warning">
+    <p className="text-small font-medium text-warning">
       {state.bridgeSeenAt
         ? `Offline, last seen ${clockLabel(state.bridgeSeenAt)}`
         : "Offline. Check that the bridge computer is on."}
@@ -122,7 +122,7 @@ export function SlidesTile() {
           <ol className="grid min-h-0 flex-1 auto-rows-fr grid-cols-2 gap-x-2 gap-y-1">
             {slides.slides.map((slide, offset) => (
               <li key={slide.index} className="flex min-h-0 min-w-0 flex-col gap-0.5">
-                <span className="text-[0.6875rem] font-medium text-text-muted">
+                <span className="text-small font-medium text-text-muted">
                   {offset === 0 ? "On screen" : offset === 1 ? "Next" : "Then"}
                 </span>
                 <div
@@ -145,7 +145,7 @@ export function SlidesTile() {
               </li>
             ))}
           </ol>
-          <p className="text-[0.6875rem] text-text-muted">
+          <p className="text-small text-text-muted">
             {slides.presentation}, slide {slides.position + 1} of {slides.total}. Read only.
           </p>
         </Stale>
@@ -177,9 +177,7 @@ export function ProPresenterTimersTile() {
               ))}
             </dl>
           )}
-          <p className="text-[0.6875rem] text-text-muted">
-            Read only. Start timers in ProPresenter.
-          </p>
+          <p className="text-small text-text-muted">Read only. Start timers in ProPresenter.</p>
         </Stale>
       ) : null}
     </>
@@ -263,7 +261,7 @@ export function MixerLevelsTile({
           </div>
         </Stale>
       ) : null}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-[0.6875rem] text-text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-small text-text-muted">
         <span>Signal levels, not room loudness.</span>
         {editLink}
       </div>

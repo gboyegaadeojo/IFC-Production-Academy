@@ -108,7 +108,7 @@ async function InvitationsContent({
                 href={tab.past ? "/admin/invitations?show=past" : "/admin/invitations"}
                 aria-current={showPast === tab.past ? "page" : undefined}
                 scroll={false}
-                className="flex min-h-9 items-center gap-1.5 rounded-[7px] px-3 text-small text-text-secondary transition-surface hover:text-text aria-[current=page]:bg-surface aria-[current=page]:font-semibold aria-[current=page]:text-text aria-[current=page]:shadow-[0_0_0_1px_var(--border)]"
+                className="flex min-h-9 items-center gap-1.5 rounded-button px-3 text-small text-text-secondary transition-surface hover:text-text aria-[current=page]:bg-surface aria-[current=page]:font-semibold aria-[current=page]:text-text aria-[current=page]:shadow-[0_0_0_1px_var(--border)]"
               >
                 {tab.label}
                 <span className="tabular text-text-muted">{tab.count}</span>

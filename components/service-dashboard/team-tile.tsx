@@ -14,11 +14,11 @@ export function TeamTile({ team }: { team: TeamRow[] }) {
         >
           <span className="min-w-0">
             {row.name ?? "Open"}
-            <span className="block text-[0.6875rem] text-text-muted">{row.roleName}</span>
+            <span className="block text-small text-text-muted">{row.roleName}</span>
           </span>
           {row.label ? (
             <span
-              className={`shrink-0 text-[0.6875rem] font-medium ${
+              className={`shrink-0 text-small font-medium ${
                 row.label === "Trained" ? "text-success" : "text-warning"
               }`}
             >

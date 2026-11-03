@@ -39,7 +39,7 @@ export function DepartmentCover({
       <span className="absolute inset-0 flex items-center justify-center text-[var(--dept)]">
         <DepartmentIcon icon={icon} className="size-12 sm:size-14" />
       </span>
-      <span className="absolute bottom-3 left-1/2 -translate-x-1/2 font-mono text-[0.6875rem] tracking-[0.14em] whitespace-nowrap text-text-muted uppercase">
+      <span className="absolute bottom-3 left-1/2 -translate-x-1/2 font-mono text-small tracking-[0.14em] whitespace-nowrap text-text-muted uppercase">
         {label}
       </span>
     </div>
