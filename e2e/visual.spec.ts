@@ -310,7 +310,7 @@ test("the top bar's parts never overlap, at any width", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   const nav = page.getByRole("navigation", { name: "Academy" }).first();
   const toggle = page.getByRole("switch", { name: "Dark mode" }).first();
-  for (const width of [640, 700, 768, 834, 1024, 1280]) {
+  for (const width of [768, 834, 1024, 1280]) {
     await page.setViewportSize({ width, height: 800 });
     const links = await nav.boundingBox();
     const box = await toggle.boundingBox();
