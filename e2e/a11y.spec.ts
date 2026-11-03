@@ -178,7 +178,7 @@ test("admin pages are accessible", async ({ page }) => {
 test("the admin sidebar: groups, icons only, flyouts and the drawer, by keyboard", async ({
   page,
 }) => {
-  // DESIGN §3.2: the current page's group opens, groups stay open, the sidebar can be icons only.
+  // DESIGN §3.2: the current page's group opens, one at a time, and the sidebar can be icons only.
   await page.setViewportSize({ width: 1440, height: 900 });
   await signInByEmail(page, "emery.director@example.com");
   await page.goto("/admin/checklists/activity");
@@ -200,13 +200,19 @@ test("the admin sidebar: groups, icons only, flyouts and the drawer, by keyboard
   await training.focus();
   await page.keyboard.press("Enter");
   await expect(training).toHaveAttribute("aria-expanded", "true");
+  await expect(nav.getByRole("button", { name: "Checklists" })).toHaveAttribute(
+    "aria-expanded",
+    "false",
+  );
   await expectAccessible(page, "admin sidebar expanded");
+  // Back to the section of the page you're on.
   await page.reload();
   await page.waitForLoadState("networkidle");
-  await expect(nav.getByRole("button", { name: "Training Academy" })).toHaveAttribute(
+  await expect(nav.getByRole("button", { name: "Checklists" })).toHaveAttribute(
     "aria-expanded",
     "true",
   );
+  await expect(training).toHaveAttribute("aria-expanded", "false");
 
   // Icons only, remembered, with a flyout per group.
   const iconsOnly = page.getByRole("button", { name: "Icons only" });
