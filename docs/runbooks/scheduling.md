@@ -27,7 +27,7 @@ GitHub's own schedule can run hours late, so a Cloudflare timer on the Worker as
 the Planning Center sync and the notifications job every 15 minutes. The jobs and their secrets stay
 on GitHub. GitHub's schedule stays on as a backup, so if the timer stops, the jobs still run, later.
 
-**Refresh from Planning Center** on the Planning Center page runs the sync straight away instead
+**Refresh now** on the Planning Center page runs the sync straight away instead
 of waiting up to 15 minutes. The button and the timer use the same token, which can only ask GitHub
 to run jobs. The Planning Center token stays in Actions secrets.
 
@@ -60,15 +60,14 @@ Center service type, team, and position, like the checklist app's Team mapping.
    its department.
 2. On the Planning Center page, link each Planning Center position to its Academy position. A team
    can also be linked as a whole; positions without their own link follow it.
-3. Links apply at the next read, within 15 minutes, or straight away with **Refresh from Planning
-   Center**.
+3. Links apply at the next read, within 15 minutes, or straight away with **Refresh now**.
 
-**Scheduled in positions not linked yet** lists people on an upcoming service whose Planning
+**Scheduled in positions not linked yet**, on the Position links tab, lists people on an upcoming service whose Planning
 Center position isn't linked, or whose position name matches nothing in Planning Center. They
 won't see a checklist until it's linked. Pre-service checklists shows the same warning for the
 current service.
 
-**Not in the Academy yet** lists people on a Planning Center team or schedule with no Academy
+The **Not in the Academy** tab lists people on a Planning Center team or schedule with no Academy
 account using one of their Planning Center emails. Invite them with that email.
 
 ## 3. Set what each position sees on the day

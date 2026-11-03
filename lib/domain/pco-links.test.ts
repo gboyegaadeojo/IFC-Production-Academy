@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { groupTeamsByName } from "./pco-links";
+import { groupTeamsByName, pcoLinkStatus } from "./pco-links";
 
 const team = (
   id: string,
@@ -61,5 +61,26 @@ describe("groupTeamsByName", () => {
       { teamId: "t1", positionId: null },
       { teamId: "t2", positionId: null },
     ]);
+  });
+});
+
+describe("pcoLinkStatus", () => {
+  it("says what a position's link is", () => {
+    expect(pcoLinkStatus({ roleId: "role", mixed: false }, false)).toEqual({
+      label: "Linked",
+      tone: "success",
+    });
+    expect(pcoLinkStatus({ roleId: null, mixed: false }, false)).toEqual({
+      label: "Not linked",
+      tone: "warning",
+    });
+  });
+
+  it("doesn't warn about a whole team with no link", () => {
+    expect(pcoLinkStatus({ roleId: null, mixed: false }, true).tone).toBe("neutral");
+  });
+
+  it("asks for one choice when copies differ", () => {
+    expect(pcoLinkStatus({ roleId: null, mixed: true }, false).label).toBe("Mixed: choose one");
   });
 });

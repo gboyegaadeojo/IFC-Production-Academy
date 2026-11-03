@@ -9,7 +9,7 @@ planned as the very last piece of work.
 
 - People in IFC's Planning Center as the sync sees it: on a production team's roster or on a
   schedule. Someone just added in Planning Center can sign in after the next read (15 minutes, or
-  **Refresh from Planning Center**).
+  **Refresh now**).
 - Only from IFC's Planning Center organization. The sync records its id.
 - The first time, the Academy creates their account quietly (no email) with their Planning Center
   name and primary email, and links it to their Planning Center person. If an account already uses
