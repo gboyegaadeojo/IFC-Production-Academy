@@ -48,7 +48,8 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   await expect(leader.getByRole("heading", { level: 2, name: "Camera Operations" })).toHaveCount(0);
 
   const request = leader.getByRole("listitem").filter({ hasText: email });
-  await request.getByText("Add a note").click();
+  await request.locator("summary", { hasText: "More" }).click();
+  await expect(request.getByRole("button", { name: /^Decline request/ })).toBeVisible();
   await request.getByLabel("Note (optional)").fill("Welcome to the audio team");
   await request.getByRole("button", { name: /^Approve/ }).click();
   // The card moves from Waiting to Members.
@@ -470,6 +471,16 @@ test("a Platform Admin manages people and departments but not memberships", asyn
   await expect(page.getByRole("heading", { level: 1, name: "Devon Example" })).toBeVisible();
   await expect(
     page.getByRole("paragraph").filter({ hasText: /^Department Leader, Audio Engineering$/ }),
+  ).toBeVisible();
+
+  // Choosing a role shows what it allows, right beside the Grant button.
+  const role = page.getByLabel("Role", { exact: true });
+  await role.selectOption({ index: 1 });
+  await expect(
+    page
+      .locator("form")
+      .filter({ has: role })
+      .getByText(/^(One department|Whole ministry)$/),
   ).toBeVisible();
 
   await (await adminNavLink(page, "System & Settings", "Audit log")).click();

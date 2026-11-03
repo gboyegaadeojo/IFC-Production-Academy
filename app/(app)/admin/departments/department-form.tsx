@@ -15,7 +15,7 @@ const STATUS_CONSEQUENCES: Record<DepartmentSettings["status"], string> = {
 };
 
 const fieldClasses =
-  "min-h-control rounded-button border border-border-strong bg-surface px-3 text-body text-text";
+  "min-h-control rounded-button border border-border-strong bg-surface px-3 text-field text-text";
 
 export function DepartmentForm({ department }: { department: DepartmentSettings }) {
   const [state, formAction, pending] = useActionState(updateDepartmentAction, idle);

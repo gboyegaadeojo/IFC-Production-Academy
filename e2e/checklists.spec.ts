@@ -32,11 +32,11 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await page.getByRole("button", { name: "Add these" }).click();
   await expect(page.getByText("Added 1 section and 2 items.")).toBeVisible();
   await page.getByLabel("Sample role (seed data)").check();
-  await page
-    .getByRole("region", { name: "Who it's for" })
-    .getByRole("button", { name: "Save" })
-    .click();
-  await expect(page.getByText(/see this checklist first/).last()).toBeVisible();
+  // A choice saves itself.
+  await expect(page.getByRole("region", { name: "Who it's for" }).getByRole("button")).toHaveCount(
+    0,
+  );
+  await expect(page.getByText(/^Saved\. People scheduled/)).toBeVisible();
 
   // A service tomorrow, so its checklist is open.
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);

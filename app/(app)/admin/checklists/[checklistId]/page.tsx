@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import { AutoSaveForm, ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { getAdminAccess } from "@/lib/data/admin/access";
@@ -99,13 +99,7 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
             {checklist.departmentName} has no positions yet. Add them in Competencies and roles.
           </p>
         ) : (
-          <ActionForm
-            action={setPositionsAction}
-            submitLabel="Save"
-            pendingLabel="Saving…"
-            variant="secondary"
-            hidden={{ checklistId: checklist.id }}
-          >
+          <AutoSaveForm action={setPositionsAction} hidden={{ checklistId: checklist.id }}>
             <fieldset className="flex flex-col gap-2">
               <legend className="mb-2 text-small text-text-secondary">
                 People scheduled in these positions see this checklist first. Everyone serving can
@@ -124,7 +118,7 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
                 </label>
               ))}
             </fieldset>
-          </ActionForm>
+          </AutoSaveForm>
         )}
       </section>
 
