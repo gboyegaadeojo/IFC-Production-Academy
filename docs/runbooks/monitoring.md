@@ -22,8 +22,9 @@ In PostHog, also turn on **Discard client IP data** under Project Settings.
 **Sentry** receives the error, where in the code it happened, the browser, and the page's address.
 Stack traces from the browser are minified, because source maps aren't uploaded.
 
-**PostHog** receives anonymous page views, counted per device. It doesn't record sessions or clicks,
-and it isn't told who anyone is, so it can't show one person's activity. Training numbers such as
+**PostHog** receives anonymous page views, counted per device, and no other kind of event. It
+doesn't record sessions, clicks, or page speed, and it isn't told who anyone is, so it can't show
+one person's activity. Training numbers such as
 completion rates come from the Academy's own reports.
 
 ## What never gets sent
@@ -35,8 +36,14 @@ completion rates come from the Academy's own reports.
 - invite tokens and certificate references in addresses
 - IDs, which become `[id]`
 - quoted values in error text, which is where database errors put names
+- page titles, which can name a person or course
 
-If you add a page whose address holds a secret, add it to `PRIVATE_PATHS` in that file.
+Addresses are scrubbed at any depth, because both tools repeat them in fields of their own.
+
+If you add a page whose address holds a secret, add it to `PRIVATE_PATHS` in that file. After any
+change to the monitoring code or a library upgrade, repeat the check below with a fake invite link,
+such as `/invite/fake-token?code=fake`, and search what's sent for those values. PostHog ignores
+automated browsers, so an automated test needs to hide that it's one.
 
 ## Check it works
 
