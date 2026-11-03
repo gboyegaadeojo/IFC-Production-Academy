@@ -16,6 +16,7 @@ Each department has three levels, one step at a time. Each level has courses, an
 | --- | --- |
 | **See courses** | It's open. Go ahead. |
 | **Coming soon** | You can see what's planned, but training opens when the curriculum is ready. |
+| **Join** | Anyone can join this department straight away. |
 | **By invitation** | Ask the department leader for an invite to join. |
 | **Request sent** | A department leader will review it. |
 

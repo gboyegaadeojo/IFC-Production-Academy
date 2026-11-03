@@ -127,6 +127,7 @@ export function NewDepartmentForm() {
             className={fieldClasses}
           >
             <option value="request">They ask, a leader approves</option>
+            <option value="open">Anyone can join, no approval</option>
             <option value="invite_only">By invitation only</option>
           </select>
         </div>

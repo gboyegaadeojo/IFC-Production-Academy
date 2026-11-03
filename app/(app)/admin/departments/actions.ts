@@ -17,7 +17,7 @@ const departmentSchema = z.object({
   name: z.string().trim().min(1, "Give the department a name.").max(80),
   summary: z.string().trim().max(300, "Keep the summary under 300 characters."),
   status: z.enum(["active", "coming_soon", "inactive"]),
-  enrolmentMode: z.enum(["request", "invite_only"]),
+  enrolmentMode: z.enum(["request", "open", "invite_only"]),
   curriculumRequiresReview: z.boolean(),
 });
 
@@ -59,7 +59,7 @@ const newDepartmentSchema = z.object({
   hue: z.enum(DEPARTMENT_HUES.map((h) => h.key) as [string, ...string[]]),
   icon: z.enum(DEPARTMENT_ICON_OPTIONS.map((i) => i.key) as [string, ...string[]]),
   status: z.enum(["active", "coming_soon", "inactive"]),
-  enrolmentMode: z.enum(["request", "invite_only"]),
+  enrolmentMode: z.enum(["request", "open", "invite_only"]),
 });
 
 /**

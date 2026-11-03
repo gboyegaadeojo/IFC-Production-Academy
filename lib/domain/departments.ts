@@ -4,7 +4,7 @@
  */
 
 export type DepartmentStatus = "active" | "coming_soon" | "inactive";
-export type EnrolmentMode = "request" | "invite_only";
+export type EnrolmentMode = "request" | "invite_only" | "open";
 export type MembershipStatus = "requested" | "active" | "declined" | "removed";
 
 export type Department = {
@@ -30,6 +30,7 @@ export type DepartmentCardState =
   | { kind: "member" }
   | { kind: "requested" }
   | { kind: "can_request"; previously: "declined" | "removed" | null }
+  | { kind: "can_join" }
   | { kind: "coming_soon" }
   | { kind: "invite_only" }
   | { kind: "unavailable" };
@@ -81,6 +82,10 @@ export function departmentCardState(
   }
   if (department.enrolmentMode === "invite_only") {
     return { kind: "invite_only" };
+  }
+  // Someone a leader removed has to ask, whichever way the department is open (SRS-MEM-007).
+  if (department.enrolmentMode === "open" && membership?.status !== "removed") {
+    return { kind: "can_join" };
   }
   return { kind: "can_request", previously: membership?.status ?? null };
 }

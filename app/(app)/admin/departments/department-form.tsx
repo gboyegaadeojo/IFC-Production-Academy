@@ -89,7 +89,8 @@ export function DepartmentForm({ department }: { department: DepartmentSettings 
             defaultValue={department.enrolmentMode}
             className={fieldClasses}
           >
-            <option value="request">Volunteers request, a leader approves</option>
+            <option value="request">They ask, a leader approves</option>
+            <option value="open">Anyone can join, no approval</option>
             <option value="invite_only">By invitation only</option>
           </select>
         </div>
