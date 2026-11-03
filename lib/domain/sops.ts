@@ -149,7 +149,67 @@ export const sopTitleSchema = titleField;
 export const sopDetailsSchema = z.object({
   title: titleField,
   summary: z.string().trim().max(1000, "Keep the summary under 1,000 characters."),
+  body: z.string().max(50_000, "Keep the steps under 50,000 characters."),
 });
+
+/** A starting shape for someone writing their first SOP. */
+export const SOP_TEMPLATE = `## When to use this
+Say when someone needs this procedure.
+
+## Before you start
+- What needs to be on or ready first
+
+## Steps
+1. First step
+2. Next step
+
+## If something goes wrong
+! The thing most likely to go wrong, and what to do.
+- Who to tell`;
+
+export type SopLineFormat = "heading" | "steps" | "bullets" | "warning";
+
+const LINE_MARKER = /^(\d+\.\s+|[-*]\s+|##\s+|!\s+)/;
+
+/** Applies a format to each line the selection touches, replacing any format already there. */
+export function formatSopLines(
+  text: string,
+  selectionStart: number,
+  selectionEnd: number,
+  format: SopLineFormat,
+): { text: string; cursor: number } {
+  const from = text.lastIndexOf("\n", selectionStart - 1) + 1;
+  const next = text.indexOf("\n", selectionEnd);
+  const to = next === -1 ? text.length : next;
+  const prefix = (index: number) =>
+    format === "heading"
+      ? "## "
+      : format === "steps"
+        ? `${index + 1}. `
+        : format === "bullets"
+          ? "- "
+          : "! ";
+  const lines = text
+    .slice(from, to)
+    .split("\n")
+    .map((line, index) => prefix(index) + line.replace(LINE_MARKER, ""))
+    .join("\n");
+  return { text: text.slice(0, from) + lines + text.slice(to), cursor: from + lines.length };
+}
+
+/** Makes the selection bold, or inserts words to replace if nothing is selected. */
+export function boldSopText(
+  text: string,
+  selectionStart: number,
+  selectionEnd: number,
+): { text: string; cursor: number } {
+  const words = text.slice(selectionStart, selectionEnd) || "important words";
+  const bold = `**${words}**`;
+  return {
+    text: text.slice(0, selectionStart) + bold + text.slice(selectionEnd),
+    cursor: selectionStart + bold.length,
+  };
+}
 
 export const sopSettingsSchema = z.object({
   category: z
@@ -293,7 +353,7 @@ export function sopErrorMessage(error: SopError): string {
     case "invalid_title":
       return "Give the SOP a title under 120 characters.";
     case "sop_has_no_file":
-      return "Upload the SOP's file before publishing.";
+      return "Write the steps or attach a file before publishing.";
     case "sop_not_published":
       return "Publish the SOP before marking it reviewed.";
     case "change_note_required":

@@ -10,7 +10,7 @@ The list shows when each SOP was last reviewed, and marks any that are due for r
 
 ## Reading one
 
-Open an SOP to read the procedure, and open its file if it has one, usually a PDF.
+Open an SOP to read its steps, and open its file if it has one, usually a PDF. Some have both, such as written steps and a wiring diagram.
 
 - **Only the current version can be opened,** so nobody follows an old procedure by mistake. Version history shows what changed and when.
 - **"Due for review"** means nobody has confirmed it's still right lately. It's probably fine, but check with its owner if something looks off.

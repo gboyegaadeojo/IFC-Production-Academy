@@ -43,6 +43,8 @@ export type SopVersionSummary = {
   versionNumber: number | null;
   title: string;
   summary: string;
+  /** The steps written in the app. Empty when the procedure is only in the file. */
+  body: string;
   fileName: string | null;
   fileSize: number | null;
   fileType: string | null;
@@ -69,7 +71,7 @@ export type SopSummary = {
 };
 
 const VERSION_COLUMNS =
-  "id, sop_id, status, version_number, title, summary, file_name, file_size, file_type, change_note, published_at";
+  "id, sop_id, status, version_number, title, summary, body, file_name, file_size, file_type, change_note, published_at";
 
 type VersionRow = {
   id: string;
@@ -78,6 +80,7 @@ type VersionRow = {
   version_number: number | null;
   title: string;
   summary: string;
+  body: string;
   file_name: string | null;
   file_size: number | null;
   file_type: string | null;
@@ -92,6 +95,7 @@ function toVersion(row: VersionRow): SopVersionSummary {
     versionNumber: row.version_number,
     title: row.title,
     summary: row.summary,
+    body: row.body,
     fileName: row.file_name,
     fileSize: row.file_size,
     fileType: row.file_type,
@@ -260,13 +264,13 @@ export async function startSopDraft(sopId: string): Promise<WithId<string>> {
 
 export async function updateSopDraft(
   versionId: string,
-  details: { title: string; summary: string },
+  details: { title: string; summary: string; body: string },
 ): Promise<SopResult> {
   const supabase = await createSupabaseServerClient();
   return updated(
     await supabase
       .from("sop_versions")
-      .update({ title: details.title, summary: details.summary })
+      .update({ title: details.title, summary: details.summary, body: details.body })
       .eq("id", versionId)
       .select("id"),
   );
@@ -325,6 +329,19 @@ export async function uploadSopFile(
         file_type: file.type,
       })
       .eq("id", versionId)
+      .select("id"),
+  );
+}
+
+/** Takes the file off a draft. The stored file stays, as older versions may use it. */
+export async function removeSopFile(versionId: string): Promise<SopResult> {
+  const supabase = await createSupabaseServerClient();
+  return updated(
+    await supabase
+      .from("sop_versions")
+      .update({ file_path: null, file_name: null, file_size: null, file_type: null })
+      .eq("id", versionId)
+      .eq("status", "draft")
       .select("id"),
   );
 }

@@ -270,7 +270,7 @@ test("a leader publishes an SOP, attaches it to a lesson, and a member opens it"
   await leader.getByLabel("SOP title").fill(sopName);
   await leader.getByRole("button", { name: "Create SOP" }).click();
   await expect(leader.getByRole("heading", { level: 1, name: sopName })).toBeVisible();
-  await expect(leader.getByText("Not published yet").first()).toBeVisible();
+  await expect(leader.getByText("Draft", { exact: true }).first()).toBeVisible();
 
   // Only real PDFs and images are stored, whatever the file is called.
   await leader.getByLabel("SOP file").setInputFiles({
@@ -278,18 +278,18 @@ test("a leader publishes an SOP, attaches it to a lesson, and a member opens it"
     mimeType: "application/pdf",
     buffer: Buffer.from("<html>not a pdf</html>"),
   });
-  await leader.getByRole("button", { name: "Upload file" }).click();
   await expect(leader.getByText("Upload a PDF, PNG, or JPEG file.")).toBeVisible();
   await leader.getByLabel("SOP file").setInputFiles({
     name: "fake-sop.pdf",
     mimeType: "application/pdf",
     buffer: Buffer.from("%PDF-1.4 fake SOP for end-to-end tests %%EOF"),
   });
-  await leader.getByRole("button", { name: "Upload file" }).click();
   await expect(leader.getByText("fake-sop.pdf").first()).toBeVisible();
-  await leader.getByLabel("What changed?").fill("First version");
   await leader.getByRole("button", { name: "Publish" }).click();
-  await expect(leader.getByText("Version 1 is current")).toBeVisible();
+  const publishDialog = leader.getByRole("dialog", { name: "Publish this SOP" });
+  await publishDialog.getByLabel("What changed?").fill("First version");
+  await publishDialog.getByRole("button", { name: "Publish" }).click();
+  await expect(leader.getByText("Current · Version 1")).toBeVisible();
 
   // Attach it to a lesson in a new course, then publish the course.
   await leader.goto("/admin/curriculum");

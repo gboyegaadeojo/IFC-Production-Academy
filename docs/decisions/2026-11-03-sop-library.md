@@ -30,6 +30,16 @@ G asked for this page to stay usable at 50 to 100 SOPs, and approved a second mo
 - Its type is one step smaller, matching the admin library.
 - Its department filter includes **All of production**.
 
+## Writing SOPs in the app
+
+G asked for SOPs to be written in the app as well as uploaded, and approved a mock of a redesigned SOP page:
+
+- A version holds written steps, a file, or both, and needs at least one to be published.
+- One action bar holds **Save draft** and **Publish**, with details, the file, and history beside the document.
+- Publishing saves what's on the screen, then asks what changed.
+- The steps use the same safe formatter as the guides, so nothing in them can run as HTML, and links only go to web addresses.
+- Replacing or removing a file on a draft leaves older versions' files in place.
+
 ## In the database
 
-`sops.department_id` and `sop_versions.department_id` can now be null. Files for these SOPs are stored at `<sop id>/<sop id>/<file id>`. See migration `20261219120000_sops_all_production.sql`.
+`sops.department_id` and `sop_versions.department_id` can now be null. Files for these SOPs are stored at `<sop id>/<sop id>/<file id>`. See migration `20261219120000_sops_all_production.sql`. `sop_versions.body` holds the written steps, up to 50,000 characters (`20261220120000_sop_written_steps.sql`).
