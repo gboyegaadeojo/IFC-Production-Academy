@@ -4,12 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
 import { EmptyState } from "@/components/ui/empty-state";
-import {
-  ArrowRightIcon,
-  GraduationCapIcon,
-  UserCheckIcon,
-  UsersIcon,
-} from "@/components/ui/icons";
+import { ArrowRightIcon, GraduationCapIcon, UserCheckIcon, UsersIcon } from "@/components/ui/icons";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
