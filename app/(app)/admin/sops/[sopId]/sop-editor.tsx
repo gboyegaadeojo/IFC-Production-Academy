@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { ActionForm, type FormState, fieldClasses } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { GuideContent } from "@/components/help/guide-content";
 import { parseMarkdown } from "@/lib/domain/markdown";
@@ -176,22 +177,56 @@ export function SopEditor(props: Props) {
             </span>
           ) : null}
         </div>
-        {editing ? (
-          <div className="flex flex-wrap gap-2">
-            <Button type="submit" form="sop-form" variant="secondary" disabled={saving}>
-              {saving ? "Saving…" : "Save draft"}
-            </Button>
-            {canPublish ? <Button onClick={openPublish}>Publish</Button> : null}
-          </div>
-        ) : props.canDraft && !props.archived ? (
-          <ActionForm
-            action={startSopDraftAction}
-            submitLabel="Edit SOP"
-            pendingLabel="Starting a draft…"
-            hidden={{ sopId }}
-            className="contents"
-          />
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {props.canArchive ? (
+            <ConfirmDialog
+              triggerLabel="Archive"
+              title="Archive this SOP?"
+              message="Volunteers stop seeing it, and lessons stop listing it. Its versions and files are kept."
+              variant="secondary"
+            >
+              <ActionForm
+                action={archiveSopAction}
+                submitLabel="Archive SOP"
+                pendingLabel="Archiving…"
+                variant="destructive"
+                hidden={{ sopId }}
+              />
+            </ConfirmDialog>
+          ) : null}
+          {props.canDelete ? (
+            <ConfirmDialog
+              triggerLabel="Delete"
+              title="Delete this SOP?"
+              message="This deletes every version and file for good, and can't be undone. The audit log keeps a note of what was deleted."
+              variant="secondary"
+            >
+              <ActionForm
+                action={deleteSopAction}
+                submitLabel="Delete forever"
+                pendingLabel="Deleting…"
+                variant="destructive"
+                hidden={{ sopId }}
+              />
+            </ConfirmDialog>
+          ) : null}
+          {editing ? (
+            <>
+              <Button type="submit" form="sop-form" variant="secondary" disabled={saving}>
+                {saving ? "Saving…" : "Save draft"}
+              </Button>
+              {canPublish ? <Button onClick={openPublish}>Publish</Button> : null}
+            </>
+          ) : props.canDraft && !props.archived ? (
+            <ActionForm
+              action={startSopDraftAction}
+              submitLabel="Edit SOP"
+              pendingLabel="Starting a draft…"
+              hidden={{ sopId }}
+              className="contents"
+            />
+          ) : null}
+        </div>
       </div>
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -388,46 +423,6 @@ export function SopEditor(props: Props) {
               </ol>
             )}
           </section>
-          {props.canDelete ? (
-            <details>
-              <summary className="w-fit cursor-pointer px-1 py-0.5 text-small text-text-muted">
-                Delete this SOP
-              </summary>
-              <div className="mt-1.5 flex flex-col gap-2 px-1">
-                <p className="text-small text-text-secondary">
-                  This deletes every version and file for good, and can&apos;t be undone. The audit
-                  log keeps a note of what was deleted.
-                </p>
-                <ActionForm
-                  action={deleteSopAction}
-                  submitLabel="Delete forever"
-                  pendingLabel="Deleting…"
-                  variant="destructive"
-                  hidden={{ sopId }}
-                />
-              </div>
-            </details>
-          ) : null}
-          {props.canArchive ? (
-            <details>
-              <summary className="w-fit cursor-pointer px-1 py-0.5 text-small text-text-muted">
-                Archive this SOP
-              </summary>
-              <div className="mt-1.5 flex flex-col gap-2 px-1">
-                <p className="text-small text-text-secondary">
-                  Volunteers stop seeing it, and lessons stop listing it. Its versions and files are
-                  kept.
-                </p>
-                <ActionForm
-                  action={archiveSopAction}
-                  submitLabel="Archive SOP"
-                  pendingLabel="Archiving…"
-                  variant="destructive"
-                  hidden={{ sopId }}
-                />
-              </div>
-            </details>
-          ) : null}
         </aside>
       </div>
 

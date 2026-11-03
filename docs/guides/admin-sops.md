@@ -39,9 +39,9 @@ If you've checked the current version and it's still right, choose to confirm th
 
 ## Archiving
 
-**Archive this SOP** when it's no longer in use. Members stop seeing it, and lessons stop listing it. Its versions and files are kept.
+Choose **Archive** at the top of an SOP's page when it's no longer in use. Members stop seeing it, and lessons stop listing it. Its versions and files are kept.
 
-Once an SOP is archived, **Delete this SOP** removes it for good, with all its versions and files. It can't be undone, though the audit log keeps a note of what was deleted. If a live or draft course still lists the SOP, remove it from that lesson first.
+Archived SOPs are hidden from the library until you set the status filter to **Archived**. Open one there, and **Delete** at the top removes it for good, with all its versions and files. It can't be undone, though the audit log keeps a note of what was deleted. If a live or draft course still lists the SOP, remove it from that lesson first.
 
 ## Attaching to lessons
 
