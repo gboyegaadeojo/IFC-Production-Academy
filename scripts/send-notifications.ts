@@ -6,7 +6,7 @@
  * the browser or the app's runtime. Logs counts only, never addresses, names, or content
  * (CLAUDE.md "Actions logs must never contain data"). With no Resend key it does nothing.
  */
-import { isQuietHours, notificationEmail } from "../lib/domain/notifications.ts";
+import { isQuietHours, notificationEmail, onboardingEmail } from "../lib/domain/notifications.ts";
 import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
 import { pushMessageFor, sendPush } from "../lib/domain/web-push.ts";
 
@@ -62,8 +62,40 @@ async function sendPendingPush(supabaseUrl: string, serviceKey: string, siteUrl:
 }
 
 type Claimed = { id: string; email: string; title: string; body: string; link: string | null };
+type ClaimedOnboarding = {
+  id: string;
+  email: string;
+  subject: string;
+  body: string;
+  has_account: boolean;
+};
 
 const env = (name: string) => process.env[name]?.trim() ?? "";
+
+/** True when Resend accepted the email. Never throws, so one bad send doesn't stop the batch. */
+async function sendEmail(
+  resendKey: string,
+  from: string,
+  to: string,
+  email: { subject: string; text: string; html: string },
+): Promise<boolean> {
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        subject: email.subject,
+        text: email.text,
+        html: email.html,
+      }),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
 
 async function rpc<T>(url: string, key: string, name: string, body: object): Promise<T> {
   const response = await fetch(`${url}/rest/v1/rpc/${name}`, {
@@ -128,23 +160,7 @@ async function main(): Promise<void> {
     }
     for (const item of claimed) {
       const email = notificationEmail(item, siteUrl, appName);
-      let ok = false;
-      try {
-        const response = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            from,
-            to: [item.email],
-            subject: email.subject,
-            text: email.text,
-            html: email.html,
-          }),
-        });
-        ok = response.ok;
-      } catch {
-        ok = false;
-      }
+      const ok = await sendEmail(resendKey, from, item.email, email);
       await rpc(supabaseUrl, serviceKey, "complete_email_notification", {
         p_id: item.id,
         p_sent: ok,
@@ -158,6 +174,42 @@ async function main(): Promise<void> {
   }
   console.log(`Notification emails: ${sent} sent, ${failed} failed.`);
   if (failed > 0 && sent === 0) {
+    process.exitCode = 1;
+  }
+
+  // Onboarding pathway emails. The database only hands these over once they're switched on at launch.
+  let onboardingSent = 0;
+  let onboardingFailed = 0;
+  for (let batch = 0; batch < 10; batch += 1) {
+    const claimed = await rpc<ClaimedOnboarding[]>(
+      supabaseUrl,
+      serviceKey,
+      "claim_onboarding_emails",
+      { p_limit: 50 },
+    );
+    if (claimed.length === 0) {
+      break;
+    }
+    for (const item of claimed) {
+      const email = onboardingEmail(
+        { subject: item.subject, body: item.body, hasAccount: item.has_account },
+        siteUrl,
+        appName,
+      );
+      const ok = await sendEmail(resendKey, from, item.email, email);
+      await rpc(supabaseUrl, serviceKey, "complete_onboarding_email", {
+        p_id: item.id,
+        p_sent: ok,
+      });
+      if (ok) {
+        onboardingSent += 1;
+      } else {
+        onboardingFailed += 1;
+      }
+    }
+  }
+  console.log(`Onboarding emails: ${onboardingSent} sent, ${onboardingFailed} failed.`);
+  if (onboardingFailed > 0 && onboardingSent === 0) {
     process.exitCode = 1;
   }
 }

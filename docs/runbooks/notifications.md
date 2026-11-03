@@ -41,8 +41,27 @@ deploy workflow already uses.
 4. Sends each through Resend and records the result (`complete_email_notification`). A failed
    send is retried on the next runs, up to three attempts.
 
+5. Sends onboarding pathway emails the same way (`claim_onboarding_emails`,
+   `complete_onboarding_email`), if onboarding emails are on. See below.
+
 The job logs counts only: no addresses, names, or content. If every send in a run fails, the job
 fails and the failure alert emails the admins.
+
+## Onboarding emails
+
+These go to people on a pathway, who may not have an account yet. They're off until launch: while
+`organizations.onboarding_emails_enabled` is false, each email is written to `onboarding_outbox`
+as `held` and nothing is sent.
+
+To turn them on, at launch only, set `organizations.onboarding_emails_enabled` to true. From then
+on, new emails are written as `pending` and go out on the next run, outside quiet hours.
+
+- **Emails held before that stay held.** They aren't sent when you switch on, so nobody gets a
+  welcome written for them weeks ago. Look through them and contact anyone who still needs one.
+- **Someone whose account is suspended or deactivated isn't emailed.** Their email is marked
+  `skipped`.
+- **People without an account are told to reply** if they'd rather not get these, so someone must
+  read the `NOTIFY_FROM` inbox.
 
 ## Check it works
 

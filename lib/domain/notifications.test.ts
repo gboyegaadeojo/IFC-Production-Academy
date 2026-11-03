@@ -8,6 +8,7 @@ import {
   relativeTime,
   notificationEmail,
   notificationUrl,
+  onboardingEmail,
 } from "./notifications";
 
 describe("notificationUrl", () => {
@@ -39,6 +40,33 @@ describe("notificationEmail", () => {
     expect(email.html).not.toContain("<Camera 2>");
     expect(email.text).toContain("https://academy.example.org/schedule");
     expect(email.text).toContain("https://academy.example.org/notifications");
+  });
+});
+
+describe("onboardingEmail", () => {
+  const site = "https://academy.example.org";
+
+  it("keeps the leader's subject and paragraphs, and escapes the HTML", () => {
+    const email = onboardingEmail(
+      {
+        subject: "Hi Riley",
+        body: "Welcome <b>Riley</b>\nGlad you're here\n\nSee you Sunday",
+        hasAccount: false,
+      },
+      site,
+    );
+    expect(email.subject).toBe("Hi Riley");
+    expect(email.html).toContain("<p>Welcome &lt;b&gt;Riley&lt;/b&gt;<br>Glad you&#39;re here</p>");
+    expect(email.html).toContain("<p>See you Sunday</p>");
+    expect(email.text).toContain("See you Sunday");
+  });
+
+  it("sends people with an account to their settings, and asks others to reply", () => {
+    const member = onboardingEmail({ subject: "Hi", body: "Welcome", hasAccount: true }, site);
+    expect(member.text).toContain("https://academy.example.org/notifications");
+    const newcomer = onboardingEmail({ subject: "Hi", body: "Welcome", hasAccount: false }, site);
+    expect(newcomer.text).not.toContain("/notifications");
+    expect(newcomer.text).toContain("reply and let us know");
   });
 });
 

@@ -1292,6 +1292,7 @@ export type Database = {
           subject: string;
           body: string;
           status: string;
+          attempts: number;
           created_at: string;
           sent_at: string | null;
         };
