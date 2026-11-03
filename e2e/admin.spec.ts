@@ -326,8 +326,9 @@ test("a leader publishes an SOP, attaches it to a lesson, and a member opens it"
     .getByRole("navigation", { name: "Academy" })
     .getByRole("link", { name: "SOPs" })
     .click();
-  await member.getByLabel("Search").fill(`power-up ${stamp}`);
-  await member.getByRole("button", { name: "Search" }).click();
+  await member.getByLabel("Search SOPs").fill(`power-up ${stamp}`);
+  await expect(member.getByText("1 SOP matches.")).toBeVisible();
+  await expect(member.locator("mark").first()).toBeVisible();
   await member.getByRole("link", { name: new RegExp(sopName) }).click();
   await expect(member.getByRole("heading", { level: 1, name: sopName })).toBeVisible();
   await expect(member.getByText("Current", { exact: true }).first()).toBeVisible();

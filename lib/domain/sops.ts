@@ -215,6 +215,31 @@ export function groupSopsByCategory<T extends { category: string; state: SopStat
   }));
 }
 
+/** Most recently published first, for "Recently updated". Never-published items are left out. */
+export function recentlyUpdated<T extends { publishedAt: string | null }>(
+  sops: readonly T[],
+  limit = 10,
+): T[] {
+  return sops
+    .filter((sop) => sop.publishedAt !== null)
+    .toSorted((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))
+    .slice(0, limit);
+}
+
+/** Splits text around the words searched for, so a page can highlight them. */
+export function highlightParts(text: string, query: string): { text: string; match: boolean }[] {
+  const words = query.split(/\s+/).filter(Boolean);
+  if (words.length === 0) {
+    return text ? [{ text, match: false }] : [];
+  }
+  const pattern = words.map((word) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const lower = words.map((word) => word.toLowerCase());
+  return text
+    .split(new RegExp(`(${pattern})`, "gi"))
+    .filter((part) => part !== "")
+    .map((part) => ({ text: part, match: lower.includes(part.toLowerCase()) }));
+}
+
 export function matchesSearch(
   sop: { title: string; summary: string; category: string },
   query: string,

@@ -4,7 +4,9 @@ SOPs are the team's written procedures: how to start the stream, how to set up a
 
 ## Finding one
 
-Open **SOPs** in the top bar. Search by words, or narrow it by department and category. Some SOPs are for **All of production** rather than one department. Each SOP shows its owner, when it was last reviewed, and whether it's current.
+Open **SOPs** in the top bar and start typing to search. Results update as you type, and search looks in titles, summaries, and categories. You can also choose a category, see what was **Recently updated**, or narrow it by department. Some SOPs are for **All of production** rather than one department.
+
+The list shows when each SOP was last reviewed, and marks any that are due for review. Open an SOP to see its summary and owner.
 
 ## Reading one
 
