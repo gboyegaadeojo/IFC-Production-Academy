@@ -41,6 +41,8 @@ If you've checked the current version and it's still right, choose to confirm th
 
 **Archive this SOP** when it's no longer in use. Members stop seeing it, and lessons stop listing it. Its versions and files are kept.
 
+Once an SOP is archived, **Delete this SOP** removes it for good, with all its versions and files. It can't be undone, though the audit log keeps a note of what was deleted. If a live or draft course still lists the SOP, remove it from that lesson first.
+
 ## Attaching to lessons
 
 Attach SOPs to a lesson under [Curriculum](admin-curriculum.md). The lesson always shows the current version, so you only update it in one place.

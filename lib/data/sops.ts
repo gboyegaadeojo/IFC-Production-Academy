@@ -370,6 +370,28 @@ export async function archiveSop(sopId: string): Promise<SopResult> {
   return error ? fail(error) : { ok: true };
 }
 
+/**
+ * Deletes an archived SOP for good. Its files go first: the storage policy refuses them unless the
+ * SOP can really be deleted, and the database then says why not. If the last step ever fails, the
+ * SOP stays archived and can be deleted again.
+ */
+export async function deleteArchivedSop(sopId: string): Promise<SopResult> {
+  const supabase = await createSupabaseServerClient();
+  const versions = await supabase.from("sop_versions").select("file_path").eq("sop_id", sopId);
+  if (versions.error) {
+    return fail(versions.error);
+  }
+  const paths = [...new Set(versions.data.flatMap((version) => version.file_path ?? []))];
+  if (paths.length > 0) {
+    const removed = await supabase.storage.from(BUCKET).remove(paths);
+    if (removed.error) {
+      return fail({ code: "unknown" });
+    }
+  }
+  const { error } = await supabase.rpc("delete_archived_sop", { p_sop_id: sopId });
+  return error ? fail(error) : { ok: true };
+}
+
 // ---------------------------------------------------------------------------
 // Lesson resources (SRS-LESSON-005)
 // ---------------------------------------------------------------------------

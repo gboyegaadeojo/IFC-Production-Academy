@@ -95,3 +95,27 @@ test("an SOP written in the app, with no file, reaches volunteers", async ({ pag
   await expect(volunteer.getByRole("link", { name: /^Open the/ })).toHaveCount(0);
   await volunteerContext.close();
 });
+
+test("a director archives an SOP, then deletes it for good", async ({ page }) => {
+  const name = `E2E delete me ${Date.now()}`;
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin/sops");
+  await page.getByRole("button", { name: /Add (your first )?SOP/ }).click();
+  await page.getByRole("dialog", { name: "Add an SOP" }).getByLabel("SOP title").fill(name);
+  await page
+    .getByRole("dialog", { name: "Add an SOP" })
+    .getByRole("button", { name: "Create SOP" })
+    .click();
+  await expect(page.getByLabel("Title", { exact: true })).toHaveValue(name);
+
+  // Not until it's archived.
+  await expect(page.getByText("Delete this SOP")).toHaveCount(0);
+  await page.getByText("Archive this SOP").click();
+  await page.getByRole("button", { name: "Archive SOP" }).click();
+  await page.getByText("Delete this SOP").click();
+  await page.getByRole("button", { name: "Delete forever" }).click();
+
+  await expect(page).toHaveURL(/\/admin\/sops$/);
+  await page.getByLabel("Status").selectOption({ label: "Archived" });
+  await expect(page.getByRole("link", { name })).toHaveCount(0);
+});

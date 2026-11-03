@@ -89,6 +89,7 @@ async function AdminSopContent({ params }: Pick<Props, "params">) {
       canPublish={canPublish}
       canReview={canPublish && !archived && sop.current !== null}
       canArchive={canPublish && !archived}
+      canDelete={canPublish && archived}
       history={sop.versions
         .filter((version) => version.status !== "draft")
         .map((version) => ({

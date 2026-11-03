@@ -40,6 +40,10 @@ G asked for SOPs to be written in the app as well as uploaded, and approved a mo
 - The steps use the same safe formatter as the guides, so nothing in them can run as HTML, and links only go to web addresses.
 - Replacing or removing a file on a draft leaves older versions' files in place.
 
+## Deleting archived SOPs
+
+G asked to be able to delete archived SOPs. Only someone who can publish for that department can, and it's refused while a live or draft course lists the SOP. A link on an old, replaced course version goes with it, so an old version restored by rollback would no longer list that SOP. The audit log keeps the title. Progress, quiz, assessment, and certificate history doesn't link to SOPs, so it isn't affected.
+
 ## In the database
 
 `sops.department_id` and `sop_versions.department_id` can now be null. Files for these SOPs are stored at `<sop id>/<sop id>/<file id>`. See migration `20261219120000_sops_all_production.sql`. `sop_versions.body` holds the written steps, up to 50,000 characters (`20261220120000_sop_written_steps.sql`).

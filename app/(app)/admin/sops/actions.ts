@@ -240,6 +240,18 @@ export async function archiveSopAction(_: FormState, formData: FormData): Promis
   return { status: "done", message: "Archived. Members no longer see it; its history is kept." };
 }
 
+export async function deleteSopAction(_: FormState, formData: FormData): Promise<FormState> {
+  const sopId = id.safeParse(formData.get("sopId"));
+  if (!sopId.success || !(await allowed())) {
+    return failed("not_authorized");
+  }
+  const result = await sops.deleteArchivedSop(sopId.data);
+  if (!result.ok) {
+    return failed(result.error);
+  }
+  redirect("/admin/sops");
+}
+
 // Lesson resources (SRS-LESSON-005): drafts only, the department's own SOPs.
 
 export async function addLessonResourceAction(
