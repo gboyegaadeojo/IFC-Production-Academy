@@ -9,6 +9,7 @@ import { getUnreadCount } from "@/lib/data/notifications";
 import { getMyPlanningCenter } from "@/lib/data/profile";
 import { adminSections } from "@/lib/domain/admin";
 import { initials } from "@/lib/domain/people";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { AccountMenu } from "./account-menu";
 import { AcademyNav } from "./academy-nav";
 import { ServiceDashboardNavLink } from "./service-dashboard-nav-link";
@@ -53,15 +54,17 @@ async function Account() {
   ]);
   const showAdmin = active && adminSections(grants).length > 0;
   return (
-    <AccountMenu
-      displayName={user.displayName}
-      initials={initials(user.displayName)}
-      email={user.email}
-      planningCenter={planningCenter.linked}
-      showAdmin={showAdmin}
-      unread={unread}
-      appearance={appearance}
-      signOut={signOutAction}
-    />
+    <div className="flex items-center gap-2">
+      <ThemeToggle initial={appearance} />
+      <AccountMenu
+        displayName={user.displayName}
+        initials={initials(user.displayName)}
+        email={user.email}
+        planningCenter={planningCenter.linked}
+        showAdmin={showAdmin}
+        unread={unread}
+        signOut={signOutAction}
+      />
+    </div>
   );
 }

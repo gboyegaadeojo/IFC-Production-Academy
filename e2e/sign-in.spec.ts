@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { pressUntil } from "./support/admin-nav";
 
 // These run without a database: they cover what a signed-out visitor sees.
 
@@ -91,25 +92,17 @@ test("each device chooses Dark, Light or System, and keeps it", async ({ page })
   await page.goto("/sign-in");
   const html = page.locator("html");
   await expect(html).toHaveAttribute("data-theme", "light");
-  const appearance = page.getByRole("group", { name: "Appearance" });
-  await expect(appearance.getByRole("radio", { name: "Light" })).toBeChecked();
+  const toggle = page.getByRole("switch", { name: "Dark mode" });
+  await expect(toggle).toHaveAttribute("aria-checked", "false");
 
-  await appearance.getByTitle("Dark").click();
+  await pressUntil(toggle, "aria-checked", "true");
   await expect(html).toHaveAttribute("data-theme", "dark");
   await page.reload();
   await expect(html).toHaveAttribute("data-theme", "dark");
-  await expect(appearance.getByRole("radio", { name: "Dark" })).toBeChecked();
+  await expect(toggle).toHaveAttribute("aria-checked", "true");
 
-  // System follows the device, before the first paint and when it changes.
-  await page.emulateMedia({ colorScheme: "light" });
-  await appearance.getByTitle("System").click();
+  await pressUntil(toggle, "aria-checked", "false");
   await expect(html).toHaveAttribute("data-theme", "light");
-  await page.emulateMedia({ colorScheme: "dark" });
-  await expect(html).toHaveAttribute("data-theme", "dark");
-  await page.emulateMedia({ colorScheme: "light" });
-  await page.reload();
-  await expect(html).toHaveAttribute("data-theme", "light");
-  await expect(html).toHaveAttribute("data-appearance", "system");
 });
 
 test("Planning Center sign-in fails safely without its setup or state", async ({ page }) => {

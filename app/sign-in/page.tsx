@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { AppearancePicker } from "@/components/appearance-picker";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { IfcMark } from "@/components/brand";
 import { buttonClasses } from "@/components/ui/button";
 import { signOutAction } from "@/app/auth/actions";
@@ -108,7 +108,7 @@ function Hero() {
 }
 
 async function SignInAppearance() {
-  return <AppearancePicker initial={await getAppearance()} />;
+  return <ThemeToggle initial={await getAppearance()} />;
 }
 
 function SignInSkeleton() {

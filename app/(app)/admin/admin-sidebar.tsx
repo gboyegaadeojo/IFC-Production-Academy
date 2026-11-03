@@ -14,15 +14,17 @@ import {
 } from "react";
 import { BrandMark } from "@/components/brand";
 import { useBrand } from "@/components/brand-context";
+import type { Appearance } from "@/lib/domain/appearance";
 import { wordmarkParts } from "@/lib/domain/branding";
 import { AccountMenu } from "@/components/shell/account-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   ArrowLeftIcon,
   CalendarRangeIcon,
   ChevronRightIcon,
+  ChevronsUpIcon,
   DashboardIcon,
   GraduationCapIcon,
-  HouseIcon,
   ListChecksIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
@@ -169,12 +171,15 @@ export function AdminSidebar({
   groups,
   counts,
   account,
+  appearance,
   initialCollapsed = false,
   variant = "rail",
 }: {
   groups: AdminNavGroup[];
   counts: AdminNavCounts;
   account: Omit<ComponentProps<typeof AccountMenu>, "placement" | "compact">;
+  /** This device's appearance. */
+  appearance: Appearance;
   initialCollapsed?: boolean;
   /** The persistent sidebar from 1024px, or its contents inside the mobile drawer. */
   variant?: "rail" | "drawer";
@@ -185,25 +190,31 @@ export function AdminSidebar({
   const activeGroup = groups.find((g) => g.sections.some((s) => s.key === active?.key))?.group;
   const [collapsed, setCollapsed] = useState(variant === "rail" && initialCollapsed);
   const stored = useSyncExternalStore(subscribeOpenGroups, storedOpenGroups, () => null);
-  const storedGroups = parseOpenGroups(stored);
-  // Before the browser has a list (and on the server), the current page's group is open.
-  const open = new Set(stored === null && activeGroup ? [activeGroup] : storedGroups);
+  // One group at a time (G, 2026-11-03). Before the browser has a list (and on the server), it's the
+  // current page's group.
+  const open = new Set(
+    stored === null && activeGroup ? [activeGroup] : parseOpenGroups(stored).slice(-1),
+  );
+  const navRef = useRef<HTMLElement>(null);
   const [flyout, setFlyout] = useState<{ group: AdminSectionGroup; top: number } | null>(null);
   // The rail and the drawer both render this, so ids are unique per copy.
   const idPrefix = useId();
 
   // The current page's group opens whenever you arrive in it.
   useEffect(() => {
-    const current = parseOpenGroups(storedOpenGroups());
-    if (activeGroup && !current.includes(activeGroup)) {
-      saveOpenGroups([...current, activeGroup]);
+    if (activeGroup) {
+      saveOpenGroups([activeGroup]);
     }
   }, [activeGroup]);
 
   const toggleGroup = (group: string) => {
-    saveOpenGroups(
-      open.has(group) ? storedGroups.filter((g) => g !== group) : [...storedGroups, group],
-    );
+    saveOpenGroups(open.has(group) ? [] : [group]);
+  };
+
+  const collapseAll = () => {
+    saveOpenGroups([]);
+    // The link disappears once nothing is open, so keep the keyboard's place in the list.
+    navRef.current?.querySelector<HTMLElement>("a, button")?.focus();
   };
 
   const toggleCollapsed = () => {
@@ -265,9 +276,27 @@ export function AdminSidebar({
       <WorkspaceSwitcher compact={compact} />
       <div className="mx-3 h-px shrink-0 bg-border" />
 
+      {compact ? null : (
+        <div className="flex min-h-8 shrink-0 items-center justify-between gap-2 pt-2 pr-2.5 pl-4.5">
+          <span className="text-small font-semibold text-text-muted">
+            {variant === "drawer" ? "Sections" : "Admin menu"}
+          </span>
+          {open.size > 0 ? (
+            <button
+              type="button"
+              onClick={collapseAll}
+              className="inline-flex min-h-control items-center gap-1 rounded-button px-1.5 text-small font-medium text-accent-light hover:bg-hover focus-visible:outline-2 focus-visible:outline-accent-light"
+            >
+              <ChevronsUpIcon className="size-3.5" />
+              Collapse all
+            </button>
+          ) : null}
+        </div>
+      )}
       <nav
+        ref={navRef}
         aria-label="Admin"
-        className={`min-h-0 flex-1 overflow-y-auto py-3 ${compact ? "px-0" : "px-2"}`}
+        className={`min-h-0 flex-1 overflow-y-auto ${compact ? "px-0 py-3" : "px-2 pt-1 pb-3"}`}
       >
         <ul className={`flex flex-col gap-0.5 ${compact ? "items-center" : ""}`}>
           {groups.map((entry) => {
@@ -348,8 +377,11 @@ export function AdminSidebar({
                 >
                   <GroupTile group={entry.group} icon={Icon} />
                   <span className="min-w-0 flex-1 truncate">{entry.group}</span>
-                  {!expanded && hasCount ? (
+                  {!expanded && (hasCount || isActiveGroup) ? (
                     <span aria-hidden="true" className="size-1.5 rounded-pill bg-accent-light" />
+                  ) : null}
+                  {!expanded && isActiveGroup ? (
+                    <span className="sr-only">, the page you&apos;re on is in here</span>
                   ) : null}
                   <ChevronRightIcon
                     className={`size-4 shrink-0 text-text-muted transition-transform duration-[var(--duration-fast)] ease-standard ${expanded ? "rotate-90" : ""}`}
@@ -397,17 +429,22 @@ export function AdminSidebar({
       ) : null}
 
       <div
-        className={`shrink-0 border-t border-border py-2 ${compact ? "flex justify-center" : "px-2"}`}
+        className={`flex shrink-0 border-t border-border py-2 ${
+          compact ? "flex-col items-center gap-2" : "items-center gap-2 pr-3 pl-2"
+        }`}
       >
-        <AccountMenu {...account} placement="sidebar" compact={compact} />
+        <div className={compact ? "" : "min-w-0 flex-1"}>
+          <AccountMenu {...account} placement="sidebar" compact={compact} />
+        </div>
+        <ThemeToggle initial={appearance} />
       </div>
     </div>
   );
 }
 
 /**
- * One click back to the Academy (G, 2026-11-01: the old workspace menu took two). Shown at the top
- * of the sidebar, and as the house icon alone when the sidebar is icons only.
+ * One click back to the Academy (G, 2026-11-01: the old workspace menu took two). The strongest
+ * thing in the sidebar (G, 2026-11-03), and the arrow alone when the sidebar is icons only.
  */
 function WorkspaceSwitcher({ compact }: { compact: boolean }) {
   return (
@@ -415,12 +452,11 @@ function WorkspaceSwitcher({ compact }: { compact: boolean }) {
       <Link
         href="/home"
         title={compact ? "Back to Academy" : undefined}
-        className={`flex items-center gap-2.5 rounded-button border border-border bg-card text-small font-medium text-text transition-surface hover:border-border-strong hover:bg-hover ${
-          compact ? "size-11 justify-center" : "min-h-11 w-full px-3"
+        className={`flex items-center gap-2 rounded-button bg-accent text-button font-semibold text-on-accent transition-surface hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-light ${
+          compact ? "size-11 justify-center" : "min-h-10 w-full px-3 pointer-coarse:min-h-11"
         }`}
       >
-        {compact ? null : <ArrowLeftIcon className="size-4 shrink-0 text-text-secondary" />}
-        <HouseIcon className="size-[18px] shrink-0 text-text-secondary" />
+        <ArrowLeftIcon className="size-4 shrink-0" />
         <span className={compact ? "sr-only" : "truncate"}>Back to Academy</span>
       </Link>
     </div>

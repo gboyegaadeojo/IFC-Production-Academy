@@ -53,6 +53,13 @@ export const ChevronRightIcon = (props: IconProps) => (
     <path d="M9 6l6 6-6 6" />
   </Icon>
 );
+
+export const ChevronsUpIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="m7 11 5-5 5 5" />
+    <path d="m7 18 5-5 5 5" />
+  </Icon>
+);
 export const CheckIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M5 12.5l4.5 4.5L19 7.5" />

@@ -29,6 +29,12 @@ G found the UI looked amateur because sizes didn't match: dropdowns were larger 
 
 The page leads with the key numbers, then has tabs for position links, people not in the Academy, and who schedules. A link saves as soon as it's chosen. On a phone, each position is one compact row, and tapping it opens the phone's own picker. The two figures dropped from the top are people matched to an account and places on position teams.
 
+## The sidebar and theme switch (2026-11-03, approved in a mock)
+
+- **Back to Academy** is solid purple with one arrow, at the top of the Admin sidebar and the phone menu.
+- **One section open at a time.** Opening one closes the last, **Collapse all** closes them all, and a dot marks a closed section you're in, or one with something waiting.
+- **Light and dark** is a sliding switch beside your name, in the top bar and the Admin sidebar, and on the sign-in page. It replaces Appearance in the account menu. System is gone, so a device that had it starts light.
+
 ## The rest of the work
 
 The Planning Center page is redesigned on top of these rules.

@@ -2,6 +2,8 @@
 
 If you lead something, **Admin** is where you do it. Open your name, then **Admin**. The sidebar only shows what your role allows, and every page checks that again on the server. If a page says it isn't open to you, your role doesn't include it.
 
+**Back to Academy** is the purple button at the top of the sidebar. One section of the sidebar stays open at a time, and **Collapse all** closes it. A small dot on a closed section means you're in it, or something in it is waiting for you. The switch beside your name changes between light and dark.
+
 ## The Dashboard
 
 The first page answers two questions.

@@ -5,12 +5,7 @@ import { BrandProvider } from "@/components/brand-context";
 import { UsageTracking } from "@/components/usage-tracking";
 import { getBranding, iconUrlFor } from "@/lib/data/branding";
 import { getAppearance } from "@/lib/data/appearance";
-import {
-  colorScheme,
-  initialTheme,
-  SYSTEM_THEME_SCRIPT,
-  THEME_COLORS,
-} from "@/lib/domain/appearance";
+import { THEME_COLORS } from "@/lib/domain/appearance";
 import "./globals.css";
 
 // Inter for everything people read, and a mono for small labels (new look, approved 2026-11-01).
@@ -48,29 +43,23 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-// Each device's appearance (checklist app US-08a): Light by default, Dark, or System.
+// Each device's appearance: light by default, or dark.
 export async function generateViewport(): Promise<Viewport> {
   const appearance = await getAppearance();
   return {
-    themeColor: appearance === "system" ? THEME_COLORS.light : THEME_COLORS[appearance],
-    colorScheme: colorScheme(appearance),
+    themeColor: THEME_COLORS[appearance],
+    colorScheme: appearance,
   };
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [appearance, branding] = await Promise.all([getAppearance(), getBranding()]);
   return (
-    // The System script may change data-theme before React hydrates.
     <html
       lang="en-CA"
-      data-appearance={appearance}
-      data-theme={initialTheme(appearance)}
-      suppressHydrationWarning
+      data-theme={appearance}
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: SYSTEM_THEME_SCRIPT }} />
-      </head>
       <body className="flex min-h-full flex-col bg-bg font-sans text-body text-text">
         <a
           href="#main"

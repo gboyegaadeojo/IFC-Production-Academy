@@ -5,11 +5,9 @@ import { usePathname } from "next/navigation";
 import { helpHrefFor } from "@/lib/domain/help";
 import { HELP_ADMIN_PATHS } from "@/lib/domain/admin";
 import { useEffect, useId, useRef, useState } from "react";
-import { AppearancePicker } from "@/components/appearance-picker";
 import {
   BellIcon,
   ChevronDownIcon,
-  ChevronUpDownIcon,
   LogOutIcon,
   ShieldIcon,
   SmartphoneIcon,
@@ -17,7 +15,6 @@ import {
   InfoIcon,
   UsersIcon,
 } from "@/components/ui/icons";
-import type { Appearance } from "@/lib/domain/appearance";
 
 /**
  * Account menu (DESIGN §3.2; approved mock, 2026-11-01): who you are and how you sign in, then
@@ -32,7 +29,6 @@ export function AccountMenu({
   planningCenter = false,
   showAdmin,
   unread = 0,
-  appearance,
   signOut,
   placement = "header",
   compact = false,
@@ -46,8 +42,6 @@ export function AccountMenu({
   showAdmin: boolean;
   /** Unread notifications, shown on the button and the Notifications link. */
   unread?: number;
-  /** This device's appearance. */
-  appearance: Appearance;
   signOut: () => Promise<void>;
   /** In the admin sidebar's footer the menu opens upwards, or sideways when it's icons only. */
   placement?: "header" | "sidebar";
@@ -101,10 +95,10 @@ export function AccountMenu({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        title={compact ? displayName : undefined}
+        title={inSidebar ? displayName : undefined}
         className={
           inSidebar
-            ? `flex min-h-11 items-center gap-2.5 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
+            ? `flex min-h-11 items-center gap-2 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
                 compact ? "relative w-11 justify-center" : "w-full px-2"
               }`
             : "flex min-h-touch items-center gap-2 rounded-button px-1.5 text-text-secondary transition-surface hover:bg-hover hover:text-text sm:px-2"
@@ -147,13 +141,7 @@ export function AccountMenu({
             : ""}
           , account menu
         </span>
-        {inSidebar ? (
-          compact ? null : (
-            <ChevronUpDownIcon className="size-4 shrink-0 text-text-muted" />
-          )
-        ) : (
-          <ChevronDownIcon className="hidden size-4 sm:block" />
-        )}
+        {inSidebar ? null : <ChevronDownIcon className="hidden size-4 sm:block" />}
       </button>
       {open ? (
         <div
@@ -229,9 +217,6 @@ export function AccountMenu({
               </li>
             ) : null}
           </ul>
-          <div className="mx-1.5 border-t border-border px-2.5 py-2">
-            <AppearancePicker initial={appearance} />
-          </div>
           <div className="mx-1.5 border-t border-border py-1.5">
             <form action={signOut}>
               <button type="submit" className={`${item} w-full`}>
