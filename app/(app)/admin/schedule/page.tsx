@@ -87,7 +87,7 @@ async function AdminScheduleContent() {
       {source === "academy" ? (
         <section
           aria-labelledby="new-event-heading"
-          className="flex max-w-2xl flex-col gap-4 rounded-card border border-dashed border-border p-5"
+          className="flex max-w-3xl flex-col gap-4 rounded-card border border-dashed border-border p-5"
         >
           <h2 id="new-event-heading" className="text-subheading font-semibold">
             Add a one-off event

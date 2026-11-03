@@ -90,9 +90,6 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
                   Roles
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium">
-                  Account
-                </th>
-                <th scope="col" className="px-4 py-3 font-medium">
                   Joined
                 </th>
               </tr>
@@ -107,8 +104,16 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
                     >
                       <Avatar name={person.displayName} size="sm" />
                       <span className="flex min-w-0 flex-col">
-                        <span className="font-medium text-text underline-offset-4 hover:underline">
-                          {person.displayName}
+                        <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                          <span className="font-medium text-text underline-offset-4 hover:underline">
+                            {person.displayName}
+                          </span>
+                          {/* Most accounts are active, so only the exceptions are marked. */}
+                          {person.status === "active" ? null : (
+                            <StatusBadge tone="pending">
+                              {ACCOUNT_STATUS_LABELS[person.status]}
+                            </StatusBadge>
+                          )}
                         </span>
                         {person.email ? (
                           <span className="truncate text-text-secondary">{person.email}</span>
@@ -133,11 +138,6 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
                         ))}
                       </ul>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge tone={person.status === "active" ? "success" : "pending"}>
-                      {ACCOUNT_STATUS_LABELS[person.status]}
-                    </StatusBadge>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-text-muted">
                     {formatDateTime(person.joinedAt)}

@@ -89,7 +89,7 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
 
       <section
         aria-labelledby="for-heading"
-        className="flex max-w-2xl flex-col gap-3 rounded-card border border-border p-5"
+        className="flex max-w-3xl flex-col gap-3 rounded-card border border-border p-5"
       >
         <h2 id="for-heading" className="text-heading font-semibold">
           Who it&apos;s for
@@ -132,7 +132,7 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
 
       <section
         aria-labelledby="paste-heading"
-        className="flex max-w-2xl flex-col gap-3 rounded-card border border-dashed border-border p-5"
+        className="flex max-w-3xl flex-col gap-3 rounded-card border border-dashed border-border p-5"
       >
         <h2 id="paste-heading" className="text-subheading font-semibold">
           Paste a list
@@ -163,7 +163,7 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
 
       <section
         aria-labelledby="settings-heading"
-        className="flex max-w-2xl flex-col gap-4 rounded-card border border-border p-5"
+        className="flex max-w-3xl flex-col gap-4 rounded-card border border-border p-5"
       >
         <h2 id="settings-heading" className="text-subheading font-semibold">
           Name

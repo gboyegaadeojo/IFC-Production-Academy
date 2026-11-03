@@ -82,7 +82,7 @@ export function MonthCalendar({
                   abbr={long}
                   className={
                     board
-                      ? "border-b border-border py-3 text-center font-mono text-small font-medium tracking-[0.12em] text-text-muted"
+                      ? "border-b border-border py-3 text-center text-small font-medium text-text-muted"
                       : "pb-2 text-center text-small font-medium text-text-muted"
                   }
                 >
@@ -133,8 +133,8 @@ export function MonthCalendar({
                           aria-hidden="true"
                           className={`tabular flex items-center justify-center rounded-pill ${
                             board
-                              ? `size-7 text-body font-semibold sm:-ml-1 sm:text-[1.05rem] ${inMonth ? "" : "font-medium"}`
-                              : "size-6 font-mono"
+                              ? `size-7 text-body font-semibold sm:-ml-1 ${inMonth ? "" : "font-medium"}`
+                              : "size-6"
                           } ${isToday ? "bg-accent font-semibold text-on-accent" : ""}`}
                         >
                           {Number(date.slice(8))}

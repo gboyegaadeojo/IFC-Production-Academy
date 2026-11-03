@@ -62,7 +62,7 @@ async function NotificationsContent() {
     <div className="page-container flex flex-col gap-8 py-8 lg:py-12">
       <header className="flex flex-col gap-2">
         <p className="eyebrow">Account</p>
-        <h1 className="text-display font-semibold">Notifications</h1>
+        <h1 className="text-title font-semibold">Notifications</h1>
         <p className="max-w-[40rem] text-lead text-text-secondary">
           Updates about your training and serving. Everything shows here; choose what also comes by
           email, and turn on alerts for your phone.

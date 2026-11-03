@@ -125,7 +125,7 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           <p className="eyebrow">
             Level {course.level.number} · {course.level.name}
           </p>
-          <h1 className="text-title font-semibold text-balance sm:text-display">{course.title}</h1>
+          <h1 className="text-title font-semibold text-balance">{course.title}</h1>
           {course.summary ? (
             <p className="max-w-[40rem] text-lead text-text-secondary">{course.summary}</p>
           ) : null}

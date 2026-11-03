@@ -191,9 +191,7 @@ function MemberList({ departments }: { departments: DepartmentMembers[] }) {
               <DepartmentIcon icon={department.icon} className="size-4" />
             </span>
             {department.name}
-            <span className="tabular font-mono text-small text-text-muted">
-              {department.members.length}
-            </span>
+            <span className="tabular text-small text-text-muted">{department.members.length}</span>
           </h2>
           <ul className="divide-y divide-border rounded-card border border-border">
             {department.members.map((member) => (

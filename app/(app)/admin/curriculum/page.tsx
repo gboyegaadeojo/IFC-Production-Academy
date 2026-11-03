@@ -122,7 +122,7 @@ function Workspace({ department }: { department: CurriculumOverview[number] }) {
               className="flex w-full flex-col gap-4 rounded-card border border-border bg-card p-4"
             >
               <div className="flex items-start gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-pill border border-[var(--dept)] font-mono text-small">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-pill border border-[var(--dept)] text-small">
                   {level.number}
                 </span>
                 <div className="flex flex-col">

@@ -20,7 +20,10 @@ G found the UI looked amateur because sizes didn't match: dropdowns were larger 
 
 - **Touch sizes follow the device, not the width.** A tablet is a touch screen, so it gets 44px controls and 16px field text. This meets SPEC §6's 44px rule, and iPhones and iPads zoom the page when a field's text is under 16px.
 - **Dropdowns** use one arrow on every device.
-- **Exceptions:** printed certificates, the wall TV, the sign-in page's hero, and very small previews, such as slide thumbnails, keep their own sizes.
+- **Exceptions:** printed certificates, the wall TV, the sign-in page's hero, the public Serve with us page's heading, and very small previews, such as slide thumbnails, keep their own sizes.
+- **One typeface for words.** Labels, counts and calendar dates use Inter. The code-style font stays only for things that are literally code or an exact string to copy: certificate references, invitation links, channel addresses, the wall TV's pairing code and clocks, and code samples in guides. The small label above a title (the eyebrow) is 12px, in Inter, in normal case.
+- **One width per page.** The boxes on a page share one width. Paragraphs can stay narrower, for reading.
+- **Status only when it matters.** On People and a person's page, only accounts that aren't active get a badge. Departments still show their status, because it's the setting being managed there.
 
 ## The Planning Center page
 
@@ -28,4 +31,6 @@ The page leads with the key numbers, then has tabs for position links, people no
 
 ## The rest of the work
 
-Tracked in the same review: saving without a Save button on each row, one width per page, fewer labels in the code-style font, the admin sidebar, showing status only when it matters, calmer actions in repeating rows, the person page on phones, and the Training home. The Planning Center page is redesigned on top of these rules.
+Tracked in the same review, and still to do: saving without a Save button on each row, calmer actions in repeating rows, and the person page on phones. The Planning Center page is redesigned on top of these rules.
+
+The sidebar's rows are now 32px with a mouse so its links fit on a laptop screen, and it still scrolls on very short screens. "Services & Scheduling" keeps its name, because it fits at the new text size.

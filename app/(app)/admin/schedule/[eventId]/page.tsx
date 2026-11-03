@@ -157,7 +157,7 @@ async function EventContent({ params }: Pick<Props, "params">) {
       </section>
 
       {open ? (
-        <details className="max-w-2xl rounded-card border border-border p-5">
+        <details className="max-w-3xl rounded-card border border-border p-5">
           <summary className="flex min-h-control cursor-pointer items-center font-medium">
             Cancel this event
           </summary>

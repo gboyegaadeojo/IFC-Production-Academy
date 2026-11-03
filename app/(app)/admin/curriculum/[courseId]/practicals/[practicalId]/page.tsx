@@ -194,7 +194,7 @@ async function PracticalEditorContent({ params }: Pick<Props, "params">) {
       </section>
 
       {editable ? (
-        <details className="max-w-2xl rounded-card border border-border p-5">
+        <details className="max-w-3xl rounded-card border border-border p-5">
           <summary className="flex min-h-control cursor-pointer items-center font-medium">
             Remove this practical
           </summary>
@@ -235,7 +235,7 @@ function SettingsForm({ practical }: { practical: PracticalEditor }) {
   return (
     <section
       aria-labelledby="settings-heading"
-      className="flex max-w-2xl flex-col gap-4 rounded-card border border-border bg-card p-5"
+      className="flex max-w-3xl flex-col gap-4 rounded-card border border-border bg-card p-5"
     >
       <h2 id="settings-heading" className="text-subheading font-semibold">
         Settings
