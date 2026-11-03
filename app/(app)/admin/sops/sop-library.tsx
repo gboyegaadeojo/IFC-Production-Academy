@@ -36,14 +36,15 @@ export type SopLibraryRow = {
 type StatusFilter = "active" | SopState;
 
 const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
-  { value: "active", label: "All except archived" },
+  { value: "active", label: "Not archived" },
   { value: "review_due", label: SOP_STATE_LABELS.review_due },
   { value: "current", label: SOP_STATE_LABELS.current },
   { value: "not_published", label: SOP_STATE_LABELS.not_published },
   { value: "archived", label: SOP_STATE_LABELS.archived },
 ];
 const NEW_CATEGORY = "__new";
-const COLUMNS = "md:grid-cols-[minmax(0,2.3fr)_minmax(0,1.3fr)_minmax(0,0.9fr)_6rem_8rem] md:gap-3";
+const COLUMNS =
+  "md:grid-cols-[minmax(0,2.3fr)_minmax(0,1.3fr)_minmax(0,0.9fr)_6rem_9.5rem] md:gap-3";
 
 /** The SOP library for the people who look after it (decision 2026-11-03-sop-library). */
 export function SopLibrary({
@@ -166,7 +167,7 @@ export function SopLibrary({
                 onChange={(event) => setAudience(event.target.value)}
                 className={`${fieldClasses} w-full`}
               >
-                <option value="any">Everyone and every department</option>
+                <option value="any">All departments</option>
                 <option value={ALL_PRODUCTION_VALUE}>{ALL_PRODUCTION_LABEL}</option>
                 {audiences.map((d) => (
                   <option key={d.id} value={d.id}>
@@ -319,11 +320,14 @@ function SopRow({ row }: { row: SopLibraryRow }) {
     <li
       className={`relative grid grid-cols-2 gap-x-3 gap-y-1 border-t border-border px-4 py-2.5 transition-surface hover:bg-hover md:items-center ${COLUMNS}`}
     >
-      <div className="col-span-2 flex flex-wrap gap-1 md:order-last md:col-span-1">
-        <StatusBadge tone={row.state === "current" ? "success" : "pending"}>
+      <div className="col-span-2 whitespace-nowrap md:order-last md:col-span-1">
+        <StatusBadge
+          tone={
+            row.state === "current" ? "success" : row.state === "archived" ? "neutral" : "pending"
+          }
+        >
           {SOP_STATE_LABELS[row.state]}
         </StatusBadge>
-        {row.hasDraftChanges ? <StatusBadge tone="pending">Changes in a draft</StatusBadge> : null}
       </div>
       <div className="col-span-2 min-w-0 md:col-span-1">
         <Link
@@ -332,8 +336,15 @@ function SopRow({ row }: { row: SopLibraryRow }) {
         >
           {row.title}
         </Link>
-        {row.versionNumber ? (
-          <span className="block text-small text-text-muted">Version {row.versionNumber}</span>
+        {row.versionNumber || row.hasDraftChanges ? (
+          <span className="block text-small text-text-muted">
+            {[
+              row.versionNumber ? `Version ${row.versionNumber}` : null,
+              row.hasDraftChanges ? "Changes in a draft" : null,
+            ]
+              .filter(Boolean)
+              .join(" · ")}
+          </span>
         ) : null}
       </div>
       <div className="col-span-2 flex min-w-0 items-center gap-1.5 text-text-secondary md:col-span-1">

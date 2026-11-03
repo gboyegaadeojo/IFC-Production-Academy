@@ -40,7 +40,8 @@ async function AdminSopsContent() {
     versionNumber: sop.current?.versionNumber ?? null,
     reviewed: sop.lastReviewedAt ? formatDate(sop.lastReviewedAt) : null,
     state: sop.state,
-    hasDraftChanges: sop.draft !== null && sop.state !== "not_published",
+    hasDraftChanges:
+      sop.draft !== null && sop.state !== "not_published" && sop.state !== "archived",
   }));
   const addTo = [
     // Only organisation-wide rights reach SOPs with no department, here and in the database.

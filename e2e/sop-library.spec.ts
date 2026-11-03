@@ -109,10 +109,10 @@ test("a director archives an SOP, then deletes it for good", async ({ page }) =>
   await expect(page.getByLabel("Title", { exact: true })).toHaveValue(name);
 
   // Not until it's archived.
-  await expect(page.getByText("Delete this SOP")).toHaveCount(0);
-  await page.getByText("Archive this SOP").click();
+  await expect(page.getByRole("button", { name: "Delete", exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Archive", exact: true }).click();
   await page.getByRole("button", { name: "Archive SOP" }).click();
-  await page.getByText("Delete this SOP").click();
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
   await page.getByRole("button", { name: "Delete forever" }).click();
 
   await expect(page).toHaveURL(/\/admin\/sops$/);
