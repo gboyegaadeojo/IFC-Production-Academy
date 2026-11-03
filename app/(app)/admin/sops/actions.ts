@@ -8,12 +8,13 @@ import { getAdminAccess } from "@/lib/data/admin/access";
 import * as sops from "@/lib/data/sops";
 import { changeNoteSchema } from "@/lib/domain/curriculum";
 import {
+  ALL_PRODUCTION_VALUE,
   checkSopFile,
   SOP_FILE_PROBLEMS,
+  sopCreateSchema,
   sopDetailsSchema,
   sopErrorMessage,
   sopSettingsSchema,
-  sopTitleSchema,
   type SopError,
 } from "@/lib/domain/sops";
 
@@ -38,18 +39,23 @@ async function allowed(): Promise<boolean> {
 }
 
 export async function createSopAction(_: FormState, formData: FormData): Promise<FormState> {
-  const departmentId = id.safeParse(formData.get("departmentId"));
-  const title = sopTitleSchema.safeParse(text(formData.get("title")));
-  if (!departmentId.success) {
-    return error("Choose a department.");
-  }
-  if (!title.success) {
-    return firstIssue(title);
+  const details = sopCreateSchema.safeParse({
+    departmentId: formData.get("departmentId"),
+    title: text(formData.get("title")),
+    category: text(formData.get("category")),
+  });
+  if (!details.success) {
+    return firstIssue(details);
   }
   if (!(await allowed())) {
     return failed("not_authorized");
   }
-  const result = await sops.createSop(departmentId.data, title.data);
+  const { departmentId, title, category } = details.data;
+  const result = await sops.createSop(
+    departmentId === ALL_PRODUCTION_VALUE ? null : departmentId,
+    title,
+    category,
+  );
   if (!result.ok) {
     return failed(result.error);
   }

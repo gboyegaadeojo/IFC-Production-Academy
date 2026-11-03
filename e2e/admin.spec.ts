@@ -266,6 +266,7 @@ test("a leader publishes an SOP, attaches it to a lesson, and a member opens it"
   const leader = await leaderContext.newPage();
   await signInByEmail(leader, "casey.leader@example.com");
   await leader.goto("/admin/sops");
+  await leader.getByRole("button", { name: /Add (your first )?SOP/ }).click();
   await leader.getByLabel("SOP title").fill(sopName);
   await leader.getByRole("button", { name: "Create SOP" }).click();
   await expect(leader.getByRole("heading", { level: 1, name: sopName })).toBeVisible();

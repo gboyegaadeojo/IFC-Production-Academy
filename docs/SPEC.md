@@ -319,8 +319,8 @@ Roles are scoped per department (someone can lead Audio and be a volunteer in Ca
 | Learn: lessons, quizzes, SOPs | Own departments | Own departments | Own department | All | Only if granted |
 | See own progress, feedback, schedule | Yes | Yes | Yes | Yes | Yes |
 | Approve or invite members | No | No | Own | All | No |
-| Draft curriculum and SOPs | No | No | Own | All | No |
-| Publish curriculum | No | No | Own | All | No |
+| Draft curriculum and SOPs | No | No | Own | All | All (G, 2026-11-03) |
+| Publish curriculum | No | No | Own | All | All (G, 2026-11-03) |
 | Record practical observations (the system decides the result) | No | Assigned learners | Own | All | No |
 | Suspend or restore a competency (with reason) | No | No | Own | All | No |
 | Schedule events and roles | No | No | Own | All | No |

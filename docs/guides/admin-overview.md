@@ -20,7 +20,7 @@ Below that is recent activity from the audit log.
 | **Department Leader** | Runs one department: members, curriculum, SOPs, assessments, reports |
 | **Production Director** | The same across every department, plus choosing Service Dashboard editors |
 | **Scheduling Administrator** | Schedules and teams |
-| **Platform Administrator** | Accounts, roles, departments, and app settings. It doesn't approve memberships or publish training |
+| **Platform Administrator** | Accounts, roles, departments, and app settings, and drafting and publishing training and SOPs. It doesn't approve memberships |
 | **Service Dashboard Editor** | Changes the dashboard layout. Up to 3 people |
 
 Someone can hold different roles in different departments, such as leading Audio while learning in Camera. You give out roles under [People and roles](admin-people.md).

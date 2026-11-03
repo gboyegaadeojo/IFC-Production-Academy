@@ -165,6 +165,56 @@ export const sopSettingsSchema = z.object({
 });
 
 /** Case-insensitive match on title, summary, or category, for the library search. */
+/** An SOP with no department is for everyone in production (decision 2026-11-03-sop-library). */
+export const ALL_PRODUCTION_LABEL = "All of production";
+export const ALL_PRODUCTION_VALUE = "all-production";
+export const NO_CATEGORY_LABEL = "No category";
+
+/** Who an SOP is for, in words. */
+export function sopAudience(department: { name: string } | null): string {
+  return department?.name ?? ALL_PRODUCTION_LABEL;
+}
+
+export const sopCreateSchema = z.object({
+  departmentId: z
+    .string("Choose who it's for.")
+    .refine((value) => value === ALL_PRODUCTION_VALUE || z.uuid().safeParse(value).success, {
+      error: "Choose who it's for.",
+    }),
+  title: titleField,
+  category: sopSettingsSchema.shape.category,
+});
+
+const STATE_ORDER: Record<SopState, number> = {
+  review_due: 0,
+  not_published: 1,
+  current: 2,
+  archived: 3,
+};
+
+/** The categories in a list: alphabetical, with anything uncategorised last. */
+export function sopCategories(sops: readonly { category: string }[]): string[] {
+  const names = [...new Set(sops.map((sop) => sop.category || NO_CATEGORY_LABEL))];
+  return names.toSorted(
+    (a, b) =>
+      Number(a === NO_CATEGORY_LABEL) - Number(b === NO_CATEGORY_LABEL) || a.localeCompare(b),
+  );
+}
+
+/** A list grouped by category. Within each, what needs attention comes first, then by title. */
+export function groupSopsByCategory<T extends { category: string; state: SopState; title: string }>(
+  sops: readonly T[],
+): { name: string; sops: T[] }[] {
+  return sopCategories(sops).map((name) => ({
+    name,
+    sops: sops
+      .filter((sop) => (sop.category || NO_CATEGORY_LABEL) === name)
+      .toSorted(
+        (a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state] || a.title.localeCompare(b.title),
+      ),
+  }));
+}
+
 export function matchesSearch(
   sop: { title: string; summary: string; category: string },
   query: string,

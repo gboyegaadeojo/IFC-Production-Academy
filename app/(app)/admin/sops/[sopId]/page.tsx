@@ -14,6 +14,7 @@ import {
   reviewDueAt,
   SOP_STATE_LABELS,
   SOP_VERSION_LABELS,
+  sopAudience,
 } from "@/lib/domain/sops";
 import { AccessDenied } from "../../access-denied";
 import { PageSkeleton } from "../../page-skeleton";
@@ -58,8 +59,10 @@ async function AdminSopContent({ params }: Pick<Props, "params">) {
   if (!sop) {
     notFound();
   }
-  const canDraft = hasCapability(grants, "course.draft", sop.department.id);
-  const canPublish = hasCapability(grants, "course.publish", sop.department.id);
+  const departmentId = sop.department?.id ?? null;
+  const audience = sopAudience(sop.department);
+  const canDraft = hasCapability(grants, "course.draft", departmentId);
+  const canPublish = hasCapability(grants, "course.publish", departmentId);
   const archived = sop.archivedAt !== null;
   const draft = !archived && canDraft ? sop.draft : null;
   const due = reviewDueAt(sop.lastReviewedAt, sop.reviewIntervalMonths);
@@ -69,7 +72,7 @@ async function AdminSopContent({ params }: Pick<Props, "params">) {
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-3">
         <Breadcrumbs items={[{ label: "SOP library", href: "/admin/sops" }, { label: title }]} />
-        <p className="eyebrow">{sop.department.name}</p>
+        <p className="eyebrow">{audience}</p>
         <h1 className="text-title font-semibold">{title}</h1>
         <div className="flex flex-wrap gap-2">
           <StatusBadge tone={sop.state === "current" ? "success" : "pending"}>
@@ -179,7 +182,11 @@ async function AdminSopContent({ params }: Pick<Props, "params">) {
               <Field
                 id="sop-file"
                 label="SOP file"
-                hint="A PDF, PNG, or JPEG, up to 10 MB. It's stored privately: only members of the department can open it."
+                hint={
+                  sop.department
+                    ? "A PDF, PNG, or JPEG, up to 10 MB. It's stored privately: only members of the department can open it."
+                    : "A PDF, PNG, or JPEG, up to 10 MB. It's stored privately: only people signed in to the Academy can open it."
+                }
               >
                 <input
                   id="sop-file"
@@ -230,7 +237,7 @@ async function AdminSopContent({ params }: Pick<Props, "params">) {
             </section>
           ) : (
             <p className="max-w-2xl text-small text-text-muted">
-              Someone with publishing rights for {sop.department.name} publishes the draft.
+              Someone with publishing rights for {audience} publishes the draft.
             </p>
           )}
         </>
