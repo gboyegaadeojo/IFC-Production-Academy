@@ -1751,31 +1751,9 @@ export type Database = {
         Returns: { youtube_channel_id: string | null }[];
       };
       set_youtube_channel: { Args: { p_channel_id: string }; Returns: undefined };
-      service_stream_state: {
-        Args: { p_event_id: string; p_platform: string; p_screen_token?: string | null };
-        Returns: Json;
-      };
-      save_stream_search: {
-        Args: {
-          p_event_id: string;
-          p_platform: string;
-          p_external_id: string | null;
-          p_screen_token?: string | null;
-        };
-        Returns: undefined;
-      };
-      save_viewer_sample: {
-        Args: {
-          p_event_id: string;
-          p_platform: string;
-          p_viewers: number;
-          p_screen_token?: string | null;
-        };
-        Returns: undefined;
-      };
-      service_viewer_history: {
-        Args: { p_event_id: string };
-        Returns: { platform: string; viewers: number; sampled_at: string }[];
+      service_stream_channel: {
+        Args: Record<string, never>;
+        Returns: string | null;
       };
       can_view_service_dashboard: {
         Args: Record<string, never>;

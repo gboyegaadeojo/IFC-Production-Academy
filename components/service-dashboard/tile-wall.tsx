@@ -30,8 +30,6 @@ export const TILE_ICONS: Record<TileKey, (props: { className?: string }) => Reac
   spl: InfoIcon,
   preview: MonitorIcon,
   encoder: SettingsIcon,
-  youtube: DashboardIcon,
-  facebook: DashboardIcon,
   checklist: ListChecksIcon,
   notes: FileTextIcon,
   sops: FileTextIcon,

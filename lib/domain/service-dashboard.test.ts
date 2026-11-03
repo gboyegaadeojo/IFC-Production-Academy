@@ -22,7 +22,6 @@ import {
   TILE_KEYS,
   TILES,
   trainedLabel,
-  viewerSeries,
   toDashboardError,
 } from "./service-dashboard";
 
@@ -318,19 +317,25 @@ describe("differenceLabel", () => {
   });
 });
 
-describe("viewerSeries", () => {
-  it("makes a line per platform with its busiest moment", () => {
-    const series = viewerSeries([
-      { platform: "youtube", viewers: 10, at: "2026-11-08T16:00:00Z" },
-      { platform: "youtube", viewers: 30, at: "2026-11-08T16:30:00Z" },
-      { platform: "youtube", viewers: 20, at: "2026-11-08T17:00:00Z" },
-    ]);
-    expect(series).toHaveLength(1);
-    expect(series[0]?.platform).toBe("YouTube");
-    expect(series[0]?.peak.viewers).toBe(30);
+describe("a layout saved with the retired viewer tiles", () => {
+  const items = [
+    { tile: "youtube", x: 0, y: 0, w: 4, h: 3 },
+    { tile: "facebook", x: 4, y: 0, w: 4, h: 3 },
+    { tile: "run", x: 0, y: 3, w: 8, h: 6 },
+    { tile: "notes", x: 8, y: 0, w: 4, h: 3 },
+  ];
+
+  it("keeps the rest of the layout and closes the gap", () => {
+    const layout = parseStoredLayout({ name: "Ours", items, channels: ["ch-1"] });
+    expect(layout.name).toBe("Ours");
+    expect(layout.channels).toEqual(["ch-1"]);
+    expect(layout.items.map((entry) => entry.tile)).toEqual(["run", "notes"]);
+    expect(layout.items.find((entry) => entry.tile === "run")?.y).toBe(0);
   });
 
-  it("leaves out a platform with no readings", () => {
-    expect(viewerSeries([])).toEqual([]);
+  it("still falls back to the default when a layout makes no sense", () => {
+    expect(parseStoredLayout({ name: "Ours", items: [{ tile: "odd" }], channels: [] })).toBe(
+      DEFAULT_LAYOUT,
+    );
   });
 });

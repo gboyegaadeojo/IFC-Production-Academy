@@ -4,22 +4,11 @@ For whoever sets up the connections. New people should read [the guide](../guide
 
 The dashboard only reads. Nothing here can change a slide, the mixer, the encoder, or the stream.
 
-## YouTube viewers and preview
+## YouTube live stream
 
-The stream is public, so nobody signs in and nothing expires.
+The stream is public, so nobody signs in and nothing expires. In the Academy, go to Admin, Service Dashboard setup, Connections, and paste the channel ID. It starts with `UC`. That's all the Stream preview tile needs. No API key is used.
 
-1. **Channel ID:** in the Academy, go to Admin, Service Dashboard setup, Connections, and paste the channel ID. It starts with `UC`. The stream preview works from this alone.
-2. **API key, for viewer counts:**
-   1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, or use the backups project.
-   2. Enable **YouTube Data API v3**.
-   3. Under Credentials, create an **API key**. Restrict it to YouTube Data API v3.
-   4. Add it as a Cloudflare secret named `YOUTUBE_API_KEY` (Workers, the Academy, Settings, Variables and Secrets, as type Secret, or `wrangler secret put YOUTUBE_API_KEY`).
-
-**How it stays free:** it only looks from 30 minutes before a service until 30 minutes after. It searches for the stream once a minute at most until it finds it, then reads the count every 30 seconds at most, however many screens are open. That's about 240 count reads for a 2-hour service, out of 10,000 units a day, plus a few searches out of YouTube's 100 a day.
-
-**Still to test on the real channel:** how soon after going live the search finds the stream.
-
-The counts are read while a screen is open during the service, so leave the wall TV on or a booth computer open.
+**Still to test on the real channel:** that the tile picks up the stream when it goes live.
 
 ## Wall TV
 

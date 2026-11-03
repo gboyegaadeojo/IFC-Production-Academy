@@ -7,8 +7,6 @@ import { utcToWinnipeg } from "./schedule";
 
 export const TILE_KEYS = [
   "preview",
-  "youtube",
-  "facebook",
   "current",
   "run",
   "slides",
@@ -45,8 +43,6 @@ export const TILES: Record<TileKey, { name: string; group: TileGroup; source: st
   spl: { name: "Room loudness (SPL)", group: "Audio", source: "A measurement mic" },
   preview: { name: "Stream preview", group: "Video and stream", source: "YouTube" },
   encoder: { name: "Encoder health", group: "Video and stream", source: "Magewell Ultra Encode" },
-  youtube: { name: "YouTube viewers", group: "Video and stream", source: "YouTube" },
-  facebook: { name: "Facebook viewers", group: "Video and stream", source: "Facebook" },
   checklist: { name: "Checklist", group: "Tasks and notes", source: "The Academy Checklist" },
   notes: { name: "Producer notes", group: "Tasks and notes", source: "The team" },
   sops: { name: "SOP shortcuts", group: "Tasks and notes", source: "The SOP library" },
@@ -104,10 +100,8 @@ export const DEFAULT_LAYOUT: DashboardLayout = {
     item("preview", 0, 0, 3, 5),
     item("team", 0, 5, 3, 8),
     item("pptimers", 0, 13, 3, 3),
-    item("youtube", 3, 0, 2, 3),
-    item("facebook", 5, 0, 2, 3),
-    item("current", 3, 3, 4, 3),
-    item("run", 3, 6, 4, 10),
+    item("current", 3, 0, 4, 3),
+    item("run", 3, 3, 4, 13),
     item("slides", 7, 0, 5, 7),
     item("timer", 7, 7, 2, 3),
     item("encoder", 9, 7, 3, 3),
@@ -118,6 +112,9 @@ export const DEFAULT_LAYOUT: DashboardLayout = {
   channels: [],
 };
 
+/** Tiles that no longer exist. A layout saved with one keeps the rest of its tiles. */
+const RETIRED_TILES = new Set(["youtube", "facebook"]);
+
 /** A stored layout, or the default if nothing is saved or it no longer makes sense. */
 export function parseStoredLayout(
   stored: { name: string; items: unknown; channels: unknown } | null,
@@ -125,8 +122,18 @@ export function parseStoredLayout(
   if (!stored) {
     return DEFAULT_LAYOUT;
   }
-  const parsed = layoutSchema.safeParse(stored);
-  return parsed.success ? parsed.data : DEFAULT_LAYOUT;
+  const items = Array.isArray(stored.items) ? stored.items : [];
+  const current = items.filter(
+    (entry: unknown) => !RETIRED_TILES.has(String((entry as { tile?: unknown } | null)?.tile)),
+  );
+  const parsed = layoutSchema.safeParse({ ...stored, items: current });
+  if (!parsed.success) {
+    return DEFAULT_LAYOUT;
+  }
+  // The space a retired tile leaves is closed up.
+  return current.length < items.length
+    ? { ...parsed.data, items: settle(parsed.data.items) }
+    : parsed.data;
 }
 
 function overlaps(a: LayoutItem, b: LayoutItem): boolean {
@@ -408,35 +415,4 @@ export function differenceLabel(seconds: number): string {
     return "On time";
   }
   return seconds > 0 ? `+${countdownLabel(seconds)} over` : `${countdownLabel(-seconds)} under`;
-}
-
-export type ViewerSeries = {
-  platform: string;
-  samples: { at: number; viewers: number }[];
-  peak: { at: number; viewers: number };
-};
-
-const PLATFORM_NAMES: Record<string, string> = { youtube: "YouTube", facebook: "Facebook" };
-
-/** One line per platform, each with its busiest moment. A platform with no readings is left out. */
-export function viewerSeries(
-  history: readonly { platform: string; viewers: number; at: string }[],
-): ViewerSeries[] {
-  return Object.entries(PLATFORM_NAMES).flatMap(([key, platform]) => {
-    const samples = history
-      .filter((sample) => sample.platform === key)
-      .map((sample) => ({ at: Date.parse(sample.at), viewers: sample.viewers }))
-      .toSorted((a, b) => a.at - b.at);
-    const [first, ...rest] = samples;
-    if (!first) {
-      return [];
-    }
-    return [
-      {
-        platform,
-        samples,
-        peak: rest.reduce((best, sample) => (sample.viewers > best.viewers ? sample : best), first),
-      },
-    ];
-  });
 }

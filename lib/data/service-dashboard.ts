@@ -170,16 +170,10 @@ export async function saveServiceNote(eventId: string, body: string): Promise<Da
 }
 
 /** The YouTube channel, for the stream preview. Null until it's set. */
-export async function getStreamChannel(eventId: string): Promise<string | null> {
+export async function getStreamChannel(): Promise<string | null> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("service_stream_state", {
-    p_event_id: eventId,
-    p_platform: "youtube",
-  });
-  if (error) {
-    return null;
-  }
-  return z.object({ channel: z.string().nullable() }).safeParse(data).data?.channel ?? null;
+  const { data, error } = await supabase.rpc("service_stream_channel");
+  return error ? null : data;
 }
 
 /**
@@ -209,20 +203,5 @@ export async function getReviewServices(): Promise<DashboardService[]> {
     title: event.title,
     startsAt: event.starts_at,
     endsAt: event.ends_at,
-  }));
-}
-
-export async function getViewerHistory(
-  eventId: string,
-): Promise<{ platform: string; viewers: number; at: string }[]> {
-  const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase.rpc("service_viewer_history", { p_event_id: eventId });
-  if (error) {
-    throw new Error("Could not load the viewer history.");
-  }
-  return (data ?? []).map((row) => ({
-    platform: row.platform,
-    viewers: row.viewers,
-    at: row.sampled_at,
   }));
 }

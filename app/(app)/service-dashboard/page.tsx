@@ -22,7 +22,7 @@ import {
   ServiceTimerTile,
 } from "@/components/service-dashboard/service-clock";
 import { ServicePicker } from "@/components/service-dashboard/service-picker";
-import { StreamPreviewTile, ViewersTile } from "@/components/service-dashboard/stream-tiles";
+import { StreamPreviewTile } from "@/components/service-dashboard/stream-tiles";
 import { TeamTile } from "@/components/service-dashboard/team-tile";
 import { TileWall } from "@/components/service-dashboard/tile-wall";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -38,8 +38,6 @@ import {
   getServiceNote,
   getStreamChannel,
 } from "@/lib/data/service-dashboard";
-import { getYoutubeView } from "@/lib/data/stream-viewers";
-import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { getSopLibrary, type SopSummary } from "@/lib/data/sops";
 import { canOpenAdminSection } from "@/lib/domain/admin";
 import { formatDate } from "@/lib/domain/dates";
@@ -148,18 +146,13 @@ async function ServiceDashboardContent({
 
   const shows = (tile: TileKey) => layout.items.some((item) => item.tile === tile);
   const renderedAt = serverNow();
-  const [items, team, note, checklists, sops, channel, youtube, ticket] = await Promise.all([
+  const [items, team, note, checklists, sops, channel, ticket] = await Promise.all([
     getPlanItems(service.id),
     shows("team") ? getDashboardTeam(service.id) : [],
     shows("notes") ? getServiceNote(service.id) : "",
     shows("checklist") ? getServiceChecklists(service.id) : null,
     shows("sops") ? getSopLibrary() : [],
-    shows("preview") ? getStreamChannel(service.id) : null,
-    shows("youtube")
-      ? createSupabaseServerClient().then((client) =>
-          getYoutubeView(client, service, null, renderedAt),
-        )
-      : ({ status: "off" } as const),
+    shows("preview") ? getStreamChannel() : null,
     getLiveTicket(renderedAt),
   ]);
 
@@ -259,14 +252,6 @@ async function ServiceDashboardContent({
                     );
                   case "preview":
                     return <StreamPreviewTile channelId={channel} />;
-                  case "youtube":
-                    return <ViewersTile view={youtube} platform="YouTube" />;
-                  default:
-                    return (
-                      <p className="text-small text-text-secondary">
-                        Not connected yet. This will come from {TILES[item.tile].source}.
-                      </p>
-                    );
                 }
               }}
             />

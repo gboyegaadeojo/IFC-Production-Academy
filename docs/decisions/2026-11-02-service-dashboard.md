@@ -16,7 +16,7 @@ G wants a live Service Producer dashboard like MXU's, shown on computers and a w
 - **The Slides tile shows 4 slides:** the one on screen and the next three.
 - **Room loudness (SPL) is built and left off,** because there's no measurement mic or SMAART yet.
 - **YouTube needs only the channel.** The stream is public, never unlisted, so no Google sign-in is needed.
-- **Facebook signs in once,** with nothing to do weekly if Meta allows it.
+- **YouTube live only (changed by G, 2026-11-03).** The dashboard shows the YouTube live stream. Viewer counts on YouTube and Facebook were dropped, so there's no API key, no Facebook sign-in, and no viewers on After the service.
 - **The wall TV connects by code** and holds a view-only pass, not anyone's account. It's probably a Roku TV, so an Android TV or Google TV stick runs it over HDMI.
 - **Church gear connects through a bridge** on a church computer that only connects outward.
 - **Planning Center stays read-only.**
@@ -33,7 +33,6 @@ G wants a live Service Producer dashboard like MXU's, shown on computers and a w
 
 Not yet proven on real gear or accounts. `docs/guides/service-dashboard.md` lists these and is updated as they're tested.
 
-- **Facebook:** finding the live video and reading its viewer count aren't confirmed.
 - **ProPresenter:** slide status details, and whether it can send pictures of upcoming slides.
 - **X32:** meter format and channel names.
 - **Mixers:** dLive meter access is unconfirmed, and no documented way was found on the Waves LV1 Classic.

@@ -16,12 +16,11 @@ import {
   ServiceClock,
   ServiceTimerTile,
 } from "@/components/service-dashboard/service-clock";
-import { StreamPreviewTile, ViewersTile } from "@/components/service-dashboard/stream-tiles";
+import { StreamPreviewTile } from "@/components/service-dashboard/stream-tiles";
 import { TeamTile } from "@/components/service-dashboard/team-tile";
 import { TileWall } from "@/components/service-dashboard/tile-wall";
-import { createScreenClient, getScreenDashboard, SCREEN_TOKEN_COOKIE } from "@/lib/data/screens";
+import { getScreenDashboard, SCREEN_TOKEN_COOKIE } from "@/lib/data/screens";
 import { getLiveTicket } from "@/lib/data/service-dashboard";
-import { getYoutubeView } from "@/lib/data/stream-viewers";
 import { layoutRows, TILES } from "@/lib/domain/service-dashboard";
 import { AlwaysDark } from "./always-dark";
 import { ScreenPairing } from "./pairing";
@@ -51,10 +50,6 @@ export default async function ScreenPage() {
 
   const { layout, service, items, team, note, checklists, channel } = dashboard;
   const now = serverNow();
-  const youtube =
-    service && layout.items.some((item) => item.tile === "youtube")
-      ? await getYoutubeView(createScreenClient(), service, token, now)
-      : ({ status: "off" } as const);
 
   const ticket = await getLiveTicket(now);
 
@@ -92,8 +87,6 @@ export default async function ScreenPage() {
                     return <TeamTile team={team} />;
                   case "preview":
                     return <StreamPreviewTile channelId={channel} />;
-                  case "youtube":
-                    return <ViewersTile view={youtube} platform="YouTube" />;
                   case "notes":
                     return (
                       <p className="text-small whitespace-pre-wrap">
@@ -135,12 +128,6 @@ export default async function ScreenPage() {
                   case "sops":
                     return (
                       <p className="text-small text-text-secondary">Open SOPs on a computer.</p>
-                    );
-                  default:
-                    return (
-                      <p className="text-small text-text-secondary">
-                        Not connected yet. This will come from {TILES[item.tile].source}.
-                      </p>
                     );
                 }
               }}
