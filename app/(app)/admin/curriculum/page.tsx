@@ -168,11 +168,7 @@ function Workspace({ department }: { department: CurriculumOverview[number] }) {
               {department.canDraft ? (
                 <details className="mt-auto">
                   <summary
-                    className={`flex min-h-control w-fit cursor-pointer list-none items-center rounded-button px-3 text-small font-medium transition-surface [&::-webkit-details-marker]:hidden ${
-                      level.courses.length === 0
-                        ? "bg-accent text-on-accent hover:brightness-110"
-                        : "border border-border-strong text-text hover:bg-hover"
-                    }`}
+                    className={`flex min-h-control w-fit cursor-pointer list-none items-center rounded-button px-3 text-small font-medium transition-surface [&::-webkit-details-marker]:hidden ${"border border-border-strong text-text hover:bg-hover"}`}
                   >
                     Add course
                     <span className="sr-only">

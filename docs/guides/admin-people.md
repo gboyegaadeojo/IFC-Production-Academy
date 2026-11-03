@@ -21,7 +21,7 @@ To stop a link, choose **Revoke**. It stops working straight away, and people wh
 
 ## People and roles
 
-**People and roles** lists everyone who has signed in. Open a person to:
+**People and roles** lists everyone who has signed in, 50 to a page. Open a person to:
 
 - **Grant a role,** choosing a department if the role needs one. Pick a role to see what it lets someone do.
 - **Remove a role,** with a reason. Past roles stay listed.

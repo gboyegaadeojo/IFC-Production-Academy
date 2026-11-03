@@ -269,7 +269,7 @@
   --text-subheading: 0.9375rem;
   --text-subheading--line-height: 1.35;
   --text-subheading--letter-spacing: -0.01em;
-  --text-lead: 0.875rem;
+  --text-lead: var(--fs-body);
   --text-lead--line-height: 1.6;
   --text-body: var(--fs-body);
   --text-body--line-height: 1.55;
@@ -487,4 +487,79 @@ body {
   height: 100%;
   grid-auto-rows: auto;
   grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+}
+
+/* On phones a table's rows become cards, so no column hides off screen. A cell with data-label shows
+   that label beside its value. */
+@media (max-width: 639px) {
+  .stack-table,
+  .stack-table tbody,
+  .stack-table tr {
+    display: block;
+    width: 100%;
+  }
+  .stack-table {
+    min-width: 0 !important;
+  }
+  .stack-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .stack-table tr {
+    padding: 0.625rem 1rem;
+  }
+  .stack-table th,
+  .stack-table td {
+    display: block;
+    width: auto !important;
+    padding: 0.125rem 0 !important;
+    text-align: left !important;
+    white-space: normal !important;
+  }
+  .stack-table td[data-label] {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    text-align: right !important;
+  }
+  .stack-table td[data-label]::before {
+    content: attr(data-label);
+    flex: none;
+    color: var(--text-muted);
+    text-align: left;
+  }
+  .stack-table .stack-hide {
+    display: none;
+  }
+}
+
+/* One look for every "show more": a chevron before the words, unless the summary brings its own. */
+details > summary {
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+details > summary:not(:has(svg))::before {
+  content: "";
+  flex: none;
+  display: inline-block;
+  width: 0.4em;
+  height: 0.4em;
+  margin-right: 0.55em;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-0.1em) rotate(-45deg);
+  transition: transform 120ms ease;
+}
+details[open] > summary:not(:has(svg))::before {
+  transform: translateY(-0.2em) rotate(45deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  details > summary:not(:has(svg))::before {
+    transition: none;
+  }
 }

@@ -126,7 +126,7 @@ async function ChecklistContent({ params }: Pick<Props, "params">) {
 
       <section
         aria-labelledby="paste-heading"
-        className="flex max-w-3xl flex-col gap-3 rounded-card border border-dashed border-border p-5"
+        className="flex max-w-3xl flex-col gap-3 rounded-card border border-border bg-surface p-5"
       >
         <h2 id="paste-heading" className="text-subheading font-semibold">
           Paste a list
@@ -382,7 +382,7 @@ function Sections({ checklist, targets }: { checklist: ChecklistDetail; targets:
           </div>
         );
       })}
-      <div className="rounded-card border border-dashed border-border p-5">
+      <div className="rounded-card border border-border bg-surface p-5">
         <ActionForm
           action={addSectionAction}
           submitLabel="Add section"

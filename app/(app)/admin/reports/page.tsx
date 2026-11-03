@@ -1,7 +1,8 @@
+import type { ReactNode } from "react";
+import { DepartmentChips } from "@/components/ui/department-chips";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs } from "@/components/ui/tabs";
@@ -63,32 +64,11 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
         <>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             {departments.length > 1 ? (
-              <form className="flex flex-wrap items-end gap-3">
-                <input type="hidden" name="report" value={report} />
-                <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="report-department"
-                    className="text-small font-medium text-text-secondary"
-                  >
-                    Department
-                  </label>
-                  <select
-                    id="report-department"
-                    name="department"
-                    defaultValue={department.id}
-                    className={fieldClasses}
-                  >
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <Button type="submit" variant="secondary">
-                  Show
-                </Button>
-              </form>
+              <DepartmentChips
+                departments={departments}
+                currentId={department.id}
+                hrefFor={(id) => `/admin/reports?department=${id}&report=${report}`}
+              />
             ) : (
               <p className="font-medium">{department.name}</p>
             )}
@@ -115,9 +95,9 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
             ]}
           />
           {report === "training" ? (
-            <TrainingTable rows={await getTrainingReport(department.id)} />
+            <ReportRows load={getTrainingReport(department.id)} Table={TrainingTable} />
           ) : report === "readiness" ? (
-            <ReadinessTable rows={await getReadinessReport(department.id)} />
+            <ReportRows load={getReadinessReport(department.id)} Table={ReadinessTable} />
           ) : (
             <MatrixTable rows={await getReadinessMatrix()} />
           )}
@@ -133,6 +113,46 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
   );
 }
 
+/** The database hands back at most this many rows at a time, so say so if a report reaches it. */
+const LIST_LIMIT = 1000;
+
+async function ReportRows<Row>({
+  load,
+  Table,
+}: {
+  load: Promise<Row[]>;
+  Table: (props: { rows: Row[] }) => ReactNode;
+}) {
+  const rows = await load;
+  return (
+    <>
+      <TooLong rows={rows} />
+      <Table rows={rows} />
+    </>
+  );
+}
+
+function groupByPerson(rows: TrainingRow[]) {
+  const people = new Map<string, { userId: string; name: string; courses: TrainingRow[] }>();
+  for (const row of rows) {
+    const person = people.get(row.userId);
+    if (person) {
+      person.courses.push(row);
+    } else {
+      people.set(row.userId, { userId: row.userId, name: row.name, courses: [row] });
+    }
+  }
+  return [...people.values()];
+}
+
+function TooLong({ rows }: { rows: readonly unknown[] }) {
+  return rows.length >= LIST_LIMIT ? (
+    <p role="status" className="text-small text-warning">
+      Showing the first {LIST_LIMIT.toLocaleString("en-CA")} rows. Download the CSV for the rest.
+    </p>
+  ) : null;
+}
+
 function TrainingTable({ rows }: { rows: TrainingRow[] }) {
   if (rows.length === 0) {
     return (
@@ -143,15 +163,12 @@ function TrainingTable({ rows }: { rows: TrainingRow[] }) {
   }
   return (
     <div className="overflow-x-auto rounded-card border border-border">
-      <table className="w-full min-w-[40rem] text-left text-small">
+      <table className="stack-table w-full min-w-[40rem] text-left text-small">
         <caption className="sr-only">Course completion by volunteer</caption>
         <thead className="border-b border-border text-text-secondary">
           <tr>
             <th scope="col" className="px-4 py-3 font-medium">
-              Volunteer
-            </th>
-            <th scope="col" className="px-4 py-3 font-medium">
-              Course
+              Volunteer and course
             </th>
             <th scope="col" className="px-4 py-3 font-medium">
               State
@@ -161,20 +178,28 @@ function TrainingTable({ rows }: { rows: TrainingRow[] }) {
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
-          {rows.map((row) => (
-            <tr key={`${row.userId}-${row.courseId}`}>
-              <th scope="row" className="px-4 py-3 font-medium">
-                {row.name}
+        {groupByPerson(rows).map(({ userId, name, courses }) => (
+          <tbody key={userId} className="border-t border-border first-of-type:border-t-0">
+            <tr className="bg-card">
+              <th scope="colgroup" colSpan={3} className="px-4 py-2 font-medium">
+                {name}
               </th>
-              <td className="px-4 py-3">
-                Level {row.level} · {row.courseTitle}
-              </td>
-              <td className="px-4 py-3">{COURSE_REPORT_LABELS[row.state]}</td>
-              <td className="px-4 py-3 font-mono text-text-muted">{row.certificate ?? "None"}</td>
             </tr>
-          ))}
-        </tbody>
+            {courses.map((row) => (
+              <tr key={row.courseId} className="border-t border-border">
+                <th scope="row" className="px-4 py-2 font-normal">
+                  Level {row.level} · {row.courseTitle}
+                </th>
+                <td data-label="State" className="px-4 py-2">
+                  {COURSE_REPORT_LABELS[row.state]}
+                </td>
+                <td data-label="Certificate" className="px-4 py-2 font-mono text-text-muted">
+                  {row.certificate ?? "None"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        ))}
       </table>
     </div>
   );
@@ -190,7 +215,7 @@ function ReadinessTable({ rows }: { rows: ReadinessRow[] }) {
   }
   return (
     <div className="overflow-x-auto rounded-card border border-border">
-      <table className="w-full min-w-[40rem] text-left text-small">
+      <table className="stack-table w-full min-w-[40rem] text-left text-small">
         <caption className="sr-only">Competencies and Approved to Serve by volunteer</caption>
         <thead className="border-b border-border text-text-secondary">
           <tr>
@@ -214,14 +239,16 @@ function ReadinessTable({ rows }: { rows: ReadinessRow[] }) {
               <th scope="row" className="px-4 py-3 font-medium">
                 {row.name}
               </th>
-              <td className="px-4 py-3">
+              <td data-label="Competency or role" className="px-4 py-3">
                 {row.item}
                 <span className="text-text-muted">
                   {row.kind === "role" ? " (serving role)" : " (competency)"}
                 </span>
               </td>
-              <td className="px-4 py-3">{READINESS_REPORT_LABELS[row.state]}</td>
-              <td className="px-4 py-3 text-text-muted">
+              <td data-label="State" className="px-4 py-3">
+                {READINESS_REPORT_LABELS[row.state]}
+              </td>
+              <td data-label="Since" className="px-4 py-3 text-text-muted">
                 {row.since ? formatDate(row.since) : "—"}
                 {row.expiresAt ? ` · expires ${formatDate(row.expiresAt)}` : ""}
               </td>

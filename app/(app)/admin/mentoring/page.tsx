@@ -96,7 +96,7 @@ async function AdminMentoringContent() {
               </ul>
             )}
             {mentors.length > 0 && mentees.length > 0 ? (
-              <div className="max-w-3xl rounded-card border border-dashed border-border p-5">
+              <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
                 <ActionForm
                   action={assignMentorAction}
                   submitLabel="Pair them"

@@ -40,7 +40,6 @@ async function FollowUpsContent() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="People & Teams"
         title="Follow-ups"
         description="What onboarding needs from you. Ticking one moves that person on to their next step."
       />

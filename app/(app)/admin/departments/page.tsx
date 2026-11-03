@@ -71,7 +71,7 @@ async function DepartmentsContent() {
         </div>
       </details>
       <div className="relative overflow-x-auto rounded-card border border-border">
-        <table className="w-full min-w-[40rem] text-left text-small">
+        <table className="stack-table w-full min-w-[40rem] text-left text-small">
           <caption className="sr-only">Departments in display order</caption>
           <thead className="border-b border-border text-text-muted">
             <tr>
@@ -108,10 +108,10 @@ async function DepartmentsContent() {
                     </span>
                   </span>
                 </td>
-                <td className="px-4 py-3 text-text-secondary">
+                <td data-label="How people join" className="px-4 py-3 text-text-secondary">
                   {ENROLMENT_LABELS[department.enrolmentMode]}
                 </td>
-                <td className="px-4 py-3">
+                <td data-label="Status" className="px-4 py-3">
                   <StatusBadge tone={STATUS_TONES[department.status]}>
                     {STATUS_LABELS[department.status]}
                   </StatusBadge>

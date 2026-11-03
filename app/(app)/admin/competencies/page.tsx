@@ -12,6 +12,7 @@ import {
   EXPIRY_CHOICES,
   expiryLabel,
 } from "@/lib/domain/competency";
+import { DepartmentChips } from "@/components/ui/department-chips";
 import { formatDate } from "@/lib/domain/dates";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
@@ -28,10 +29,10 @@ import {
 
 export const metadata: Metadata = { title: "Competencies and roles" };
 
-export default function CompetenciesPage() {
+export default function CompetenciesPage({ searchParams }: PageProps<"/admin/competencies">) {
   return (
     <Suspense fallback={<PageSkeleton label="Loading competencies…" />}>
-      <CompetenciesContent />
+      <CompetenciesContent searchParams={searchParams} />
     </Suspense>
   );
 }
@@ -41,12 +42,16 @@ export default function CompetenciesPage() {
  * passed practicals grant competencies and the system works out Approved to Serve. Leaders can
  * suspend a competency with a reason, which withdraws Approved to Serve where it's needed.
  */
-async function CompetenciesContent() {
+async function CompetenciesContent({
+  searchParams,
+}: Pick<PageProps<"/admin/competencies">, "searchParams">) {
   const { grants, allowed } = await getAdminAccess("competencies");
   if (!allowed) {
     return <AccessDenied />;
   }
   const departments = await getReadinessAdmin(grants);
+  const requested = (await searchParams).department;
+  const selected = departments.find((d) => d.id === requested) ?? departments[0];
 
   return (
     <div className="flex flex-col gap-10">
@@ -54,9 +59,14 @@ async function CompetenciesContent() {
         title="Competencies and roles"
         description="A competency is a skill or piece of equipment someone has shown they can handle. A serving role lists the competencies it needs. Passing a practical grants the competency, and Approved to Serve follows automatically once a role's competencies are all approved."
       />
-      {departments.map((department) => (
-        <DepartmentSection key={department.id} department={department} />
-      ))}
+      {departments.length > 1 ? (
+        <DepartmentChips
+          departments={departments}
+          currentId={selected?.id}
+          hrefFor={(id) => `/admin/competencies?department=${id}`}
+        />
+      ) : null}
+      {selected ? <DepartmentSection key={selected.id} department={selected} /> : null}
     </div>
   );
 }
@@ -157,14 +167,17 @@ function DepartmentSection({ department }: { department: DepartmentReadinessAdmi
           </ul>
         )}
         {department.canManage ? (
-          <div className="max-w-3xl rounded-card border border-dashed border-border p-5">
+          <details className="max-w-3xl rounded-card border border-border bg-surface px-4 py-2">
+            <summary className="flex min-h-control cursor-pointer items-center font-medium">
+              Add a competency
+            </summary>
             <ActionForm
               action={createCompetencyAction}
               submitLabel="Add competency"
               pendingLabel="Adding…"
               variant="secondary"
               hidden={{ departmentId: department.id }}
-              className="flex flex-col gap-3"
+              className="mt-2 mb-2 flex flex-col gap-3"
             >
               <Field id={`new-c-${prefix}`} label="New competency name">
                 <input
@@ -185,7 +198,7 @@ function DepartmentSection({ department }: { department: DepartmentReadinessAdmi
               </Field>
               <ExpirySelect id={`new-c-exp-${prefix}`} value={null} />
             </ActionForm>
-          </div>
+          </details>
         ) : null}
       </div>
 
@@ -262,14 +275,17 @@ function DepartmentSection({ department }: { department: DepartmentReadinessAdmi
           </ul>
         )}
         {department.canManage ? (
-          <div className="max-w-3xl rounded-card border border-dashed border-border p-5">
+          <details className="max-w-3xl rounded-card border border-border bg-surface px-4 py-2">
+            <summary className="flex min-h-control cursor-pointer items-center font-medium">
+              Add a serving role
+            </summary>
             <ActionForm
               action={createServingRoleAction}
               submitLabel="Add role"
               pendingLabel="Adding…"
               variant="secondary"
               hidden={{ departmentId: department.id }}
-              className="flex flex-col gap-3"
+              className="mt-2 mb-2 flex flex-col gap-3"
             >
               <Field id={`new-r-${prefix}`} label="New role name">
                 <input
@@ -289,7 +305,7 @@ function DepartmentSection({ department }: { department: DepartmentReadinessAdmi
                 />
               </Field>
             </ActionForm>
-          </div>
+          </details>
         ) : null}
       </div>
 

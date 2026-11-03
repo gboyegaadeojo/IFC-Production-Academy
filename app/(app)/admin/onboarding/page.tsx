@@ -60,7 +60,6 @@ async function OnboardingContent({
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="People & Teams"
         title="Onboarding pathways"
         description="From “I want to serve” to ready for a team. Build each pathway's stages and steps; people move along by themselves, and you're told when they need you."
       />

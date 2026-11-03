@@ -151,7 +151,7 @@ async function TrainingContent() {
         ) : (
           <ul className="grid gap-3 lg:grid-cols-2">
             {others.map((department) => (
-              <li key={department.id} className="flex">
+              <li key={department.id} className="flex lg:last:odd:col-span-2">
                 <ExploreRow
                   department={department}
                   continuing={continuing.find((c) => c.course.department.id === department.id)}

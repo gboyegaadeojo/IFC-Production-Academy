@@ -5,6 +5,24 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+  { key: "Strict-Transport-Security", value: "max-age=15552000" },
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      // Next.js's own start-up scripts are inline.
+      "script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://us-assets.i.posthog.com",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com",
+      "font-src 'self' data:",
+      "media-src 'self' blob: https://*.supabase.co",
+      "connect-src 'self' https://*.supabase.co https://*.ingest.us.sentry.io https://us.i.posthog.com https://us-assets.i.posthog.com",
+      "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'none'",
+    ].join("; "),
+  },
 ];
 
 const nextConfig: NextConfig = {

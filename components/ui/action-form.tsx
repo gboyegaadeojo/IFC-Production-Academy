@@ -23,6 +23,7 @@ export function ActionForm({
   children,
   className = "flex flex-col gap-4",
   srLabel,
+  buttonClassName,
 }: {
   action: FormAction;
   submitLabel: string;
@@ -33,6 +34,7 @@ export function ActionForm({
   className?: string;
   /** Extra words for screen readers, such as which item the button acts on. */
   srLabel?: string;
+  buttonClassName?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, idle);
   const resultId = useId();
@@ -47,6 +49,7 @@ export function ActionForm({
           type="submit"
           variant={variant}
           disabled={pending}
+          className={buttonClassName}
           aria-describedby={state.status === "idle" ? undefined : resultId}
         >
           {pending ? pendingLabel : submitLabel}
@@ -99,6 +102,57 @@ export function AutoSaveForm({
       >
         {pending ? "Saving…" : state.status === "idle" ? "" : state.message}
       </p>
+    </form>
+  );
+}
+
+/** Something that's on or off, in one tap. It saves straight away. */
+export function SwitchForm({
+  action,
+  hidden,
+  name,
+  checked,
+  label,
+}: {
+  action: FormAction;
+  hidden?: Record<string, string>;
+  /** The form field that carries the new value, "true" or "false". */
+  name: string;
+  checked: boolean;
+  label: string;
+}) {
+  const [state, formAction, pending] = useActionState(action, idle);
+  return (
+    <form action={formAction} className="flex max-w-md flex-col gap-1">
+      {Object.entries(hidden ?? {}).map(([key, value]) => (
+        <input key={key} type="hidden" name={key} value={value} />
+      ))}
+      <input type="hidden" name={name} value={checked ? "false" : "true"} />
+      <div className="flex min-h-control items-center justify-between gap-3">
+        <span>{label}</span>
+        <button
+          type="submit"
+          role="switch"
+          aria-checked={checked}
+          aria-label={label}
+          disabled={pending}
+          className={`relative h-6 w-10 shrink-0 rounded-pill border transition-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-light pointer-coarse:after:absolute pointer-coarse:after:-inset-2 ${
+            checked ? "border-accent bg-accent" : "border-border-strong bg-hover"
+          }`}
+        >
+          <span
+            aria-hidden="true"
+            className={`absolute top-0.5 left-0.5 size-[1.125rem] rounded-pill transition-transform duration-[var(--duration-base)] motion-reduce:transition-none ${
+              checked ? "translate-x-4 bg-on-accent" : "bg-text-muted"
+            }`}
+          />
+        </button>
+      </div>
+      {state.status === "error" ? (
+        <p role="alert" className="text-small text-error">
+          {state.message}
+        </p>
+      ) : null}
     </form>
   );
 }

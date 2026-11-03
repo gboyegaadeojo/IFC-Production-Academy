@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm, Field, fieldClasses, SwitchForm } from "@/components/ui/action-form";
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -169,36 +169,21 @@ function PositionTeam({
         {position.name}
         <span className="tabular text-small font-normal text-text-muted">{team.length}</span>
       </h2>
-      <div className="flex flex-col gap-1 text-small text-text-secondary">
-        <div className="flex flex-wrap items-center gap-3">
-          <span>
-            Sees all departments: <strong>{position.seesAll ? "Yes" : "No"}</strong>
-          </span>
-          <ActionForm
-            action={setSeesAllAction}
-            submitLabel={position.seesAll ? "Turn off" : "Turn on"}
-            pendingLabel="Saving…"
-            variant="tertiary"
-            hidden={{ roleId: position.id, seesAll: position.seesAll ? "false" : "true" }}
-            srLabel={`Sees all departments for ${position.name}`}
-            className="flex"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <span>
-            Gets the Director role while scheduled:{" "}
-            <strong>{position.leadsService ? "Yes" : "No"}</strong>
-          </span>
-          <ActionForm
-            action={setLeadsAction}
-            submitLabel={position.leadsService ? "Turn off" : "Turn on"}
-            pendingLabel="Saving…"
-            variant="tertiary"
-            hidden={{ roleId: position.id, leads: position.leadsService ? "false" : "true" }}
-            srLabel={`the Director role for ${position.name}`}
-            className="flex"
-          />
-        </div>
+      <div className="flex flex-col text-small text-text-secondary">
+        <SwitchForm
+          action={setSeesAllAction}
+          hidden={{ roleId: position.id }}
+          name="seesAll"
+          checked={Boolean(position.seesAll)}
+          label="Sees all departments"
+        />
+        <SwitchForm
+          action={setLeadsAction}
+          hidden={{ roleId: position.id }}
+          name="leads"
+          checked={Boolean(position.leadsService)}
+          label="Gets the Director role while scheduled"
+        />
       </div>
       {team.length === 0 ? (
         <p className="text-small text-text-muted">
@@ -239,7 +224,7 @@ function PositionTeam({
         </ul>
       )}
       {!fromPlanningCenter && addable.length > 0 ? (
-        <details className="rounded-card border border-dashed border-border px-5 py-3">
+        <details className="rounded-card border border-border bg-surface px-5 py-3">
           <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-accent-light">
             Add someone<span className="sr-only"> as {position.name}</span>
           </summary>
