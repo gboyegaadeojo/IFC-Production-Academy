@@ -329,6 +329,23 @@ body {
   }
 }
 
+/* The admin SOP library's type, one step smaller (G, 2026-11-03). That page only. */
+.sop-compact {
+  font-size: 0.8125rem;
+}
+.sop-compact .text-title {
+  font-size: 1.25rem;
+}
+.sop-compact .text-subheading {
+  font-size: 0.875rem;
+}
+.sop-compact .text-body {
+  font-size: 0.8125rem;
+}
+.sop-compact .text-small {
+  font-size: 0.6875rem;
+}
+
 /* Reading and form width: about 70 characters of body text. */
 @utility reading-width {
   max-width: 45rem;

@@ -432,7 +432,8 @@ export type Database = {
       sops: {
         Row: {
           id: string;
-          department_id: string;
+          department_id: string | null;
+          organization_id: string | null;
           category: string;
           owner_id: string | null;
           review_interval_months: number;
@@ -449,7 +450,7 @@ export type Database = {
         Row: {
           id: string;
           sop_id: string;
-          department_id: string;
+          department_id: string | null;
           version_number: number | null;
           status: Database["public"]["Enums"]["sop_version_status"];
           title: string;
@@ -1526,7 +1527,10 @@ export type Database = {
         Returns: { sop_id: string; owner_name: string }[];
       };
       remove_lesson_resource: { Args: { p_resource_id: string }; Returns: undefined };
-      create_sop: { Args: { p_department_id: string; p_title: string }; Returns: string };
+      create_sop: {
+        Args: { p_department_id: string | null; p_title: string; p_category?: string };
+        Returns: string;
+      };
       start_sop_draft: { Args: { p_sop_id: string }; Returns: string };
       publish_sop_version: {
         Args: { p_version_id: string; p_change_note: string };

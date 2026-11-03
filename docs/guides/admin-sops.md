@@ -1,13 +1,23 @@
 # Admin: SOP library
 
-**SOP library** holds the procedures for the departments you look after.
+**SOP library** holds the procedures for the departments you look after, and the ones for all of production.
+
+## Finding an SOP
+
+SOPs are grouped by category. Select a category's heading to collapse or open it, or use the category buttons to show one. You can also search, and filter by who it's for and its status. If any SOPs are due for review, a note at the top can show just those.
 
 ## Adding an SOP
 
-1. Choose **Add an SOP**, with a title and department.
+1. Choose **Add SOP**. Give it a title, say who it's for, and choose a category or create a new one.
 2. In the draft, add a summary saying what it's for and when to use it, and the procedure.
 3. Upload a file if it has one: a PDF, PNG, or JPEG, up to 10 MB. It's stored privately.
 4. **Publish.** The draft becomes the current version.
+
+## SOPs for all of production
+
+Choose **All of production** for a procedure that isn't about one department, such as how to do a copyright review. Everyone signed in can read the current version.
+
+Only someone with organisation-wide rights, such as the Production Director, can add or change these. Department leaders can attach them to their lessons.
 
 ## Changing an SOP
 

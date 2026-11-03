@@ -12,7 +12,13 @@ import { requireActiveUser } from "@/lib/data/auth";
 import { getSopLibrary, sopTitle } from "@/lib/data/sops";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
-import { matchesSearch, SOP_STATE_LABELS } from "@/lib/domain/sops";
+import {
+  ALL_PRODUCTION_LABEL,
+  ALL_PRODUCTION_VALUE,
+  matchesSearch,
+  SOP_STATE_LABELS,
+  sopAudience,
+} from "@/lib/domain/sops";
 
 export const metadata: Metadata = { title: "SOP library" };
 
@@ -35,11 +41,16 @@ async function LibraryContent({ searchParams }: Pick<PageProps<"/sops">, "search
   const department = typeof query.department === "string" ? query.department : "";
   const category = typeof query.category === "string" ? query.category : "";
   const all = await getSopLibrary();
-  const departments = [...new Map(all.map((sop) => [sop.department.id, sop.department])).values()];
+  const departments = [
+    ...new Map(
+      all.flatMap((sop) => (sop.department ? [sop.department] : [])).map((d) => [d.id, d]),
+    ).values(),
+  ];
+  const hasAllProduction = all.some((sop) => sop.department === null);
   const categories = [...new Set(all.map((sop) => sop.category).filter(Boolean))].toSorted();
   const shown = all.filter(
     (sop) =>
-      (department === "" || sop.department.id === department) &&
+      (department === "" || (sop.department?.id ?? ALL_PRODUCTION_VALUE) === department) &&
       (category === "" || sop.category === category) &&
       matchesSearch(
         { title: sopTitle(sop), summary: sop.current?.summary ?? "", category: sop.category },
@@ -70,7 +81,7 @@ async function LibraryContent({ searchParams }: Pick<PageProps<"/sops">, "search
               className={fieldClasses}
             />
           </div>
-          {departments.length > 1 ? (
+          {departments.length + (hasAllProduction ? 1 : 0) > 1 ? (
             <div className="flex flex-col gap-2">
               <label
                 htmlFor="sop-department"
@@ -85,6 +96,9 @@ async function LibraryContent({ searchParams }: Pick<PageProps<"/sops">, "search
                 className={fieldClasses}
               >
                 <option value="">All departments</option>
+                {hasAllProduction ? (
+                  <option value={ALL_PRODUCTION_VALUE}>{ALL_PRODUCTION_LABEL}</option>
+                ) : null}
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
                     {d.name}
@@ -150,7 +164,11 @@ async function LibraryContent({ searchParams }: Pick<PageProps<"/sops">, "search
           ) : null}
           <ul className="grid gap-3 md:grid-cols-2">
             {shown.map((sop) => {
-              const style = { "--dept": departmentHueVar(sop.department.hue) } as CSSProperties;
+              const style = {
+                "--dept": sop.department
+                  ? departmentHueVar(sop.department.hue)
+                  : "var(--border-strong)",
+              } as CSSProperties;
               return (
                 <li key={sop.id} style={style}>
                   <Link
@@ -158,7 +176,7 @@ async function LibraryContent({ searchParams }: Pick<PageProps<"/sops">, "search
                     className="flex h-full flex-col gap-2 rounded-card border border-l-2 border-border border-l-[var(--dept)] bg-card p-5 transition-surface hover:bg-hover"
                   >
                     <span className="text-small text-text-muted">
-                      {sop.department.name}
+                      {sopAudience(sop.department)}
                       {sop.category ? ` · ${sop.category}` : ""}
                     </span>
                     <span className="font-semibold text-text">{sopTitle(sop)}</span>

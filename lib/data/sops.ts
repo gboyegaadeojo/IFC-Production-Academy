@@ -52,7 +52,8 @@ export type SopVersionSummary = {
 
 export type SopSummary = {
   id: string;
-  department: { id: string; name: string; slug: string; hue: string };
+  /** Null when it's for all of production. */
+  department: { id: string; name: string; slug: string; hue: string } | null;
   category: string;
   ownerName: string | null;
   reviewIntervalMonths: number;
@@ -111,7 +112,8 @@ async function loadSops(
     query = query.in("id", filter.ids);
   }
   if (filter.departmentIds) {
-    query = query.in("department_id", filter.departmentIds);
+    // SOPs for all of production come along with any department's.
+    query = query.or(`department_id.in.(${filter.departmentIds.join(",")}),department_id.is.null`);
   }
   if (!filter.includeArchived) {
     query = query.is("archived_at", null);
@@ -133,7 +135,7 @@ async function loadSops(
     supabase
       .from("departments")
       .select("id, name, slug, hue")
-      .in("id", [...new Set(sops.data.map((sop) => sop.department_id))]),
+      .in("id", [...new Set(sops.data.flatMap((sop) => sop.department_id ?? []))]),
     supabase.rpc("sop_owner_names", { p_sop_ids: ids }),
   ]);
   if (versions.error || departments.error || owners.error) {
@@ -144,11 +146,15 @@ async function loadSops(
   const now = new Date();
   const ownerNames = new Map(owners.data.map((row) => [row.sop_id, row.owner_name]));
   return sops.data.flatMap((sop) => {
-    const department = departments.data.find((d) => d.id === sop.department_id);
-    if (!department) {
+    const department = departments.data.find((d) => d.id === sop.department_id) ?? null;
+    if (!department && sop.department_id !== null) {
       return [];
     }
     const mine = versions.data.filter((v) => v.sop_id === sop.id).map(toVersion);
+    // Someone who can't manage an unpublished SOP has nothing of it to see.
+    if (mine.length === 0) {
+      return [];
+    }
     const current = mine.find((v) => v.status === "published") ?? null;
     return [
       {
@@ -232,11 +238,16 @@ export async function getSopFileUrl(versionId: string): Promise<string | null> {
 // Changes
 // ---------------------------------------------------------------------------
 
-export async function createSop(departmentId: string, title: string): Promise<WithId<string>> {
+export async function createSop(
+  departmentId: string | null,
+  title: string,
+  category: string,
+): Promise<WithId<string>> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("create_sop", {
     p_department_id: departmentId,
     p_title: title,
+    p_category: category,
   });
   return error ? fail(error) : { ok: true, id: data };
 }
@@ -295,7 +306,8 @@ export async function uploadSopFile(
   if (version.error || !version.data || version.data.status !== "draft") {
     return fail(version.error ?? { code: "42501" });
   }
-  const path = `${version.data.department_id}/${version.data.sop_id}/${crypto.randomUUID()}.${sopFileExtension(file.type)}`;
+  const folder = version.data.department_id ?? version.data.sop_id;
+  const path = `${folder}/${version.data.sop_id}/${crypto.randomUUID()}.${sopFileExtension(file.type)}`;
   const upload = await supabase.storage.from(BUCKET).upload(path, file.bytes, {
     contentType: file.type,
     upsert: false,

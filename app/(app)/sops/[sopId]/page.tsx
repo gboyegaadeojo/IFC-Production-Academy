@@ -17,6 +17,7 @@ import {
   reviewDueAt,
   SOP_STATE_LABELS,
   SOP_VERSION_LABELS,
+  sopAudience,
 } from "@/lib/domain/sops";
 
 export const metadata: Metadata = { title: "SOP" };
@@ -55,7 +56,9 @@ async function SopContent({ params, searchParams }: Props) {
   const unavailable = query.file === "unavailable";
   const title = sopTitle(sop);
   const due = reviewDueAt(sop.lastReviewedAt, sop.reviewIntervalMonths);
-  const style = { "--dept": departmentHueVar(sop.department.hue) } as CSSProperties;
+  const style = {
+    "--dept": sop.department ? departmentHueVar(sop.department.hue) : "var(--border-strong)",
+  } as CSSProperties;
   const history = sop.versions.filter((v) => v.status !== "draft");
 
   return (
@@ -64,7 +67,7 @@ async function SopContent({ params, searchParams }: Props) {
       <div className="flex reading-width flex-col gap-8">
         <header className="flex flex-col gap-3 border-l-2 border-[var(--dept)] pl-5">
           <p className="eyebrow">
-            {sop.department.name}
+            {sopAudience(sop.department)}
             {sop.category ? ` · ${sop.category}` : ""}
           </p>
           <h1 className="text-title font-semibold text-balance">{title}</h1>
