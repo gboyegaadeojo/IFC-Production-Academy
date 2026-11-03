@@ -35,6 +35,8 @@ begin
   returning id into v_entry;
   insert into public.onboarding_outbox (entry_id, step_id, contact_id, subject, body, status)
   values (v_entry, (select id from ctx where key = 'step'), v_contact, 'Hi ' || p_name, 'Welcome', p_status)
+  -- A new entry runs the pathway, which may already have written this email.
+  on conflict (entry_id, step_id) do update set status = excluded.status
   returning id into v_id;
   return v_id;
 end;
