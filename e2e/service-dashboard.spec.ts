@@ -191,7 +191,7 @@ test("a manager saves the YouTube channel, and the preview follows it", async ({
 test("an editor chooses the mixer channels, in order", async ({ page }) => {
   await signInByEmail(page, "emery.director@example.com");
   await page.goto("/admin/service-dashboard/editors");
-  await expect(page.getByRole("heading", { name: /^Editors (/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /^Editors \(/ })).toBeVisible();
   if ((await page.getByRole("button", { name: "Remove Emery" }).count()) === 0) {
     await page.getByLabel("Find a person").fill("Emery");
     await page.getByRole("button", { name: /^Add Emery/ }).click();
