@@ -66,6 +66,43 @@ export function ActionForm({
   );
 }
 
+/**
+ * For a choice, such as a set of checkboxes: it saves as soon as it changes, with no Save button.
+ * Typed text keeps an ActionForm, so nothing is saved halfway through a word.
+ */
+export function AutoSaveForm({
+  action,
+  hidden,
+  children,
+  className = "flex flex-col gap-2",
+}: {
+  action: FormAction;
+  hidden?: Record<string, string>;
+  children: ReactNode;
+  className?: string;
+}) {
+  const [state, formAction, pending] = useActionState(action, idle);
+  const failed = state.status === "error" && !pending;
+  return (
+    <form
+      action={formAction}
+      onChange={(event) => event.currentTarget.requestSubmit()}
+      className={className}
+    >
+      {Object.entries(hidden ?? {}).map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
+      {children}
+      <p
+        role={failed ? "alert" : "status"}
+        className={`min-h-[1lh] text-small ${failed ? "text-error" : "text-text-secondary"}`}
+      >
+        {pending ? "Saving…" : state.status === "idle" ? "" : state.message}
+      </p>
+    </form>
+  );
+}
+
 export const fieldClasses =
   "min-h-control rounded-button border border-border-strong bg-surface px-3 text-field text-text placeholder:text-text-muted";
 

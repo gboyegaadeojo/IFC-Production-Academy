@@ -50,7 +50,7 @@ function SignInFormInner({ invite, onReset }: { invite?: string; onReset: () => 
         defaultValue={state.status === "error" ? state.email : ""}
         aria-invalid={state.status === "error"}
         aria-describedby={state.status === "error" ? errorId : undefined}
-        className="min-h-control rounded-button border border-border-strong bg-surface px-3 text-body text-text placeholder:text-text-muted aria-invalid:border-error"
+        className="min-h-control rounded-button border border-border-strong bg-surface px-3 text-field text-text placeholder:text-text-muted aria-invalid:border-error"
       />
       {state.status === "error" ? (
         <p id={errorId} role="alert" className="text-small text-error">

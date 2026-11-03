@@ -2,7 +2,7 @@
 
 ## Membership requests
 
-**Membership requests** lists people asking to join your department, oldest first. Choose **Approve**, or **Decline** with an optional reason that's kept in the history.
+**Membership requests** lists people asking to join your department, oldest first. Choose **Approve**. To add a note or decline, choose **More**. A note or a reason for declining is optional, and it's kept in the history.
 
 Approving makes someone part of the department's team. It doesn't approve them to serve. Courses are already open to anyone.
 
@@ -23,7 +23,7 @@ To stop a link, choose **Revoke**. It stops working straight away, and people wh
 
 **People and roles** lists everyone who has signed in. Open a person to:
 
-- **Grant a role,** choosing a department if the role needs one. Each role lists what it lets someone do.
+- **Grant a role,** choosing a department if the role needs one. Pick a role to see what it lets someone do.
 - **Remove a role,** with a reason. Past roles stay listed.
 - **Change their account:** Suspend, Deactivate, or Reactivate. Training history is kept whatever the status. On the People list, only accounts that aren't active have a label beside the name.
 

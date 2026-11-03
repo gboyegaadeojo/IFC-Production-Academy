@@ -16,7 +16,7 @@ import { createInvitationAction, type CreateInvitationState } from "./actions";
 const idle: CreateInvitationState = { status: "idle" };
 
 const fieldClasses =
-  "min-h-control rounded-button border border-border-strong bg-surface px-3 text-body text-text";
+  "min-h-control rounded-button border border-border-strong bg-surface px-3 text-field text-text";
 
 /** A choice on real radio buttons, so arrow keys and screen readers work; styled when checked. */
 const CHOICE =

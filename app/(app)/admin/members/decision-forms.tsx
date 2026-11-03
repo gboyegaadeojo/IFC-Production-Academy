@@ -1,15 +1,15 @@
 "use client";
 
 import { useActionState, useId } from "react";
+import { fieldClasses } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
+import { ChevronDownIcon } from "@/components/ui/icons";
 import { decideMembershipAction, type DecisionState } from "./actions";
 
 const initialState: DecisionState = { status: "idle" };
 
-const fieldClasses =
-  "min-h-control w-full rounded-button border border-border-strong bg-surface px-3 text-body text-text placeholder:text-text-muted";
 const disclosure =
-  "flex min-h-control cursor-pointer list-none items-center rounded-button px-2 text-small text-text-secondary transition-surface hover:bg-hover hover:text-text [&::-webkit-details-marker]:hidden";
+  "flex min-h-control cursor-pointer list-none items-center rounded-button border border-border-strong px-3 text-small text-text-secondary transition-surface hover:bg-hover hover:text-text [&::-webkit-details-marker]:hidden";
 
 function Result({ state, id }: { state: DecisionState; id: string }) {
   if (state.status === "idle") {
@@ -27,8 +27,8 @@ function Result({ state, id }: { state: DecisionState; id: string }) {
 }
 
 /**
- * Review actions for one request (DESIGN §7.2). Approve is one step; an optional note sits behind
- * "Add a note" instead of a box on every row. Declining needs a deliberate second step.
+ * Review actions for one request (DESIGN §7.2). Approve is the one button on each row; a note and
+ * declining sit behind "More", and declining still takes a deliberate second step.
  * The note is kept in the membership history (SRS-MEM-003).
  */
 export function RequestDecisionForm({
@@ -46,6 +46,7 @@ export function RequestDecisionForm({
     decideMembershipAction,
     initialState,
   );
+  const approveFormId = useId();
   const noteId = useId();
   const reasonId = useId();
   const approveResultId = useId();
@@ -55,56 +56,65 @@ export function RequestDecisionForm({
   return (
     <div className="flex flex-col gap-2 md:items-end">
       <div className="flex flex-wrap items-start gap-2 md:justify-end">
-        <form action={approveAction} className="flex flex-col gap-2">
+        <form id={approveFormId} action={approveAction}>
           <input type="hidden" name="membershipId" value={membershipId} />
           <input type="hidden" name="decision" value="active" />
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="submit"
-              disabled={pending}
-              aria-describedby={approveState.status === "idle" ? undefined : approveResultId}
-            >
-              {approving ? "Approving…" : "Approve"}
-              <span className="sr-only"> {personName}</span>
-            </Button>
-            <details className="group">
-              <summary className={disclosure}>
-                Add a note<span className="sr-only"> for {personName}</span>
-              </summary>
-              <div className="mt-2 w-64 max-w-full">
-                <label htmlFor={noteId} className="mb-1 block text-small text-text-secondary">
-                  Note (optional)
-                </label>
-                <input id={noteId} name="reason" maxLength={500} className={fieldClasses} />
-              </div>
-            </details>
-          </div>
+          <Button
+            type="submit"
+            disabled={pending}
+            aria-describedby={approveState.status === "idle" ? undefined : approveResultId}
+          >
+            {approving ? "Approving…" : "Approve"}
+            <span className="sr-only"> {personName}</span>
+          </Button>
         </form>
         <details className="group">
-          <summary className={`${disclosure} border border-border-strong`}>
-            Decline…<span className="sr-only"> {personName}</span>
+          <summary className={disclosure}>
+            More
+            <span className="sr-only"> options for {personName}</span>
+            <ChevronDownIcon className="ml-1 size-3.5 group-open:rotate-180" />
           </summary>
-          <form
-            action={declineAction}
-            className="mt-2 flex w-72 max-w-full flex-col gap-2 rounded-card border border-border bg-surface p-3"
-          >
-            <input type="hidden" name="membershipId" value={membershipId} />
-            <input type="hidden" name="decision" value="declined" />
-            <label htmlFor={reasonId} className="text-small text-text-secondary">
-              Reason (optional, kept in the history)
-            </label>
-            <input id={reasonId} name="reason" maxLength={500} className={fieldClasses} />
-            <Button
-              type="submit"
-              variant="destructive"
-              disabled={pending}
-              aria-describedby={declineState.status === "idle" ? undefined : declineResultId}
+          <div className="mt-2 flex w-72 max-w-full flex-col gap-3 rounded-card border border-border bg-surface p-3">
+            <div className="flex flex-col gap-1">
+              <label htmlFor={noteId} className="text-small text-text-secondary">
+                Note (optional)
+              </label>
+              {/* Goes with Approve, kept in the history. */}
+              <input
+                id={noteId}
+                form={approveFormId}
+                name="reason"
+                maxLength={500}
+                className={`${fieldClasses} w-full`}
+              />
+            </div>
+            <form
+              action={declineAction}
+              className="flex flex-col gap-2 border-t border-border pt-3"
             >
-              {declining ? "Declining…" : "Decline request"}
-              <span className="sr-only"> from {personName}</span>
-            </Button>
-            <Result state={declineState} id={declineResultId} />
-          </form>
+              <input type="hidden" name="membershipId" value={membershipId} />
+              <input type="hidden" name="decision" value="declined" />
+              <label htmlFor={reasonId} className="text-small text-text-secondary">
+                Reason for declining (optional, kept in the history)
+              </label>
+              <input
+                id={reasonId}
+                name="reason"
+                maxLength={500}
+                className={`${fieldClasses} w-full`}
+              />
+              <Button
+                type="submit"
+                variant="destructive"
+                disabled={pending}
+                aria-describedby={declineState.status === "idle" ? undefined : declineResultId}
+              >
+                {declining ? "Declining…" : "Decline request"}
+                <span className="sr-only"> from {personName}</span>
+              </Button>
+              <Result state={declineState} id={declineResultId} />
+            </form>
+          </div>
         </details>
       </div>
       <Result state={approveState} id={approveResultId} />
@@ -138,7 +148,7 @@ export function RemoveMemberForm({
         <label htmlFor={reasonId} className="text-small text-text-secondary">
           Reason (optional)
         </label>
-        <input id={reasonId} name="reason" maxLength={500} className={fieldClasses} />
+        <input id={reasonId} name="reason" maxLength={500} className={`${fieldClasses} w-full`} />
         <p className="text-small text-text-muted">
           They lose access to this department&apos;s training. Their progress and history are kept.
         </p>

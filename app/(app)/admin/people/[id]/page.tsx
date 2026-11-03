@@ -47,7 +47,7 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
     role.departmentName ? `${role.roleName}, ${role.departmentName}` : role.roleName;
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4">
         <Breadcrumbs
           items={[
@@ -65,11 +65,11 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
         </div>
       </header>
 
-      <section aria-labelledby="account-heading" className="flex flex-col gap-4">
+      <section aria-labelledby="account-heading" className="flex flex-col gap-2.5">
         <h2 id="account-heading" className="text-heading font-semibold">
           Account
         </h2>
-        <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
+        <div className="flex flex-col gap-2 rounded-card border border-border bg-surface p-3.5">
           {person.status === "active" ? (
             <p>This account is active.</p>
           ) : (
@@ -99,18 +99,18 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
         </div>
       </section>
 
-      <section aria-labelledby="roles-heading" className="flex flex-col gap-4">
+      <section aria-labelledby="roles-heading" className="flex flex-col gap-2.5">
         <h2 id="roles-heading" className="text-heading font-semibold">
           Roles
         </h2>
         {current.length === 0 ? (
           <p className="text-text-secondary">No current roles.</p>
         ) : (
-          <ul className="divide-y divide-border rounded-card border border-border">
+          <ul className="divide-y divide-border rounded-card border border-border bg-surface">
             {current.map((role) => (
               <li
                 key={role.id}
-                className="flex flex-col gap-2 p-5 sm:flex-row sm:items-start sm:justify-between"
+                className="flex flex-col gap-2 p-3.5 sm:flex-row sm:items-start sm:justify-between"
               >
                 <div className="flex flex-col gap-1">
                   <p className="font-medium">{roleLabel(role)}</p>
@@ -134,14 +134,14 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
         )}
 
         {canAssign ? (
-          <div className="rounded-card border border-border bg-card p-5">
-            <h3 className="mb-4 text-subheading font-semibold">Grant a role</h3>
+          <div className="rounded-card border border-border bg-surface p-3.5">
+            <h3 className="mb-3 font-semibold">Grant a role</h3>
             <GrantRoleForm userId={person.id} roles={roles} departments={departments} />
           </div>
         ) : null}
 
         {past.length > 0 ? (
-          <details className="rounded-card border border-border bg-card p-5">
+          <details className="rounded-card border border-border bg-surface px-3.5 py-1.5">
             <summary className="flex min-h-control cursor-pointer items-center font-semibold">
               Past roles ({past.length})
             </summary>

@@ -83,7 +83,7 @@ export function DisplayNameForm({
           defaultValue={displayName}
           aria-describedby={state.status === "error" ? `${hintId} ${resultId}` : hintId}
           aria-invalid={state.status === "error"}
-          className="min-h-control min-w-0 flex-1 basis-40 rounded-button border border-border-strong bg-card px-3 text-body text-text aria-invalid:border-error"
+          className="min-h-control min-w-0 flex-1 basis-40 rounded-button border border-border-strong bg-card px-3 text-field text-text aria-invalid:border-error"
         />
         <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : "Save"}

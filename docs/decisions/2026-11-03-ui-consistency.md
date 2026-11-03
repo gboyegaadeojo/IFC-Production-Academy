@@ -31,6 +31,10 @@ The page leads with the key numbers, then has tabs for position links, people no
 
 ## The rest of the work
 
-Tracked in the same review, and still to do: saving without a Save button on each row, calmer actions in repeating rows, and the person page on phones. The Planning Center page is redesigned on top of these rules.
+The Planning Center page is redesigned on top of these rules.
+
+- **Saving:** a choice, such as checkboxes or a dropdown, saves as soon as it changes. Typed text keeps its Save button, behind an Edit link where it repeats in a list, so nothing is saved halfway through a word.
+- **Repeating rows:** one main button per row, with the rest behind **More**, starting with Membership requests.
+- **A person's page:** a short role picker that shows what the chosen role allows, with no cards inside cards.
 
 The sidebar's rows are now 32px with a mouse so its links fit on a laptop screen, and it still scrolls on very short screens. "Services & Scheduling" keeps its name, because it fits at the new text size.
