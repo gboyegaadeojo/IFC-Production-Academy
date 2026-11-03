@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { scrubEvent, scrubPath, scrubText, scrubUrl, scrubUsageProperties } from "./monitoring";
+import {
+  scrubAddresses,
+  scrubEvent,
+  scrubPath,
+  scrubText,
+  scrubUrl,
+  scrubUsageEvent,
+} from "./monitoring";
 
 const ID = "b7ba9dae-cab5-43e0-a996-8ae9d2436855";
 
@@ -67,20 +74,73 @@ describe("scrubEvent", () => {
   });
 });
 
-describe("scrubUsageProperties", () => {
-  it("scrubs every address and leaves other properties alone", () => {
+describe("scrubAddresses", () => {
+  it("reaches addresses at any depth and leaves other values alone", () => {
+    const when = new Date("2026-11-03T12:00:00Z");
     expect(
-      scrubUsageProperties({
+      scrubAddresses({
+        name: "Safari",
+        count: 3,
+        when,
+        nested: { list: [{ url: "https://x.example.org/invite/secret?code=1" }] },
+      }),
+    ).toEqual({
+      name: "Safari",
+      count: 3,
+      when,
+      nested: { list: [{ url: "https://x.example.org/invite/[token]" }] },
+    });
+  });
+});
+
+describe("scrubEvent's nested addresses", () => {
+  it("covers Sentry's own copies of the address", () => {
+    const event = scrubEvent({
+      transaction: "/invite/secret-token",
+      tags: { url: "https://academy.example.org/invite/secret-token?next=/home" },
+    } as Parameters<typeof scrubEvent>[0]);
+    expect(JSON.stringify(event)).not.toContain("secret-token");
+    expect(JSON.stringify(event)).not.toContain("next=");
+  });
+});
+
+describe("scrubUsageEvent", () => {
+  it("scrubs every address on a page view, including nested and person fields", () => {
+    const event = scrubUsageEvent({
+      event: "$pageview",
+      properties: {
         $current_url: "https://academy.example.org/invite/secret-token",
         $referrer: "https://academy.example.org/verify/ABC-123?x=1",
         $pathname: `/courses/${ID}`,
         $browser: "Safari",
-      }),
-    ).toEqual({
-      $current_url: "https://academy.example.org/invite/[token]",
-      $referrer: "https://academy.example.org/verify/[reference]",
-      $pathname: "/courses/[id]",
-      $browser: "Safari",
+        title: "Certificate for Riley Example",
+        $web_vitals_FCP_event: {
+          navigationURL: "https://academy.example.org/invite/secret-token?code=1",
+        },
+      },
+      $set_once: { $initial_current_url: "https://academy.example.org/invite/secret-token" },
     });
+    expect(event).toEqual({
+      event: "$pageview",
+      properties: {
+        $current_url: "https://academy.example.org/invite/[token]",
+        $referrer: "https://academy.example.org/verify/[reference]",
+        $pathname: "/courses/[id]",
+        $browser: "Safari",
+        $web_vitals_FCP_event: { navigationURL: "https://academy.example.org/invite/[token]" },
+      },
+      $set_once: { $initial_current_url: "https://academy.example.org/invite/[token]" },
+    });
+  });
+
+  it("sends nothing but page views", () => {
+    for (const name of ["$web_vitals", "$autocapture", "$exception", "$snapshot"]) {
+      expect(
+        scrubUsageEvent({
+          event: name,
+          properties: { $current_url: "https://academy.example.org/invite/secret-token" },
+        }),
+      ).toBeNull();
+    }
   });
 });
