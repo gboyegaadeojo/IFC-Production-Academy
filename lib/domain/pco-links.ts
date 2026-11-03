@@ -94,3 +94,17 @@ export function groupTeamsByName(serviceTypes: readonly ServiceTypeInput[]): Tea
   });
   return groups.sort((a, b) => Number(b.linked) - Number(a.linked) || a.name.localeCompare(b.name));
 }
+
+/** What a link's status says. A whole team needn't be linked, as its positions can have their own. */
+export function pcoLinkStatus(
+  row: { roleId: string | null; mixed: boolean },
+  team: boolean,
+): { label: string; tone: "success" | "warning" | "neutral" } {
+  if (row.mixed) {
+    return { label: "Mixed: choose one", tone: "warning" };
+  }
+  if (row.roleId) {
+    return { label: "Linked", tone: "success" };
+  }
+  return team ? { label: "Whole team", tone: "neutral" } : { label: "Not linked", tone: "warning" };
+}

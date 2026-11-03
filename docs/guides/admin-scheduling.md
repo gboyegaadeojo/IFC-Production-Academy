@@ -6,8 +6,8 @@ Planning Center Services schedules, and the Academy reads from it. The Academy n
 
 The **Planning Center** page is where the two connect.
 
-- **Last read:** it reads every 15 minutes. Choose refresh if you've just made a change and don't want to wait.
-- **Position links:** connect each Planning Center position to an Academy position, so people see the right checklist and their training. Planning Center gives each service type its own copy of a team, so link each one. Add Academy positions under [Competencies and roles](admin-assessments.md) first.
+- **The top of the page:** the key numbers from the last read, which happens every 15 minutes. Choose **Refresh now** if you've just made a change and don't want to wait.
+- **Position links:** connect each Planning Center position to an Academy position, so people see the right checklist and their training. Your choice saves as soon as you pick it. On a phone, tap a row to choose. Planning Center gives each service type its own copy of a team, so link each one. Add Academy positions under [Competencies and roles](admin-assessments.md) first.
 - **Scheduled in positions not linked yet:** these people won't see their checklist for the service until you link their position.
 - **Not in the Academy yet:** people on a Planning Center team or schedule who haven't signed in. Nothing is sent to them. They get an account the first time they sign in with Planning Center.
 - **Who schedules:** Planning Center, or the Academy's own tools. Leave it on Planning Center unless you've decided to move away from it.

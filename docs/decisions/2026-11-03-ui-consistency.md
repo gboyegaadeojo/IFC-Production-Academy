@@ -22,6 +22,10 @@ G found the UI looked amateur because sizes didn't match: dropdowns were larger 
 - **Dropdowns** use one arrow on every device.
 - **Exceptions:** printed certificates, the wall TV, the sign-in page's hero, and very small previews, such as slide thumbnails, keep their own sizes.
 
+## The Planning Center page
+
+The page leads with the key numbers, then has tabs for position links, people not in the Academy, and who schedules. A link saves as soon as it's chosen. On a phone, each position is one compact row, and tapping it opens the phone's own picker. The two figures dropped from the top are people matched to an account and places on position teams.
+
 ## The rest of the work
 
 Tracked in the same review: saving without a Save button on each row, one width per page, fewer labels in the code-style font, the admin sidebar, showing status only when it matters, calmer actions in repeating rows, the person page on phones, and the Training home. The Planning Center page is redesigned on top of these rules.

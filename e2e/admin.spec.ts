@@ -493,3 +493,17 @@ test("a volunteer can't open the admin area", async ({ page }) => {
     await expect(page.getByRole("heading", { name: "This area isn't open to you" })).toBeVisible();
   }
 });
+
+test("the Planning Center page opens its sections as tabs", async ({ page }) => {
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin/planning-center");
+  await expect(page.getByRole("tab", { name: "Position links" })).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
+  await page.getByRole("tab", { name: /Not in the Academy/ }).click();
+  await expect(page.getByRole("tabpanel", { name: /Not in the Academy/ })).toBeVisible();
+  await page.getByRole("tab", { name: "Who schedules" }).click();
+  await expect(page.getByRole("heading", { name: /schedules$/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
+});
