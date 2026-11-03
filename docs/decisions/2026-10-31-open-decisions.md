@@ -40,7 +40,9 @@ result.
 Hold a **contingency of CA$400 a year** in the production budget so an upgrade never waits on
 approval.
 
-**Launch dates.** December is Christmas production, so the pilot avoids it:
+**Launch dates.** December is Christmas production, so the pilot avoids it. *Revised 2026-11-03:*
+a [first pilot](2026-11-03-first-pilot.md) of Video Directing Concepts starts 17 Nov 2026, and the
+dates below for real volunteers are not yet confirmed.
 
 | When | What |
 | --- | --- |

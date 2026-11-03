@@ -1,6 +1,8 @@
 # Camera Operations curriculum
 
-Draft for the pilot (decision 5 in [2026-10-31 open decisions](../decisions/2026-10-31-open-decisions.md)).
+Draft (decision 5 in [2026-10-31 open decisions](../decisions/2026-10-31-open-decisions.md)). The
+[first pilot](../decisions/2026-11-03-first-pilot.md) now uses Video Directing Concepts, so the dates
+here are not yet confirmed.
 G and the Camera lead check every item against IFC's cameras, positions, and director calls by
 **15 Nov 2026**, then enter it in the Academy, where it's published and versioned. After that, the
 Academy is the source of truth and this file is the starting draft.

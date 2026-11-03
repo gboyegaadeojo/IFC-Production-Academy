@@ -96,7 +96,7 @@ Any failed job emails G and the Platform Admin via Resend. Details are in SPEC Â
 1. **Phase 1, foundation:** app shell, tokens, components, auth, RBAC, users and departments, audit, environments, migrations, keep-alive and backup jobs.
 2. **Phase 2, core learning:** curriculum admin and publishing workflow, YouTube lesson player, SOP attachments, progress, quizzes, practical assessments, competency, certificates, dashboards.
 3. **Phase 3, ministry operations:** scheduling with competency checks, availability, notifications, mentoring, reports and exports, SOP reminders.
-4. **Phase 4, pilot:** Camera Operations Level 1 with a small group.
+4. **Phase 4, pilot:** Camera Operations Level 1 with a small group. A [first pilot of Video Directing Concepts](docs/decisions/2026-11-03-first-pilot.md) starts 17 Nov 2026, on G's own two accounts; the round with real volunteers is not yet confirmed.
 5. **Phase 5, expansion:** other departments, Lighting, PWA push, calendar, native apps.
 
 Don't start a later phase's features until the earlier phase's exit criteria pass. Exception: G moved the Service Dashboard ahead of the pilot ([decision, 2026-11-02](docs/decisions/2026-11-02-service-dashboard.md)).
