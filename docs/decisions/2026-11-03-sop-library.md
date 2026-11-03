@@ -18,9 +18,17 @@
 
 G decided Platform Administrators should draft and publish training. The role now holds `course.draft` and `course.publish`, organisation-wide, so this reaches every department's curriculum and SOPs as well as these. It replaces the earlier rule that the role doesn't publish training. They still don't approve memberships.
 
-## Also changed
+## The volunteer SOPs page
 
-The volunteer SOPs page has an **All of production** choice in its department filter, because these SOPs wouldn't otherwise have a department to filter by. Nothing else on that page changes.
+G asked for this page to stay usable at 50 to 100 SOPs, and approved a second mock:
+
+- Compact rows replace cards, with a category menu beside them, or a dropdown on phones.
+- Each category previews 4 SOPs, with **See all**.
+- Search works as you type, across titles, summaries and categories, and highlights what matched.
+- **Recently updated** lists the last 10 published.
+- Only **Review due** is labelled, so it stands out. Owner and summary move to each SOP's own page.
+- Its type is one step smaller, matching the admin library.
+- Its department filter includes **All of production**.
 
 ## In the database
 
