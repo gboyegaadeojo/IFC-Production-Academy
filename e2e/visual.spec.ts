@@ -305,3 +305,17 @@ test("App name and logo, for design review", async ({ page }) => {
   await page.getByRole("button", { name: "IFC mark" }).click();
   await capture(page, "branding-1440");
 });
+
+test("Help and guides, for design review", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/help");
+  await expect(page.getByRole("heading", { level: 1, name: "Help and guides" })).toBeVisible();
+  await capture(page, "help-1440");
+  await page.goto("/help/admin-overview");
+  await expect(page.getByRole("heading", { level: 1, name: "Admin: start here" })).toBeVisible();
+  await capture(page, "help-guide-1440");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/help/runbook-service-dashboard");
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await capture(page, "help-setup-390");
+});

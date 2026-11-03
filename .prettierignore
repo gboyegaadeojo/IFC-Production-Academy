@@ -13,3 +13,4 @@ cloudflare-env.d.ts
 docs/
 CLAUDE.md
 AGENTS.md
+lib/generated/

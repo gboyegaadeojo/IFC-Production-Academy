@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -57,6 +58,9 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
             <p className="mt-1.5 text-small text-text-muted">
               Immanuel Fellowship Church · Production Ministry
             </p>
+            <Link href="/help" className="text-small underline">
+              Help and guides
+            </Link>
           </div>
           <Suspense fallback={null}>
             <SignInAppearance />

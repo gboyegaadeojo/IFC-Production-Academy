@@ -264,6 +264,12 @@ const DASHBOARD: AdminSection = {
   group: "Overview",
 };
 
+/** Every Admin page's address, so Help can open the guide for the page someone is on. */
+export const HELP_ADMIN_PATHS: readonly { key: AdminSectionKey; href: string }[] = [
+  DASHBOARD,
+  ...SECTIONS,
+];
+
 /** Sidebar navigation: the dashboard first, then grouped sections. Empty for people with none. */
 export function adminNavigation(
   grants: readonly CapabilityGrant[],

@@ -21,6 +21,7 @@ const eslintConfig = defineConfig([
     "test-results/**",
     "next-env.d.ts",
     "cloudflare-env.d.ts",
+    "lib/generated/**",
   ]),
 ]);
 
