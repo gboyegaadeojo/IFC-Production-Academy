@@ -16,6 +16,7 @@ import {
 } from "@/lib/domain/sops";
 import {
   archiveSopAction,
+  deleteSopAction,
   markSopReviewedAction,
   publishSopAction,
   removeSopFileAction,
@@ -62,6 +63,7 @@ type Props = {
   canPublish: boolean;
   canReview: boolean;
   canArchive: boolean;
+  canDelete: boolean;
   history: HistoryItem[];
 };
 
@@ -386,6 +388,26 @@ export function SopEditor(props: Props) {
               </ol>
             )}
           </section>
+          {props.canDelete ? (
+            <details>
+              <summary className="w-fit cursor-pointer px-1 py-0.5 text-small text-text-muted">
+                Delete this SOP
+              </summary>
+              <div className="mt-1.5 flex flex-col gap-2 px-1">
+                <p className="text-small text-text-secondary">
+                  This deletes every version and file for good, and can&apos;t be undone. The audit
+                  log keeps a note of what was deleted.
+                </p>
+                <ActionForm
+                  action={deleteSopAction}
+                  submitLabel="Delete forever"
+                  pendingLabel="Deleting…"
+                  variant="destructive"
+                  hidden={{ sopId }}
+                />
+              </div>
+            </details>
+          ) : null}
           {props.canArchive ? (
             <details>
               <summary className="w-fit cursor-pointer px-1 py-0.5 text-small text-text-muted">

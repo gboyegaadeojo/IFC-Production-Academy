@@ -1534,6 +1534,7 @@ export type Database = {
         Returns: string;
       };
       start_sop_draft: { Args: { p_sop_id: string }; Returns: string };
+      delete_archived_sop: { Args: { p_sop_id: string }; Returns: undefined };
       publish_sop_version: {
         Args: { p_version_id: string; p_change_note: string };
         Returns: number;

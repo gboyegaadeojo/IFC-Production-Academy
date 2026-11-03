@@ -323,6 +323,8 @@ export type SopError =
   | "sop_not_published"
   | "change_note_required"
   | "version_not_publishable"
+  | "sop_not_archived"
+  | "sop_in_lesson"
   | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<SopError>([
@@ -332,6 +334,8 @@ const KNOWN: ReadonlySet<string> = new Set<SopError>([
   "sop_not_published",
   "change_note_required",
   "version_not_publishable",
+  "sop_not_archived",
+  "sop_in_lesson",
 ]);
 
 export function toSopError(
@@ -356,6 +360,10 @@ export function sopErrorMessage(error: SopError): string {
       return "Write the steps or attach a file before publishing.";
     case "sop_not_published":
       return "Publish the SOP before marking it reviewed.";
+    case "sop_not_archived":
+      return "Archive this SOP before deleting it.";
+    case "sop_in_lesson":
+      return "A course still lists this SOP. Remove it from that lesson, then delete it.";
     case "change_note_required":
       return "Say briefly what changed, so people can follow the history.";
     case "version_not_publishable":
