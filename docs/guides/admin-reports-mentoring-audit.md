@@ -8,6 +8,8 @@
 - **Competencies and Approved to Serve by volunteer:** what each person holds.
 - **Approved to Serve by department and role:** how many people are ready for each role. Aim for at least two approved people in every role, so one absence doesn't leave a gap.
 
+Reports include the department's members and anyone else who has started training there, because anyone can take any course. Starting a course doesn't make someone a member or put them on a team.
+
 **Download CSV** gives you the same data as a file. Downloads go in the audit log. They include names and training records only, and never mentoring's private notes.
 
 ## Mentoring

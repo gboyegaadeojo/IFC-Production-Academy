@@ -314,7 +314,7 @@ function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
               <th scope="col" className={`${cell} font-medium`}>
                 Department
               </th>
-              <Th label="Members" note="Can take the training" />
+              <Th label="Members" note="Joined this department" />
               <Th label="Learning" note="Started a course" />
               <Th label="Waiting" note="Asked for an assessment" />
               <Th label="Approved to serve" note="In at least one role" />

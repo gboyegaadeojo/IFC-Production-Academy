@@ -56,10 +56,10 @@ describe("draftNames", () => {
 });
 
 describe("pipelineSegments", () => {
-  it("splits members by their furthest stage", () => {
+  it("splits learners by their furthest stage", () => {
     expect(
       pipelineSegments({
-        activeMembers: 10,
+        learners: 10,
         approvedToServe: 2,
         awaitingAssessment: 1,
         inProgress: 3,
@@ -69,7 +69,7 @@ describe("pipelineSegments", () => {
 
   it("never passes 100% when people count in more than one stage", () => {
     const s = pipelineSegments({
-      activeMembers: 2,
+      learners: 2,
       approvedToServe: 2,
       awaitingAssessment: 1,
       inProgress: 2,
@@ -77,10 +77,10 @@ describe("pipelineSegments", () => {
     expect(s).toEqual({ approved: 100, waiting: 0, learning: 0, joined: 0 });
   });
 
-  it("is empty with no members", () => {
+  it("is empty with no learners", () => {
     expect(
       pipelineSegments({
-        activeMembers: 0,
+        learners: 0,
         approvedToServe: 0,
         awaitingAssessment: 0,
         inProgress: 0,

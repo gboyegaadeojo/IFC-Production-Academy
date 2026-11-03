@@ -11,7 +11,7 @@ The observer records what they saw. The system decides the result.
 
 ## Assessments
 
-**Waiting for assessment** lists volunteers who asked to be assessed. Choose **Assess now**. To record one nobody requested, use **Record an assessment**, and choose the practical and the person you watched.
+**Waiting for assessment** lists volunteers who asked to be assessed. Choose **Assess now**. To record one nobody requested, use **Record an assessment**, and choose the practical and the person you watched. The list shows the department's members and anyone else who has started training there.
 
 1. Watch them work.
 2. Tick what you saw.
