@@ -249,7 +249,7 @@ function Departments({
         </ul>
       )}
       <p className="border-t border-border px-5 py-3.5 text-small text-text-muted">
-        Membership opens a department&apos;s training. Approval to serve a role comes separately,
+        Membership puts you on a department&apos;s team. Approval to serve a role comes separately,
         after its practical assessment.
       </p>
     </section>

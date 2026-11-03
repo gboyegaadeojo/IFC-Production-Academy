@@ -71,7 +71,6 @@ export type Database = {
           icon: string;
           cover_image_path: string | null;
           sort_order: number;
-          curriculum_requires_review: boolean;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -96,7 +95,6 @@ export type Database = {
           icon?: string;
           cover_image_path?: string | null;
           sort_order?: number;
-          curriculum_requires_review?: boolean;
         };
         Relationships: [];
       };
@@ -1401,14 +1399,6 @@ export type Database = {
       create_course: { Args: { p_level_id: string; p_title: string }; Returns: string };
       start_course_draft: { Args: { p_course_id: string }; Returns: string };
       restore_course_version: { Args: { p_version_id: string }; Returns: string };
-      submit_course_version: {
-        Args: { p_version_id: string; p_change_note: string };
-        Returns: undefined;
-      };
-      return_course_version: {
-        Args: { p_version_id: string; p_reason: string };
-        Returns: undefined;
-      };
       publish_course_version: {
         Args: { p_version_id: string; p_change_note?: string | null };
         Returns: number;
@@ -1751,6 +1741,8 @@ export type Database = {
         Returns: { youtube_channel_id: string | null }[];
       };
       set_youtube_channel: { Args: { p_channel_id: string }; Returns: undefined };
+      release_email_notification: { Args: { p_id: string }; Returns: undefined };
+      release_onboarding_email: { Args: { p_id: string }; Returns: undefined };
       service_stream_channel: {
         Args: Record<string, never>;
         Returns: string | null;

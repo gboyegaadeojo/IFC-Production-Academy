@@ -71,8 +71,8 @@ export function DepartmentForm({ department }: { department: DepartmentSettings 
             className={fieldClasses}
           >
             <option value="active">Active: open to volunteers</option>
-            <option value="coming_soon">Coming soon: visible, not joinable</option>
-            <option value="inactive">Inactive: hidden from volunteers</option>
+            <option value="coming_soon">Coming soon (seen, can&apos;t join yet)</option>
+            <option value="inactive">Hidden while you set it up</option>
           </select>
           <p id={`${ids.status}-consequence`} className="text-small text-text-secondary">
             {STATUS_CONSEQUENCES[status]}
@@ -95,15 +95,6 @@ export function DepartmentForm({ department }: { department: DepartmentSettings 
           </select>
         </div>
       </div>
-      <label className="flex min-h-control items-center gap-3">
-        <input
-          type="checkbox"
-          name="curriculumRequiresReview"
-          defaultChecked={department.curriculumRequiresReview}
-          className="size-5 accent-[var(--accent)]"
-        />
-        A second person publishes curriculum changes
-      </label>
       <div className="flex flex-wrap items-center gap-4">
         <Button
           type="submit"

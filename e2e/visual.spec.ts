@@ -154,7 +154,7 @@ for (const viewport of VIEWPORTS) {
     await page.getByRole("button", { name: "Edit Lighting Operations", exact: true }).click();
     const drawer = page.getByRole("dialog", { name: "Edit Lighting Operations" });
     await expect(drawer).toHaveCSS("opacity", "1");
-    await expect(drawer.getByText(/can't join yet/)).toBeVisible();
+    await expect(drawer.getByText("but can't join yet.", { exact: false })).toBeVisible();
     await page.screenshot({ path: `${DIR}/admin-department-edit-${viewport.name}.png` });
     await page.keyboard.press("Escape");
     await expect(drawer).toBeHidden();
@@ -304,6 +304,18 @@ test("App name and logo, for design review", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "App name and logo" })).toBeVisible();
   await page.getByRole("button", { name: "IFC mark" }).click();
   await capture(page, "branding-1440");
+});
+
+test("the top bar's parts never overlap, at any width", async ({ page }) => {
+  await signInByEmail(page, "avery.volunteer@example.com");
+  const nav = page.getByRole("navigation", { name: "Academy" }).first();
+  const toggle = page.getByRole("switch", { name: "Dark mode" }).first();
+  for (const width of [768, 834, 1024, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    const links = await nav.boundingBox();
+    const box = await toggle.boundingBox();
+    expect(links && box && links.x + links.width <= box.x, `at ${width}px`).toBe(true);
+  }
 });
 
 test("Help and guides, for design review", async ({ page }) => {

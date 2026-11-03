@@ -65,6 +65,12 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   const saved = page.waitForResponse(
     (response) => response.request().method() === "POST" && response.url().includes("/serve/"),
   );
+  // With no connection the tick undoes itself and says why.
+  await page.context().setOffline(true);
+  await item.click();
+  await expect(page.getByText("Not saved. Check your connection and try again.")).toBeVisible();
+  await expect(item).not.toBeChecked();
+  await page.context().setOffline(false);
   await item.check();
   await saved;
   await page.reload();

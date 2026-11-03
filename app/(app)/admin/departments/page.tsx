@@ -17,7 +17,7 @@ import {
 const STATUS_LABELS: Record<DepartmentStatus, string> = {
   active: "Active",
   coming_soon: "Coming soon",
-  inactive: "Inactive",
+  inactive: "Hidden",
 };
 const STATUS_TONES: Record<DepartmentStatus, StatusTone> = {
   active: "success",
@@ -25,7 +25,7 @@ const STATUS_TONES: Record<DepartmentStatus, StatusTone> = {
   inactive: "neutral",
 };
 const ENROLMENT_LABELS: Record<EnrolmentMode, string> = {
-  request: "Volunteers request to join",
+  request: "They ask, a leader approves",
   open: "Anyone can join",
   invite_only: "By invitation only",
 };
@@ -110,9 +110,6 @@ async function DepartmentsContent() {
                 </td>
                 <td className="px-4 py-3 text-text-secondary">
                   {ENROLMENT_LABELS[department.enrolmentMode]}
-                  {department.curriculumRequiresReview ? (
-                    <span className="block text-text-muted">Review before publishing</span>
-                  ) : null}
                 </td>
                 <td className="px-4 py-3">
                   <StatusBadge tone={STATUS_TONES[department.status]}>

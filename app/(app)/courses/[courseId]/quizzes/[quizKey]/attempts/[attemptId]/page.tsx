@@ -65,7 +65,7 @@ async function AttemptContent({ params }: Pick<Props, "params">) {
   const breadcrumbs = (
     <Breadcrumbs
       items={[
-        { label: "Home", href: "/home" },
+        { label: "Training", href: "/home" },
         { label: course.title, href: `/courses/${course.id}` },
         { label: title, href: quizHref },
         { label: `Attempt ${attempt.attemptNumber}` },

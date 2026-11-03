@@ -178,7 +178,6 @@ export type CourseEditor = {
   departmentId: string;
   departmentName: string;
   levelName: string;
-  requiresReview: boolean;
   archived: boolean;
   /** The draft or version in review, if any; otherwise null. */
   open: VersionDetail | null;
@@ -265,11 +264,7 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
     return null;
   }
   const [department, level, versions] = await Promise.all([
-    supabase
-      .from("departments")
-      .select("name, curriculum_requires_review")
-      .eq("id", course.data.department_id)
-      .single(),
+    supabase.from("departments").select("name").eq("id", course.data.department_id).single(),
     supabase.from("levels").select("number, name").eq("id", course.data.level_id).single(),
     supabase
       .from("course_versions")
@@ -301,7 +296,6 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
     departmentId: course.data.department_id,
     departmentName: department.data.name,
     levelName: `Level ${level.data.number}: ${level.data.name}`,
-    requiresReview: department.data.curriculum_requires_review,
     archived: course.data.archived_at !== null,
     open: openRow ? await loadVersionDetail(supabase, openRow) : null,
     live: liveRow ? await loadVersionDetail(supabase, liveRow) : null,
@@ -621,27 +615,6 @@ export async function publishVersion(
     p_change_note: changeNote,
   });
   return error ? fail(error) : { ok: true, id: data };
-}
-
-export async function submitVersion(
-  versionId: string,
-  changeNote: string,
-): Promise<CurriculumResult> {
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("submit_course_version", {
-    p_version_id: versionId,
-    p_change_note: changeNote,
-  });
-  return error ? fail(error) : { ok: true };
-}
-
-export async function returnVersion(versionId: string, reason: string): Promise<CurriculumResult> {
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("return_course_version", {
-    p_version_id: versionId,
-    p_reason: reason,
-  });
-  return error ? fail(error) : { ok: true };
 }
 
 export async function restoreVersion(versionId: string): Promise<CurriculumResult> {

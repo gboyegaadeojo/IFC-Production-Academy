@@ -69,7 +69,7 @@ async function InvitationsContent({
       <PageHeader
         eyebrow="People & Teams"
         title="Invitations"
-        description="Invite someone straight into a department. They join when they accept, because you've already decided. Joining gives them the training; approval to serve still comes after the hands-on checks."
+        description="Invite someone straight into a department. They join when they accept, because you've already decided. Joining puts them on the team; approval to serve still comes after the hands-on checks."
       />
 
       {choices.length === 0 && !allowAcademyOnly ? (

@@ -89,14 +89,18 @@ function Tick({
             setError(null);
             startTransition(async () => {
               setOptimistic(next);
-              const result = await setItemAction({
-                eventId,
-                itemId,
-                checked: next,
-                tabId: getTabId(),
-              });
-              if (!result.ok) {
-                setError(result.message);
+              try {
+                const result = await setItemAction({
+                  eventId,
+                  itemId,
+                  checked: next,
+                  tabId: getTabId(),
+                });
+                if (!result.ok) {
+                  setError(result.message);
+                }
+              } catch {
+                setError("Not saved. Check your connection and try again.");
               }
             });
           }}

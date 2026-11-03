@@ -70,3 +70,7 @@ on, new emails are written as `pending` and go out on the next run, outside quie
   `Notification emails: N sent, 0 failed`.
 - Schedule a test volunteer (an address you control), wait for the next run, and check the email
   arrives with a link back to the Academy.
+
+## Resend's limits
+
+The free plan allows 100 emails a day and 3,000 a month, shared with sign-in links, and 2 requests a second. The sender waits between emails. When Resend says it's at its limit, the rest stay in the queue and go out on a later run, without using up a try. Any other failure gets 3 tries, and the job fails loudly so you're told.

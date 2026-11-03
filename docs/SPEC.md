@@ -148,8 +148,8 @@ IDs come from your package. Rows marked **ADD-** are additions from my draft tha
 | SRS-CUR-002 | Configurable departments, levels, courses, modules, lessons, prerequisites, completion rules | M |
 | SRS-CUR-003 | Course title, description, objectives, duration, owner, status, revision metadata | M |
 | SRS-CUR-004 | Required and optional lessons | M |
-| SRS-CUR-005 | Publishing requires `course.publish` for the department. Department leaders hold it for their own department; a department can turn on "require review" so a second person publishes (decided 2026-10-30) | M |
-| SRS-CUR-006 | States: draft, published, archived, superseded; pending review only when the department requires review | M |
+| SRS-CUR-005 | Publishing requires `course.publish` for the department. Department leaders hold it for their own department, with no approval step (decided 2026-10-30, confirmed 2026-11-03) | M |
+| SRS-CUR-006 | States: draft, published, archived, superseded | M |
 | SRS-CUR-007 | Published changes create a revision | M |
 | SRS-CUR-008 | Updates never erase historic completion or certification | M |
 | SRS-CUR-009 | Activate or deactivate a department without deployment | M |
@@ -306,7 +306,7 @@ A volunteer moves from membership through lessons, a quiz, and a practical asses
 | --- | --- | --- |
 | A. Join a department | Sign in or accept invite, view departments, request or accept, leader approves, pathway appears, start Level 1 | No restricted resource opens before approval |
 | B. Complete a course | Open course, complete required lessons, take quiz, status becomes Awaiting Assessment, observer ticks the practical checklist, the system computes the result and grants the competency, Approved to Serve follows automatically when a role's competencies are complete, dashboard and notification update | Never Approved to Serve just because a video was marked complete or a quiz was passed; the observer cannot choose the outcome |
-| C. Publish curriculum | Leader drafts, sets prerequisites, lessons, rules, resources, adds a change note, publishes; the published version goes live and earlier versions stay in history for rollback; publisher and version recorded; departments that require review send it to a second person instead | A user without publish rights for the department cannot make content live |
+| C. Publish curriculum | Leader drafts, sets prerequisites, lessons, rules, resources, adds a change note, publishes; the published version goes live and earlier versions stay in history for rollback; publisher and version recorded | A user without publish rights for the department cannot make content live |
 | D. Schedule a role | Create event and roles, set competency needs, assign, system checks conflicts and competency, confirm or block/warn, supervisor named for supervised practice, notify | No silent confirmation of an unqualified volunteer |
 | E. Maintain an SOP | Create or update, review and publish, keep old version, review reminders, mark superseded | Current SOP is clearly distinguishable from obsolete versions |
 

@@ -248,7 +248,7 @@ export function StepSettings({
             <p className="rounded-button border border-border bg-card p-2.5 text-small text-text-secondary">
               <span className="font-semibold text-text">Moves on by itself</span> when the Academy
               records the course finished. Nobody ticks it. Assigning it makes them a member of the
-              course&apos;s department, which gives them the training, not approval to serve.
+              course&apos;s department, which puts them on its team, not approval to serve.
             </p>
           </>
         ) : null}

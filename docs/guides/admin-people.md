@@ -41,6 +41,5 @@ A new department gets the three levels straight away. For each one, you choose:
 | --- | --- |
 | **Status** | Open now. Coming soon, which is seen but can't be joined. Hidden while you set it up |
 | **How people join** | They ask and a leader approves, anyone can join with no approval, or by invitation only. Joining never approves someone to serve. If you remove someone from a department anyone can join, they have to ask to come back |
-| **Review before publishing** | Whether a second person has to publish curriculum changes |
 
 Lighting Operations goes live just by changing its status here. No new release is needed.

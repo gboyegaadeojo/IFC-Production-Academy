@@ -256,67 +256,19 @@ export async function publishAction(_: FormState, formData: FormData): Promise<F
   if (!versionId.success) {
     return failed("unknown");
   }
-  // A version in review already has its note; otherwise one is required.
-  const note =
-    rawNote.trim() === "" && formData.get("inReview") === "true"
-      ? null
-      : changeNoteSchema.safeParse(rawNote);
-  if (note && !note.success) {
-    return firstIssue(note);
-  }
-  if (!(await allowed())) {
-    return failed("not_authorized");
-  }
-  const result = await curriculum.publishVersion(versionId.data, note ? note.data : null);
-  if (!result.ok) {
-    return failed(result.error);
-  }
-  refresh();
-  return { status: "done", message: `Published as version ${result.id}. Members see it now.` };
-}
-
-export async function submitAction(_: FormState, formData: FormData): Promise<FormState> {
-  const versionId = id.safeParse(formData.get("versionId"));
-  const note = changeNoteSchema.safeParse(text(formData.get("changeNote")));
-  if (!versionId.success) {
-    return failed("unknown");
-  }
+  const note = changeNoteSchema.safeParse(rawNote);
   if (!note.success) {
     return firstIssue(note);
   }
   if (!(await allowed())) {
     return failed("not_authorized");
   }
-  const result = await curriculum.submitVersion(versionId.data, note.data);
+  const result = await curriculum.publishVersion(versionId.data, note.data);
   if (!result.ok) {
     return failed(result.error);
   }
   refresh();
-  return {
-    status: "done",
-    message: "Sent for review. Someone else with publishing rights can publish it.",
-  };
-}
-
-export async function returnAction(_: FormState, formData: FormData): Promise<FormState> {
-  const versionId = id.safeParse(formData.get("versionId"));
-  const reason = z
-    .string()
-    .trim()
-    .max(300)
-    .safeParse(text(formData.get("reason")));
-  if (!versionId.success || !reason.success) {
-    return failed("unknown");
-  }
-  if (!(await allowed())) {
-    return failed("not_authorized");
-  }
-  const result = await curriculum.returnVersion(versionId.data, reason.data);
-  if (!result.ok) {
-    return failed(result.error);
-  }
-  refresh();
-  return { status: "done", message: "Returned to draft." };
+  return { status: "done", message: `Published as version ${result.id}. Members see it now.` };
 }
 
 export async function restoreAction(_: FormState, formData: FormData): Promise<FormState> {

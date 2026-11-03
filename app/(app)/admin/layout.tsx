@@ -74,7 +74,7 @@ async function Navigation() {
   return (
     <>
       {/* Below 1024px: a slim bar with the current page, and the sidebar in a drawer. */}
-      <div className="sticky top-0 z-20 flex min-h-14 items-center gap-2 border-b border-border bg-bg px-2 md:px-6 lg:hidden">
+      <div className="sticky top-0 z-20 flex min-h-14 items-center gap-2 border-b border-border bg-bg px-2 pt-[env(safe-area-inset-top)] md:px-6 lg:hidden">
         <Drawer title="Admin menu" triggerLabel="Open admin menu">
           <AdminSidebar
             groups={groups}

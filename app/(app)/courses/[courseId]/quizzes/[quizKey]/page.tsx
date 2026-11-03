@@ -77,7 +77,7 @@ async function QuizContent({ params }: Pick<Props, "params">) {
     <div style={style} className="page-container flex flex-col gap-8 py-8 lg:py-10">
       <Breadcrumbs
         items={[
-          { label: "Home", href: "/home" },
+          { label: "Training", href: "/home" },
           { label: course.department.name, href: `/departments/${course.department.slug}` },
           { label: course.title, href: `/courses/${course.id}` },
           { label: quiz.title },

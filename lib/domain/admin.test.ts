@@ -9,6 +9,7 @@ import {
   formatDateTime,
   groupAdminSections,
   isCurrentSection,
+  plainAuditWords,
   toAdminError,
 } from "./admin";
 import type { CapabilityGrant } from "./capabilities";
@@ -239,7 +240,7 @@ describe("describeAuditEvent", () => {
 
   it("falls back to readable words for unknown actions", () => {
     expect(describeAuditEvent({ action: "course_version.published", metadata: null })).toBe(
-      "course version published",
+      "Published a course version",
     );
   });
 });
@@ -248,5 +249,16 @@ describe("formatDateTime", () => {
   it("shows UTC timestamps in Winnipeg time", () => {
     // 18:00 UTC on 30 October 2026 is 1:00 p.m. in Winnipeg (CDT, UTC-5).
     expect(formatDateTime("2026-10-30T18:00:00Z")).toMatch(/1:00/);
+  });
+});
+
+describe("plainAuditWords", () => {
+  it("turns an audit action into a plain sentence", () => {
+    expect(plainAuditWords("sop.updated")).toBe("Updated an SOP");
+    expect(plainAuditWords("sop_version.created")).toBe("Created an SOP version");
+    expect(plainAuditWords("serving_role.deleted")).toBe("Deleted a serving role");
+    expect(plainAuditWords("service_dashboard.screen_added")).toBe(
+      "Service dashboard screen added",
+    );
   });
 });

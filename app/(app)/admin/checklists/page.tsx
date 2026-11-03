@@ -29,7 +29,7 @@ import {
   updateTaskListAction,
 } from "./actions";
 
-export const metadata: Metadata = { title: "Pre-service checklists" };
+export const metadata: Metadata = { title: "Task lists" };
 
 type Props = PageProps<"/admin/checklists">;
 
@@ -70,13 +70,13 @@ async function ChecklistsContent({ searchParams }: Pick<Props, "searchParams">) 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        title="Pre-service checklists"
+        title="Task lists"
         description="What each position does before and after a service. People see their own checklist first on the day, and can tick as they go."
       />
 
       <section aria-labelledby="lists-heading" className="flex max-w-3xl flex-col gap-3">
         <h2 id="lists-heading" className="text-heading font-semibold">
-          Task lists
+          Your lists
         </h2>
         <p className="text-small text-text-secondary">
           New services use the default list, and keep the list they started with. For a special

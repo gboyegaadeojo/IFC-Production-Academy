@@ -42,14 +42,8 @@ describe("courseState", () => {
       versionNumber: 2,
       title: "Live title",
       draftId: "c",
-      inReview: false,
     });
     expect(state && courseStateLabel(state)).toBe("Version 2 live · unpublished changes");
-  });
-
-  it("notes changes waiting for review", () => {
-    const state = courseState([v("b", "published", 1), v("c", "pending_review", null)], false);
-    expect(state && courseStateLabel(state)).toBe("Version 1 live · changes waiting for review");
   });
 
   it("reads archived courses as archived", () => {

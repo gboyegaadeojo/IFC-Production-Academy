@@ -65,7 +65,7 @@ async function MembersContent({ searchParams }: Pick<PageProps<"/admin/members">
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Membership requests"
-        description="Approving gives someone the department's training. It doesn't approve them to serve."
+        description="Approving puts someone on the department's team. It doesn't approve them to serve."
       />
 
       <Tabs

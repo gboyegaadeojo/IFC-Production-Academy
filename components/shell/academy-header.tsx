@@ -17,7 +17,7 @@ import { ServiceDashboardNavLink } from "./service-dashboard-nav-link";
 /** Compact top bar shared by the Academy and Admin workspaces (DESIGN §3). */
 export function AcademyHeader() {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-surface print:hidden">
+    <header className="sticky top-0 z-30 border-b border-border bg-surface pt-[env(safe-area-inset-top)] print:hidden">
       <div className="page-container flex min-h-14 items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3 sm:gap-6">
           <Link href="/home" className="flex min-h-touch items-center rounded-button">

@@ -199,32 +199,15 @@ select throws_ok(
 reset role;
 
 -- ---------------------------------------------------------------------------
--- Optional review: a second person publishes
+-- No approval gate: a leader publishes their own draft
 -- ---------------------------------------------------------------------------
-update public.departments set curriculum_requires_review = true
- where id = 'b7ba9dae-cab5-43e0-a996-8ae9d2436855';
-
 select pg_temp.act_as('50000000-0000-4000-8000-000000000003');
-select throws_ok(
-  $$ select public.publish_course_version((select id from ctx where key = 'v3'), 'Back to v1') $$,
-  'P0001', 'review_required', 'with review on, a draft can''t be published directly'
-);
-select lives_ok(
-  $$ select public.submit_course_version((select id from ctx where key = 'v3'), 'Back to the original') $$,
-  'a leader submits the draft for review'
-);
-select throws_ok(
-  $$ select public.publish_course_version((select id from ctx where key = 'v3')) $$,
-  '42501', 'cannot_publish_own_submission', 'the person who submitted can''t publish it'
-);
-reset role;
-
-select pg_temp.act_as('50000000-0000-4000-8000-000000000005');
 select is(
-  public.publish_course_version((select id from ctx where key = 'v3')),
+  public.publish_course_version((select id from ctx where key = 'v3'), 'Back to the original'),
   3,
-  'a second person publishes it as version 3'
+  'a leader publishes their own draft as version 3, with no second person'
 );
+select hasnt_function('public', 'submit_course_version', 'there is no submit for review');
 reset role;
 
 -- ---------------------------------------------------------------------------

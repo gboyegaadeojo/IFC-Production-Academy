@@ -6,7 +6,6 @@ describe("needsYou", () => {
     const items = needsYou({
       awaitingAssessment: 0,
       pendingRequests: null,
-      awaitingReview: 0,
       drafts: { count: 1, titles: ["Focus"] },
     });
     expect(items.map((i) => [i.key, i.count])).toEqual([
@@ -17,14 +16,13 @@ describe("needsYou", () => {
     expect(items[1]?.detail).toBe("“Focus”. Volunteers can't see it until it's published.");
   });
 
-  it("only shows curriculum review when something is waiting", () => {
+  it("shows the requests waiting", () => {
     const items = needsYou({
       awaitingAssessment: null,
       pendingRequests: 2,
-      awaitingReview: 1,
       drafts: null,
     });
-    expect(items.map((i) => i.key)).toEqual(["requests", "review"]);
+    expect(items.map((i) => i.key)).toEqual(["requests"]);
     expect(items[0]?.detail).toBe("2 people are waiting to join.");
   });
 });
@@ -34,7 +32,6 @@ describe("onboarding follow-ups", () => {
     const base = {
       awaitingAssessment: 0,
       pendingRequests: null,
-      awaitingReview: null,
       drafts: null,
     };
     expect(needsYou({ ...base, followUps: 2 })[0]).toMatchObject({

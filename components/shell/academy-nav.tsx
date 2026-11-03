@@ -126,7 +126,7 @@ function HeaderLinks({ pathname, extra }: { pathname: string; extra?: ReactNode 
   }, [pathname, rest]);
 
   return (
-    <nav aria-label="Academy" className="hidden min-w-0 sm:block">
+    <nav aria-label="Academy" className="hidden min-w-0 md:block">
       <ul
         ref={list}
         onMouseOver={follow}
@@ -169,7 +169,7 @@ export function AcademyTabBar() {
   return (
     <nav
       aria-label="Academy"
-      className="sticky bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] sm:hidden print:hidden"
+      className="sticky bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
     >
       <ul className="grid grid-cols-4">
         {LINKS.map((link) => {
