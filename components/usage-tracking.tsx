@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { scrubPath, scrubUsageProperties } from "@/lib/domain/monitoring";
+import { scrubPath, scrubUsageEvent } from "@/lib/domain/monitoring";
 
 const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
 const host = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
@@ -26,12 +26,14 @@ export function UsageTracking() {
           capture_pageview: false,
           capture_pageleave: false,
           capture_dead_clicks: false,
+          capture_heatmaps: false,
+          capture_exceptions: false,
+          capture_performance: false,
           disable_session_recording: true,
           disable_surveys: true,
           persistence: "localStorage",
           person_profiles: "never",
-          before_send: (event) =>
-            event ? { ...event, properties: scrubUsageProperties(event.properties) } : null,
+          before_send: (event) => (event ? scrubUsageEvent(event) : null),
         });
       }
       posthog.capture("$pageview", { $pathname: scrubPath(pathname) });

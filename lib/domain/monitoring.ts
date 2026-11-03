@@ -50,6 +50,28 @@ export function scrubText(text: string): string {
     .replace(/https?:\/\/[^\s"'<>]+/g, (url) => scrubUrl(url) || "[address]");
 }
 
+/**
+ * Scrubs every address however deep it sits, because both libraries repeat the page's address in
+ * fields of their own (PostHog's web vitals, Sentry's transaction). Other values stay as they are.
+ */
+export function scrubAddresses<T>(value: T): T {
+  if (typeof value === "string") {
+    if (/^https?:\/\//.test(value)) {
+      return scrubUrl(value) as T;
+    }
+    return (value.startsWith("/") ? scrubPath(value) : value) as T;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item: unknown) => scrubAddresses(item)) as T;
+  }
+  if (value && Object.getPrototypeOf(value) === Object.prototype) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, scrubAddresses(item)]),
+    ) as T;
+  }
+  return value;
+}
+
 type ScrubbableEvent = {
   message?: string;
   user?: unknown;
@@ -83,35 +105,20 @@ export function scrubEvent<T extends ScrubbableEvent>(event: T): T {
       exception.value = scrubText(exception.value);
     }
   }
-  return event;
+  return scrubAddresses(event);
 }
 
-const POSTHOG_URL_PROPERTIES = [
-  "$current_url",
-  "$referrer",
-  "$initial_current_url",
-  "$initial_referrer",
-  "$session_entry_url",
-  "$session_entry_referrer",
-] as const;
-const POSTHOG_PATH_PROPERTIES = [
-  "$pathname",
-  "$initial_pathname",
-  "$session_entry_pathname",
-] as const;
-
-/** PostHog's before_send: the same rule for every address on a usage event. */
-export function scrubUsageProperties(properties: Record<string, unknown>): Record<string, unknown> {
-  const scrubbed = { ...properties };
-  for (const key of POSTHOG_URL_PROPERTIES) {
-    if (typeof scrubbed[key] === "string") {
-      scrubbed[key] = scrubUrl(scrubbed[key]);
-    }
+/**
+ * PostHog's before_send: page views only, whatever else the library or its remote settings try to
+ * send. A page's title can name a person or course, so it goes too.
+ */
+export function scrubUsageEvent<T extends { event: string; properties: object }>(
+  event: T,
+): T | null {
+  if (event.event !== "$pageview") {
+    return null;
   }
-  for (const key of POSTHOG_PATH_PROPERTIES) {
-    if (typeof scrubbed[key] === "string") {
-      scrubbed[key] = scrubPath(scrubbed[key]);
-    }
-  }
+  const scrubbed = scrubAddresses(event);
+  delete (scrubbed.properties as { title?: unknown }).title;
   return scrubbed;
 }
