@@ -203,7 +203,7 @@ function Hero({
   return (
     <section aria-labelledby="welcome-heading" className="flex flex-col gap-3">
       <p className="eyebrow">Your training</p>
-      <h1 id="welcome-heading" className="text-title font-semibold text-balance sm:text-display">
+      <h1 id="welcome-heading" className="text-title font-semibold text-balance">
         {state === "member" ? "Welcome back" : "Welcome"}
         {name ? `, ${name}` : ""}
       </h1>
@@ -225,7 +225,7 @@ function Hero({
               key={stat.label}
               className="flex items-baseline gap-1.5 rounded-pill border border-border bg-surface px-3 py-1 text-small text-text-secondary"
             >
-              <span className="tabular font-mono font-semibold text-text">{stat.value}</span>
+              <span className="tabular font-semibold text-text">{stat.value}</span>
               {stat.label}
             </li>
           ))}
@@ -317,7 +317,7 @@ function HowTrainingWorks({ open }: { open: boolean }) {
       <ol className="grid gap-px border-t border-border bg-border md:grid-cols-3">
         {steps.map((step, index) => (
           <li key={step.title} className="flex flex-col gap-1.5 bg-card p-4">
-            <span className="tabular font-mono text-small text-accent-light">
+            <span className="tabular text-small text-accent-light">
               {String(index + 1).padStart(2, "0")}
             </span>
             <span className="font-medium">{step.title}</span>

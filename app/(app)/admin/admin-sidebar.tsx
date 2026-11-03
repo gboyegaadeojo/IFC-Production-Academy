@@ -137,7 +137,7 @@ function saveOpenGroups(groups: Iterable<string>) {
 }
 
 const ROW =
-  "relative flex min-h-10 w-full items-center gap-2.5 rounded-button px-2.5 text-left text-body transition-surface pointer-coarse:min-h-11 focus-visible:outline-2 focus-visible:outline-accent-light";
+  "relative flex min-h-8 w-full items-center gap-2.5 rounded-button px-2.5 text-left text-body transition-surface pointer-coarse:min-h-11 focus-visible:outline-2 focus-visible:outline-accent-light";
 const ACTIVE =
   "bg-accent-soft font-medium text-text before:absolute before:inset-y-2 before:left-0 before:w-0.5 before:rounded-pill before:bg-accent";
 const IDLE = "text-text-secondary hover:bg-card hover:text-text";
@@ -147,7 +147,7 @@ function CountBadge({ count, label }: { count: number | undefined; label: string
     return null;
   }
   return (
-    <span className="tabular ml-auto rounded-pill border border-border px-1.5 font-mono text-small text-text-secondary">
+    <span className="tabular ml-auto rounded-pill border border-border px-1.5 text-small text-text-secondary">
       {count}
       <span className="sr-only"> {label}</span>
     </span>
@@ -371,7 +371,7 @@ export function AdminSidebar({
                         <Link
                           href={section.href}
                           aria-current={current ? "page" : undefined}
-                          className={`${ROW} min-h-9 text-small ${current ? ACTIVE : IDLE}`}
+                          className={`${ROW} text-small ${current ? ACTIVE : IDLE}`}
                         >
                           <span className="min-w-0 flex-1 truncate">{section.label}</span>
                           <CountBadge count={counts[section.key]} label={countLabel(section.key)} />
@@ -495,7 +495,7 @@ function Flyout({
                 href={section.href}
                 onClick={close}
                 aria-current={current ? "page" : undefined}
-                className={`${ROW} min-h-9 text-small ${current ? ACTIVE : IDLE}`}
+                className={`${ROW} text-small ${current ? ACTIVE : IDLE}`}
               >
                 <span className="min-w-0 flex-1 truncate">{section.label}</span>
                 <CountBadge count={counts[section.key]} label={countLabel(section.key)} />

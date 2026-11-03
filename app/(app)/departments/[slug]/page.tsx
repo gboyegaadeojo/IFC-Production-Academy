@@ -218,7 +218,7 @@ function LevelStep({
       )}
       <span
         aria-hidden="true"
-        className={`relative z-[1] flex size-[1.875rem] items-center justify-center rounded-pill border-2 bg-surface font-mono text-small font-semibold sm:size-9 ${
+        className={`relative z-[1] flex size-[1.875rem] items-center justify-center rounded-pill border-2 bg-surface text-small font-semibold sm:size-9 ${
           empty ? "border-border text-text-muted" : "border-[var(--dept)] text-[var(--dept)]"
         }`}
       >

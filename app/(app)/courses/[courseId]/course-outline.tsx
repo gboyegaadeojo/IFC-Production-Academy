@@ -106,7 +106,7 @@ export function CourseOutline({
                         : "group min-h-touch lift rounded-card px-2 py-3"
                     }`}
                   >
-                    <span className="tabular w-6 shrink-0 font-mono text-small text-text-muted">
+                    <span className="tabular w-6 shrink-0 text-small text-text-muted">
                       {String(numbers.get(lesson.key) ?? 0).padStart(2, "0")}
                     </span>
                     <span className="flex flex-1 flex-col">

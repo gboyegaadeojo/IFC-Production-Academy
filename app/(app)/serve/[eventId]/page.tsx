@@ -71,7 +71,7 @@ async function ServeContent({ params }: Pick<Props, "params">) {
             items={[{ label: "Schedule", href: "/schedule" }, { label: service.title }]}
           />
           <p className="eyebrow">{today ? "Today's checklist" : "Service checklist"}</p>
-          <h1 className="text-display font-semibold text-balance">{service.title}</h1>
+          <h1 className="text-title font-semibold text-balance">{service.title}</h1>
           <div className="flex flex-wrap items-center gap-2.5 text-text-secondary">
             <span>
               {service.notPublished

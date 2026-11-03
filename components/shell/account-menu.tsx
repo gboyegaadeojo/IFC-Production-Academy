@@ -194,7 +194,7 @@ export function AccountMenu({
                 <BellIcon className="size-[18px] shrink-0" />
                 Notifications
                 {unread > 0 ? (
-                  <span className="tabular ml-auto rounded-pill bg-accent px-2 font-mono text-small text-on-accent">
+                  <span className="tabular ml-auto rounded-pill bg-accent px-2 text-small text-on-accent">
                     {unread > 99 ? "99+" : unread}
                     <span className="sr-only"> unread</span>
                   </span>

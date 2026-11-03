@@ -69,10 +69,7 @@ export function EmailChoices({
       {groups.map((group) => (
         <fieldset key={group.id} className="border-t border-border py-1.5 first-of-type:border-t-0">
           <legend className="sr-only">{group.title}</legend>
-          <p
-            aria-hidden="true"
-            className="mx-5 mt-3.5 mb-1 font-mono text-small tracking-[0.12em] text-text-muted uppercase"
-          >
+          <p aria-hidden="true" className="mx-5 mt-3.5 mb-1 eyebrow">
             {group.title}
           </p>
           {group.kinds.map((kind) => {

@@ -112,9 +112,7 @@ async function DepartmentTeams({ department }: { department: TeamDepartment }) {
       <section aria-labelledby="everyone-heading" className="flex flex-col gap-3">
         <h2 id="everyone-heading" className="flex items-center gap-2 text-heading font-semibold">
           All {department.name} team members
-          <span className="tabular font-mono text-small font-normal text-text-muted">
-            {everyone.length}
-          </span>
+          <span className="tabular text-small font-normal text-text-muted">{everyone.length}</span>
         </h2>
         {everyone.length === 0 ? (
           <p className="text-small text-text-muted">
@@ -169,9 +167,7 @@ function PositionTeam({
     <section aria-labelledby={headingId} className="flex max-w-3xl flex-col gap-3">
       <h2 id={headingId} className="flex items-center gap-2 text-heading font-semibold">
         {position.name}
-        <span className="tabular font-mono text-small font-normal text-text-muted">
-          {team.length}
-        </span>
+        <span className="tabular text-small font-normal text-text-muted">{team.length}</span>
       </h2>
       <div className="flex flex-col gap-1 text-small text-text-secondary">
         <div className="flex flex-wrap items-center gap-3">

@@ -144,9 +144,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-2">
           <p className="eyebrow">Your workspace</p>
-          <h1 className="text-[clamp(2.25rem,4vw,3.25rem)] leading-none font-bold tracking-[-0.035em]">
-            Schedule
-          </h1>
+          <h1 className="text-title font-semibold">Schedule</h1>
           <p className="max-w-[60ch] text-body text-text-secondary">
             {pco
               ? "Your serving schedule, upcoming services, and time away, all in one place."
@@ -550,7 +548,7 @@ async function DayPanel({
     <section aria-labelledby="day-heading" className="flex flex-col gap-4">
       <div className="flex flex-col gap-2">
         <p className="eyebrow">{weekday}</p>
-        <h2 id="day-heading" className="text-[2rem] leading-tight font-semibold tracking-[-0.03em]">
+        <h2 id="day-heading" className="text-heading font-semibold">
           {rest.join(", ")}, {date.slice(0, 4)}
         </h2>
         <div className="flex flex-wrap gap-2">

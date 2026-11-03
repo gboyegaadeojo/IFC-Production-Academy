@@ -233,7 +233,7 @@ async function ChecklistsContent({ searchParams }: Pick<Props, "searchParams">) 
       {managesLists ? (
         <section
           aria-labelledby="new-list-heading"
-          className="flex max-w-2xl flex-col gap-4 rounded-card border border-dashed border-border p-5"
+          className="flex max-w-3xl flex-col gap-4 rounded-card border border-dashed border-border p-5"
         >
           <h2 id="new-list-heading" className="text-subheading font-semibold">
             New task list

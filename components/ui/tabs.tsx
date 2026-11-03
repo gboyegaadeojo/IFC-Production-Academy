@@ -23,7 +23,7 @@ export function Tabs({ label, tabs }: { label: string; tabs: TabLink[] }) {
             >
               {tab.label}
               {tab.count !== undefined ? (
-                <span className="tabular rounded-pill border border-border px-1.5 font-mono text-small text-text-muted">
+                <span className="tabular rounded-pill border border-border px-1.5 text-small text-text-muted">
                   {tab.count}
                 </span>
               ) : null}

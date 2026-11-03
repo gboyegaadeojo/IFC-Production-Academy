@@ -115,7 +115,7 @@ export function ExploreRow({
     <article
       aria-labelledby={headingId}
       style={style}
-      className="grid h-full grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 rounded-card border border-dashed border-border-strong/50 p-4 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] sm:items-center"
+      className="grid h-full w-full grid-cols-[2.75rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 rounded-card border border-border bg-surface p-4 sm:grid-cols-[2.75rem_minmax(0,1fr)_auto] sm:items-center"
     >
       <span className="flex size-11 items-center justify-center rounded-button border border-border bg-card text-[var(--dept)]">
         <DepartmentIcon icon={department.icon} className="size-5" />

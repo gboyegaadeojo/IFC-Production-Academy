@@ -70,11 +70,13 @@ async function PersonContent({ params }: Pick<PageProps<"/admin/people/[id]">, "
           Account
         </h2>
         <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
-          <div>
-            <StatusBadge tone={person.status === "active" ? "success" : "pending"}>
-              {ACCOUNT_STATUS_LABELS[person.status]}
-            </StatusBadge>
-          </div>
+          {person.status === "active" ? (
+            <p>This account is active.</p>
+          ) : (
+            <div>
+              <StatusBadge tone="pending">{ACCOUNT_STATUS_LABELS[person.status]}</StatusBadge>
+            </div>
+          )}
           {person.statusChangedAt ? (
             <p className="text-small text-text-secondary">
               Changed {formatDateTime(person.statusChangedAt)}

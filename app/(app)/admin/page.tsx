@@ -266,7 +266,7 @@ function NeedsYouCard({ item }: { item: NeedsYouItem }) {
           <Icon className="size-[18px]" />
         </span>
         <span
-          className={`tabular text-[1.625rem] leading-none font-semibold tracking-tight ${clear ? "text-text-muted" : "text-text"}`}
+          className={`tabular text-heading font-semibold ${clear ? "text-text-muted" : "text-text"}`}
         >
           {item.count}
         </span>

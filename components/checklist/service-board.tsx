@@ -88,7 +88,7 @@ export function ServiceBoard({
                     <span className="flex items-center gap-1.5 text-small font-medium text-text">
                       <span className="truncate">{checklist.name}</span>
                       {checklist.isMine ? (
-                        <span className="shrink-0 rounded-pill border border-accent px-1.5 font-mono text-[0.65625rem] tracking-[0.08em] text-accent-light">
+                        <span className="shrink-0 rounded-pill border border-accent px-1.5 text-small text-accent-light">
                           YOU
                         </span>
                       ) : null}
@@ -103,7 +103,7 @@ export function ServiceBoard({
                       />
                     </span>
                   </span>
-                  <span className="tabular font-mono text-small text-text-secondary">
+                  <span className="tabular text-small text-text-secondary">
                     <span aria-hidden="true">
                       {checklist.done}/{checklist.total}
                     </span>
@@ -162,7 +162,7 @@ export function ServiceBoard({
                       {section.name}
                     </h3>
                     <span
-                      className={`tabular font-mono text-small ${complete ? "text-success" : "text-text-muted"}`}
+                      className={`tabular text-small ${complete ? "text-success" : "text-text-muted"}`}
                     >
                       <span aria-hidden="true">
                         {complete ? "✓ " : ""}

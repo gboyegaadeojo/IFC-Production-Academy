@@ -46,7 +46,7 @@ async function ChecklistSettingsContent() {
         </p>
       </header>
 
-      <div className="max-w-xl">
+      <div className="max-w-2xl">
         <ActionForm action={setChecklistSettingsAction} submitLabel="Save settings">
           <Field
             id="settings-service-type"

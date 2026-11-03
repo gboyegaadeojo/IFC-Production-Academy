@@ -54,7 +54,7 @@ const departmentHues = [
 ];
 
 const typeScale = [
-  { className: "text-display", label: "Display 30–44 (hero)" },
+  { className: "text-display", label: "Display (public page hero only)" },
   { className: "text-title", label: "Title 25–30 (page)" },
   { className: "text-heading", label: "Heading 20–22 (section)" },
   { className: "text-subheading", label: "Subheading 17 (card)" },

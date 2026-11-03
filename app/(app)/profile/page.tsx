@@ -73,7 +73,7 @@ async function ProfileContent() {
     <div className="page-container flex flex-col gap-8 py-8 lg:py-12">
       <header className="flex flex-col gap-2">
         <p className="eyebrow">Account</p>
-        <h1 className="text-display font-semibold">Your profile</h1>
+        <h1 className="text-title font-semibold">Your profile</h1>
         <p className="max-w-[40rem] text-lead text-text-secondary">
           How you appear to leaders, and where you&apos;re training and serving.
         </p>

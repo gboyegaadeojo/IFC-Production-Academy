@@ -25,7 +25,7 @@ To stop a link, choose **Revoke**. It stops working straight away, and people wh
 
 - **Grant a role,** choosing a department if the role needs one. Each role lists what it lets someone do.
 - **Remove a role,** with a reason. Past roles stay listed.
-- **Change their account:** Suspend, Deactivate, or Reactivate. Training history is kept whatever the status.
+- **Change their account:** Suspend, Deactivate, or Reactivate. Training history is kept whatever the status. On the People list, only accounts that aren't active have a label beside the name.
 
 You can't change your own account status or remove your own roles, so one person can't lock everyone out by accident. Every change goes in the audit log.
 
