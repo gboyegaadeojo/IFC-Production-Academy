@@ -8,8 +8,8 @@ const base =
   "transition-surface disabled:cursor-not-allowed disabled:opacity-55 aria-busy:cursor-progress";
 
 const sizes: Record<ButtonSize, string> = {
-  md: "min-h-control px-4 text-body",
-  sm: "min-h-control px-3 text-small",
+  md: "min-h-button px-3 text-button",
+  sm: "min-h-button-sm px-2.5 text-small",
 };
 
 const variants: Record<ButtonVariant, string> = {

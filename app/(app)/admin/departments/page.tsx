@@ -57,7 +57,7 @@ async function DepartmentsContent() {
         description="Add, open, pause, or rename a department. Changes take effect straight away and are recorded in the audit log. Nobody's training history changes."
       />
       <details className="group max-w-2xl rounded-card border border-border bg-surface p-4">
-        <summary className="inline-flex min-h-control cursor-pointer list-none items-center rounded-button bg-accent px-4 text-small font-medium text-on-accent hover:brightness-110 [&::-webkit-details-marker]:hidden">
+        <summary className="inline-flex min-h-button cursor-pointer list-none items-center rounded-button bg-accent px-3 text-small font-medium text-on-accent hover:brightness-110 [&::-webkit-details-marker]:hidden">
           + Add a department
         </summary>
         <div className="mt-4 flex flex-col gap-4">

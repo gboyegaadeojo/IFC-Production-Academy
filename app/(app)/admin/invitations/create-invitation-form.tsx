@@ -282,7 +282,7 @@ function Form({
             {inviterName} invited you to the production team&apos;s training at Immanuel Fellowship
             Church.
           </p>
-          <span className="inline-flex min-h-control w-fit items-center rounded-button bg-accent px-4 text-small font-medium text-on-accent">
+          <span className="inline-flex min-h-button w-fit items-center rounded-button bg-accent px-3 text-small font-medium text-on-accent">
             Accept and sign in
           </span>
           <p className="text-small text-text-muted">This link works until {until}.</p>
