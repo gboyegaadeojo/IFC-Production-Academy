@@ -19,7 +19,7 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
         <button
           type="button"
           onClick={reset}
-          className="min-h-control rounded-button bg-accent px-4 text-on-accent"
+          className="min-h-button rounded-button bg-accent px-3 text-button text-on-accent"
         >
           Try again
         </button>

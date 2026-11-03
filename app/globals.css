@@ -268,6 +268,8 @@
   --text-lead--line-height: 1.6;
   --text-body: 0.875rem;
   --text-body--line-height: 1.55;
+  --text-button: 0.8125rem;
+  --text-button--line-height: 1.5;
   --text-small: 0.75rem;
   --text-small--line-height: 1.5;
 
@@ -305,6 +307,20 @@ body {
  */
 @utility min-h-control {
   min-height: 2.25rem;
+  @media (pointer: coarse) {
+    min-height: 2.75rem;
+  }
+}
+
+/* Buttons are smaller than form fields with a mouse (G, 2026-11-03), and still 44px on touch. */
+@utility min-h-button {
+  min-height: 2rem;
+  @media (pointer: coarse) {
+    min-height: 2.75rem;
+  }
+}
+@utility min-h-button-sm {
+  min-height: 1.75rem;
   @media (pointer: coarse) {
     min-height: 2.75rem;
   }
