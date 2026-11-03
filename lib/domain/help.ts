@@ -201,6 +201,13 @@ export const HELP_PAGES: readonly HelpPage[] = [
     source: "docs/runbooks/nas-media.md",
   },
   {
+    slug: "runbook-monitoring",
+    title: "Monitoring setup",
+    summary: "Error reports and usage counts, and what they never send.",
+    section: "Setting things up",
+    source: "docs/runbooks/monitoring.md",
+  },
+  {
     slug: "runbook-backups",
     title: "Backups setup",
     summary: "Weekly encrypted backups, and restoring from them.",
