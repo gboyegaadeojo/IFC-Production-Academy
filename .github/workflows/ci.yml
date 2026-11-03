@@ -43,7 +43,7 @@ jobs:
         # A build can succeed and still produce a Worker that hangs on every request.
         run: |
           set -euo pipefail
-          npx wrangler dev --local --port 8799 > /tmp/wrangler-dev.log 2>&1 &
+          npx wrangler dev --local --port 8799 --var LIVE_ROOM_SECRET:fake-smoke-secret > /tmp/wrangler-dev.log 2>&1 &
           for _ in $(seq 1 60); do
             curl -s -o /dev/null --max-time 2 http://127.0.0.1:8799/favicon.ico && break
             sleep 2
@@ -61,6 +61,8 @@ jobs:
             grep -E 'ERROR|hung|is not a function' /tmp/wrangler-dev.log | head -20 || true
             exit 1
           fi
+          # The live room (ADD-DASH-09), end to end, with fake readings.
+          node scripts/live-room-smoke.mjs http://127.0.0.1:8799 fake-smoke-secret
 
   database-and-e2e:
     name: RLS tests and end-to-end tests

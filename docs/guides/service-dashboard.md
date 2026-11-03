@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do the YouTube preview and viewers once their setup is done ([runbook](../runbooks/service-dashboard.md)). The other tiles say "Not connected yet" until their stage is built. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do the YouTube preview and viewers once their setup is done ([runbook](../runbooks/service-dashboard.md)). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Facebook viewers and After the service are still to come. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
@@ -48,9 +48,10 @@ Editors choose which tiles are on the layout, so you may not see all of these.
 
 ### A few things that are easy to misread
 
-- **Current item goes by the plan's clock for now.** It works out where the service should be from the times in Planning Center, not what is really on screen. It will follow ProPresenter once the bridge is connected.
+- **Current item goes by the plan's clock.** It works out where the service should be from the times in Planning Center, not what is really on screen. The Slides tile shows what is really on screen.
 - **The plan updates every 15 minutes,** so a late change in Planning Center can take that long to appear. The next two weeks of plans are read.
 
+- **The Slides tile may show words instead of pictures** if ProPresenter doesn't send a picture of a slide.
 - **Mixer levels are not room loudness.** They show the signal on each channel. The mixer can't measure how loud the room is. That takes a measurement mic or SMAART, which we don't have yet, so the Room loudness tile is built and left switched off.
 - **The stream preview runs behind the room.** That's normal for a livestream. Don't use it to judge timing.
 - **"Trained" and "Still learning" are information, not permission.** They show beside each name so you know who may need a hand. Team managers decide who serves.
@@ -82,7 +83,7 @@ Remember that the wall TV has to fit everything on one screen with no scrolling.
 
 ### Choosing mixer channels
 
-On the Mixer levels tile, choose **Choose channels**. Tick any channels, aux inputs, mix buses, matrix outputs, or mains, then use **Up** and **Down** to set the order. This only changes what the dashboard shows. It never touches the mixer.
+On the Mixer levels tile, choose **Choose channels**, or go to **Service Dashboard setup**, then **Mixer channels**. Tick any channels, aux inputs, FX returns, mix buses, matrix outputs, or mains, use **Up** and **Down** to set the order, and choose **Save channels**. Until someone chooses, the tile shows the mains and the first eight channels. This only changes what the dashboard shows. It never touches the mixer.
 
 ## The wall TV
 
