@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { DEFAULT_DISPATCH_REPO, dispatchWorkflow } from "@/lib/domain/job-trigger";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 
 // Planning Center as the scheduler (decision record 9, revised 2026-10-31). The scheduled job
@@ -205,7 +206,7 @@ const dispatchSchema = z.object({
   GITHUB_DISPATCH_REPO: z
     .string()
     .regex(/^[\w.-]+\/[\w.-]+$/)
-    .default("gboyegaadeojo/IFC-Production-Academy"),
+    .default(DEFAULT_DISPATCH_REPO),
 });
 
 type DispatchConfig = { token: string; repo: string };
@@ -220,26 +221,8 @@ function dispatchConfig(): DispatchConfig | null {
     : null;
 }
 
-async function dispatchSync({ token, repo }: DispatchConfig): Promise<boolean> {
-  try {
-    const response = await fetch(
-      `https://api.github.com/repos/${repo}/actions/workflows/planning-center.yml/dispatches`,
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: `Bearer ${token}`,
-          "X-GitHub-Api-Version": "2022-11-28",
-          "User-Agent": "ifc-production-academy",
-        },
-        body: JSON.stringify({ ref: "main" }),
-        signal: AbortSignal.timeout(10_000),
-      },
-    );
-    return response.status === 204;
-  } catch {
-    return false;
-  }
+async function dispatchSync(config: DispatchConfig): Promise<boolean> {
+  return (await dispatchWorkflow("planning-center.yml", config)).ok;
 }
 
 /** When Planning Center was last read, for the Schedule page's "Last synced". */

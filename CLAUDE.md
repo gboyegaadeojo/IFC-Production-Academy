@@ -69,6 +69,8 @@ Anyone can read the code, the commit history, and **the GitHub Actions logs**.
 | `planning-center.yml` | Every 15 minutes, and on demand from the Planning Center page | Read Planning Center Services (read-only Personal Access Token, `PCO_PAT_ID` and `PCO_PAT_SECRET`, Actions secrets only) and apply it with `sync_planning_center()` using the service role. Logs counts only. Does nothing until the token is set; see `docs/runbooks/scheduling.md` |
 | `weekly-summary.yml` | Weekly | Email G and the Platform Admin via Resend with the last successful runs, then commit `status/last-run.json`, which keeps scheduled workflows enabled (GitHub disables them after 60 days of repo inactivity) |
 
+GitHub's schedule can run hours late, so a Cloudflare cron trigger on the Worker (`workers/entry.ts`, `GITHUB_DISPATCH_TOKEN`) starts `notifications.yml` and `planning-center.yml` every 15 minutes, with GitHub's schedule as a backup. See `docs/runbooks/scheduling.md`.
+
 Any failed job emails G and the Platform Admin via Resend. Details are in SPEC §9.
 
 ## Coding conventions

@@ -3,6 +3,7 @@
 // the built app. The rules it uses are typed and tested in lib/domain/live-room.ts.
 import { withSentry } from "@sentry/nextjs/cloudflare";
 import handler from "../.open-next/worker.js";
+import { startFrequentJobs } from "../lib/domain/job-trigger";
 import { bridgeTokenFrom, bridgeTokenMatches, verifyLiveTicket } from "../lib/domain/live-room";
 import { scrubEvent, SENTRY_DATA_COLLECTION } from "../lib/domain/monitoring";
 
@@ -12,19 +13,31 @@ type Env = {
   LIVE_ROOM: DurableObjectNamespace;
   LIVE_ROOM_SECRET?: string;
   SENTRY_DSN?: string;
+  GITHUB_DISPATCH_TOKEN?: string;
+  GITHUB_DISPATCH_REPO?: string;
 };
 
 // The app's errors go to Sentry once SENTRY_DSN is set; with no address it does nothing. The live
 // room stays outside this. See docs/runbooks/monitoring.md.
-const app = withSentry(
-  (env: Env) => ({
-    dsn: env.SENTRY_DSN,
-    dataCollection: SENTRY_DATA_COLLECTION,
-    tracesSampleRate: 0,
-    beforeSend: (event) => scrubEvent(event),
-  }),
-  handler,
-);
+const sentryOptions = (env: Env) => ({
+  dsn: env.SENTRY_DSN,
+  dataCollection: SENTRY_DATA_COLLECTION,
+  tracesSampleRate: 0,
+  beforeSend: (event) => scrubEvent(event),
+});
+const app = withSentry(sentryOptions, handler);
+
+// Cloudflare's timer (wrangler.jsonc) starts the jobs GitHub's own schedule runs hours late. If
+// GitHub refuses, the error reaches Sentry. See docs/runbooks/scheduling.md.
+const jobs = withSentry(sentryOptions, {
+  async scheduled(_controller: ScheduledController, env: Env): Promise<void> {
+    const started = await startFrequentJobs(
+      env.GITHUB_DISPATCH_TOKEN,
+      env.GITHUB_DISPATCH_REPO || undefined,
+    );
+    console.log(`Scheduled jobs started: ${started}.`);
+  },
+});
 
 async function live(request: Request, env: Env, url: URL): Promise<Response> {
   const secret = env.LIVE_ROOM_SECRET;
@@ -52,6 +65,9 @@ const worker = {
       return live(request, env, url);
     }
     return app.fetch(request, env, ctx);
+  },
+  scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    return jobs.scheduled(controller, env, ctx);
   },
 };
 
