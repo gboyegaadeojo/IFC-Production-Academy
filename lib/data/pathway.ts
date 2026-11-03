@@ -153,117 +153,151 @@ export type LearnerCourse = {
   canOpen: boolean;
 };
 
-/** The live version of a course, with its outline when readable. Null if not published. */
-export async function getLearnerCourse(courseId: string): Promise<LearnerCourse | null> {
+/**
+ * The live versions of several courses, with their outlines when readable, by course id. A course
+ * that isn't published is left out. It reads them all at once: Cloudflare's free plan allows 50
+ * calls per page, so this must not grow with the number of courses (app review, item 2).
+ */
+export async function getLearnerCourses(
+  courseIds: readonly string[],
+): Promise<Map<string, LearnerCourse>> {
+  const out = new Map<string, LearnerCourse>();
+  const ids = [...new Set(courseIds)];
+  if (ids.length === 0) {
+    return out;
+  }
   const supabase = await createSupabaseServerClient();
-  const course = await supabase
+  const courses = await supabase
     .from("courses")
     .select("id, department_id, level_id, archived_at")
-    .eq("id", courseId)
-    .maybeSingle();
-  if (course.error) {
-    throw new Error("Could not load the course", { cause: course.error.code });
+    .in("id", ids);
+  if (courses.error) {
+    throw new Error("Could not load the course", { cause: courses.error.code });
   }
-  if (!course.data || course.data.archived_at !== null) {
-    return null;
+  const open = courses.data.filter((course) => course.archived_at === null);
+  const versions = await publishedVersions(
+    supabase,
+    open.map((course) => course.id),
+  );
+  const versionIds = versions.map((version) => version.id);
+  if (versionIds.length === 0) {
+    return out;
   }
-  const [version] = await publishedVersions(supabase, [course.data.id]);
-  if (!version || version.version_number === null) {
-    return null;
-  }
-  const [department, level, modules, lessons, quizzes, practicals] = await Promise.all([
+  const [departments, levels, modules, lessons, quizzes, practicals] = await Promise.all([
     supabase
       .from("departments")
       .select("id, slug, name, hue, icon")
-      .eq("id", course.data.department_id)
-      .maybeSingle(),
-    supabase.from("levels").select("number, name").eq("id", course.data.level_id).maybeSingle(),
+      .in("id", [...new Set(open.map((course) => course.department_id))]),
+    supabase
+      .from("levels")
+      .select("id, number, name")
+      .in("id", [...new Set(open.map((course) => course.level_id))]),
     supabase
       .from("course_modules")
-      .select("id, module_key, title, summary, sort_order")
-      .eq("course_version_id", version.id),
+      .select("id, course_version_id, module_key, title, summary, sort_order")
+      .in("course_version_id", versionIds),
     supabase
       .from("lessons")
-      .select("lesson_key, module_id, title, is_required, estimated_minutes, sort_order")
-      .eq("course_version_id", version.id),
+      .select(
+        "course_version_id, lesson_key, module_id, title, is_required, estimated_minutes, sort_order",
+      )
+      .in("course_version_id", versionIds),
     supabase
       .from("quizzes")
-      .select("quiz_key, title, is_required, after_module_key")
-      .eq("course_version_id", version.id)
+      .select("course_version_id, quiz_key, title, is_required, after_module_key")
+      .in("course_version_id", versionIds)
       .order("sort_order"),
     supabase
       .from("practicals")
-      .select("practical_key, title, is_required, after_module_key")
-      .eq("course_version_id", version.id)
+      .select("course_version_id, practical_key, title, is_required, after_module_key")
+      .in("course_version_id", versionIds)
       .order("sort_order"),
   ]);
+  const failed =
+    departments.error ??
+    levels.error ??
+    modules.error ??
+    lessons.error ??
+    quizzes.error ??
+    practicals.error;
   if (
-    department.error ||
-    level.error ||
-    modules.error ||
-    lessons.error ||
-    quizzes.error ||
-    practicals.error
+    failed ||
+    !departments.data ||
+    !levels.data ||
+    !modules.data ||
+    !lessons.data ||
+    !quizzes.data ||
+    !practicals.data
   ) {
-    const failed =
-      department.error ??
-      level.error ??
-      modules.error ??
-      lessons.error ??
-      quizzes.error ??
-      practicals.error;
     throw new Error("Could not load the course", { cause: failed?.code });
   }
-  const moduleIdByKey = new Map(modules.data.map((m) => [m.module_key, m.id]));
-  if (!department.data || !level.data) {
-    return null;
-  }
 
-  return {
-    id: course.data.id,
-    versionId: version.id,
-    versionNumber: version.version_number,
-    title: version.title,
-    summary: version.summary,
-    objectives: version.objectives,
-    estimatedMinutes: version.estimated_minutes,
-    department: department.data,
-    level: level.data,
-    canOpen: lessons.data.length > 0,
-    practicals: practicals.data.map((practical) => ({
-      key: practical.practical_key,
-      title: practical.title,
-      isRequired: practical.is_required,
-      afterModuleId: practical.after_module_key
-        ? (moduleIdByKey.get(practical.after_module_key) ?? null)
-        : null,
-    })),
-    quizzes: quizzes.data.map((quiz) => ({
-      key: quiz.quiz_key,
-      title: quiz.title,
-      isRequired: quiz.is_required,
-      afterModuleId: quiz.after_module_key
-        ? (moduleIdByKey.get(quiz.after_module_key) ?? null)
-        : null,
-    })),
-    modules: orderedOutline(
-      modules.data.map((courseModule) => ({
-        id: courseModule.id,
-        title: courseModule.title,
-        summary: courseModule.summary,
-        sortOrder: courseModule.sort_order,
-        lessons: lessons.data
-          .filter((row) => row.module_id === courseModule.id)
-          .map((row) => ({
-            key: row.lesson_key,
-            title: row.title,
-            isRequired: row.is_required,
-            estimatedMinutes: row.estimated_minutes,
-            sortOrder: row.sort_order,
-          })),
-      })),
-    ),
-  };
+  for (const course of open) {
+    const version = versions.find((row) => row.course_id === course.id);
+    const department = departments.data.find((row) => row.id === course.department_id);
+    const level = levels.data.find((row) => row.id === course.level_id);
+    if (!version || version.version_number === null || !department || !level) {
+      continue;
+    }
+    const courseModules = modules.data.filter((row) => row.course_version_id === version.id);
+    const courseLessons = lessons.data.filter((row) => row.course_version_id === version.id);
+    const moduleIdByKey = new Map(courseModules.map((m) => [m.module_key, m.id]));
+    out.set(course.id, {
+      id: course.id,
+      versionId: version.id,
+      versionNumber: version.version_number,
+      title: version.title,
+      summary: version.summary,
+      objectives: version.objectives,
+      estimatedMinutes: version.estimated_minutes,
+      department,
+      level: { number: level.number, name: level.name },
+      canOpen: courseLessons.length > 0,
+      practicals: practicals.data
+        .filter((row) => row.course_version_id === version.id)
+        .map((practical) => ({
+          key: practical.practical_key,
+          title: practical.title,
+          isRequired: practical.is_required,
+          afterModuleId: practical.after_module_key
+            ? (moduleIdByKey.get(practical.after_module_key) ?? null)
+            : null,
+        })),
+      quizzes: quizzes.data
+        .filter((row) => row.course_version_id === version.id)
+        .map((quiz) => ({
+          key: quiz.quiz_key,
+          title: quiz.title,
+          isRequired: quiz.is_required,
+          afterModuleId: quiz.after_module_key
+            ? (moduleIdByKey.get(quiz.after_module_key) ?? null)
+            : null,
+        })),
+      modules: orderedOutline(
+        courseModules.map((courseModule) => ({
+          id: courseModule.id,
+          title: courseModule.title,
+          summary: courseModule.summary,
+          sortOrder: courseModule.sort_order,
+          lessons: courseLessons
+            .filter((row) => row.module_id === courseModule.id)
+            .map((row) => ({
+              key: row.lesson_key,
+              title: row.title,
+              isRequired: row.is_required,
+              estimatedMinutes: row.estimated_minutes,
+              sortOrder: row.sort_order,
+            })),
+        })),
+      ),
+    });
+  }
+  return out;
+}
+
+/** The live version of a course, with its outline when readable. Null if not published. */
+export async function getLearnerCourse(courseId: string): Promise<LearnerCourse | null> {
+  return (await getLearnerCourses([courseId])).get(courseId) ?? null;
 }
 
 export type LearnerLesson = {
