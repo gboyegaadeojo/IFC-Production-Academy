@@ -68,7 +68,7 @@ export function ChecklistItem({
                 }
               });
             }}
-            className="peer absolute inset-0 m-0 size-6 cursor-pointer appearance-none rounded-[7px] border-[1.5px] border-border-strong bg-transparent transition-surface checked:border-accent checked:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-light disabled:cursor-not-allowed disabled:opacity-60"
+            className="peer absolute inset-0 m-0 size-6 cursor-pointer appearance-none rounded-button border-[1.5px] border-border-strong bg-transparent transition-surface checked:border-accent checked:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-light disabled:cursor-not-allowed disabled:opacity-60"
           />
           <CheckIcon className="pointer-events-none absolute inset-0 m-auto size-[15px] text-on-accent opacity-0 peer-checked:opacity-100" />
         </span>

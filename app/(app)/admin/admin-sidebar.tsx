@@ -71,7 +71,7 @@ function GroupTile({
   return (
     <span
       aria-hidden="true"
-      className={`flex size-7 shrink-0 items-center justify-center rounded-[8px] ${GROUP_TILES[group]}`}
+      className={`flex size-7 shrink-0 items-center justify-center rounded-button ${GROUP_TILES[group]}`}
     >
       <Icon className="size-4" />
     </span>

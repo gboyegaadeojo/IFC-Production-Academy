@@ -158,7 +158,7 @@ async function PeopleContent({
                     tab.done ? "/admin/onboarding/people?show=done" : "/admin/onboarding/people"
                   }
                   aria-current={showDone === tab.done ? "page" : undefined}
-                  className="flex min-h-9 items-center rounded-[7px] px-3 text-small text-text-secondary hover:text-text aria-[current=page]:bg-surface aria-[current=page]:font-semibold aria-[current=page]:text-text aria-[current=page]:shadow-[0_0_0_1px_var(--border)]"
+                  className="flex min-h-9 items-center rounded-button px-3 text-small text-text-secondary hover:text-text aria-[current=page]:bg-surface aria-[current=page]:font-semibold aria-[current=page]:text-text aria-[current=page]:shadow-[0_0_0_1px_var(--border)]"
                 >
                   {tab.label}
                 </Link>

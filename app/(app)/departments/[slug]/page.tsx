@@ -95,13 +95,13 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
 
       <section
         aria-labelledby="department-heading"
-        className="relative grid gap-x-5 gap-y-4 overflow-hidden rounded-[18px] border border-border bg-surface p-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:p-6"
+        className="relative grid gap-x-5 gap-y-4 overflow-hidden rounded-card border border-border bg-surface p-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:p-6"
       >
         <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1 bg-[var(--dept)]" />
         <div className="flex items-center gap-4 sm:contents">
           <span
             aria-hidden="true"
-            className="flex size-13 shrink-0 items-center justify-center rounded-[16px] bg-[color-mix(in_srgb,var(--dept)_12%,var(--surface))] text-[var(--dept)] sm:size-16"
+            className="flex size-13 shrink-0 items-center justify-center rounded-card bg-[color-mix(in_srgb,var(--dept)_12%,var(--surface))] text-[var(--dept)] sm:size-16"
           >
             <DepartmentIcon icon={department.icon} className="size-7 sm:size-8" />
           </span>
@@ -259,7 +259,7 @@ function LevelStep({
                   {canOpen ? (
                     <Link
                       href={`/courses/${course.id}`}
-                      className="group flex lift flex-col gap-3 rounded-[14px] border border-border bg-card px-4 py-3.5"
+                      className="group flex lift flex-col gap-3 rounded-card border border-border bg-card px-4 py-3.5"
                     >
                       <span className="flex items-center gap-3">
                         <span className="flex-1 font-semibold text-text transition-surface group-hover:text-accent-light group-focus-visible:text-accent-light">
@@ -280,7 +280,7 @@ function LevelStep({
                       </span>
                     </Link>
                   ) : (
-                    <span className="flex flex-col gap-1 rounded-[14px] border border-dashed border-border px-4 py-3.5">
+                    <span className="flex flex-col gap-1 rounded-card border border-dashed border-border px-4 py-3.5">
                       <span className="font-medium text-text-secondary">{course.title}</span>
                       <span className="text-small text-text-muted">Not open yet</span>
                     </span>

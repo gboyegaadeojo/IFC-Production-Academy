@@ -70,7 +70,7 @@ export function StepSettings({
       <div className="flex items-center gap-3">
         <span
           aria-hidden="true"
-          className={`flex size-9 items-center justify-center rounded-[10px] ${TONE[meta.tone]}`}
+          className={`flex size-9 items-center justify-center rounded-button ${TONE[meta.tone]}`}
         >
           <StepIcon kind={step.kind} className="size-[18px]" />
         </span>

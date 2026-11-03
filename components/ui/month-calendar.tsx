@@ -82,7 +82,7 @@ export function MonthCalendar({
                   abbr={long}
                   className={
                     board
-                      ? "border-b border-border py-3 text-center font-mono text-[0.7rem] font-medium tracking-[0.12em] text-text-muted"
+                      ? "border-b border-border py-3 text-center font-mono text-small font-medium tracking-[0.12em] text-text-muted"
                       : "pb-2 text-center text-small font-medium text-text-muted"
                   }
                 >
@@ -153,7 +153,7 @@ export function MonthCalendar({
                                   className={`size-1.5 shrink-0 rounded-pill sm:mt-[0.4375rem] ${DOT[mark.tone]}`}
                                 />
                                 <span className="sr-only">, </span>
-                                <span className="sr-only text-left text-[0.75rem] leading-[1.35] break-words text-text-secondary sm:not-sr-only sm:line-clamp-2">
+                                <span className="sr-only text-left text-small leading-[1.35] break-words text-text-secondary sm:not-sr-only sm:line-clamp-2">
                                   {mark.label}
                                 </span>
                               </span>

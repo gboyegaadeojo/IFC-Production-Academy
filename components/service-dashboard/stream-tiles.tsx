@@ -47,7 +47,7 @@ export function ViewersTile({ view, platform }: { view: StreamView; platform: st
         <>
           <p className="text-title leading-none font-bold tabular-nums">{view.viewers}</p>
           {view.status === "ended" ? (
-            <p className="text-[0.6875rem] text-text-muted">Last count. The stream has ended.</p>
+            <p className="text-small text-text-muted">Last count. The stream has ended.</p>
           ) : null}
           <Sparkline samples={view.samples} label={`${platform} viewers over time`} />
         </>
@@ -119,7 +119,7 @@ function Sparkline({ samples, label }: { samples: ViewerSample[]; label: string 
           />
           <span
             aria-hidden="true"
-            className="absolute -top-1 z-10 rounded-button border border-border-strong bg-card px-1.5 text-[0.6875rem] whitespace-nowrap tabular-nums"
+            className="absolute -top-1 z-10 rounded-button border border-border-strong bg-card px-1.5 text-small whitespace-nowrap tabular-nums"
             style={hoverX > 55 ? { right: `${100 - hoverX}%` } : { left: `${hoverX}%` }}
           >
             {hovered.viewers} at {clockLabel(Date.parse(hovered.at))}

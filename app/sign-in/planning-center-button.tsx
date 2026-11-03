@@ -21,7 +21,7 @@ export function PlanningCenterButton({ href }: { href: string }) {
         }
         setBusy(true);
       }}
-      className="inline-flex h-[54px] w-full items-center justify-center gap-2.5 rounded-[11px] bg-text px-5 text-body font-semibold text-bg transition-[opacity,transform] duration-[var(--duration-base)] ease-standard hover:opacity-90 active:translate-y-px aria-busy:cursor-progress aria-busy:opacity-80"
+      className="inline-flex h-[54px] w-full items-center justify-center gap-2.5 rounded-button bg-text px-5 text-body font-semibold text-bg transition-[opacity,transform] duration-[var(--duration-base)] ease-standard hover:opacity-90 active:translate-y-px aria-busy:cursor-progress aria-busy:opacity-80"
     >
       {busy ? (
         <span

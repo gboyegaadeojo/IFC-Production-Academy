@@ -49,7 +49,7 @@ async function LibraryContent() {
   ].map(([id, name]) => ({ id, name }));
 
   return (
-    <div className="sop-compact page-container flex flex-col gap-4 py-6 lg:py-8">
+    <div className="page-container flex flex-col gap-4 py-6 lg:py-8">
       <PageHeader
         title="SOP library"
         description="Your team's written procedures. Search for what you need, or browse by category."

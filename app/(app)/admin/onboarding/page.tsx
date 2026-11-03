@@ -83,7 +83,7 @@ async function OnboardingContent({
               >
                 <span
                   aria-hidden="true"
-                  className="flex size-6 items-center justify-center rounded-[7px] bg-hover text-[var(--dept)]"
+                  className="flex size-6 items-center justify-center rounded-button bg-hover text-[var(--dept)]"
                 >
                   {p.departmentId ? (
                     <DepartmentIcon icon={p.icon} className="size-3.5" />

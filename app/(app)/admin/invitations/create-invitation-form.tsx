@@ -116,7 +116,7 @@ function Form({
                 />
                 <span
                   aria-hidden="true"
-                  className="flex size-6 items-center justify-center rounded-[6px] bg-hover text-[var(--dept)]"
+                  className="flex size-6 items-center justify-center rounded-button bg-hover text-[var(--dept)]"
                 >
                   <DepartmentIcon icon={choice.icon} className="size-3.5" />
                 </span>
@@ -200,7 +200,7 @@ function Form({
             {VALID_DAY_OPTIONS.map((option) => (
               <label
                 key={option}
-                className="flex min-h-9 cursor-pointer items-center rounded-[7px] px-3.5 text-small text-text-secondary transition-surface hover:text-text has-[:checked]:bg-surface has-[:checked]:font-semibold has-[:checked]:text-text has-[:checked]:shadow-[0_0_0_1px_var(--border)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-light"
+                className="flex min-h-9 cursor-pointer items-center rounded-button px-3.5 text-small text-text-secondary transition-surface hover:text-text has-[:checked]:bg-surface has-[:checked]:font-semibold has-[:checked]:text-text has-[:checked]:shadow-[0_0_0_1px_var(--border)] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent-light"
               >
                 <input
                   type="radio"
@@ -262,7 +262,7 @@ function Form({
         </h2>
         <div
           style={{ "--dept": departmentHueVar(department?.hue ?? "") } as CSSProperties}
-          className="flex flex-col gap-3 rounded-[18px] border border-border bg-card p-5"
+          className="flex flex-col gap-3 rounded-card border border-border bg-card p-5"
         >
           <span
             aria-hidden="true"

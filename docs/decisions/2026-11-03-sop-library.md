@@ -6,7 +6,7 @@
 
 - **SOPs don't have to belong to a department.** Some procedures, such as how to do a copyright review, are for everyone. When adding an SOP, **Who it's for** can be **All of production**.
 - **The library is one list, grouped by category.** Categories collapse, and can be filtered. They can be chosen or created when adding an SOP. They're still free text, as they were (SRS-SOP-001).
-- **The admin library's type is one step smaller**, on that page only: body 13px, small 11px.
+- **The admin library's type was one step smaller** at first. Those sizes then became [the whole app's](2026-11-03-ui-consistency.md).
 
 ## Who can do what
 
@@ -27,7 +27,6 @@ G asked for this page to stay usable at 50 to 100 SOPs, and approved a second mo
 - Search works as you type, across titles, summaries and categories, and highlights what matched.
 - **Recently updated** lists the last 10 published.
 - Only **Review due** is labelled, so it stands out. Owner and summary move to each SOP's own page.
-- Its type is one step smaller, matching the admin library.
 - Its department filter includes **All of production**.
 
 ## Writing SOPs in the app

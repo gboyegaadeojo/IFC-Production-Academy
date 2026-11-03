@@ -28,7 +28,7 @@ import {
 
 const idle: FormState = { status: "idle" };
 const panel = "flex flex-col gap-2.5 rounded-card border border-border bg-card p-3.5";
-const compactField = `${fieldClasses} w-full text-button`;
+const compactField = `${fieldClasses} w-full`;
 // SOPs aren't guides, so a link in one can only go to a web address.
 const NO_GUIDE = "";
 
@@ -504,7 +504,7 @@ function ToolButton({ label, onClick }: { label: string; onClick: () => void }) 
     <button
       type="button"
       onClick={onClick}
-      className="min-h-button-sm rounded-[7px] px-2 text-small font-medium text-text-secondary hover:bg-hover hover:text-text"
+      className="min-h-button-sm rounded-button px-2 text-small font-medium text-text-secondary hover:bg-hover hover:text-text"
     >
       {label}
     </button>

@@ -71,7 +71,7 @@ export function EmailChoices({
           <legend className="sr-only">{group.title}</legend>
           <p
             aria-hidden="true"
-            className="mx-5 mt-3.5 mb-1 font-mono text-[0.75rem] tracking-[0.12em] text-text-muted uppercase"
+            className="mx-5 mt-3.5 mb-1 font-mono text-small tracking-[0.12em] text-text-muted uppercase"
           >
             {group.title}
           </p>

@@ -93,7 +93,7 @@ export function SopLibrary({
   const openAdd = () => dialog.current?.showModal();
 
   return (
-    <div className="sop-compact flex flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-[1_1_18rem]">
           <h1 className="text-title font-bold tracking-tight">SOP library</h1>

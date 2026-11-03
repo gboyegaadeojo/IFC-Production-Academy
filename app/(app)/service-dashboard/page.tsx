@@ -180,13 +180,13 @@ async function ServiceDashboardContent({
                 }))}
               />
               <div className="flex flex-col justify-center rounded-card border border-border bg-surface px-3 py-1.5">
-                <span className="text-[0.6875rem] text-text-muted">Service time</span>
+                <span className="text-small text-text-muted">Service time</span>
                 <span className="font-medium">
                   {eventTimeLabel(service.startsAt, service.endsAt)}
                 </span>
               </div>
               <div className="flex min-w-48 flex-1 flex-col justify-center rounded-card border border-border bg-surface px-3 py-1.5">
-                <span className="text-[0.6875rem] text-text-muted">Current item, by the plan</span>
+                <span className="text-small text-text-muted">Current item, by the plan</span>
                 <strong className="font-medium">
                   <CurrentItemName />
                 </strong>

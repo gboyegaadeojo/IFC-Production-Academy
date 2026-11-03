@@ -2,7 +2,7 @@ import { initials } from "@/lib/domain/people";
 
 /** Initials avatar. Decorative: the person's name is always shown next to it. */
 export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
-  const sizes = { sm: "size-7 text-[0.6875rem]", md: "size-9 text-small", lg: "size-12 text-body" };
+  const sizes = { sm: "size-7 text-small", md: "size-9 text-small", lg: "size-12 text-body" };
   return (
     <span
       aria-hidden="true"

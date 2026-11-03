@@ -48,18 +48,18 @@ export function CertificateSheet(props: CertificateSheetProps) {
       {/* A hairline frame inside the edge, like a printed certificate. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-3 rounded-[6px] border border-paper-rule sm:inset-5"
+        className="pointer-events-none absolute inset-3 rounded-button border border-paper-rule sm:inset-5"
       />
 
       <div className="relative flex h-full flex-col items-center gap-5 px-8 py-10 text-center sm:gap-4 sm:px-16 sm:py-12">
         <div className="flex flex-col items-center gap-2">
           <IfcMark tone="black" height={52} />
-          <p className="font-mono text-[0.75rem] font-medium tracking-[0.22em] text-paper-muted uppercase">
+          <p className="font-mono text-small font-medium tracking-[0.22em] text-paper-muted uppercase">
             Production Academy
           </p>
         </div>
 
-        <p className="font-mono text-[0.8125rem] font-medium tracking-[0.18em] uppercase">
+        <p className="font-mono text-body font-medium tracking-[0.18em] uppercase">
           Certificate of completion
         </p>
 
@@ -85,25 +85,23 @@ export function CertificateSheet(props: CertificateSheetProps) {
 
         <div className="mt-auto grid w-full grid-cols-1 items-end gap-6 pt-2 sm:grid-cols-3">
           <div className="flex flex-col items-center gap-1 sm:items-start sm:text-left">
-            <p className="font-mono text-[0.75rem] tracking-[0.12em] text-paper-muted uppercase">
+            <p className="font-mono text-small tracking-[0.12em] text-paper-muted uppercase">
               Issued
             </p>
             <p className="font-medium">{formatLongDate(props.issuedAt)}</p>
-            <p className="text-[0.8125rem] text-paper-muted">
-              Course version {props.versionNumber}
-            </p>
+            <p className="text-body text-paper-muted">Course version {props.versionNumber}</p>
           </div>
 
           <div className="flex flex-col items-center gap-1">
             <div aria-hidden="true" className="h-px w-48 bg-paper-ink" />
-            <p className="text-[0.8125rem] font-medium">Production Director</p>
-            <p className="text-[0.8125rem] text-paper-muted">Immanuel Fellowship Church</p>
+            <p className="text-body font-medium">Production Director</p>
+            <p className="text-body text-paper-muted">Immanuel Fellowship Church</p>
           </div>
 
           <div className="flex items-center justify-center gap-3 sm:justify-end sm:text-right">
             <div className="flex flex-col gap-1">
-              <p className="font-mono text-[0.75rem] font-medium tabular-nums">{props.reference}</p>
-              <p className="text-[0.8125rem] text-paper-muted">
+              <p className="font-mono text-small font-medium tabular-nums">{props.reference}</p>
+              <p className="text-body text-paper-muted">
                 Check it at
                 <br />
                 {checkHost}/verify
@@ -117,7 +115,7 @@ export function CertificateSheet(props: CertificateSheetProps) {
           </div>
         </div>
 
-        <p className="max-w-xl text-[0.8125rem] text-paper-muted">
+        <p className="max-w-xl text-body text-paper-muted">
           This certificate records completed training. Approval to serve is given separately,
           through practical assessment.
         </p>
@@ -142,7 +140,7 @@ function LevelBadge({ level }: { level: number }) {
   return (
     <span
       aria-hidden="true"
-      className="inline-flex size-7 items-center justify-center rounded-pill border-2 border-[var(--dept)] font-mono text-[0.8125rem] font-medium text-paper-ink tabular-nums"
+      className="inline-flex size-7 items-center justify-center rounded-pill border-2 border-[var(--dept)] font-mono text-body font-medium text-paper-ink tabular-nums"
     >
       {level}
     </span>
