@@ -897,6 +897,7 @@ export type Database = {
           length_seconds: number;
           service_position: string;
           notes: Json;
+          actual_seconds: number | null;
         } & Timestamps;
         // Applied only by sync_service_plan_items.
         Insert: never;
@@ -1762,6 +1763,10 @@ export type Database = {
           p_screen_token?: string | null;
         };
         Returns: undefined;
+      };
+      service_viewer_history: {
+        Args: { p_event_id: string };
+        Returns: { platform: string; viewers: number; sampled_at: string }[];
       };
       can_view_service_dashboard: {
         Args: Record<string, never>;

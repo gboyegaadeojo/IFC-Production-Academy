@@ -243,6 +243,8 @@ export type PlanItem = {
   lengthSeconds: number;
   servicePosition: "pre" | "during" | "post";
   notes: { category: string; content: string }[];
+  /** From Services LIVE, when someone ran the plan with it. */
+  actualSeconds?: number | null;
 };
 
 export type RunEntry = {
@@ -355,4 +357,86 @@ export function trainedLabel(readiness: string | null): TeamRow["label"] {
     return null;
   }
   return readiness === "approved" ? "Trained" : "Still learning";
+}
+
+// ---------------------------------------------------------------------------
+// After the service (ADD-DASH-10)
+// ---------------------------------------------------------------------------
+
+export type ReviewRow = {
+  id: string;
+  title: string;
+  plannedSeconds: number;
+  actualSeconds: number | null;
+  differenceSeconds: number | null;
+};
+
+/**
+ * Planned against actual, for items with a time. "Against the plan" only counts items with a
+ * recorded time, so a half-recorded service doesn't look short.
+ */
+export function reviewTiming(items: readonly PlanItem[]): {
+  rows: ReviewRow[];
+  plannedSeconds: number;
+  overSeconds: number;
+  recorded: number;
+} {
+  const rows = items
+    .filter((item) => item.itemType !== "header")
+    .toSorted((a, b) => a.position - b.position)
+    .map((item) => {
+      const actual = item.actualSeconds ?? null;
+      return {
+        id: item.id,
+        title: item.title,
+        plannedSeconds: item.lengthSeconds,
+        actualSeconds: actual,
+        differenceSeconds: actual === null ? null : actual - item.lengthSeconds,
+      };
+    });
+  return {
+    rows,
+    plannedSeconds: rows.reduce((sum, row) => sum + row.plannedSeconds, 0),
+    overSeconds: rows.reduce((sum, row) => sum + (row.differenceSeconds ?? 0), 0),
+    recorded: rows.filter((row) => row.actualSeconds !== null).length,
+  };
+}
+
+/** "+1:30 over", "0:30 under", or "On time". */
+export function differenceLabel(seconds: number): string {
+  if (seconds === 0) {
+    return "On time";
+  }
+  return seconds > 0 ? `+${countdownLabel(seconds)} over` : `${countdownLabel(-seconds)} under`;
+}
+
+export type ViewerSeries = {
+  platform: string;
+  samples: { at: number; viewers: number }[];
+  peak: { at: number; viewers: number };
+};
+
+const PLATFORM_NAMES: Record<string, string> = { youtube: "YouTube", facebook: "Facebook" };
+
+/** One line per platform, each with its busiest moment. A platform with no readings is left out. */
+export function viewerSeries(
+  history: readonly { platform: string; viewers: number; at: string }[],
+): ViewerSeries[] {
+  return Object.entries(PLATFORM_NAMES).flatMap(([key, platform]) => {
+    const samples = history
+      .filter((sample) => sample.platform === key)
+      .map((sample) => ({ at: Date.parse(sample.at), viewers: sample.viewers }))
+      .toSorted((a, b) => a.at - b.at);
+    const [first, ...rest] = samples;
+    if (!first) {
+      return [];
+    }
+    return [
+      {
+        platform,
+        samples,
+        peak: rest.reduce((best, sample) => (sample.viewers > best.viewers ? sample : best), first),
+      },
+    ];
+  });
 }

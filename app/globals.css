@@ -63,6 +63,10 @@
   --tile-grey: #222222;
   --tile-grey-ink: #b4b4b4;
 
+  /* Chart lines, checked for colour blindness in this theme (After the service). */
+  --chart-1: #4f8cff;
+  --chart-2: #ec5a46;
+
   /* Department identity hues: covers, icons, rails, tags, and progress only. Never buttons. */
   --dept-blue: #4f8cff;
   --dept-teal: #2bd4a4;
@@ -135,6 +139,8 @@
   --tile-orange-ink: #c46a12;
   --tile-pink: #fde6ee;
   --tile-pink-ink: #c53a6b;
+  --chart-1: #1f5fd1;
+  --chart-2: #b8361f;
   --tile-grey: #efeef3;
   --tile-grey-ink: #5d5a6e;
   --dept-blue: #1f5fd1;

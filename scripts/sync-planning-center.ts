@@ -247,7 +247,7 @@ async function read(authorization: string): Promise<PcoPayload> {
       if (sortDate < now + RUN_OF_SERVICE_DAYS * 86_400_000) {
         const items = await orEmpty(async () => {
           const found = await list(
-            `/services/v2/service_types/${st.id}/plans/${plan.id}/items?include=item_notes&per_page=100`,
+            `/services/v2/service_types/${st.id}/plans/${plan.id}/items?include=item_notes,item_times&per_page=100`,
             authorization,
             3,
           );

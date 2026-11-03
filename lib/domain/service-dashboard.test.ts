@@ -5,6 +5,7 @@ import {
   clockLabel,
   countdownLabel,
   dashboardErrorMessage,
+  differenceLabel,
   DEFAULT_LAYOUT,
   GRID_COLUMNS,
   layoutRows,
@@ -14,12 +15,14 @@ import {
   placeTile,
   type PlanItem,
   removeTile,
+  reviewTiming,
   runProgress,
   settle,
   sizeTile,
   TILE_KEYS,
   TILES,
   trainedLabel,
+  viewerSeries,
   toDashboardError,
 } from "./service-dashboard";
 
@@ -281,5 +284,53 @@ describe("labels", () => {
     expect(trainedLabel("learning")).toBe("Still learning");
     expect(trainedLabel("supervised")).toBe("Still learning");
     expect(trainedLabel(null)).toBeNull();
+  });
+});
+
+describe("reviewTiming", () => {
+  const items: PlanItem[] = [
+    { ...planItem("Head", 1, 0, "during", "header") },
+    { ...planItem("song", 2, 300), actualSeconds: 330 },
+    { ...planItem("message", 3, 1800), actualSeconds: 1770 },
+    { ...planItem("close", 4, 120), actualSeconds: null },
+  ];
+
+  it("leaves out headers and compares what was recorded", () => {
+    const review = reviewTiming(items);
+    expect(review.rows.map((row) => row.id)).toEqual(["song", "message", "close"]);
+    expect(review.rows[0]?.differenceSeconds).toBe(30);
+    expect(review.rows[2]?.differenceSeconds).toBeNull();
+    expect(review.plannedSeconds).toBe(2220);
+    expect(review.overSeconds).toBe(0);
+    expect(review.recorded).toBe(2);
+  });
+
+  it("doesn't count an unrecorded item as short", () => {
+    expect(reviewTiming([{ ...planItem("a", 1, 300), actualSeconds: null }]).overSeconds).toBe(0);
+  });
+});
+
+describe("differenceLabel", () => {
+  it("says it in plain words", () => {
+    expect(differenceLabel(90)).toBe("+1:30 over");
+    expect(differenceLabel(-30)).toBe("0:30 under");
+    expect(differenceLabel(0)).toBe("On time");
+  });
+});
+
+describe("viewerSeries", () => {
+  it("makes a line per platform with its busiest moment", () => {
+    const series = viewerSeries([
+      { platform: "youtube", viewers: 10, at: "2026-11-08T16:00:00Z" },
+      { platform: "youtube", viewers: 30, at: "2026-11-08T16:30:00Z" },
+      { platform: "youtube", viewers: 20, at: "2026-11-08T17:00:00Z" },
+    ]);
+    expect(series).toHaveLength(1);
+    expect(series[0]?.platform).toBe("YouTube");
+    expect(series[0]?.peak.viewers).toBe(30);
+  });
+
+  it("leaves out a platform with no readings", () => {
+    expect(viewerSeries([])).toEqual([]);
   });
 });

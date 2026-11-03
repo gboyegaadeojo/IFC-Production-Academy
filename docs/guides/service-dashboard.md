@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do the YouTube preview and viewers once their setup is done ([runbook](../runbooks/service-dashboard.md)). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Facebook viewers and After the service are still to come. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do the YouTube preview and viewers once their setup is done ([runbook](../runbooks/service-dashboard.md)). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Only Facebook viewers is still to come. Everything else in this guide is still to come, and items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
@@ -119,7 +119,10 @@ If that computer is off, the tiles that depend on it go faded and say **Offline*
 
 ## After the service
 
-**After the service** builds itself from what was recorded: how long each item ran against the plan, the total length, and viewers over time on each platform. Use it to see where the service ran long and when people joined or left.
+Choose **After the service** at the top of the dashboard. It builds itself from what was recorded: how long each item ran against the plan, and viewers over time. Use it to see where the service ran long and when people joined or left.
+
+- **Actual times** come from Planning Center, and appear only when someone runs the plan with Services LIVE. Without that, an item says "Not recorded".
+- **Viewers** are saved while the wall TV or a computer has the dashboard open during the service.
 
 ## App name and logo
 
@@ -153,5 +156,6 @@ These were approved knowing they need a real test. This guide will change once t
 - **Magewell:** whether its web API needs a sign-in.
 - **YouTube:** how soon after going live the stream can be found.
 - **The TV stick:** that it reopens the dashboard by itself after a power cut.
+- **Services LIVE times:** that they arrive as expected, the first time someone runs a plan live.
 - **Text size on the TV:** whether it can be read from where people stand.
 - **If the mixer changes:** the Allen & Heath dLive has a documented connection, but its meter access is unconfirmed. We found no documented way to read meters on the Waves LV1 Classic, so that tile would likely go away.

@@ -263,7 +263,47 @@ describe("mapPlanItems", () => {
       length_seconds: 300,
       service_position: "during",
       notes: [{ category: "Audio", content: "Watch the kick" }],
+      actual_seconds: null,
     });
+  });
+
+  it("works out how long an item really ran from Services LIVE", () => {
+    const [mapped] = mapPlanItems(
+      [
+        {
+          type: "Item",
+          id: "1",
+          attributes: {},
+          relationships: { item_times: { data: [{ type: "ItemTime", id: "t1" }] } },
+        },
+      ],
+      [
+        {
+          type: "ItemTime",
+          id: "t1",
+          attributes: {
+            live_start_at: "2026-11-08T16:00:00Z",
+            live_end_at: "2026-11-08T16:05:18Z",
+          },
+        },
+      ],
+    );
+    expect(mapped?.actual_seconds).toBe(318);
+  });
+
+  it("leaves it empty when nobody ran the plan live", () => {
+    const [mapped] = mapPlanItems(
+      [
+        {
+          type: "Item",
+          id: "1",
+          attributes: {},
+          relationships: { item_times: { data: [{ type: "ItemTime", id: "t1" }] } },
+        },
+      ],
+      [{ type: "ItemTime", id: "t1", attributes: { live_start_at: null, live_end_at: null } }],
+    );
+    expect(mapped?.actual_seconds).toBeNull();
   });
 
   it("copes with what Planning Center leaves out", () => {
