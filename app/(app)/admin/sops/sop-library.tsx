@@ -243,7 +243,7 @@ export function SopLibrary({
                         type="button"
                         aria-expanded={open}
                         onClick={() => toggle(group.name)}
-                        className="min-h-button flex w-full items-center gap-2 bg-card px-4 py-2 text-left font-semibold hover:bg-hover"
+                        className="flex min-h-button w-full items-center gap-2 bg-card px-4 py-2 text-left font-semibold hover:bg-hover"
                       >
                         <ChevronRightIcon
                           className={`size-3.5 shrink-0 text-text-muted transition-transform motion-reduce:transition-none ${open ? "rotate-90" : ""}`}
@@ -302,7 +302,7 @@ function CategoryChip({
       type="button"
       aria-pressed={pressed}
       onClick={onClick}
-      className={`min-h-button-sm inline-flex items-center gap-1.5 rounded-pill border px-2.5 text-small font-medium ${
+      className={`inline-flex min-h-button-sm items-center gap-1.5 rounded-pill border px-2.5 text-small font-medium ${
         pressed
           ? "border-accent-light bg-accent-soft font-semibold text-accent-light"
           : "border-border-strong bg-surface text-text-secondary hover:bg-hover"
