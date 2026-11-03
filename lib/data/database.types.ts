@@ -1755,6 +1755,20 @@ export type Database = {
         Args: Record<string, never>;
         Returns: string | null;
       };
+      service_youtube_state: {
+        Args: { p_event_id: string; p_screen_token?: string | null };
+        Returns: Json;
+      };
+      save_youtube_check: {
+        Args: {
+          p_event_id: string;
+          p_video_id: string | null;
+          p_live: boolean;
+          p_searched: boolean;
+          p_screen_token?: string | null;
+        };
+        Returns: undefined;
+      };
       can_view_service_dashboard: {
         Args: Record<string, never>;
         Returns: boolean;

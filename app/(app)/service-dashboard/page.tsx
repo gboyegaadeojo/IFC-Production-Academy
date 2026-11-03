@@ -22,7 +22,7 @@ import {
   ServiceTimerTile,
 } from "@/components/service-dashboard/service-clock";
 import { ServicePicker } from "@/components/service-dashboard/service-picker";
-import { StreamPreviewTile } from "@/components/service-dashboard/stream-tiles";
+import { StreamPreviewTile, YoutubeLiveTile } from "@/components/service-dashboard/stream-tiles";
 import { TeamTile } from "@/components/service-dashboard/team-tile";
 import { TileWall } from "@/components/service-dashboard/tile-wall";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -42,6 +42,8 @@ import { getSopLibrary, type SopSummary } from "@/lib/data/sops";
 import { canOpenAdminSection } from "@/lib/domain/admin";
 import { formatDate } from "@/lib/domain/dates";
 import { eventTimeLabel } from "@/lib/domain/schedule";
+import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { getYoutubeStatus } from "@/lib/data/youtube-status";
 import { type TileKey } from "@/lib/domain/service-dashboard";
 
 export const metadata: Metadata = { title: "Service Dashboard" };
@@ -146,13 +148,18 @@ async function ServiceDashboardContent({
 
   const shows = (tile: TileKey) => layout.items.some((item) => item.tile === tile);
   const renderedAt = serverNow();
-  const [items, team, note, checklists, sops, channel, ticket] = await Promise.all([
+  const [items, team, note, checklists, sops, channel, youtube, ticket] = await Promise.all([
     getPlanItems(service.id),
     shows("team") ? getDashboardTeam(service.id) : [],
     shows("notes") ? getServiceNote(service.id) : "",
     shows("checklist") ? getServiceChecklists(service.id) : null,
     shows("sops") ? getSopLibrary() : [],
     shows("preview") ? getStreamChannel() : null,
+    shows("youtube")
+      ? createSupabaseServerClient().then((client) =>
+          getYoutubeStatus(client, service, null, renderedAt),
+        )
+      : ("off" as const),
     getLiveTicket(renderedAt),
   ]);
 
@@ -252,6 +259,8 @@ async function ServiceDashboardContent({
                     );
                   case "preview":
                     return <StreamPreviewTile channelId={channel} />;
+                  case "youtube":
+                    return <YoutubeLiveTile status={youtube} />;
                 }
               }}
             />

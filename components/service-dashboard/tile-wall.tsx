@@ -27,6 +27,7 @@ export const TILE_ICONS: Record<TileKey, (props: { className?: string }) => Reac
   slides: MonitorIcon,
   levels: LayersIcon,
   spl: InfoIcon,
+  youtube: MonitorIcon,
   preview: MonitorIcon,
   encoder: SettingsIcon,
   checklist: ListChecksIcon,

@@ -317,10 +317,9 @@ describe("differenceLabel", () => {
   });
 });
 
-describe("a layout saved with the retired viewer tiles", () => {
+describe("a layout saved with the retired Facebook tile", () => {
   const items = [
-    { tile: "youtube", x: 0, y: 0, w: 4, h: 3 },
-    { tile: "facebook", x: 4, y: 0, w: 4, h: 3 },
+    { tile: "facebook", x: 0, y: 0, w: 8, h: 3 },
     { tile: "run", x: 0, y: 3, w: 8, h: 6 },
     { tile: "notes", x: 8, y: 0, w: 4, h: 3 },
   ];

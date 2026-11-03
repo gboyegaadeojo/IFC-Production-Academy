@@ -4,11 +4,22 @@ For whoever sets up the connections. New people should read [the guide](../guide
 
 The dashboard only reads. Nothing here can change a slide, the mixer, the encoder, or the stream.
 
-## YouTube live stream
+## YouTube live status and preview
 
-The stream is public, so nobody signs in and nothing expires. In the Academy, go to Admin, Service Dashboard setup, Connections, and paste the channel ID. It starts with `UC`. That's all the Stream preview tile needs. No API key is used.
+The stream is public, so nobody signs in and nothing expires.
 
-**Still to test on the real channel:** that the tile picks up the stream when it goes live.
+1. **Channel ID:** in the Academy, go to Admin, Service Dashboard setup, Connections, and paste the channel ID. It starts with `UC`. The stream preview works from this alone.
+2. **API key, for the YouTube live tile:**
+   1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, or use the backups project.
+   2. Enable **YouTube Data API v3**.
+   3. Under Credentials, create an **API key**. Restrict it to YouTube Data API v3.
+   4. Add it as a Cloudflare secret named `YOUTUBE_API_KEY` (Workers, the Academy, Settings, Variables and Secrets, as type Secret, or `wrangler secret put YOUTUBE_API_KEY`).
+
+**How it stays free:** it only looks from 30 minutes before a service until 30 minutes after. It searches for the stream every 2 minutes at most until it finds it, then checks every 30 seconds at most, however many screens are open. Google allows about 100 searches a day, and each check of a found stream costs far less.
+
+**Still to test on the real channel:** how soon after going live the search finds the stream.
+
+The checks run while a screen is open during the service, so leave the wall TV on or a booth computer open.
 
 ## Wall TV
 

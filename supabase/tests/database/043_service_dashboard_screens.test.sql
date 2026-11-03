@@ -1,4 +1,4 @@
--- Service Dashboard, stage 3 (ADD-DASH-06): the wall TV's pass.
+-- Service Dashboard, stage 3 (ADD-DASH-06, 07): the wall TV's pass, and whether YouTube is live.
 begin;
 select no_plan();
 
@@ -62,6 +62,12 @@ select throws_ok(
 select throws_ok(
   $$select count(*) from public.display_screens$$,
   '42501', null, 'a visitor cannot read screens');
+select throws_ok(
+  $$select count(*) from public.service_youtube_checks$$,
+  '42501', null, 'a visitor cannot read YouTube checks directly');
+select throws_ok(
+  $$select public.service_youtube_state((select value::uuid from ctx where key = 'event'))$$,
+  '42501', 'not_authorized', 'a visitor with no pass gets no stream data');
 reset role;
 
 select pg_temp.act_as('a8000000-0000-4000-8000-000000000002');
@@ -98,6 +104,27 @@ select is(
 select ok(
   public.screen_dashboard((select value from ctx where key = 'token')) ? 'items',
   'with a pass, the TV reads the dashboard');
+select lives_ok(
+  $$select public.save_youtube_check((select value::uuid from ctx where key = 'event'), 'fakeVideoId', true, true,
+      (select value from ctx where key = 'token'))$$,
+  'with a pass, the TV can save that the stream is live');
+select is(
+  public.service_youtube_state(
+    (select value::uuid from ctx where key = 'event'),
+    (select value from ctx where key = 'token')) ->> 'live',
+  'true', 'every screen reads the same answer');
+select lives_ok(
+  $$select public.save_youtube_check((select value::uuid from ctx where key = 'event'), null, false, false,
+      (select value from ctx where key = 'token'))$$,
+  'the TV can save that the stream ended');
+select ok(
+  public.service_youtube_state(
+    (select value::uuid from ctx where key = 'event'),
+    (select value from ctx where key = 'token')) ->> 'lastSearchAt' is not null,
+  'a check that did not search keeps the last search time');
+select throws_ok(
+  $$select public.save_youtube_check((select value::uuid from ctx where key = 'event'), null, true, false, 'wrong')$$,
+  '42501', 'not_authorized', 'a wrong pass cannot save anything');
 reset role;
 
 -- The pass is stored only as a hash.

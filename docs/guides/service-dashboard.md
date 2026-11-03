@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so does the YouTube live stream once its channel is added (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so do YouTube live and the stream preview once their setup is done (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
@@ -28,6 +28,7 @@ Service Producer, Audio, Graphics, Camera Director, and the wall TV all see the 
 
 | Tile                | What it shows                                                        | Where it comes from              |
 | ------------------- | -------------------------------------------------------------------- | -------------------------------- |
+| YouTube live        | **Live** or **Not live**                                             | YouTube                          |
 | Stream preview      | The YouTube live stream, a little behind the room                    | YouTube                          |
 | Current item        | What we're on, how long is left, and what's next                     | The plan and ProPresenter        |
 | Run of service      | Every item with its time, and the current one marked NOW             | Planning Center                  |
@@ -104,7 +105,7 @@ The TV holds a view-only pass, not anyone's account. It can't tick checklists or
 **From the internet, with nothing to do each week:**
 
 - **Planning Center** provides the plan, the times, and who's serving. The Academy only reads from Planning Center and never changes it.
-- **YouTube** only needs our channel, because our stream is public. Nobody signs in. The Magewell goes live as usual, and the Stream preview tile plays whatever the channel is streaming.
+- **YouTube** only needs our channel and an API key, because our stream is public. Nobody signs in. The Magewell goes live as usual, and the YouTube live tile says so. It checks from 30 minutes before the service until 30 minutes after, while a screen is open, so keep the wall TV or a booth computer on. It can take a couple of minutes to change to **Live**.
 
 The dashboard doesn't count viewers. To see how many people are watching, check YouTube Studio or Facebook directly.
 
@@ -149,7 +150,7 @@ These were approved knowing they need a real test. This guide will change once t
 - **ProPresenter:** the exact way to read slide status, and whether it can send pictures of the next three slides. If it only sends text, those tiles show the words.
 - **X32:** the exact meter format, and reading channel names from the scribble strips.
 - **Magewell:** whether its web API needs a sign-in.
-- **YouTube:** that the Stream preview tile picks up the stream on our real channel when it goes live.
+- **YouTube:** how soon after going live the YouTube live tile changes, on our real channel.
 - **The TV stick:** that it reopens the dashboard by itself after a power cut.
 - **Services LIVE times:** that they arrive as expected, the first time someone runs a plan live.
 - **Text size on the TV:** whether it can be read from where people stand.

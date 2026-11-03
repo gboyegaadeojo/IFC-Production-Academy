@@ -45,7 +45,7 @@ select is(
 select is((select actual_seconds from public.service_plan_items where external_id = 'r1'), 318, 'a recorded time is kept');
 select is((select actual_seconds from public.service_plan_items where external_id = 'r2'), null, 'an unrecorded time stays empty');
 
--- Viewer counts are gone; the live stream only needs the channel.
+-- Viewer counts are gone. The stream preview only needs the channel.
 select hasnt_table('public', 'service_viewer_samples', 'viewer readings are no longer kept');
 select pg_temp.act_as('a9000000-0000-4000-8000-000000000001');
 select lives_ok(

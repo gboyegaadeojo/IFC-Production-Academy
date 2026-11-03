@@ -6,6 +6,7 @@ import { z } from "zod";
 import { utcToWinnipeg } from "./schedule";
 
 export const TILE_KEYS = [
+  "youtube",
   "preview",
   "current",
   "run",
@@ -41,6 +42,7 @@ export const TILES: Record<TileKey, { name: string; group: TileGroup; source: st
   slides: { name: "Slides", group: "Slides", source: "ProPresenter" },
   levels: { name: "Mixer levels", group: "Audio", source: "The mixer" },
   spl: { name: "Room loudness (SPL)", group: "Audio", source: "A measurement mic" },
+  youtube: { name: "YouTube live", group: "Video and stream", source: "YouTube" },
   preview: { name: "Stream preview", group: "Video and stream", source: "YouTube" },
   encoder: { name: "Encoder health", group: "Video and stream", source: "Magewell Ultra Encode" },
   checklist: { name: "Checklist", group: "Tasks and notes", source: "The Academy Checklist" },
@@ -100,8 +102,9 @@ export const DEFAULT_LAYOUT: DashboardLayout = {
     item("preview", 0, 0, 3, 5),
     item("team", 0, 5, 3, 8),
     item("pptimers", 0, 13, 3, 3),
-    item("current", 3, 0, 4, 3),
-    item("run", 3, 3, 4, 13),
+    item("youtube", 3, 0, 4, 2),
+    item("current", 3, 2, 4, 3),
+    item("run", 3, 5, 4, 11),
     item("slides", 7, 0, 5, 7),
     item("timer", 7, 7, 2, 3),
     item("encoder", 9, 7, 3, 3),
@@ -113,7 +116,7 @@ export const DEFAULT_LAYOUT: DashboardLayout = {
 };
 
 /** Tiles that no longer exist. A layout saved with one keeps the rest of its tiles. */
-const RETIRED_TILES = new Set(["youtube", "facebook"]);
+const RETIRED_TILES = new Set(["facebook"]);
 
 /** A stored layout, or the default if nothing is saved or it no longer makes sense. */
 export function parseStoredLayout(

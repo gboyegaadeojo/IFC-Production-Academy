@@ -26,6 +26,7 @@ async function ServiceDashboardConnectionsContent() {
     return <AccessDenied />;
   }
   const channel = await getYoutubeChannel();
+  const keySet = Boolean(process.env.YOUTUBE_API_KEY);
   const liveSet = Boolean(process.env.LIVE_ROOM_SECRET);
 
   return (
@@ -44,9 +45,18 @@ async function ServiceDashboardConnectionsContent() {
           <h2 className="text-heading font-semibold">YouTube</h2>
           <p className="text-small text-text-secondary">
             Your stream is public, so nobody signs in and there&apos;s nothing to do each week. The
-            live stream needs only the channel.
+            preview needs the channel. Showing whether you&apos;re live also needs an API key.
           </p>
           <ChannelForm initial={channel} />
+          <p className="text-small">
+            <strong className="font-medium">API key: </strong>
+            {keySet ? "Set." : "Not set yet. See the "}
+            {keySet ? null : (
+              <Link href="/help/runbook-service-dashboard" className="text-accent-light underline">
+                setup guide
+              </Link>
+            )}
+          </p>
         </section>
 
         <section className="flex flex-col gap-2 rounded-card border border-border bg-card p-4">
