@@ -19,13 +19,16 @@ $$;
 --   Leader     a4000000-0000-4000-8000-000000000002  (Camera only)
 --   Volunteer  a4000000-0000-4000-8000-000000000003  (no department)
 --   Suspended  a4000000-0000-4000-8000-000000000004
+--   Admin      a4000000-0000-4000-8000-000000000005  (Platform Administrator)
 select pg_temp.new_user('a4000000-0000-4000-8000-000000000001', 'Test Director');
 select pg_temp.new_user('a4000000-0000-4000-8000-000000000002', 'Test Camera Leader');
 select pg_temp.new_user('a4000000-0000-4000-8000-000000000003', 'Test Volunteer');
 select pg_temp.new_user('a4000000-0000-4000-8000-000000000004', 'Test Suspended');
 update public.profiles set status = 'suspended' where id = 'a4000000-0000-4000-8000-000000000004';
+select pg_temp.new_user('a4000000-0000-4000-8000-000000000005', 'Test Platform Admin');
 insert into public.user_roles (user_id, role_id) values
-  ('a4000000-0000-4000-8000-000000000001', (select id from public.roles where key = 'production_director'));
+  ('a4000000-0000-4000-8000-000000000001', (select id from public.roles where key = 'production_director')),
+  ('a4000000-0000-4000-8000-000000000005', (select id from public.roles where key = 'platform_admin'));
 insert into public.user_roles (user_id, role_id, department_id) values
   ('a4000000-0000-4000-8000-000000000002', '297464be-2cae-430d-94bf-6038bd745384', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855');
 
@@ -76,9 +79,6 @@ update public.sop_versions
 reset role;
 
 -- Platform Administrators draft and publish too (G, 2026-11-03), and still can't approve members.
-select pg_temp.new_user('a4000000-0000-4000-8000-000000000005', 'Test Platform Admin');
-insert into public.user_roles (user_id, role_id) values
-  ('a4000000-0000-4000-8000-000000000005', (select id from public.roles where key = 'platform_admin'));
 select pg_temp.act_as('a4000000-0000-4000-8000-000000000005');
 select lives_ok($$ select public.create_sop(null, 'Fake admin SOP') $$, 'a Platform Admin adds an SOP for all of production');
 select lives_ok($$ select public.create_sop('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'Fake admin camera SOP') $$,
