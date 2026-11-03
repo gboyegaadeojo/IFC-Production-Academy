@@ -23,6 +23,8 @@
   "observability": {
     "enabled": true,
   },
+  // Starts the frequent GitHub jobs on time (workers/entry.ts, docs/runbooks/scheduling.md).
+  "triggers": { "crons": ["*/15 * * * *"] },
   // Runtime configuration lives in Cloudflare (dashboard or `wrangler secret put`), never here.
   // NEXT_PUBLIC_* values are inlined at build time, so set them as build variables too (README).
 }

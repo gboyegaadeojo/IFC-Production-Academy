@@ -6,8 +6,9 @@ due for review. Everyone sees theirs in the app under **Notifications** (account
 chooses which kinds also come by email.
 
 Emails are sent every 15 minutes by `.github/workflows/notifications.yml`, which runs
-`scripts/send-notifications.ts`. Until the secrets below are set, nothing is emailed and
-notifications stay in the app.
+`scripts/send-notifications.ts`. A Cloudflare timer starts it, because GitHub's own schedule can run
+hours late ([how it works](scheduling.md#starting-jobs-on-time)). Until the secrets below are set,
+nothing is emailed and notifications stay in the app.
 
 ## Secrets (GitHub → Settings → Secrets and variables → Actions)
 

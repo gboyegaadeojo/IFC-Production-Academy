@@ -21,11 +21,17 @@ Then run the job once by hand: **Actions → Planning Center sync → Run workfl
 counts only, such as "plans 9, scheduled 31, people matched 18". If it says Planning Center refused
 the token, the token is wrong or doesn't include Services and People.
 
-### Refresh on demand (optional)
+### Starting jobs on time
+
+GitHub's own schedule can run hours late, so a Cloudflare timer on the Worker asks GitHub to run
+the Planning Center sync and the notifications job every 15 minutes. The jobs and their secrets stay
+on GitHub. GitHub's schedule stays on as a backup, so if the timer stops, the jobs still run, later.
 
 **Refresh from Planning Center** on the Planning Center page runs the sync straight away instead
-of waiting up to 15 minutes. The Planning Center token stays in Actions secrets: the button asks
-GitHub to run the same job. It needs a GitHub token that can do only that:
+of waiting up to 15 minutes. The button and the timer use the same token, which can only ask GitHub
+to run jobs. The Planning Center token stays in Actions secrets.
+
+To set up that GitHub token:
 
 1. On GitHub: **Settings → Developer settings → Fine-grained personal access tokens → Generate
    new token**. Resource owner: you. Repository access: **Only select repositories**, this one.
@@ -36,9 +42,13 @@ GitHub to run the same job. It needs a GitHub token that can do only that:
    npx wrangler secret put GITHUB_DISPATCH_TOKEN
    ```
 
-Until it's set, the button doesn't show. It can be pressed once every two minutes, and each press
-is in the audit log. When the token expires, the button says it couldn't reach GitHub; make a new
-one and put it again.
+Until it's set, the button doesn't show and the timer starts nothing. The button can be pressed once
+every two minutes, and each press is in the audit log.
+
+**When the token expires,** the button says it couldn't reach GitHub, Sentry shows "Could not start
+scheduled jobs", and the jobs fall back to GitHub's slower schedule. Make a new token and put it
+again. To check the timer is working, look under **Actions** for runs of these jobs marked
+`workflow_dispatch`, about every 15 minutes.
 
 ## 2. Link positions
 
