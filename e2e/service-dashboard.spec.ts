@@ -124,3 +124,66 @@ test("the dashboard opens a service: notes save, and the checklist and team tile
   await page.reload();
   await expect(page.getByLabel("Shared with the team")).toHaveValue(`Fake note ${stamp}`);
 });
+
+test("a wall TV connects by code, shows the dashboard read only, and can be removed", async ({
+  page,
+  browser,
+}) => {
+  const tvContext = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+  const tv = await tvContext.newPage();
+  await tv.goto("/screen");
+  await expect(tv.getByRole("heading", { name: "Connect this screen" })).toBeVisible();
+  const code = tv.getByTestId("screen-code");
+  await expect(code).toHaveText(/^\d{3} \d{3}$/);
+  const shown = (await code.textContent()) ?? "";
+  // No account, and no way into the rest of the app.
+  await expect(tv.getByRole("navigation")).toHaveCount(0);
+
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin/service-dashboard/screens");
+  await page.getByLabel("Code on the TV").fill("000000");
+  await page.getByRole("button", { name: "Add this screen" }).click();
+  await expect(page.getByText(/doesn't match a waiting TV/)).toBeVisible();
+
+  const name = `Fake TV ${Date.now()}`;
+  await page.getByLabel("Code on the TV").fill(shown);
+  await page.getByLabel("Screen name").fill(name);
+  await page.getByRole("button", { name: "Add this screen" }).click();
+  await expect(page.getByText(new RegExp(`^${name} added`))).toBeVisible();
+
+  // The TV picks it up by itself.
+  await expect(tv.getByRole("region", { name: "Run of service" })).toBeVisible({ timeout: 15_000 });
+  await expect(tv.getByRole("navigation")).toHaveCount(0);
+  await expect(tv.getByRole("button", { name: "Edit layout" })).toHaveCount(0);
+  await expect(tv.locator("textarea")).toHaveCount(0);
+  await expect(tv.locator('input[type="checkbox"]')).toHaveCount(0);
+
+  // It fills the screen with no scrolling.
+  const scroll = await tv.evaluate(() => ({
+    width: document.documentElement.scrollWidth - window.innerWidth,
+    height: document.documentElement.scrollHeight - window.innerHeight,
+  }));
+  expect(scroll).toEqual({ width: 0, height: 0 });
+
+  await page.getByRole("button", { name: `Remove ${name}` }).click();
+  await expect(page.getByText(new RegExp(`^${name} removed`))).toBeVisible();
+  await tv.reload();
+  await expect(tv.getByRole("heading", { name: "Connect this screen" })).toBeVisible();
+  await tvContext.close();
+});
+
+test("a manager saves the YouTube channel, and the preview follows it", async ({ page }) => {
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin/service-dashboard/connections");
+  await page.getByLabel("Channel ID").fill("https://youtube.com/@fake");
+  await page.getByRole("button", { name: "Save channel" }).click();
+  await expect(page.getByText(/doesn't look like a channel ID/)).toBeVisible();
+
+  await page.getByLabel("Channel ID").fill("UCaaaaaaaaaaaaaaaaaaaaaa");
+  await page.getByRole("button", { name: "Save channel" }).click();
+  await expect(page.getByText("Channel saved.")).toBeVisible();
+
+  await page.getByLabel("Channel ID").fill("");
+  await page.getByRole("button", { name: "Save channel" }).click();
+  await expect(page.getByText("Channel cleared.")).toBeVisible();
+});

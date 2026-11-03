@@ -253,6 +253,8 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ADD-DASH-02 | Computers and the wall TV only: not on phones or in the installed app. Access follows Planning Center teams, never training | S |
 | ADD-DASH-04 | App name and logo: platform admins change the name, short name, and icon, with previews. Issued certificates keep their name | S |
 | ADD-DASH-05 | Run of service from Planning Center (items, songs, notes), current item and service timer by the plan's clock, who's serving, checklist, producer notes, SOP shortcuts | S |
+| ADD-DASH-06 | Wall TV connects by a 6-digit code and holds a revocable, view-only pass. It fits one screen with no scrolling | S |
+| ADD-DASH-07 | YouTube preview and viewer counts from the public channel, with nothing to do each week | S |
 | ADD-DASH-03 | One layout for everyone, changed by up to 3 editors with drag, resize, and keyboard. Every save writes an audit event | S |
 
 ## 3. Progression, business rules and workflows

@@ -164,3 +164,16 @@ export async function saveServiceNote(eventId: string, body: string): Promise<Da
   });
   return result(error);
 }
+
+/** The YouTube channel, for the stream preview. Null until it's set. */
+export async function getStreamChannel(eventId: string): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("service_stream_state", {
+    p_event_id: eventId,
+    p_platform: "youtube",
+  });
+  if (error) {
+    return null;
+  }
+  return z.object({ channel: z.string().nullable() }).safeParse(data).data?.channel ?? null;
+}

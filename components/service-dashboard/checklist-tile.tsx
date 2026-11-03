@@ -79,7 +79,7 @@ function Tick({
   const [, startTransition] = useTransition();
   return (
     <li>
-      <label className="flex cursor-pointer items-start gap-2 py-0.5 text-small">
+      <label className="flex cursor-pointer items-center gap-2 py-0.5 text-small">
         <input
           type="checkbox"
           checked={optimistic}
@@ -100,7 +100,7 @@ function Tick({
               }
             });
           }}
-          className="mt-0.5 size-4 shrink-0 accent-success"
+          className="size-6 shrink-0 accent-success"
         />
         <span className={optimistic ? "text-text-muted line-through" : ""}>{text}</span>
       </label>

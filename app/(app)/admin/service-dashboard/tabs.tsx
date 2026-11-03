@@ -2,7 +2,7 @@ import { Tabs } from "@/components/ui/tabs";
 import type { CapabilityGrant } from "@/lib/domain/capabilities";
 import { hasCapability } from "@/lib/domain/capabilities";
 
-export type SetupTab = "layout" | "editors";
+export type SetupTab = "layout" | "editors" | "connections" | "screens";
 
 /** Service Dashboard setup's parts. Each shows only to people who can use it. */
 export function SetupTabs({ current, grants }: { current: SetupTab; grants: CapabilityGrant[] }) {
@@ -18,8 +18,18 @@ export function SetupTabs({ current, grants }: { current: SetupTab; grants: Capa
                 label: "Editors",
                 current: current === "editors",
               },
+              {
+                href: "/admin/service-dashboard/connections",
+                label: "Connections",
+                current: current === "connections",
+              },
             ]
           : []),
+        {
+          href: "/admin/service-dashboard/screens",
+          label: "Screens",
+          current: current === "screens",
+        },
       ]}
     />
   );
