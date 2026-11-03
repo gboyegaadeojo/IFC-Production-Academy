@@ -30,6 +30,9 @@ function matches(person: PersonRow, query: string): boolean {
   );
 }
 
+/** A screenful or two at a time. */
+const PER_PAGE = 50;
+
 async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, "searchParams">) {
   const { allowed } = await getAdminAccess("people");
   if (!allowed) {
@@ -38,7 +41,12 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim().slice(0, 100) : "";
   const everyone = await listPeople();
-  const people = query ? everyone.filter((person) => matches(person, query)) : everyone;
+  const matching = query ? everyone.filter((person) => matches(person, query)) : everyone;
+  const lastPage = Math.max(1, Math.ceil(matching.length / PER_PAGE));
+  const page = Math.min(lastPage, Math.max(1, Number(params.page) || 1));
+  const people = matching.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const pageHref = (n: number) =>
+    `/admin/people?${new URLSearchParams({ ...(query ? { q: query } : {}), page: String(n) })}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -67,7 +75,7 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
 
       <p role="status" className="text-small text-text-secondary">
         {query
-          ? `${people.length} of ${everyone.length} people match “${query}”.`
+          ? `${matching.length} of ${everyone.length} people match “${query}”.`
           : `${everyone.length} ${everyone.length === 1 ? "person" : "people"}.`}
       </p>
 
@@ -79,7 +87,7 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
         </EmptyState>
       ) : (
         <div className="relative overflow-x-auto rounded-card border border-border">
-          <table className="w-full min-w-[46rem] text-left text-small">
+          <table className="stack-table w-full min-w-[46rem] text-left text-small">
             <caption className="sr-only">People, sorted by name</caption>
             <thead className="border-b border-border text-text-muted">
               <tr>
@@ -139,7 +147,7 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
                       </ul>
                     )}
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-text-muted">
+                  <td data-label="Joined" className="px-4 py-3 whitespace-nowrap text-text-muted">
                     {formatDateTime(person.joinedAt)}
                   </td>
                 </tr>
@@ -148,6 +156,23 @@ async function PeopleContent({ searchParams }: Pick<PageProps<"/admin/people">, 
           </table>
         </div>
       )}
+      {lastPage > 1 ? (
+        <nav aria-label="Pages of people" className="flex items-center gap-3 text-small">
+          {page > 1 ? (
+            <Link href={pageHref(page - 1)} className={buttonClasses("secondary")}>
+              Previous
+            </Link>
+          ) : null}
+          <span className="text-text-secondary">
+            Page {page} of {lastPage}
+          </span>
+          {page < lastPage ? (
+            <Link href={pageHref(page + 1)} className={buttonClasses("secondary")}>
+              Next
+            </Link>
+          ) : null}
+        </nav>
+      ) : null}
     </div>
   );
 }

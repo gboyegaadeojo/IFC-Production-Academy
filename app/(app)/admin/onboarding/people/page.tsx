@@ -66,7 +66,6 @@ async function PeopleContent({
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        eyebrow="People & Teams"
         title="People in pathways"
         description="Who's where, how long they've been there, and what happens next. Open someone for their history and notes."
       />

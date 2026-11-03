@@ -1,5 +1,5 @@
 import "server-only";
-import { getLearnerCourse, type LearnerCourse } from "@/lib/data/pathway";
+import { getLearnerCourses, type LearnerCourse } from "@/lib/data/pathway";
 import { getPassedPracticalKeys } from "@/lib/data/practicals";
 import { getPassedQuizKeys } from "@/lib/data/quizzes";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
@@ -158,12 +158,13 @@ export async function getContinueLearning(
   const activity = await getLearnerActivity(userId);
   const ids = recentCourseIds(activity, memberDepartmentIds, 3);
   const [courses, passed, practicalsPassed] = await Promise.all([
-    Promise.all(ids.map((id) => getLearnerCourse(id))),
+    getLearnerCourses(ids),
     getPassedQuizKeys(userId, ids),
     getPassedPracticalKeys(userId, ids),
   ]);
-  return courses.flatMap((course) => {
-    const entry = course ? activity.get(course.id) : undefined;
+  return ids.flatMap((id) => {
+    const course = courses.get(id);
+    const entry = course ? activity.get(id) : undefined;
     if (!course || !course.canOpen || !entry) {
       return [];
     }
@@ -206,13 +207,13 @@ export async function getCourseProgressById(
   }
   const [activity, courses, passed, practicalsPassed] = await Promise.all([
     getLearnerActivity(userId, courseIds),
-    Promise.all(courseIds.map((id) => getLearnerCourse(id))),
+    getLearnerCourses(courseIds),
     getPassedQuizKeys(userId, [...courseIds]),
     getPassedPracticalKeys(userId, [...courseIds]),
   ]);
   const out = new Map<string, CourseProgress>();
-  for (const course of courses) {
-    if (!course || !course.canOpen) {
+  for (const course of courses.values()) {
+    if (!course.canOpen) {
       continue;
     }
     out.set(

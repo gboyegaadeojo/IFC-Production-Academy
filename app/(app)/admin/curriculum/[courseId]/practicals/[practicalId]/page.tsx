@@ -148,7 +148,7 @@ async function PracticalEditorContent({ params }: Pick<Props, "params">) {
           </ol>
         )}
         {editable ? (
-          <div className="max-w-3xl rounded-card border border-dashed border-border p-5">
+          <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
             <ActionForm
               action={addCriterionAction}
               submitLabel="Add to checklist"

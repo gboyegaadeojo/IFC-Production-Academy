@@ -117,7 +117,7 @@ async function PairingContent({ params }: Pick<Props, "params">) {
           </ul>
         )}
         {active ? (
-          <div className="rounded-card border border-dashed border-border p-5">
+          <div className="rounded-card border border-border bg-surface p-5">
             <ActionForm
               action={addGoalAction}
               submitLabel="Add goal"

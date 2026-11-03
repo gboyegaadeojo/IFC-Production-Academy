@@ -188,7 +188,7 @@ async function ServiceTypeContent({ params }: Pick<Props, "params">) {
           </ol>
         )}
         {roles.length > 0 ? (
-          <div className="rounded-card border border-dashed border-border p-5">
+          <div className="rounded-card border border-border bg-surface p-5">
             <ActionForm
               action={changePositionsAction}
               submitLabel="Add position"

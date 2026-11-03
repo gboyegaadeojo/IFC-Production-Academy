@@ -174,6 +174,7 @@ export type PersonReadiness = {
 export type DepartmentReadinessAdmin = {
   id: string;
   name: string;
+  hue: string;
   canManage: boolean;
   setup: ReadinessSetup;
   people: PersonReadiness[];
@@ -186,7 +187,7 @@ export async function getReadinessAdmin(
   const supabase = await createSupabaseServerClient();
   const departments = await supabase
     .from("departments")
-    .select("id, name, sort_order")
+    .select("id, name, hue, sort_order")
     .order("sort_order");
   if (departments.error) {
     throw new Error("Could not load departments", { cause: departments.error.code });
@@ -231,6 +232,7 @@ export async function getReadinessAdmin(
     return {
       id: department.id,
       name: department.name,
+      hue: department.hue,
       canManage: hasCapability(grants, "competency.approve", department.id),
       setup: setup.get(department.id) ?? { competencies: [], roles: [] },
       people: userIds

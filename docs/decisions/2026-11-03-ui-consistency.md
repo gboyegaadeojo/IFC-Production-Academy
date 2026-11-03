@@ -44,3 +44,11 @@ The Planning Center page is redesigned on top of these rules.
 - **A person's page:** a short role picker that shows what the chosen role allows, with no cards inside cards.
 
 The sidebar's rows are now 32px with a mouse so its links fit on a laptop screen, and it still scrolls on very short screens. "Services & Scheduling" keeps its name, because it fits at the new text size.
+
+## Decided in the app review (2026-11-03)
+
+- **Tables on phones:** rows become cards, so no column is hidden.
+- **Choosing a department:** the same chips everywhere, applied straight away.
+- **On or off:** a switch that saves straight away. **Show more:** one chevron.
+- **Dashed borders** mean empty. Forms have solid ones.
+- **Admin pages** have no small label above the title.

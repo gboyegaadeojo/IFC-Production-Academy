@@ -71,7 +71,7 @@ async function ServiceTypesContent() {
 
       <section
         aria-labelledby="new-type-heading"
-        className="flex max-w-3xl flex-col gap-4 rounded-card border border-dashed border-border p-5"
+        className="flex max-w-3xl flex-col gap-4 rounded-card border border-border bg-surface p-5"
       >
         <h2 id="new-type-heading" className="text-subheading font-semibold">
           Add a service type

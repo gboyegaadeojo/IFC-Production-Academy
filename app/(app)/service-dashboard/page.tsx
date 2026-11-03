@@ -170,7 +170,7 @@ async function ServiceDashboardContent({
         <AutoRefresh />
         <LiveProvider ticket={ticket}>
           <ServiceClock items={items} startsAt={service.startsAt} renderedAt={renderedAt}>
-            <header className="flex flex-wrap items-stretch gap-2">
+            <header className="flex flex-wrap items-center gap-2">
               <h1 className="sr-only">Service Dashboard</h1>
               <ServicePicker
                 current={service.id}

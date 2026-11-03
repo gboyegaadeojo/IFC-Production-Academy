@@ -67,7 +67,6 @@ async function InvitationsContent({
   return (
     <div className="flex flex-col gap-8">
       <PageHeader
-        eyebrow="People & Teams"
         title="Invitations"
         description="Invite someone straight into a department. They join when they accept, because you've already decided. Joining puts them on the team; approval to serve still comes after the hands-on checks."
       />

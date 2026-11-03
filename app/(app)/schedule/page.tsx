@@ -180,7 +180,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
           </MonthLink>
           <span
             aria-live="polite"
-            className="flex min-h-11 min-w-44 items-center justify-center rounded-button border border-border bg-surface px-4 text-body font-medium"
+            className="flex min-h-control min-w-44 items-center justify-center rounded-button border border-border bg-surface px-4 text-body font-medium"
           >
             {monthLabel(month)}
           </span>
@@ -260,7 +260,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                       >
                         <span
                           aria-hidden="true"
-                          className="flex size-11 items-center justify-center rounded-button border border-border bg-card text-text-secondary"
+                          className="flex min-h-control items-center justify-center rounded-button border border-border bg-card px-3 text-text-secondary"
                         >
                           <CalendarRangeIcon className="size-5" />
                         </span>
@@ -438,7 +438,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
               ))}
             </ul>
           ) : null}
-          <div className="max-w-3xl rounded-card border border-dashed border-border p-5">
+          <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
             <ActionForm
               action={addUnavailabilityAction}
               submitLabel="Add days away"

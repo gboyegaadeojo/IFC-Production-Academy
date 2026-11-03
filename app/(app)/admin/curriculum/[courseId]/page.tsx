@@ -130,7 +130,7 @@ async function CourseContent({
                   hidden={{ courseId: course.id }}
                   className="flex flex-col gap-2 lg:items-end"
                 />
-                <p className="text-small text-text-muted">
+                <p className="text-small text-text-muted lg:max-w-72 lg:text-right">
                   Starts a draft. Volunteers keep seeing the live version until you publish.
                 </p>
               </>
@@ -410,7 +410,7 @@ function DraftEditor({
               isLast={index === draft.modules.length - 1}
             />
           ))}
-          <div className="max-w-2xl rounded-card border border-dashed border-border p-5">
+          <div className="max-w-2xl rounded-card border border-border bg-surface p-5">
             <ActionForm
               action={addModuleAction}
               submitLabel="Add module"
@@ -731,7 +731,7 @@ function QuizzesPanel({
         </ul>
       )}
       {editable ? (
-        <div className="max-w-2xl rounded-card border border-dashed border-border p-5">
+        <div className="max-w-2xl rounded-card border border-border bg-surface p-5">
           <ActionForm
             action={addQuizAction}
             submitLabel="Add quiz"
@@ -826,7 +826,7 @@ function PracticalsPanel({
         </ul>
       )}
       {editable ? (
-        <div className="max-w-2xl rounded-card border border-dashed border-border p-5">
+        <div className="max-w-2xl rounded-card border border-border bg-surface p-5">
           <ActionForm
             action={addPracticalAction}
             submitLabel="Add practical"

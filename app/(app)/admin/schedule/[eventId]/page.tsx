@@ -129,7 +129,7 @@ async function EventContent({ params }: Pick<Props, "params">) {
           </ul>
         )}
         {open && event.roles.length > 0 ? (
-          <div className="max-w-3xl rounded-card border border-dashed border-border p-5">
+          <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
             <ActionForm
               action={addPositionAction}
               submitLabel="Add position"

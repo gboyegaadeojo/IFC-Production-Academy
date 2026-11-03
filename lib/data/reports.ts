@@ -11,7 +11,13 @@ import {
 // Department reports (SRS-REPORT-001..007). The database functions check report.view and return
 // names and training facts only: no emails, no mentoring notes.
 
-export type ReportDepartment = { id: string; name: string; slug: string; canExport: boolean };
+export type ReportDepartment = {
+  id: string;
+  name: string;
+  slug: string;
+  hue: string;
+  canExport: boolean;
+};
 
 export async function getReportDepartments(
   grants: readonly CapabilityGrant[],
@@ -19,7 +25,7 @@ export async function getReportDepartments(
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("departments")
-    .select("id, name, slug, sort_order")
+    .select("id, name, slug, hue, sort_order")
     .order("sort_order");
   if (error) {
     throw new Error("Could not load departments", { cause: error.code });
@@ -30,6 +36,7 @@ export async function getReportDepartments(
       id: d.id,
       name: d.name,
       slug: d.slug,
+      hue: d.hue,
       canExport: hasCapability(grants, "report.export", d.id),
     }));
 }

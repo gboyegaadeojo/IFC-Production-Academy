@@ -98,7 +98,6 @@ async function DashboardContent() {
   return (
     <div className="flex flex-col gap-9">
       <PageHeader
-        eyebrow="Administration"
         title="Dashboard"
         description="What needs you today, then how each department's volunteers are moving from joining to serving."
       />
@@ -113,7 +112,7 @@ async function DashboardContent() {
               Things only you can move forward. Each one opens the page where you do it.
             </p>
           </div>
-          <ul className="grid gap-3.5 md:grid-cols-2 xl:grid-cols-3">
+          <ul className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,15rem),1fr))] gap-3.5">
             {items.map((item) => (
               <li key={item.key} className="flex">
                 <NeedsYouCard item={item} />
@@ -299,7 +298,7 @@ function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
         absolutely positioned) inside the scroll box, so it can't widen the page.
       */}
       <div className="relative overflow-x-auto">
-        <table className="w-full min-w-[46rem] border-collapse text-left">
+        <table className="stack-table w-full min-w-[46rem] border-collapse text-left">
           <caption className="sr-only">Training, by department</caption>
           <thead>
             <tr className="border-b border-border text-small text-text-muted">
@@ -311,7 +310,7 @@ function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
               <Th label="Waiting" note="Asked for an assessment" />
               <Th label="Approved to serve" note="In at least one role" />
               <Th label="Certificates" note="Courses finished" />
-              <th scope="col" className={`${cell} font-medium`}>
+              <th scope="col" className={`${cell} font-medium max-xl:hidden`}>
                 <span className="sr-only">Progress</span>
               </th>
             </tr>
@@ -348,9 +347,9 @@ function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
                   <th scope="row" className={`${cell} font-normal`}>
                     {name}
                   </th>
-                  <Num className={number} value={row.activeMembers} />
-                  <Num className={number} value={row.inProgress} />
-                  <td className={number}>
+                  <Num label="Members" className={number} value={row.activeMembers} />
+                  <Num label="Learning" className={number} value={row.inProgress} />
+                  <td data-label="Waiting" className={number}>
                     <span className={row.awaitingAssessment ? "font-semibold" : "text-text-muted"}>
                       {row.awaitingAssessment}
                     </span>
@@ -360,9 +359,9 @@ function TrainingTable({ rows }: { rows: TrainingSummary[] }) {
                       </span>
                     ) : null}
                   </td>
-                  <Num className={number} value={row.approvedToServe} />
-                  <Num className={number} value={row.certificates} />
-                  <td className={`${cell} w-40`}>
+                  <Num label="Approved to serve" className={number} value={row.approvedToServe} />
+                  <Num label="Certificates" className={number} value={row.certificates} />
+                  <td className={`${cell} stack-hide w-40 max-xl:hidden`}>
                     <span
                       aria-hidden="true"
                       className="flex h-2 w-full min-w-28 overflow-hidden rounded-pill bg-hover"
@@ -408,9 +407,9 @@ function Th({ label, note }: { label: string; note: string }) {
   );
 }
 
-function Num({ value, className }: { value: number; className: string }) {
+function Num({ value, className, label }: { value: number; className: string; label: string }) {
   return (
-    <td className={className}>
+    <td data-label={label} className={className}>
       <span className={value ? "font-semibold" : "text-text-muted"}>{value}</span>
     </td>
   );

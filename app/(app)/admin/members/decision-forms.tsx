@@ -9,7 +9,7 @@ import { decideMembershipAction, type DecisionState } from "./actions";
 const initialState: DecisionState = { status: "idle" };
 
 const disclosure =
-  "flex min-h-control cursor-pointer list-none items-center rounded-button border border-border-strong px-3 text-small text-text-secondary transition-surface hover:bg-hover hover:text-text [&::-webkit-details-marker]:hidden";
+  "flex min-h-control w-fit cursor-pointer list-none items-center rounded-button border border-border-strong px-3 text-small text-text-secondary transition-surface hover:bg-hover hover:text-text [&::-webkit-details-marker]:hidden";
 
 function Result({ state, id }: { state: DecisionState; id: string }) {
   if (state.status === "idle") {

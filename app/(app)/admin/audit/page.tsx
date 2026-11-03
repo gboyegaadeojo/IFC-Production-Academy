@@ -51,7 +51,7 @@ async function AuditContent({ searchParams }: Pick<PageProps<"/admin/audit">, "s
         </EmptyState>
       ) : (
         <div className="relative overflow-x-auto rounded-card border border-border">
-          <table className="w-full min-w-[48rem] text-left text-small">
+          <table className="stack-table w-full min-w-[48rem] text-left text-small">
             <caption className="sr-only">Audit events, newest first</caption>
             <thead className="border-b border-border text-text-muted">
               <tr>
@@ -72,10 +72,10 @@ async function AuditContent({ searchParams }: Pick<PageProps<"/admin/audit">, "s
             <tbody className="divide-y divide-border">
               {entries.map((entry) => (
                 <tr key={entry.id} className="align-top">
-                  <td className="px-4 py-3 whitespace-nowrap text-text-muted">
+                  <td data-label="When" className="px-4 py-3 whitespace-nowrap text-text-muted">
                     <time dateTime={entry.createdAt}>{formatDateTime(entry.createdAt)}</time>
                   </td>
-                  <td className="px-4 py-3 font-medium text-text">
+                  <td data-label="Who" className="px-4 py-3 font-medium text-text">
                     {entry.actor ? entry.actor.displayName : "System"}
                   </td>
                   <td className="px-4 py-3 text-text-secondary">

@@ -154,6 +154,7 @@ async function QuizContent({ params }: Pick<Props, "params">) {
               <ActionForm
                 action={startQuizAction}
                 submitLabel={status.state === "can_retry" ? "Try again" : "Start the quiz"}
+                buttonClassName="max-sm:w-full"
                 pendingLabel="Starting…"
                 hidden={{ courseId: course.id, quizKey }}
               />
