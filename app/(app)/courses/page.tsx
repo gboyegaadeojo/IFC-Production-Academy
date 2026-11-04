@@ -4,28 +4,36 @@ import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards } from "@/lib/data/departments";
 import { getCourseLibrary } from "@/lib/data/library";
+import { listTopics } from "@/lib/data/topics";
 import { LibraryBrowser } from "./library-browser";
 
 export const metadata: Metadata = { title: "Courses" };
 
-export default function AllCoursesPage() {
+export default function AllCoursesPage({ searchParams }: PageProps<"/courses">) {
   return (
     <Suspense fallback={<LibrarySkeleton />}>
-      <AllCourses />
+      <AllCourses searchParams={searchParams} />
     </Suspense>
   );
 }
 
 /** Every published course, with search and filters (SRS-CUR-017). Anyone can open any of them. */
-async function AllCourses() {
+async function AllCourses({ searchParams }: Pick<PageProps<"/courses">, "searchParams">) {
   const user = await requireActiveUser();
   const categories = await listDepartmentCards(user.id);
-  const courses = await getCourseLibrary(user.id, categories);
+  const [courses, topics, params] = await Promise.all([
+    getCourseLibrary(user.id, categories),
+    listTopics(),
+    searchParams,
+  ]);
+  const chosen = topics.find((topic) => topic.id === params.topic);
   return (
     <div className="page-container flex flex-col gap-6 py-6 sm:py-8 lg:py-10">
       <h1 className="text-title font-semibold">Courses</h1>
       <LibraryBrowser
         courses={courses}
+        topics={topics}
+        initialTopicIds={chosen ? [chosen.id] : []}
         categories={categories.map((c) => ({
           id: c.id,
           name: c.name,

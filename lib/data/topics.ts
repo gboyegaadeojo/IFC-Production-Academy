@@ -52,6 +52,40 @@ export async function getLessonTopics(courseId: string, lessonKey: string): Prom
   return data;
 }
 
+/** A course's own topics. They belong to the course, so they carry across versions. */
+export async function getCourseTopics(courseId: string): Promise<Topic[]> {
+  const supabase = await createSupabaseServerClient();
+  const tags = await supabase.from("course_topics").select("topic_id").eq("course_id", courseId);
+  if (tags.error) {
+    throw new Error("Could not load topics", { cause: tags.error.code });
+  }
+  if (tags.data.length === 0) {
+    return [];
+  }
+  const { data, error } = await supabase
+    .from("topics")
+    .select("id, name")
+    .in(
+      "id",
+      tags.data.map((tag) => tag.topic_id),
+    )
+    .is("archived_at", null)
+    .order("name");
+  if (error) {
+    throw new Error("Could not load topics", { cause: error.code });
+  }
+  return data;
+}
+
+export async function setCourseTopics(courseId: string, topicIds: string[]): Promise<TopicResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_course_topics", {
+    p_course_id: courseId,
+    p_topic_ids: topicIds,
+  });
+  return error ? { ok: false } : { ok: true };
+}
+
 export async function setLessonTopics(
   courseId: string,
   lessonKey: string,
@@ -105,16 +139,19 @@ export async function getVideoLibrary(
     throw new Error("Could not load videos", { cause: (courses.error ?? levels.error)?.code });
   }
   const courseIds = courses.data.map((course) => course.id);
-  const [versions, tags] = await Promise.all([
+  const [versions, tags, courseTags] = await Promise.all([
     supabase
       .from("course_versions")
       .select("id, course_id, title")
       .eq("status", "published")
       .in("course_id", courseIds),
     supabase.from("lesson_topics").select("lesson_key, topic_id").in("course_id", courseIds),
+    supabase.from("course_topics").select("course_id, topic_id").in("course_id", courseIds),
   ]);
-  if (versions.error || tags.error) {
-    throw new Error("Could not load videos", { cause: (versions.error ?? tags.error)?.code });
+  if (versions.error || tags.error || courseTags.error) {
+    throw new Error("Could not load videos", {
+      cause: (versions.error ?? tags.error ?? courseTags.error)?.code,
+    });
   }
   const lessons = await supabase
     .from("lessons")
@@ -157,6 +194,7 @@ export async function getVideoLibrary(
           lessonCount: null,
           estimatedMinutes: null,
           coverUrl: null,
+          topicIds: [],
           percent: 0,
           state: "not_started",
         },
@@ -180,9 +218,17 @@ export async function getVideoLibrary(
                 courseTitle: course.title,
                 category: course.category,
                 level: course.level,
-                topicIds: tags.data
-                  .filter((tag) => tag.lesson_key === lesson.lesson_key)
-                  .map((tag) => tag.topic_id),
+                // A lesson counts for its own topics and its course's.
+                topicIds: [
+                  ...new Set([
+                    ...tags.data
+                      .filter((tag) => tag.lesson_key === lesson.lesson_key)
+                      .map((tag) => tag.topic_id),
+                    ...courseTags.data
+                      .filter((tag) => tag.course_id === course.id)
+                      .map((tag) => tag.topic_id),
+                  ]),
+                ],
               },
             ]
           : [];

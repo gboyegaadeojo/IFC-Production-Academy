@@ -8,7 +8,7 @@ import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
 import { TopicChips } from "./topic-chips";
 
-export const metadata: Metadata = { title: "Lesson topics" };
+export const metadata: Metadata = { title: "Topics" };
 
 export default function AdminTopicsPage() {
   return (
@@ -29,8 +29,8 @@ async function AdminTopics() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Lesson topics"
-        description="Tag each lesson so people can find it under Videos. You choose a lesson's topics while editing it. Leaders of any department can add a topic, and Production Directors tidy the list."
+        title="Topics"
+        description="Tag courses and lessons so people can find them under Courses and Videos. You choose their topics while editing them. Leaders of any department can add a topic, and Production Directors tidy the list."
       />
       <section
         aria-labelledby="topics-heading"
@@ -38,7 +38,7 @@ async function AdminTopics() {
       >
         <div className="flex flex-col gap-1">
           <h2 id="topics-heading" className="font-semibold">
-            Topics
+            All topics
           </h2>
           <p className="text-small text-text-muted">
             {topics.length === 0

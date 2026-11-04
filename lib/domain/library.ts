@@ -27,6 +27,8 @@ export type LibraryCourse = {
   lessonCount: number | null;
   estimatedMinutes: number | null;
   coverUrl: string | null;
+  /** Its own topics and those of its lessons. */
+  topicIds: string[];
   /** Only once the person has started. Never claims more than they marked done (SRS-LESSON-006). */
   percent: number;
   state: CourseState;
@@ -61,18 +63,25 @@ export function libraryRows(courses: readonly LibraryCourse[]): LibraryRow[] {
   return [...rows.values()];
 }
 
-export type LibraryFilter = { search: string; categoryId: string; level: string };
+export type LibraryFilter = {
+  search: string;
+  categoryId: string;
+  level: string;
+  /** Any of these. Empty means every topic. */
+  topicIds: readonly string[];
+};
 
 export function filterLibrary(
   courses: readonly LibraryCourse[],
-  { search, categoryId, level }: LibraryFilter,
+  { search, categoryId, level, topicIds }: LibraryFilter,
 ): LibraryCourse[] {
   const words = search.trim().toLowerCase();
   return courses.filter(
     (course) =>
       (!words || course.title.toLowerCase().includes(words)) &&
       (!categoryId || course.category.id === categoryId) &&
-      (!level || String(course.level) === level),
+      (!level || String(course.level) === level) &&
+      (topicIds.length === 0 || topicIds.some((id) => course.topicIds.includes(id))),
   );
 }
 

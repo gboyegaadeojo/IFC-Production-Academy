@@ -4,7 +4,13 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { createTopic, removeTopic, renameTopic, setLessonTopics } from "@/lib/data/topics";
+import {
+  createTopic,
+  removeTopic,
+  renameTopic,
+  setCourseTopics,
+  setLessonTopics,
+} from "@/lib/data/topics";
 
 const id = z.uuid();
 const name = z
@@ -84,10 +90,23 @@ export async function saveLessonTopicsAction(input: {
   return result.ok;
 }
 
-/** Adds a topic from the lesson editor, and returns it so the picker can select it. */
-export async function addTopicFromLessonAction(
-  raw: string,
-): Promise<{ id: string; name: string } | null> {
+const courseTopics = z.object({ courseId: z.uuid(), topicIds: z.array(z.uuid()).max(30) });
+
+/** Saves a course's tags as soon as one changes. Returns whether it worked, for the picker. */
+export async function saveCourseTopicsAction(input: {
+  courseId: string;
+  topicIds: string[];
+}): Promise<boolean> {
+  const parsed = courseTopics.safeParse(input);
+  if (!parsed.success) {
+    return false;
+  }
+  const result = await setCourseTopics(parsed.data.courseId, parsed.data.topicIds);
+  return result.ok;
+}
+
+/** Adds a topic from a lesson or course editor, and returns it so the picker can select it. */
+export async function addTopicAction(raw: string): Promise<{ id: string; name: string } | null> {
   const parsed = name.safeParse(raw);
   if (!parsed.success || !(await getAdminAccess("topics")).allowed) {
     return null;

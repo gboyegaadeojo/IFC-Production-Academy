@@ -30,6 +30,7 @@ const course = (
   lessonCount: 2,
   estimatedMinutes: null,
   coverUrl: null,
+  topicIds: id === "Framing" ? ["t1"] : [],
   percent: 0,
   state: "not_started",
 });
@@ -54,7 +55,7 @@ describe("libraryRows", () => {
 });
 
 describe("filterLibrary", () => {
-  const none = { search: "", categoryId: "", level: "" };
+  const none = { search: "", categoryId: "", level: "", topicIds: [] };
   it("finds by title, ignoring case", () => {
     expect(filterLibrary(all, { ...none, search: "GUIDE" }).map((c) => c.id)).toEqual([
       "Guide to Serving",
@@ -64,6 +65,12 @@ describe("filterLibrary", () => {
     expect(
       filterLibrary(all, { ...none, categoryId: "camera", level: "2" }).map((c) => c.id),
     ).toEqual(["Framing"]);
+  });
+  it("matches any chosen topic", () => {
+    expect(filterLibrary(all, { ...none, topicIds: ["t1", "t2"] }).map((c) => c.id)).toEqual([
+      "Framing",
+    ]);
+    expect(filterLibrary(all, { ...none, topicIds: ["t2"] })).toEqual([]);
   });
   it("leaves out courses with no level when a level is chosen", () => {
     expect(filterLibrary(all, { ...none, level: "1" }).map((c) => c.id)).toEqual(["Basics"]);
