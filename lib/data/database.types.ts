@@ -213,6 +213,21 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      course_restarts: {
+        Row: {
+          id: string;
+          user_id: string;
+          course_id: string;
+          department_id: string;
+          restarted_at: string;
+          lesson_progress: unknown;
+          quiz_attempts: unknown;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       lesson_topics: {
         Row: {
           course_id: string;
@@ -1735,6 +1750,7 @@ export type Database = {
       create_topic: { Args: { p_name: string }; Returns: string };
       rename_topic: { Args: { p_topic_id: string; p_name: string }; Returns: undefined };
       remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
+      restart_course: { Args: { p_course_id: string }; Returns: undefined };
       set_lesson_topics: {
         Args: { p_course_id: string; p_lesson_key: string; p_topic_ids: string[] };
         Returns: undefined;

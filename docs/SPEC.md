@@ -191,6 +191,7 @@ YouTube note: **Private** videos cannot be embedded for volunteers, so lessons m
 | SRS-PROG-005 | Completion timestamps and assessment outcomes recorded | M |
 | SRS-PROG-006 | Statuses: Not Started, In Progress, Awaiting Assessment, Further Practice Required, Completed, Approved to Serve | M |
 | SRS-PROG-007 | Completion separate from competency and serving authorization | M |
+| SRS-PROG-009 | A learner can start a course over, after a warning they confirm. Their lesson progress and quiz attempts are cleared and kept on record in full (SRS-CUR-008), and it's audited. Certificates, practical assessments, competencies, and Approved to Serve don't change (G, 2026-11-04) | S |
 | SRS-PROG-008 | Revised courses apply a policy: keep, review, or retrain | M |
 | ADD-PROG-01 | Progress rings and percentages on every department, level, and course card, always with a text label | S |
 

@@ -123,6 +123,16 @@ export async function recordLessonView(
   return result(error);
 }
 
+/**
+ * Starts a course over for this person (SRS-PROG-009). The database keeps what it clears, and leaves
+ * certificates, practicals, competencies, and Approved to Serve alone.
+ */
+export async function restartCourse(courseId: string): Promise<ProgressResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("restart_course", { p_course_id: courseId });
+  return result(error);
+}
+
 export async function completeLesson(courseId: string, lessonKey: string): Promise<ProgressResult> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("complete_lesson", {

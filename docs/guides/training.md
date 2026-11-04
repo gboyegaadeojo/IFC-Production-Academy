@@ -39,6 +39,12 @@ Each department has three levels, one step at a time. Each level has courses, an
 
 Open a course and choose **Start the course**, or **Continue** to pick up where you left off.
 
+### Starting over
+
+Open a course you've started and choose **Start over** to begin it again from the first lesson. The app warns you first and asks you to confirm.
+
+It clears your completed lessons, your place in each video, and your quiz results for that course, so you'll retake its quizzes. Your certificate, any practical you've passed, and whether you're approved to serve all stay as they are. Leaders' reports show your new progress. You can't undo it yourself, but your old results are kept on record.
+
 ### Lessons
 
 A lesson may have a video, what you'll learn, and attached SOPs. When you've done it, mark it **Completed** yourself. The Academy never claims a video was fully watched, so it's on your honour.
