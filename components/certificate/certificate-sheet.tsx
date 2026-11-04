@@ -4,7 +4,6 @@ import { IfcMark } from "@/components/brand";
 import { QrCode } from "@/components/qr-code";
 import { formatLongDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
-import { courseHomeLabel } from "@/lib/domain/departments";
 
 // The serif on ifcwpg.com, used only for the recipient's name (decision 4). Loaded here so only
 // certificate pages download it.
@@ -29,10 +28,11 @@ export type CertificateSheetProps = {
 };
 
 /**
- * The certificate (SRS-CERT-002..004, decision 8): a light, landscape sheet that reads the same on
- * screen and on paper. The IFC mark, the recipient in Literata, the course, department, and level,
- * the issue date in Winnipeg time, a signature line, and a QR code to the public check. It says
- * plainly that completing training is not approval to serve (SPEC §3).
+ * The certificate (SRS-CERT-002..004, decision 8; Design C, approved 2026-11-04): a light, landscape
+ * sheet that reads the same on screen and on paper. The IFC mark, the recipient in Literata, the
+ * course, a band of details (department and level, issue date in Winnipeg time, the reference and QR
+ * code to the public check), and a signature line. It says plainly that completing training is not
+ * approval to serve (SPEC §3).
  */
 export function CertificateSheet(props: CertificateSheetProps) {
   const hue = { "--dept": departmentHueVar(props.departmentHue) } as CSSProperties;
@@ -44,31 +44,27 @@ export function CertificateSheet(props: CertificateSheetProps) {
       style={{ ...hue, page: "certificate" } as CSSProperties}
       className={`${literata.variable} relative mx-auto w-full max-w-4xl overflow-hidden rounded-card bg-paper text-paper-ink sm:aspect-[11/8.5] print:aspect-auto print:h-[188mm] print:max-w-none print:rounded-none`}
     >
-      {/* The department's colour band, down the left edge. */}
-      <div aria-hidden="true" className="absolute inset-y-0 left-0 w-2 bg-[var(--dept)] sm:w-3" />
-      {/* A hairline frame inside the edge, like a printed certificate. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-3 rounded-button border border-paper-rule sm:inset-5"
-      />
+      {/* The department's colour, across the top edge. */}
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-2.5 bg-[var(--dept)]" />
 
-      <div className="relative flex h-full flex-col items-center gap-5 px-8 py-10 text-center sm:gap-4 sm:px-16 sm:py-12">
-        <div className="flex flex-col items-center gap-2">
-          <IfcMark tone="black" height={52} />
-          <p className="font-mono text-small font-medium tracking-[0.22em] text-paper-muted uppercase">
-            Production Academy
-          </p>
+      <div className="relative flex h-full flex-col items-center justify-between gap-5 px-5 pt-9 pb-5 text-center sm:px-12 sm:pt-11 sm:pb-6">
+        <div className="flex items-center gap-3.5">
+          <IfcMark tone="black" height={46} />
+          <div className="flex flex-col text-left">
+            <p className="font-mono text-small font-medium tracking-[0.16em] uppercase">
+              Production Academy
+            </p>
+            <p className="font-mono text-small tracking-[0.16em] text-paper-muted uppercase">
+              Certificate of completion
+            </p>
+          </div>
         </div>
 
-        <p className="font-mono text-body font-medium tracking-[0.18em] uppercase">
-          Certificate of completion
-        </p>
-
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-1.5">
           <p className="text-paper-muted">This certifies that</p>
           <h1
             id="certificate-heading"
-            className="font-serif text-[clamp(2rem,1.4rem+2.6vw,3.25rem)] leading-tight font-medium tracking-[-0.01em] text-balance"
+            className="pb-1 font-serif text-[clamp(2rem,1.4rem+2.6vw,3.25rem)] leading-tight font-medium tracking-[-0.01em] text-balance"
           >
             {props.recipientName}
           </h1>
@@ -76,45 +72,52 @@ export function CertificateSheet(props: CertificateSheetProps) {
           <p className="text-[clamp(1.25rem,1.1rem+0.7vw,1.625rem)] leading-snug font-semibold text-balance">
             {props.courseTitle}
           </p>
-          <p className="flex items-center gap-2 text-paper-muted">
-            {props.levelNumber === null ? null : <LevelBadge level={props.levelNumber} />}
-            <span>{courseHomeLabel(props.departmentName, props.levelNumber)}</span>
-          </p>
         </div>
 
-        <div className="mt-auto grid w-full grid-cols-1 items-end gap-6 pt-2 sm:grid-cols-3">
-          <div className="flex flex-col items-center gap-1 sm:items-start sm:text-left">
-            <p className="font-mono text-small tracking-[0.12em] text-paper-muted uppercase">
+        {/* The facts sit together under the course (Design C, approved 2026-11-04), so no space collects. */}
+        <div className="grid w-full grid-cols-2 divide-paper-rule rounded-button border border-paper-rule bg-[color-mix(in_srgb,var(--dept)_6%,var(--paper))] text-left sm:grid-cols-[auto_auto_minmax(0,1fr)_auto] sm:divide-x">
+          <div className="flex min-w-0 flex-col gap-0.5 px-3.5 py-3">
+            <p className="font-mono text-small tracking-[0.1em] text-paper-muted uppercase">
+              {props.levelNumber === null ? "Category" : "Department"}
+            </p>
+            <p className="font-semibold">{props.departmentName}</p>
+            {props.levelNumber === null ? null : (
+              <p className="flex items-center gap-1.5 text-paper-muted">
+                <LevelBadge level={props.levelNumber} />
+                Level {props.levelNumber}
+              </p>
+            )}
+          </div>
+          <div className="flex min-w-0 flex-col gap-0.5 px-3.5 py-3">
+            <p className="font-mono text-small tracking-[0.1em] text-paper-muted uppercase">
               Issued
             </p>
-            <p className="font-medium">{formatLongDate(props.issuedAt)}</p>
-            <p className="text-body text-paper-muted">Course version {props.versionNumber}</p>
+            <p className="font-semibold">{formatLongDate(props.issuedAt)}</p>
+            <p className="text-paper-muted">Course version {props.versionNumber}</p>
           </div>
-
-          <div className="flex flex-col items-center gap-1">
-            <div aria-hidden="true" className="h-px w-48 bg-paper-ink" />
-            <p className="text-body font-medium">Production Director</p>
-            <p className="text-body text-paper-muted">Immanuel Fellowship Church</p>
+          <div className="flex min-w-0 flex-col gap-0.5 border-t border-paper-rule px-3.5 py-3 sm:border-t-0">
+            <p className="font-mono text-small tracking-[0.1em] text-paper-muted uppercase">
+              Check it
+            </p>
+            <p className="font-mono text-small font-medium tabular-nums">{props.reference}</p>
+            <p className="text-small break-all text-paper-muted">{checkHost}/verify</p>
           </div>
-
-          <div className="flex items-center justify-center gap-3 sm:justify-end sm:text-right">
-            <div className="flex flex-col gap-1">
-              <p className="font-mono text-small font-medium tabular-nums">{props.reference}</p>
-              <p className="text-body text-paper-muted">
-                Check it at
-                <br />
-                {checkHost}/verify
-              </p>
-            </div>
+          <div className="flex items-center justify-center border-t border-paper-rule px-3 py-2.5 sm:border-t-0">
             <QrCode
               value={props.checkUrl}
               label={`QR code to check certificate ${props.reference}`}
-              size={84}
+              size={72}
             />
           </div>
         </div>
 
-        <p className="max-w-xl text-body text-paper-muted">
+        <div className="flex flex-col items-center gap-1">
+          <div aria-hidden="true" className="h-px w-52 bg-paper-ink" />
+          <p className="font-semibold">Production Director</p>
+          <p className="text-paper-muted">Immanuel Fellowship Church</p>
+        </div>
+
+        <p className="max-w-2xl text-small text-balance text-paper-muted">
           This certificate records completed training. Approval to serve is given separately,
           through practical assessment.
         </p>
@@ -139,7 +142,7 @@ function LevelBadge({ level }: { level: number }) {
   return (
     <span
       aria-hidden="true"
-      className="inline-flex size-7 items-center justify-center rounded-pill border-2 border-[var(--dept)] font-mono text-body font-medium text-paper-ink tabular-nums"
+      className="inline-flex size-5 items-center justify-center rounded-pill border-[1.5px] border-[var(--dept)] font-mono text-small font-medium text-paper-ink tabular-nums"
     >
       {level}
     </span>
