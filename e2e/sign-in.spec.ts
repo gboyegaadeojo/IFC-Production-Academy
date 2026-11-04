@@ -19,7 +19,7 @@ test("the sign-in page offers an email link only", async ({ page }) => {
 test("the sign-in page links to the form for joining the team", async ({ page }) => {
   await page.goto("/sign-in");
   await page.getByRole("link", { name: "Join the production team" }).click();
-  await expect(page).toHaveURL(//serve-with-us$/);
+  await expect(page).toHaveURL(/\/serve-with-us$/);
 });
 
 test("an invalid email address gets a plain-language error", async ({ page }) => {
