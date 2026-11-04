@@ -11,6 +11,7 @@ export const CAPABILITIES = [
   "audit.view",
   "course.draft",
   "course.publish",
+  "course.assign",
   "assessment.record",
   "competency.approve",
   "schedule.manage",

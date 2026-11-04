@@ -25,6 +25,7 @@ import { InstallApp } from "@/components/pwa/install-app";
 import { ExploreRow, MemberDepartmentCard } from "./department-card";
 import { NextSteps } from "./next-steps";
 import { CoursePoster } from "@/components/course-poster";
+import { getMyAssignedCourses } from "@/lib/data/course-assignments";
 import { getCourseLibrary, getStartHereCourses } from "@/lib/data/library";
 import { libraryRows } from "@/lib/domain/library";
 
@@ -106,6 +107,10 @@ async function TrainingContent() {
       {current?.progress.next ? <ContinueCard continuing={current} /> : null}
 
       <Suspense fallback={null}>
+        <AssignedToYou userId={user.id} />
+      </Suspense>
+
+      <Suspense fallback={null}>
         <StartHere userId={user.id} />
       </Suspense>
 
@@ -179,9 +184,62 @@ async function TrainingContent() {
   );
 }
 
+/** Courses a leader asked this person to take (ADD-REPORT-03). A request, never a gate. */
+async function AssignedToYou({ userId }: { userId: string }) {
+  const courses = await getMyAssignedCourses(userId);
+  if (courses.length === 0) {
+    return null;
+  }
+  return (
+    <section
+      aria-labelledby="assigned-heading"
+      className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4 sm:p-5"
+    >
+      <div className="flex flex-col gap-1">
+        <h2 id="assigned-heading" className="text-subheading font-semibold">
+          Assigned to you
+        </h2>
+        <p className="text-small text-text-secondary">
+          A leader asked you to take {courses.length === 1 ? "this course" : "these courses"}. Go at
+          your own pace.
+        </p>
+      </div>
+      <ul className="divide-y divide-border">
+        {courses.map((course) => (
+          <li
+            key={course.id}
+            className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <span className="flex min-w-0 flex-col">
+              <span className="font-medium">{course.title}</span>
+              {course.estimatedMinutes ? (
+                <span className="text-small text-text-muted">
+                  About {formatMinutes(course.estimatedMinutes)}
+                </span>
+              ) : null}
+            </span>
+            <Link href={course.href} className={buttonClasses("primary", "shrink-0")}>
+              {course.state === "not_started" ? "Start the course" : "Continue"}
+              <span className="sr-only">: {course.title}</span>
+              <ArrowRightIcon className="size-4" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** The first Start here course not finished yet (SRS-CUR-018). A suggestion, never a gate. */
 async function StartHere({ userId }: { userId: string }) {
-  const course = (await getStartHereCourses(userId)).find((c) => c.state !== "completed");
+  // An assigned course already has its own place above, so it doesn't show twice.
+  const [courses, assigned] = await Promise.all([
+    getStartHereCourses(userId),
+    getMyAssignedCourses(userId),
+  ]);
+  const course = courses.find(
+    (c) => c.state !== "completed" && !assigned.some((a) => a.id === c.id),
+  );
   if (!course) {
     return null;
   }

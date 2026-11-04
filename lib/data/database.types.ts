@@ -213,6 +213,21 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      course_assignments: {
+        Row: {
+          id: string;
+          user_id: string;
+          course_id: string;
+          department_id: string;
+          assigned_by: string | null;
+          assigned_at: string;
+          removed_by: string | null;
+          removed_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       course_restarts: {
         Row: {
           id: string;
@@ -1762,6 +1777,15 @@ export type Database = {
       rename_topic: { Args: { p_topic_id: string; p_name: string }; Returns: undefined };
       remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
       restart_course: { Args: { p_course_id: string }; Returns: undefined };
+      assign_course: { Args: { p_course_id: string; p_user_id: string }; Returns: undefined };
+      remove_course_assignment: {
+        Args: { p_course_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      assignable_people: {
+        Args: { p_course_id: string };
+        Returns: { user_id: string; display_name: string }[];
+      };
       set_course_topics: {
         Args: { p_course_id: string; p_topic_ids: string[] };
         Returns: undefined;
@@ -2246,7 +2270,8 @@ export type Database = {
         | "cover_requested"
         | "schedule_update"
         | "onboarding_task"
-        | "onboarding_update";
+        | "onboarding_update"
+        | "course_assigned";
       onboarding_step_kind:
         | "trigger_form"
         | "trigger_manual"

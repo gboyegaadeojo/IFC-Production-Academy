@@ -16,13 +16,15 @@ export type NotificationKind =
   | "cover_requested"
   | "schedule_update"
   | "onboarding_task"
-  | "onboarding_update";
+  | "onboarding_update"
+  | "course_assigned";
 
 export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "assignment_scheduled",
   "serving_reminder",
   "cover_requested",
   "schedule_update",
+  "course_assigned",
   "learning_nudge",
   "assessment_recorded",
   "competency_expiring",
@@ -39,6 +41,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   serving_reminder: "Reminders to confirm, and two days before I serve",
   cover_requested: "When a teammate asks for someone to cover their spot",
   schedule_update: "When someone covers for me, or changes a schedule I run",
+  course_assigned: "When a leader asks me to take a course",
   learning_nudge: "A nudge when a course I started goes quiet",
   assessment_recorded: "When a practical assessment is recorded for me",
   competency_expiring: "When an approval is about to expire",
@@ -77,6 +80,7 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
     title: "Training",
     kinds: [
       "membership_approved",
+      "course_assigned",
       "learning_nudge",
       "assessment_recorded",
       "competency_expiring",

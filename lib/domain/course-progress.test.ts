@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  assignableMatches,
   lessonPercent,
   lessonsDone,
   nextLessonKey,
@@ -18,6 +19,7 @@ const person = (
   completedLessons,
   quizzes: [],
   passedPracticals: [],
+  assignedAt: null,
 });
 const view = {
   lessons: [
@@ -57,5 +59,27 @@ describe("lessons", () => {
   it("works out a percent safely", () => {
     expect(lessonPercent(1, 2)).toBe(50);
     expect(lessonPercent(0, 0)).toBe(0);
+  });
+});
+
+describe("assignableMatches", () => {
+  const people = ["Avery Example", "Blake Example", "Casey Example"].map((name) => ({
+    userId: name.charAt(0),
+    name,
+  }));
+
+  it("searches names, ignoring case", () => {
+    expect(assignableMatches(people, [], "  bLaKe ").matches.map((p) => p.name)).toEqual([
+      "Blake Example",
+    ]);
+  });
+
+  it("leaves out anyone already assigned", () => {
+    expect(assignableMatches(people, ["A"], "").matches.map((p) => p.userId)).toEqual(["B", "C"]);
+  });
+
+  it("says when there are more than it shows", () => {
+    expect(assignableMatches(people, [], "", 2)).toMatchObject({ more: true });
+    expect(assignableMatches(people, [], "", 3)).toMatchObject({ more: false });
   });
 });

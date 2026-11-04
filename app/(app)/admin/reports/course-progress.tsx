@@ -2,22 +2,26 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { fieldClasses } from "@/components/ui/action-form";
-import { buttonClasses } from "@/components/ui/button";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { CheckIcon } from "@/components/ui/icons";
+import { CheckIcon, PlusIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   lessonPercent,
   lessonsDone,
   nextLessonKey,
   statusCounts,
+  type AssignablePerson,
   type CourseProgressView,
   type PersonProgress,
   type ProgressStatus,
 } from "@/lib/domain/course-progress";
+import { formatDate } from "@/lib/domain/dates";
 import { triesLabel } from "@/lib/domain/quiz-results";
+import { removeAssignmentAction } from "./actions";
+import { AssignCourse } from "./assign-course";
 
 const STATUS_LABELS: Record<ProgressStatus, string> = {
   finished: "Finished",
@@ -39,13 +43,21 @@ export function CourseProgress({
   view,
   departmentId,
   canMentor,
+  assignable,
 }: {
   courses: { id: string; title: string }[];
   view: CourseProgressView;
   departmentId: string;
   canMentor: boolean;
+  /** Who this course can be assigned to, or null if this person can't assign. */
+  assignable: AssignablePerson[] | null;
 }) {
   const router = useRouter();
+  const [assigning, setAssigning] = useState(false);
+  // Held here because removing someone's assignment can take the panel, or them, off the page.
+  const [removal, removeAction, removing] = useActionState(removeAssignmentAction, {
+    status: "idle",
+  });
   const [status, setStatus] = useState<ProgressStatus | null>(null);
   const [chosenId, setChosenId] = useState<string | null>(null);
   const counts = statusCounts(view.people);
@@ -76,11 +88,42 @@ export function CourseProgress({
         </select>
       </div>
 
-      <p className="text-small text-text-muted">
-        {view.level === null ? "" : `Level ${view.level} · `}
-        {view.lessons.length} {view.lessons.length === 1 ? "lesson" : "lessons"} ·{" "}
-        {view.people.length} {view.people.length === 1 ? "person" : "people"}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-small text-text-muted">
+          {view.level === null ? "" : `Level ${view.level} · `}
+          {view.lessons.length} {view.lessons.length === 1 ? "lesson" : "lessons"} ·{" "}
+          {view.people.length} {view.people.length === 1 ? "person" : "people"}
+        </p>
+        {assignable ? (
+          <button
+            type="button"
+            aria-expanded={assigning}
+            onClick={() => setAssigning(!assigning)}
+            className={buttonClasses("primary", "gap-1.5")}
+          >
+            <PlusIcon className="size-4" />
+            Assign to someone
+          </button>
+        ) : null}
+      </div>
+
+      {removal.status === "idle" ? null : (
+        <p
+          role={removal.status === "error" ? "alert" : "status"}
+          className={`text-small ${removal.status === "error" ? "text-error" : "text-text-secondary"}`}
+        >
+          {removal.message}
+        </p>
+      )}
+
+      {assignable && assigning ? (
+        <AssignCourse
+          courseId={view.courseId}
+          departmentId={departmentId}
+          people={assignable}
+          assignedIds={view.people.filter((p) => p.assignedAt).map((p) => p.userId)}
+        />
+      ) : null}
 
       <div className="grid grid-cols-3 gap-2.5">
         {(Object.keys(STATUS_LABELS) as ProgressStatus[]).map((key) => (
@@ -147,6 +190,9 @@ export function CourseProgress({
             view={view}
             departmentId={departmentId}
             canMentor={canMentor}
+            canAssign={assignable !== null}
+            removeAction={removeAction}
+            removing={removing}
           />
         ) : null}
       </div>
@@ -173,11 +219,17 @@ function PersonPanel({
   view,
   departmentId,
   canMentor,
+  canAssign,
+  removeAction,
+  removing,
 }: {
   person: PersonProgress;
   view: CourseProgressView;
   departmentId: string;
   canMentor: boolean;
+  canAssign: boolean;
+  removeAction: (formData: FormData) => void;
+  removing: boolean;
 }) {
   const next = nextLessonKey(person, view);
   const onlyQuiz = view.quizzes.length === 1 ? person.quizzes[0] : undefined;
@@ -199,6 +251,13 @@ function PersonPanel({
               {STATUS_LABELS[person.status]}
             </StatusBadge>
           </span>
+          {person.assignedAt ? (
+            <span className="pt-1 text-small text-text-muted">
+              Assigned {formatDate(person.assignedAt)}
+            </span>
+          ) : person.status === "not_started" ? null : (
+            <span className="pt-1 text-small text-text-muted">Started on their own</span>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
@@ -276,6 +335,17 @@ function PersonPanel({
         >
           Pair a mentor
         </Link>
+      ) : null}
+      {canAssign && person.assignedAt ? (
+        <form action={removeAction}>
+          <input type="hidden" name="courseId" value={view.courseId} />
+          <input type="hidden" name="departmentId" value={departmentId} />
+          <input type="hidden" name="userId" value={person.userId} />
+          <Button type="submit" variant="secondary" disabled={removing}>
+            {removing ? "Removing…" : "Remove assignment"}
+            <span className="sr-only"> for {person.name}</span>
+          </Button>
+        </form>
       ) : null}
     </section>
   );

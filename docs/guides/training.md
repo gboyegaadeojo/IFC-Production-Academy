@@ -17,6 +17,10 @@ Every open department's courses are open to you. You don't need anyone's permiss
 
 **General categories**, such as General and Leadership, are courses for everyone on the production team, whichever department you serve in. There's nothing to join: open a topic and start a course. Finishing one earns a certificate, but it doesn't count towards being Approved to Serve.
 
+## Assigned to you
+
+If a leader asks you to take a course, it shows under **Assigned to you** near the top of Training until you finish it. Go at your own pace. It doesn't stop you doing anything else, and it doesn't put you on a team.
+
 ## Start here
 
 Some courses, such as A Guide to Serving, are marked **Start here**. The next one you haven't finished shows at the top of Training, and they're listed under **Before you start** on each department's page. They're a good place to begin, but nothing is locked until you've done them.

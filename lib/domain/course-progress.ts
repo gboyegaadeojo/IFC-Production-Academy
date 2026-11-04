@@ -24,6 +24,8 @@ export type PersonProgress = {
   quizzes: QuizResult[];
   /** Keys of the practicals this person has passed. */
   passedPracticals: string[];
+  /** When a leader asked them to take this course, if one did (ADD-REPORT-03). */
+  assignedAt: string | null;
 };
 
 export type CourseProgressView = {
@@ -54,6 +56,23 @@ export function lessonsDone(
 
 export function lessonPercent(done: number, total: number): number {
   return total === 0 ? 0 : Math.round((done / total) * 100);
+}
+
+export type AssignablePerson = { userId: string; name: string };
+
+/** People to offer when assigning: not already assigned, matching the search, a handful at a time. */
+export function assignableMatches(
+  people: readonly AssignablePerson[],
+  assignedIds: readonly string[],
+  query: string,
+  limit = 8,
+): { matches: AssignablePerson[]; more: boolean } {
+  const search = query.trim().toLocaleLowerCase();
+  const found = people.filter(
+    (person) =>
+      !assignedIds.includes(person.userId) && person.name.toLocaleLowerCase().includes(search),
+  );
+  return { matches: found.slice(0, limit), more: found.length > limit };
 }
 
 /** The first lesson not yet marked complete, so a leader can see where someone is. */
