@@ -60,6 +60,11 @@ export const ChevronsUpIcon = (props: IconProps) => (
     <path d="m7 18 5-5 5 5" />
   </Icon>
 );
+export const PlusIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+);
 export const CheckIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M5 12.5l4.5 4.5L19 7.5" />

@@ -12,7 +12,15 @@
 
 A finished course is separate from being approved to serve, and the app never says a video was watched, only which lessons someone marked complete.
 
-Reports include the department's members and anyone else who has started training there, because anyone can take any course. Starting a course doesn't make someone a member or put them on a team.
+Reports include the department's members, anyone else who has started training there, and anyone assigned a course there, because anyone can take any course. None of that makes someone a member or puts them on a team.
+
+### Assigning a course
+
+On **Course progress**, choose **Assign to someone**, search for the person, choose them, then **Assign**. The course shows under **Assigned to you** on their Training page until they finish it.
+
+It's a request and nothing more. It doesn't stop them doing anything else, add them to a team, or count towards being approved to serve. Anyone can still take any course without being assigned it.
+
+To undo one, choose the person, then **Remove assignment**. Anything they've already done stays. Assigning and removing both go in the audit log.
 
 **Download CSV** gives you the same data as a file. Downloads go in the audit log. They include names and training records only, and never mentoring's private notes.
 

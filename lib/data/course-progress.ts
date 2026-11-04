@@ -24,7 +24,7 @@ export async function getCourseProgress(
     return { courses, view: null };
   }
   const supabase = await createSupabaseServerClient();
-  const [outline, lessons, attempts, practicals] = await Promise.all([
+  const [outline, lessons, attempts, practicals, assignments] = await Promise.all([
     getLearnerCourses([courseId]).then((found) => found.get(courseId)),
     supabase
       .from("lesson_progress")
@@ -42,8 +42,13 @@ export async function getCourseProgress(
       .eq("course_id", courseId)
       .eq("outcome", "pass")
       .is("voided_at", null),
+    supabase
+      .from("course_assignments")
+      .select("user_id, assigned_at")
+      .eq("course_id", courseId)
+      .is("removed_at", null),
   ]);
-  const failed = lessons.error ?? attempts.error ?? practicals.error;
+  const failed = lessons.error ?? attempts.error ?? practicals.error ?? assignments.error;
   if (failed) {
     throw new Error("Could not load course progress", { cause: failed.code });
   }
@@ -76,6 +81,8 @@ export async function getCourseProgress(
           passedPracticals: (practicals.data ?? [])
             .filter((p) => p.user_id === row.userId)
             .map((p) => p.practical_key),
+          assignedAt:
+            (assignments.data ?? []).find((a) => a.user_id === row.userId)?.assigned_at ?? null,
         }))
         .toSorted((a, b) => a.name.localeCompare(b.name)),
     },

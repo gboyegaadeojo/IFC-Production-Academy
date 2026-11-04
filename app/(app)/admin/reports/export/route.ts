@@ -9,6 +9,7 @@ import {
 } from "@/lib/data/reports";
 import { getCourseProgress } from "@/lib/data/course-progress";
 import { lessonsDone } from "@/lib/domain/course-progress";
+import { formatDate } from "@/lib/domain/dates";
 import {
   COURSE_REPORT_LABELS,
   csvFileName,
@@ -73,6 +74,7 @@ export async function GET(request: Request): Promise<Response> {
         "Lessons",
         "Best quiz score",
         "Practicals passed",
+        "Assigned",
       ],
       people.map((person) => [
         person.name,
@@ -82,6 +84,7 @@ export async function GET(request: Request): Promise<Response> {
         view.lessons.length,
         person.quizzes.length ? Math.max(...person.quizzes.map((quiz) => quiz.best.score)) : null,
         view.practicals.filter((p) => person.passedPracticals.includes(p.key)).length,
+        person.assignedAt ? formatDate(person.assignedAt) : null,
       ]),
     );
   } else if (input.data.report === "training") {

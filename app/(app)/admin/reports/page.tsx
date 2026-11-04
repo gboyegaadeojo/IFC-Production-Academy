@@ -20,6 +20,7 @@ import { formatDate } from "@/lib/domain/dates";
 import { COURSE_REPORT_LABELS, READINESS_REPORT_LABELS } from "@/lib/domain/reports";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
+import { getAssignablePeople } from "@/lib/data/course-assignments";
 import { getCourseProgress } from "@/lib/data/course-progress";
 import { hasCapability } from "@/lib/domain/capabilities";
 import { CourseProgress } from "./course-progress";
@@ -109,6 +110,7 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
               canMentor={
                 !department.isTopic && hasCapability(grants, "mentoring.assign", department.id)
               }
+              canAssign={hasCapability(grants, "course.assign", department.id)}
             />
           ) : report === "training" ? (
             <ReportRows load={getTrainingReport(department.id)} Table={TrainingTable} />
@@ -133,10 +135,12 @@ async function CourseProgressReport({
   departmentId,
   courseId,
   canMentor,
+  canAssign,
 }: {
   departmentId: string;
   courseId: string | null;
   canMentor: boolean;
+  canAssign: boolean;
 }) {
   const { courses, view } = await getCourseProgress(departmentId, courseId);
   if (!view) {
@@ -153,6 +157,7 @@ async function CourseProgressReport({
       view={view}
       departmentId={departmentId}
       canMentor={canMentor}
+      assignable={canAssign ? await getAssignablePeople(view.courseId) : null}
     />
   );
 }

@@ -140,6 +140,7 @@ const KIND_ICON: Record<
   assessment_recorded: { icon: CheckIcon, tone: "text-success" },
   competency_expiring: { icon: ClockIcon, tone: "text-warning" },
   membership_approved: { icon: GraduationCapIcon, tone: "text-accent-light" },
+  course_assigned: { icon: GraduationCapIcon, tone: "text-accent-light" },
   learning_nudge: { icon: GraduationCapIcon, tone: "text-accent-light" },
   mentoring_paired: { icon: UsersIcon, tone: "text-accent-light" },
   assessment_requested: { icon: UserCheckIcon, tone: "text-accent-light" },

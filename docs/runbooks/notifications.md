@@ -48,6 +48,15 @@ deploy workflow already uses.
 The job logs counts only: no addresses, names, or content. If every send in a run fails, the job
 fails and the failure alert emails the admins.
 
+## Course assignment notices
+
+When a leader assigns a course, the person sees it on Training. The notice and email are off until
+launch: while `organizations.course_assignment_notices_enabled` is false, nothing is queued at all.
+
+To turn them on, at launch only, set it to true. Assignments made before that send nothing, so
+nobody gets a notice for something old. Every other notification kind has no switch like this: it
+goes out as soon as it's queued, because `RESEND_API_KEY` and `NOTIFY_FROM` are set.
+
 ## Onboarding emails
 
 These go to people on a pathway, who may not have an account yet. They're off until launch: while

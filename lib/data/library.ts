@@ -159,7 +159,40 @@ export const getStartHereCourses = cache(async (userId: string): Promise<StartHe
   if (error) {
     throw new Error("Could not load the courses", { cause: error.code });
   }
-  const ids = data.map((row) => row.id);
+  return courseCards(
+    supabase,
+    userId,
+    data.map((row) => row.id),
+  );
+});
+
+/** Given courses, in the order given, leaving out any archived or not published. */
+export async function getPublishedCourseCards(
+  userId: string,
+  courseIds: string[],
+): Promise<StartHereCourse[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("courses")
+    .select("id")
+    .in("id", courseIds)
+    .is("archived_at", null);
+  if (error) {
+    throw new Error("Could not load the courses", { cause: error.code });
+  }
+  const live = new Set(data.map((row) => row.id));
+  return courseCards(
+    supabase,
+    userId,
+    courseIds.filter((id) => live.has(id)),
+  );
+}
+
+async function courseCards(
+  supabase: Client,
+  userId: string,
+  ids: string[],
+): Promise<StartHereCourse[]> {
   if (ids.length === 0) {
     return [];
   }
@@ -181,4 +214,4 @@ export const getStartHereCourses = cache(async (userId: string): Promise<StartHe
         ]
       : [];
   });
-});
+}

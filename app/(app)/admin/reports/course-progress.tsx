@@ -3,21 +3,25 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
+import { ActionForm, fieldClasses } from "@/components/ui/action-form";
 import { buttonClasses } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { CheckIcon } from "@/components/ui/icons";
+import { CheckIcon, PlusIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   lessonPercent,
   lessonsDone,
   nextLessonKey,
   statusCounts,
+  type AssignablePerson,
   type CourseProgressView,
   type PersonProgress,
   type ProgressStatus,
 } from "@/lib/domain/course-progress";
+import { formatDate } from "@/lib/domain/dates";
 import { triesLabel } from "@/lib/domain/quiz-results";
+import { removeAssignmentAction } from "./actions";
+import { AssignCourse } from "./assign-course";
 
 const STATUS_LABELS: Record<ProgressStatus, string> = {
   finished: "Finished",
@@ -39,13 +43,17 @@ export function CourseProgress({
   view,
   departmentId,
   canMentor,
+  assignable,
 }: {
   courses: { id: string; title: string }[];
   view: CourseProgressView;
   departmentId: string;
   canMentor: boolean;
+  /** Who this course can be assigned to, or null if this person can't assign. */
+  assignable: AssignablePerson[] | null;
 }) {
   const router = useRouter();
+  const [assigning, setAssigning] = useState(false);
   const [status, setStatus] = useState<ProgressStatus | null>(null);
   const [chosenId, setChosenId] = useState<string | null>(null);
   const counts = statusCounts(view.people);
@@ -76,11 +84,33 @@ export function CourseProgress({
         </select>
       </div>
 
-      <p className="text-small text-text-muted">
-        {view.level === null ? "" : `Level ${view.level} · `}
-        {view.lessons.length} {view.lessons.length === 1 ? "lesson" : "lessons"} ·{" "}
-        {view.people.length} {view.people.length === 1 ? "person" : "people"}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-small text-text-muted">
+          {view.level === null ? "" : `Level ${view.level} · `}
+          {view.lessons.length} {view.lessons.length === 1 ? "lesson" : "lessons"} ·{" "}
+          {view.people.length} {view.people.length === 1 ? "person" : "people"}
+        </p>
+        {assignable ? (
+          <button
+            type="button"
+            aria-expanded={assigning}
+            onClick={() => setAssigning(!assigning)}
+            className={buttonClasses("primary", "gap-1.5")}
+          >
+            <PlusIcon className="size-4" />
+            Assign to someone
+          </button>
+        ) : null}
+      </div>
+
+      {assignable && assigning ? (
+        <AssignCourse
+          courseId={view.courseId}
+          departmentId={departmentId}
+          people={assignable}
+          assignedIds={view.people.filter((p) => p.assignedAt).map((p) => p.userId)}
+        />
+      ) : null}
 
       <div className="grid grid-cols-3 gap-2.5">
         {(Object.keys(STATUS_LABELS) as ProgressStatus[]).map((key) => (
@@ -147,6 +177,7 @@ export function CourseProgress({
             view={view}
             departmentId={departmentId}
             canMentor={canMentor}
+            canAssign={assignable !== null}
           />
         ) : null}
       </div>
@@ -173,11 +204,13 @@ function PersonPanel({
   view,
   departmentId,
   canMentor,
+  canAssign,
 }: {
   person: PersonProgress;
   view: CourseProgressView;
   departmentId: string;
   canMentor: boolean;
+  canAssign: boolean;
 }) {
   const next = nextLessonKey(person, view);
   const onlyQuiz = view.quizzes.length === 1 ? person.quizzes[0] : undefined;
@@ -199,6 +232,13 @@ function PersonPanel({
               {STATUS_LABELS[person.status]}
             </StatusBadge>
           </span>
+          {person.assignedAt ? (
+            <span className="pt-1 text-small text-text-muted">
+              Assigned {formatDate(person.assignedAt)}
+            </span>
+          ) : person.status === "not_started" ? null : (
+            <span className="pt-1 text-small text-text-muted">Started on their own</span>
+          )}
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
@@ -276,6 +316,17 @@ function PersonPanel({
         >
           Pair a mentor
         </Link>
+      ) : null}
+      {canAssign && person.assignedAt ? (
+        <ActionForm
+          action={removeAssignmentAction}
+          submitLabel="Remove assignment"
+          pendingLabel="Removing…"
+          variant="secondary"
+          srLabel={`for ${person.name}`}
+          hidden={{ courseId: view.courseId, departmentId, userId: person.userId }}
+          className="flex flex-col gap-2"
+        />
       ) : null}
     </section>
   );
