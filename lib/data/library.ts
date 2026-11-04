@@ -1,7 +1,7 @@
 import "server-only";
 import type { DepartmentCard } from "@/lib/data/departments";
 import { getLearnerCourses } from "@/lib/data/pathway";
-import { getCourseProgressById } from "@/lib/data/progress";
+import { getCourseProgressById, getLearnerActivity } from "@/lib/data/progress";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { publicEnv } from "@/lib/env";
 import { courseCoverUrl, sortLibrary, type LibraryCourse } from "@/lib/domain/library";
@@ -28,7 +28,9 @@ export async function getCourseLibrary(
   }
   const ids = data.map((row) => row.id);
   const learner = await getLearnerCourses(ids);
-  const progress = await getCourseProgressById(userId, ids, learner);
+  // Most courses are untouched, so only work out progress for the ones this person has opened.
+  const activity = await getLearnerActivity(userId, ids);
+  const progress = await getCourseProgressById(userId, [...activity.keys()], learner);
   const { NEXT_PUBLIC_SUPABASE_URL: url } = publicEnv();
 
   return sortLibrary(
