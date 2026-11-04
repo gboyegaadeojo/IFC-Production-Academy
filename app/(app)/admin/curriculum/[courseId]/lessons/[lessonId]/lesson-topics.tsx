@@ -4,28 +4,34 @@ import { useState, useTransition } from "react";
 import { fieldClasses } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
 import { addTopicFromLessonAction, saveLessonTopicsAction } from "../../../../topics/actions";
+import { topicChipClasses } from "../../../../topics/topic-chip-classes";
 
 type Topic = { id: string; name: string };
 
 /**
- * A lesson's topics (SRS-CUR-019). Each change saves straight away: tags aren't part of a version,
- * so they also work on a lesson that's already published.
+ * A lesson's topics, as in the Course Hierarchy mock (SRS-CUR-019). Each change saves straight away:
+ * tags aren't part of a version, so they also work on a lesson that's already published.
  */
 export function LessonTopics({
   courseId,
   lessonKey,
+  lessonTitle,
+  whereItLives,
   topics,
   initial,
   canAdd,
 }: {
   courseId: string;
   lessonKey: string;
+  lessonTitle: string;
+  whereItLives: string;
   topics: Topic[];
   initial: string[];
   canAdd: boolean;
 }) {
   const [all, setAll] = useState(topics);
   const [selected, setSelected] = useState(initial);
+  const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState("");
   const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
@@ -56,6 +62,7 @@ export function LessonTopics({
           : [...current, topic].toSorted((a, b) => a.name.localeCompare(b.name)),
       );
       setDraft("");
+      setAdding(false);
       if (!selected.includes(topic.id)) {
         const next = [...selected, topic.id];
         setSelected(next);
@@ -66,16 +73,19 @@ export function LessonTopics({
   }
 
   return (
-    <section aria-labelledby="lesson-topics-heading" className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <h2 id="lesson-topics-heading" className="text-heading font-semibold">
+    <section
+      aria-labelledby="lesson-topics-heading"
+      className="flex max-w-[40rem] flex-col gap-3 rounded-card border border-border bg-surface p-4"
+    >
+      <div className="flex flex-col gap-0.5">
+        <span className="text-small text-text-muted">Editing a lesson</span>
+        <span className="font-semibold">{lessonTitle}</span>
+        <span className="text-small text-text-muted">{whereItLives}</span>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <h2 id="lesson-topics-heading" className="font-semibold">
           Topics
         </h2>
-        <p className="text-small text-text-secondary">
-          These help people find this lesson under Videos. They save straight away, with no draft.
-        </p>
-      </div>
-      {all.length > 0 ? (
         <ul className="flex flex-wrap gap-1.5">
           {all.map((topic) => {
             const on = selected.includes(topic.id);
@@ -91,18 +101,28 @@ export function LessonTopics({
                       selected,
                     )
                   }
-                  className="min-h-control rounded-pill border border-border-strong px-3 text-small font-medium text-text-secondary transition-surface hover:bg-hover aria-pressed:border-accent aria-pressed:bg-accent-soft aria-pressed:text-accent-light"
+                  className={topicChipClasses}
                 >
                   {topic.name}
                 </button>
               </li>
             );
           })}
+          {canAdd ? (
+            <li>
+              <button
+                type="button"
+                aria-expanded={adding}
+                onClick={() => setAdding(!adding)}
+                className={topicChipClasses}
+              >
+                + New topic
+              </button>
+            </li>
+          ) : null}
         </ul>
-      ) : (
-        <p className="text-small text-text-muted">No topics yet.</p>
-      )}
-      {canAdd ? (
+      </div>
+      {adding ? (
         <div className="flex max-w-md flex-wrap items-center gap-2">
           <input
             aria-label="New topic"
@@ -123,7 +143,7 @@ export function LessonTopics({
         </div>
       ) : null}
       <p role="status" className="text-small text-text-muted">
-        {message}
+        {message || "Topics help people find this lesson under Videos. They save straight away."}
       </p>
     </section>
   );

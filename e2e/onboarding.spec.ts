@@ -34,7 +34,8 @@ test("a director builds Join the team, adds someone, and sees their follow-up", 
   }
   await expect(page.getByRole("heading", { level: 2, name: "Join the team" })).toBeVisible();
 
-  // Add a follow-up from the library; its settings open beside the pathway.
+  // Add a follow-up from the library; its settings open inside the step.
+  await page.getByRole("button", { name: "Add a step" }).click();
   const library = page.getByRole("complementary", { name: "Step library" });
   await library.getByRole("button", { name: "Add Follow-up task" }).click();
   const settings = page.getByRole("region", { name: "Follow-up task" });
