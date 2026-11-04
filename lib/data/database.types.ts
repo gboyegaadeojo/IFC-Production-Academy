@@ -209,6 +209,7 @@ export type Database = {
           sort_order: number;
           created_by: string | null;
           archived_at: string | null;
+          cover_image_path: string | null;
         } & Timestamps;
         Insert: never;
         Update: never;
@@ -1705,6 +1706,10 @@ export type Database = {
       app_branding: {
         Args: Record<string, never>;
         Returns: { app_name: string; app_short_name: string; app_icon_path: string | null }[];
+      };
+      set_course_cover: {
+        Args: { p_course_id: string; p_path: string | null };
+        Returns: undefined;
       };
       set_app_branding: {
         Args: { p_name: string; p_short_name: string; p_icon_path: string | null };

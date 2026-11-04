@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ArrowRightIcon, ChevronDownIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -24,6 +24,9 @@ import { greetingName } from "@/lib/domain/people";
 import { InstallApp } from "@/components/pwa/install-app";
 import { ExploreRow, MemberDepartmentCard } from "./department-card";
 import { NextSteps } from "./next-steps";
+import { CoursePoster } from "@/components/course-poster";
+import { getCourseLibrary } from "@/lib/data/library";
+import { libraryRows } from "@/lib/domain/library";
 
 export const metadata: Metadata = { title: "Training" };
 
@@ -45,9 +48,8 @@ export default function TrainingPage() {
 async function TrainingContent() {
   const user = await requireActiveUser();
   const categories = await listDepartmentCards(user.id);
-  // Topics are courses only, so they have their own list and nothing to join (decision 2026-11-04).
+  // Topics are courses only, so they appear in the rows and never in "join a department".
   const departments = categories.filter((d) => d.kind === "team");
-  const topics = categories.filter((d) => d.kind === "topic");
   const state = homeState(departments);
   const memberOf = departments.filter((d) => d.state.kind === "member");
   const others = departments.filter((d) => d.state.kind !== "member");
@@ -132,25 +134,12 @@ async function TrainingContent() {
         </section>
       ) : null}
 
-      <HowTrainingWorks open={state !== "member"} />
+      {/* The rows load after the rest, so the next step never waits for them. */}
+      <Suspense fallback={<Skeleton className="h-72" />}>
+        <CourseRows userId={user.id} categories={categories} />
+      </Suspense>
 
-      {topics.length > 0 ? (
-        <section aria-labelledby="topics-heading" className="flex flex-col gap-4">
-          <SectionHeading id="topics-heading" eyebrow="For everyone">
-            Topics
-          </SectionHeading>
-          <ul className="grid gap-3 lg:grid-cols-2">
-            {topics.map((topic) => (
-              <li key={topic.id} className="flex lg:last:odd:col-span-2">
-                <ExploreRow
-                  department={topic}
-                  continuing={continuing.find((c) => c.course.department.id === topic.id)}
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      <HowTrainingWorks open={state !== "member"} />
 
       <section
         id="departments"
@@ -183,6 +172,52 @@ async function TrainingContent() {
         )}
       </section>
     </div>
+  );
+}
+
+/** Rows of courses by category (Course Hierarchy mock, approved 2026-11-04; SRS-CUR-017). */
+async function CourseRows({ userId, categories }: { userId: string; categories: CardData[] }) {
+  const rows = libraryRows(await getCourseLibrary(userId, categories));
+  if (rows.length === 0) {
+    return null;
+  }
+  return (
+    <section aria-labelledby="courses-heading" className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <SectionHeading id="courses-heading" eyebrow="Explore">
+          Courses
+        </SectionHeading>
+        <Link href="/courses" className={buttonClasses("secondary", "gap-1.5", "sm")}>
+          All courses
+          <ArrowRightIcon className="size-3.5" />
+        </Link>
+      </div>
+      {rows.map(({ category, courses }) => (
+        <section
+          key={category.id}
+          aria-labelledby={`row-${category.id}`}
+          className="flex flex-col gap-3"
+        >
+          <h3 id={`row-${category.id}`} className="font-semibold">
+            <Link
+              href={`/departments/${category.slug}`}
+              className="inline-flex min-h-touch items-center gap-1 rounded-button underline-offset-4 hover:underline"
+            >
+              {category.name}
+              <ChevronRightIcon className="size-4 text-text-muted" />
+            </Link>
+          </h3>
+          {/* Scrolls sideways inside the row, never the page. */}
+          <ul className="flex gap-3 overflow-x-auto pb-2">
+            {courses.map((course) => (
+              <li key={course.id} className="w-40 shrink-0 sm:w-44">
+                <CoursePoster course={course} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </section>
   );
 }
 

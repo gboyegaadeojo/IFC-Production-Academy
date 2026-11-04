@@ -129,6 +129,13 @@ export const MonitorIcon = (props: IconProps) => (
 
 // Admin sidebar groups and controls: Lucide's shapes (ISC licence), drawn in this family.
 
+export const BookOpenIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 7v14" />
+    <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+  </Icon>
+);
+
 export const DashboardIcon = (props: IconProps) => (
   <Icon {...props}>
     <rect x="3" y="3" width="7" height="9" rx="1" />

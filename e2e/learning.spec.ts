@@ -101,7 +101,10 @@ for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
     await signInByEmail(page, `visual-visitor-${viewport.name}-${Date.now()}@example.com`);
 
-    await page.getByRole("link", { name: "Camera Operations", exact: true }).click();
+    await page
+      .locator("#departments")
+      .getByRole("link", { name: "Camera Operations", exact: true })
+      .click();
     await expect(page).toHaveURL(/\/departments\/camera-operations$/);
     await expect(page.getByText("Courses open when the department does.")).toHaveCount(0);
     await expect(

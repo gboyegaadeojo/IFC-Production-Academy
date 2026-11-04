@@ -11,6 +11,10 @@ The row of buttons at the top starts with the **topics**, then a divider, then t
 
 Production Directors build and publish topics. You add a topic under [Departments](admin-people.md#departments).
 
+## Course covers
+
+Open a course's **Details** tab to upload its cover: upright, about 900 by 1200 pixels, as a PNG, JPEG, or WebP up to 2 MB. A cover isn't part of a version, so it shows straight away, with no draft to publish. Until a course has one, it shows its title on its category's colour.
+
 ## Formatting text
 
 The course summary, lesson summary, and lesson text work like a word processor. Use the buttons above the text for **Bold**, **Italic**, **Underline**, **Heading**, **Subheading**, lists, and **Link**. Links need to start with `https://`.

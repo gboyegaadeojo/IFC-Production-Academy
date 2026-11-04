@@ -1,6 +1,6 @@
 # Training
 
-**Training** is your home in the Academy. It shows what to do next, your courses, and every department you can learn in.
+**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by topic and department. **All courses** lists every course, with search and filters for category and level. On a phone, you'll find it under **Courses** on Training.
 
 ## Anyone can learn anything
 

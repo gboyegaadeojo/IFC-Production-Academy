@@ -22,10 +22,6 @@ test("a new volunteer signs in, sees the departments, and requests to join", asy
 
   const cards = page.locator("#departments").getByRole("article");
   await expect(cards).toHaveCount(5);
-  // Topics are courses only: they show, with nothing to join.
-  const general = page.getByRole("article", { name: "General" });
-  await expect(general).toBeVisible();
-  await expect(general.getByRole("button")).toHaveCount(0);
   for (const name of [
     "Camera Operations",
     "Audio Engineering",
