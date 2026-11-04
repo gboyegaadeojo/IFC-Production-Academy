@@ -23,6 +23,9 @@ select pg_temp.new_user('92000000-0000-4000-8000-000000000004', 'Test Camera Lea
 insert into public.user_roles (user_id, role_id, department_id) values
   ('92000000-0000-4000-8000-000000000004', '297464be-2cae-430d-94bf-6038bd745384', 'b7ba9dae-cab5-43e0-a996-8ae9d2436855');
 
+-- These tests are about sending, so the launch switch is on (058 tests the switch).
+update public.organizations set notifications_live = true;
+
 -- Joining a department notifies the volunteer (once).
 select pg_temp.act_as('92000000-0000-4000-8000-000000000001');
 select public.request_membership('b7ba9dae-cab5-43e0-a996-8ae9d2436855');

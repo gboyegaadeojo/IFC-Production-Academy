@@ -49,6 +49,9 @@ select throws_ok($$ select * from public.push_subscriptions $$, '42501', null, '
 select throws_ok($$ select * from public.claim_push_batch(10) $$, '42501', null, 'nor run the job''s claim');
 reset role;
 
+-- These tests are about sending, so the launch switch is on (058 tests the switch).
+update public.organizations set notifications_live = true;
+
 -- A notification for Pia waits for an alert; one for Quinn, with no devices, needs none.
 select private.notify('ad000000-0000-4000-8000-000000000001', 'membership_approved', 'Fake: you''re in', 'Fake body', '/home', 'test-push-pia');
 select private.notify('ad000000-0000-4000-8000-000000000002', 'membership_approved', 'Fake: you''re in', 'Fake body', '/home', 'test-push-quinn');

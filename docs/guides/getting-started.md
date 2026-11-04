@@ -44,7 +44,7 @@ Open your name, then **Your profile**. It shows the name leaders see, your depar
 
 ## Notifications
 
-Open your name, then **Notifications**. Everything shows here, such as being scheduled or an assessment result. Below that, you choose which kinds also come by email.
+Until the Academy launches, notifications stay in the app. Open your name, then **Notifications**. Everything shows here, such as being scheduled or an assessment result. Below that, you choose which kinds also come by email.
 
 ## Put it on your phone
 

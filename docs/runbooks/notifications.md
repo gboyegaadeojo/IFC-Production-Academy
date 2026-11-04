@@ -8,7 +8,8 @@ chooses which kinds also come by email.
 Emails are sent every 15 minutes by `.github/workflows/notifications.yml`, which runs
 `scripts/send-notifications.ts`. A Cloudflare timer starts it, because GitHub's own schedule can run
 hours late ([how it works](scheduling.md#starting-jobs-on-time)). Until the secrets below are set,
-nothing is emailed and notifications stay in the app.
+nothing is emailed and notifications stay in the app. The secrets are set, so **the launch switch
+below is what holds email now.**
 
 ## Secrets (GitHub → Settings → Secrets and variables → Actions)
 
@@ -48,14 +49,29 @@ deploy workflow already uses.
 The job logs counts only: no addresses, names, or content. If every send in a run fails, the job
 fails and the failure alert emails the admins.
 
-## Course assignment notices
+## The launch switch
 
-When a leader assigns a course, the person sees it on Training. The notice and email are off until
-launch: while `organizations.course_assignment_notices_enabled` is false, nothing is queued at all.
+While `organizations.notifications_live` is false, notifications still show in the app, but aren't
+emailed or sent to devices. Each one is marked `skipped` as it's written, so **it's never sent
+later**, and nobody gets a pile of old notices on launch day.
 
-To turn them on, at launch only, set it to true. Assignments made before that send nothing, so
-nobody gets a notice for something old. Every other notification kind has no switch like this: it
-goes out as soon as it's queued, because `RESEND_API_KEY` and `NOTIFY_FROM` are set.
+People in `notification_testers` are let through, so a pilot can check real emails. Add them by
+account in the Supabase SQL editor, and never put their addresses in this repository:
+
+```sql
+insert into public.notification_testers (user_id)
+select id from auth.users where email = 'someone@example.com';
+```
+
+To go live, at launch only:
+
+```sql
+update public.organizations set notifications_live = true;
+```
+
+Then remove the sentence about this from `docs/guides/getting-started.md`. This switch doesn't
+affect sign-in links, or the job alerts and weekly summary that go to the admins. Onboarding emails
+have their own switch, below.
 
 ## Onboarding emails
 
@@ -77,7 +93,7 @@ on, new emails are written as `pending` and go out on the next run, outside quie
 
 - Run the workflow by hand (Actions → Notifications → Run workflow) and look for
   `Notification emails: N sent, 0 failed`.
-- Schedule a test volunteer (an address you control), wait for the next run, and check the email
+- Before launch, add yourself to `notification_testers`. Do something that notifies you, wait for the next run, and check the email
   arrives with a link back to the Academy.
 
 ## Resend's limits

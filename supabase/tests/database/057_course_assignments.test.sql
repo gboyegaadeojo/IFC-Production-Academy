@@ -1,4 +1,4 @@
--- Assigning a course: leaders only, a request and nothing more, audited, and silent until launch.
+-- Assigning a course: leaders only, a request and nothing more, audited, and no email until launch.
 begin;
 select no_plan();
 
@@ -66,8 +66,10 @@ reset role;
 
 select is((select count(*)::int from public.audit_events where target_table = 'course_assignments'
   and target_id = (select id from public.course_assignments)), 1, 'assigning goes in the audit log');
-select is((select count(*)::int from public.notifications where kind = 'course_assigned'), 0,
-  'no notice is queued before launch');
+select is((select count(*)::int from public.notifications where kind = 'course_assigned'), 1,
+  'they get one notice in the app, however many times it''s retried');
+select is((select email_status::text from public.notifications where kind = 'course_assigned'), 'skipped',
+  'and no email before launch');
 select is((select count(*)::int from public.department_memberships
   where user_id = 'a7900000-0000-4000-8000-000000000002'), 0, 'it doesn''t add them to a department');
 select is((select count(*)::int from public.serving_approvals
@@ -107,15 +109,15 @@ select ok(
   'and they leave the report, having never started');
 reset role;
 
--- Once switched on at launch, a new assignment queues a notice, once.
-update public.organizations set course_assignment_notices_enabled = true;
+-- After launch, a new assignment is emailed, once.
+update public.organizations set notifications_live = true;
 select pg_temp.act_as('a7900000-0000-4000-8000-000000000001');
 select public.assign_course((select id from ctx where key = 'course'), 'a7900000-0000-4000-8000-000000000002');
 select public.assign_course((select id from ctx where key = 'course'), 'a7900000-0000-4000-8000-000000000002');
 reset role;
 select is((select count(*)::int from public.course_assignments), 2, 'assigning again makes a new record');
 select is((select count(*)::int from public.notifications where kind = 'course_assigned'
-  and user_id = 'a7900000-0000-4000-8000-000000000002'), 1, 'and one notice, once they''re switched on');
+  and email_status = 'pending'), 1, 'and one email, once the Academy is live');
 
 select * from finish();
 rollback;
