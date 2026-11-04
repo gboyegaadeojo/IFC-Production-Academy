@@ -81,6 +81,8 @@ async function LessonContent({ params }: Pick<Props, "params">) {
         <LessonTopics
           courseId={courseId}
           lessonKey={lesson.key}
+          lessonTitle={lesson.title}
+          whereItLives={lesson.whereItLives}
           topics={allTopics}
           initial={lessonTopics.map((topic) => topic.id)}
           canAdd={hasCapabilityAnywhere(grants, "topic.create")}

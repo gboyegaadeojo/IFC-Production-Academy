@@ -1,6 +1,7 @@
 "use client";
 
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import { buttonClasses } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { addStageAction, removeStageAction, updateStageAction } from "./actions";
 
@@ -15,9 +16,9 @@ export function StageSettings({
       aria-labelledby="stage-heading"
       className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4"
     >
-      <h2 id="stage-heading" className="font-semibold">
+      <h4 id="stage-heading" className="font-semibold">
         Edit stage
-      </h2>
+      </h4>
       <ActionForm
         key={stage.id}
         action={updateStageAction}
@@ -70,18 +71,17 @@ export function StageSettings({
 
 export function AddStage({ pathwayId }: { pathwayId: string }) {
   return (
-    <section
-      aria-labelledby="add-stage-heading"
-      className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4"
-    >
-      <h2 id="add-stage-heading" className="font-semibold">
+    <details className="group">
+      <summary
+        className={`${buttonClasses("secondary", "w-fit")} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}
+      >
         Add a stage
-      </h2>
+      </summary>
       <ActionForm
         action={addStageAction}
         submitLabel="Add stage"
         hidden={{ pathwayId }}
-        className="flex flex-col gap-3"
+        className="mt-3 flex w-80 max-w-full flex-col gap-3 rounded-card border border-border bg-surface p-4"
       >
         <Field id="new-stage-name" label="Name">
           <input
@@ -103,6 +103,6 @@ export function AddStage({ pathwayId }: { pathwayId: string }) {
           />
         </Field>
       </ActionForm>
-    </section>
+    </details>
   );
 }

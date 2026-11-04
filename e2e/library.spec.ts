@@ -14,6 +14,24 @@ test("Videos opens on its filters, and lists videos only after a search", async 
   await expect(page.getByText("No videos match")).toBeVisible();
 });
 
+test("a Production Director adds, renames, and removes a topic", async ({ page }) => {
+  const name = `Fake topic ${Date.now()}`;
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin/topics");
+  await page.getByRole("button", { name: "+ New topic" }).click();
+  await page.getByLabel("New topic", { exact: true }).fill(name);
+  await page.getByRole("button", { name: "Add topic" }).click();
+  const chip = page.getByRole("button", { name, exact: true });
+  await expect(chip).toBeVisible();
+  await chip.click();
+  await page.getByLabel("Topic name").fill(`${name} renamed`);
+  await page.getByRole("button", { name: /^Rename/ }).click();
+  const renamed = page.getByRole("button", { name: `${name} renamed`, exact: true });
+  await expect(renamed).toBeVisible();
+  await page.getByRole("button", { name: /^Remove/ }).click();
+  await expect(renamed).toHaveCount(0);
+});
+
 test("a volunteer finds courses by search and category", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   await page.goto("/courses");
