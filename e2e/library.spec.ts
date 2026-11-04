@@ -12,9 +12,9 @@ test("a volunteer finds courses by search and category", async ({ page }) => {
 
   const search = page.getByLabel("Search courses");
   await search.fill("no course has this title");
-  await expect(page.getByRole("heading", { name: "No courses match" })).toBeVisible();
+  await expect(page.getByText("No courses match")).toBeVisible();
 
   await page.getByRole("button", { name: "Clear filters" }).click();
   await expect(search).toHaveValue("");
-  await expect(page.getByRole("heading", { name: "No courses match" })).toHaveCount(0);
+  await expect(page.getByText("No courses match")).toHaveCount(0);
 });

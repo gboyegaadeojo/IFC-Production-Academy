@@ -26,7 +26,7 @@ import { ExploreRow, MemberDepartmentCard } from "./department-card";
 import { NextSteps } from "./next-steps";
 import { CoursePoster } from "@/components/course-poster";
 import { getCourseLibrary } from "@/lib/data/library";
-import { libraryRows, type LibraryCourse } from "@/lib/domain/library";
+import { libraryRows } from "@/lib/domain/library";
 
 export const metadata: Metadata = { title: "Training" };
 
@@ -55,19 +55,17 @@ async function TrainingContent() {
   const others = departments.filter((d) => d.state.kind !== "member");
   const requested = departments.filter((d) => d.state.kind === "requested");
   const memberIds = memberOf.map((d) => d.id);
-  const [learning, continuing, achievements, onboardingRows, openDepartments, library] =
-    await Promise.all([
-      getDepartmentLearning(user.id, memberIds),
-      // Training is open to everyone (decision 2026-11-01): courses started in any department count.
-      getContinueLearning(
-        user.id,
-        categories.map((d) => d.id),
-      ),
-      memberOf.length > 0 ? getMyAchievements(user.id) : null,
-      getMyOnboarding(),
-      getOpenDepartments(),
-      getCourseLibrary(user.id, categories),
-    ]);
+  const [learning, continuing, achievements, onboardingRows, openDepartments] = await Promise.all([
+    getDepartmentLearning(user.id, memberIds),
+    // Training is open to everyone (decision 2026-11-01): courses started in any department count.
+    getContinueLearning(
+      user.id,
+      categories.map((d) => d.id),
+    ),
+    memberOf.length > 0 ? getMyAchievements(user.id) : null,
+    getMyOnboarding(),
+    getOpenDepartments(),
+  ]);
   // Onboarding still in progress shows first; finished pathways drop off the Training page.
   const onboarding = volunteerPathways(onboardingRows).filter((p) => !p.finished);
   const learningFor = new Map(learning.map((entry) => [entry.departmentId, entry]));
@@ -136,7 +134,10 @@ async function TrainingContent() {
         </section>
       ) : null}
 
-      <CourseRows library={library} />
+      {/* The rows load after the rest, so the next step never waits for them. */}
+      <Suspense fallback={<Skeleton className="h-72" />}>
+        <CourseRows userId={user.id} categories={categories} />
+      </Suspense>
 
       <HowTrainingWorks open={state !== "member"} />
 
@@ -175,8 +176,8 @@ async function TrainingContent() {
 }
 
 /** Rows of courses by category (Course Hierarchy mock, approved 2026-11-04; SRS-CUR-017). */
-function CourseRows({ library }: { library: LibraryCourse[] }) {
-  const rows = libraryRows(library);
+async function CourseRows({ userId, categories }: { userId: string; categories: CardData[] }) {
+  const rows = libraryRows(await getCourseLibrary(userId, categories));
   if (rows.length === 0) {
     return null;
   }

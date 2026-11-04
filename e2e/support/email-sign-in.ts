@@ -64,14 +64,18 @@ async function requestSignInLink(page: Page, email: string) {
     }
     await page.getByLabel("Email address").fill(email);
     await page.getByRole("button", { name: "Email me a sign-in link" }).click();
-    await expect(sent.or(problem)).toBeVisible({ timeout: 15_000 });
+    // Under load the answer can be slow to come, so no answer counts as a try, like a refusal.
+    await expect(sent.or(problem))
+      .toBeVisible({ timeout: 15_000 })
+      .catch(() => undefined);
     // Sent wins: once the link is on its way the form (and its field) is gone.
     if (await sent.isVisible()) {
       return;
     }
     if (attempt === 3) {
       // Surface the app's message instead of a bare timeout.
-      throw new Error(`Sign-in for ${email} failed: ${await problem.innerText()}`);
+      const message = (await problem.isVisible()) ? await problem.innerText() : "no answer";
+      throw new Error(`Sign-in for ${email} failed: ${message}`);
     }
     await page.waitForTimeout(2_000);
   }
