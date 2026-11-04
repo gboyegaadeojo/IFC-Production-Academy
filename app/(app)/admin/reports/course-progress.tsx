@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ActionForm, fieldClasses } from "@/components/ui/action-form";
-import { buttonClasses } from "@/components/ui/button";
+import { useActionState, useState } from "react";
+import { fieldClasses } from "@/components/ui/action-form";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { CheckIcon, PlusIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -54,6 +54,10 @@ export function CourseProgress({
 }) {
   const router = useRouter();
   const [assigning, setAssigning] = useState(false);
+  // Held here because removing someone's assignment can take the panel, or them, off the page.
+  const [removal, removeAction, removing] = useActionState(removeAssignmentAction, {
+    status: "idle",
+  });
   const [status, setStatus] = useState<ProgressStatus | null>(null);
   const [chosenId, setChosenId] = useState<string | null>(null);
   const counts = statusCounts(view.people);
@@ -102,6 +106,15 @@ export function CourseProgress({
           </button>
         ) : null}
       </div>
+
+      {removal.status === "idle" ? null : (
+        <p
+          role={removal.status === "error" ? "alert" : "status"}
+          className={`text-small ${removal.status === "error" ? "text-error" : "text-text-secondary"}`}
+        >
+          {removal.message}
+        </p>
+      )}
 
       {assignable && assigning ? (
         <AssignCourse
@@ -178,6 +191,8 @@ export function CourseProgress({
             departmentId={departmentId}
             canMentor={canMentor}
             canAssign={assignable !== null}
+            removeAction={removeAction}
+            removing={removing}
           />
         ) : null}
       </div>
@@ -205,12 +220,16 @@ function PersonPanel({
   departmentId,
   canMentor,
   canAssign,
+  removeAction,
+  removing,
 }: {
   person: PersonProgress;
   view: CourseProgressView;
   departmentId: string;
   canMentor: boolean;
   canAssign: boolean;
+  removeAction: (formData: FormData) => void;
+  removing: boolean;
 }) {
   const next = nextLessonKey(person, view);
   const onlyQuiz = view.quizzes.length === 1 ? person.quizzes[0] : undefined;
@@ -318,15 +337,15 @@ function PersonPanel({
         </Link>
       ) : null}
       {canAssign && person.assignedAt ? (
-        <ActionForm
-          action={removeAssignmentAction}
-          submitLabel="Remove assignment"
-          pendingLabel="Removing…"
-          variant="secondary"
-          srLabel={`for ${person.name}`}
-          hidden={{ courseId: view.courseId, departmentId, userId: person.userId }}
-          className="flex flex-col gap-2"
-        />
+        <form action={removeAction}>
+          <input type="hidden" name="courseId" value={view.courseId} />
+          <input type="hidden" name="departmentId" value={departmentId} />
+          <input type="hidden" name="userId" value={person.userId} />
+          <Button type="submit" variant="secondary" disabled={removing}>
+            {removing ? "Removing…" : "Remove assignment"}
+            <span className="sr-only"> for {person.name}</span>
+          </Button>
+        </form>
       ) : null}
     </section>
   );
