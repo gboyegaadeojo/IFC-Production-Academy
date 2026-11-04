@@ -9,7 +9,7 @@ The Academy is where the production team at Immanuel Fellowship Church learns, g
 
 ## Finding your way around
 
-The top bar has four places. On a phone they're along the bottom.
+The side bar has four places. On a phone they're along the bottom.
 
 | Place | What it's for | Guide |
 | --- | --- | --- |

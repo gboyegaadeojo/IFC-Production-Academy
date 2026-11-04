@@ -3,7 +3,7 @@ import { canViewServiceDashboard } from "@/lib/data/service-dashboard";
 import { AcademyNavLink } from "./academy-nav";
 
 /**
- * The top bar link to the Service Dashboard, for people who may open it, on computers only
+ * The side bar link to the Service Dashboard, for people who may open it, on computers only
  * (ADD-DASH-02). Offering it here is a convenience: the page checks access on the server too.
  */
 export async function ServiceDashboardNavLink() {

@@ -2,7 +2,7 @@
 
 **Status:** being built in stages. This guide describes what was approved on 2026-11-02, and it gets updated every time the dashboard changes.
 
-**Working today:** the Service Dashboard page, the top bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so does YouTube live once its setup is done (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Items that have to be proven on real gear are listed at the end.
+**Working today:** the Service Dashboard page, the side bar link, one shared layout, editors, the layout editor, the app name and logo setting, and the tiles that come from Planning Center and the Academy: Run of service, Current item, Service timer, Who's serving, Checklist, Producer notes, and SOP shortcuts. The wall TV screen also works, and so does YouTube live once its setup is done (see the setup guide). To set up the connections, see the [Service Dashboard setup guide](../runbooks/service-dashboard.md). Slides, ProPresenter timers, Mixer levels, and Encoder health are built and show "Not connected yet" until the church bridge is set up. Items that have to be proven on real gear are listed at the end.
 
 ## What it is
 
@@ -14,7 +14,7 @@ You don't have to ask around or open six different apps. If you're serving, you 
 
 ## Where to find it
 
-- **On a computer:** sign in to the Academy and choose **Service Dashboard** in the top bar.
+- **On a computer:** sign in to the Academy and choose **Service Dashboard** in the side bar.
 - **On the wall TV:** it's already there. The TV runs it by itself.
 - **On a phone or in the installed app:** it isn't available. A phone browser shows a message asking you to open it on a computer. Your training, schedule, checklist, and SOPs all still work on your phone.
 
