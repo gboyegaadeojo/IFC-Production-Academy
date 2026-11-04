@@ -1,6 +1,6 @@
 # Training
 
-**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by category. The **Library** in the side bar has **Courses** and **Explore**. On a phone, you'll find them above the rows on Training.
+**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by category. The **Library** in the side bar has **Courses** and **Explore**. On a phone, choose **Courses** on the bottom bar, then switch between **Courses** and **Explore** at the top.
 
 ## Anyone can learn anything
 

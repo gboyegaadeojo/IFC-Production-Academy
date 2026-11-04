@@ -14,7 +14,7 @@ Departments build proficiency in a craft, but some courses belong to the whole t
 - **Topics have lessons, quizzes, versions, and certificates, but no practicals or competencies** (G, 2026-11-04), and never count towards Approved to Serve.
 - **Production Directors publish topics.** The capability grant is the same one they hold everywhere.
 - **A Guide to Serving lives in General.** Training stays shown, never a gate: it can be marked Start here and be a step in the Join the team pathway, and the team page shows it beside each name, but it never stops anyone being added to a team.
-- **Learner pages move to a side bar** from 768px. Phones keep their slim bar and bottom tabs, which are easier to reach than the scrolling row in the mock. The Training home becomes rows of courses by category, with a new All courses page and course covers. Opening a course goes straight to its lesson, with the lesson list on the right. Completion stays a learner action (SRS-LESSON-006).
+- **Learner pages move to a side bar** from 768px. Phones keep their slim bar and bottom tabs, which are easier to reach than the scrolling row in the mock. The tabs are Training, Courses, Schedule, Checklist, and SOPs, with Explore a switch at the top of Courses (G, 2026-11-04). The Training home becomes rows of courses by category, with a new All courses page and course covers. Opening a course goes straight to its lesson, with the lesson list on the right. Completion stays a learner action (SRS-LESSON-006).
 
 ## Videos and Topics (G, 2026-11-04)
 

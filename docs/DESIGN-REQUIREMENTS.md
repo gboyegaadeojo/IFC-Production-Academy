@@ -77,7 +77,7 @@ Primary: **Home**, **Explore**, **My Learning**, **Resources** (only when implem
 
 **Desktop:** a persistent learner side bar from 768px, with the wordmark, the links, and the account (G, 2026-11-04, replacing the top bar). Keep main content generous, not confined to the existing `max-w-6xl` for all screens. Search appears only when functional.
 
-**Mobile:** 44px minimum interactive targets; compact top header, accessible menu/drawer; optionally bottom navigation for 3–4 high-frequency learner destinations if implemented. Never use a desktop sidebar squeezed into a mobile viewport.
+**Mobile:** 44px minimum interactive targets; compact top header, accessible menu/drawer; bottom navigation for five learner destinations (Training, Courses, Schedule, Checklist, SOPs; G, 2026-11-04), with Explore a switch at the top of Courses. Never use a desktop sidebar squeezed into a mobile viewport.
 
 ### 3.2 Admin navigation
 A dedicated admin shell (revised 2026-11-01). In Admin, the sidebar replaces the Academy's top header.

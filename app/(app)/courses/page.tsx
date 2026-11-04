@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { LibrarySwitch } from "@/components/shell/library-switch";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards } from "@/lib/data/departments";
@@ -29,6 +30,7 @@ async function AllCourses({ searchParams }: Pick<PageProps<"/courses">, "searchP
   const chosen = topics.find((topic) => topic.id === params.topic);
   return (
     <div className="page-container flex flex-col gap-6 py-6 sm:py-8 lg:py-10">
+      <LibrarySwitch current="courses" />
       <h1 className="text-title font-semibold">Courses</h1>
       <LibraryBrowser
         courses={courses}

@@ -14,7 +14,7 @@ Open your account menu and choose **Your profile** to see the quizzes you've pas
 
 ## Finding your way around
 
-The side bar has these places. On a phone, the main four are along the bottom, and the Library's links are on Training.
+The side bar has these places. On a phone, five of them are along the bottom, and **Explore** is at the top of **Courses**.
 
 | Place | What it's for | Guide |
 | --- | --- | --- |

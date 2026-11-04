@@ -222,7 +222,7 @@ async function CourseRows({ userId, categories }: { userId: string; categories: 
         <SectionHeading id="courses-heading" eyebrow="Explore">
           Courses
         </SectionHeading>
-        <nav aria-label="Library" className="flex flex-wrap gap-2">
+        <nav aria-label="Library" className="hidden flex-wrap gap-2 md:flex">
           {[
             { href: "/courses", label: "All courses" },
             { href: "/explore", label: "Explore" },
