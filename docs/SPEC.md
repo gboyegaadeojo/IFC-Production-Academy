@@ -453,7 +453,7 @@ Buttons (primary, secondary, tertiary, destructive), inputs, navigation and brea
 
 | Role | Destinations | Mobile pattern |
 | --- | --- | --- |
-| Volunteer | Home, My Learning, Departments, SOP Library, My Schedule, Achievements, Profile | Bottom bar: Home, Learn, Schedule, SOPs, More |
+| Volunteer | Home, My Learning, Departments, SOP Library, My Schedule, Achievements, Profile | Bottom bar: Training, Courses, Schedule, Checklist, SOPs (G, 2026-11-04) |
 | Leader | Overview, Volunteers, Departments, Curriculum, Assessments, Scheduling, SOP Library, Reports, Settings | Bottom bar plus a Lead tab; heavy editing on tablet or desktop |
 | Administrator | Platform Overview, Users and Roles, Department Configuration, Curriculum Governance, Notifications and Integrations, Audit Logs, System Settings | Desktop side navigation |
 

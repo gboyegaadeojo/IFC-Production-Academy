@@ -39,8 +39,8 @@ const NAV_GROUPS: { heading: string | null; links: NavLink[] }[] = [
   },
 ];
 
-/** Phones have four tabs. The Library is linked from Training there. */
-const TAB_HREFS = new Set(["/home", "/schedule", "/serve", "/sops"]);
+/** Phones have five tabs (G, 2026-11-04). Explore is a switch at the top of Courses there. */
+const TAB_HREFS = new Set(["/home", "/courses", "/schedule", "/serve", "/sops"]);
 const TAB_LINKS = NAV_GROUPS.flatMap((group) => group.links).filter((link) =>
   TAB_HREFS.has(link.href),
 );
@@ -130,9 +130,11 @@ export function AcademyTabBar() {
       aria-label="Academy"
       className="sticky bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {TAB_LINKS.map((link) => {
-          const current = isCurrent(pathname, link.href);
+          // Explore sits inside the Courses tab on phones.
+          const current =
+            isCurrent(pathname, link.href) || (link.href === "/courses" && pathname === "/explore");
           const Icon = link.icon;
           return (
             <li key={link.href}>

@@ -40,6 +40,30 @@ test("a Production Director adds, renames, and removes a topic", async ({ page }
   await expect(renamed).toHaveCount(0);
 });
 
+test("on a phone, Courses is on the bottom bar, with Explore a switch inside", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "Phones only");
+  await signInByEmail(page, "avery.volunteer@example.com");
+  const bar = page.getByRole("navigation", { name: "Academy" });
+  await bar.getByRole("link", { name: "Courses" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Courses" })).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "Library" })
+    .getByRole("link", { name: "Explore" })
+    .click();
+  await expect(page.getByRole("heading", { level: 1, name: "Explore" })).toBeVisible();
+  await expect(bar.getByRole("link", { name: "Courses" })).toHaveAttribute("aria-current", "page");
+
+  // All five labels stay inside their own tab on a small phone.
+  await page.setViewportSize({ width: 320, height: 640 });
+  const crowded = await bar
+    .getByRole("link")
+    .evaluateAll((links) => links.filter((link) => link.scrollWidth > link.clientWidth).length);
+  expect(crowded).toBe(0);
+});
+
 test("a volunteer finds courses by search and category", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   await page.goto("/courses");
