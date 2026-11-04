@@ -26,6 +26,8 @@ export const CAPABILITIES = [
   "dashboard.edit",
   "dashboard.manage",
   "branding.manage",
+  "topic.create",
+  "topic.manage",
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];

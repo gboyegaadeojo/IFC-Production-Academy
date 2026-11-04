@@ -437,6 +437,8 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
 
 export type LessonDetail = {
   id: string;
+  /** Stable across versions. */
+  key: string;
   courseId: string;
   departmentId: string;
   courseVersionId: string;
@@ -457,7 +459,7 @@ export async function getLesson(lessonId: string): Promise<LessonDetail | null> 
   const lesson = await supabase
     .from("lessons")
     .select(
-      "id, course_version_id, module_id, title, summary, objectives, estimated_minutes, is_required, body, video_provider, video_ref",
+      "id, lesson_key, course_version_id, module_id, title, summary, objectives, estimated_minutes, is_required, body, video_provider, video_ref",
     )
     .eq("id", lessonId)
     .maybeSingle();
@@ -492,6 +494,7 @@ export async function getLesson(lessonId: string): Promise<LessonDetail | null> 
   }
   return {
     id: lesson.data.id,
+    key: lesson.data.lesson_key,
     courseId: version.data.course_id,
     departmentId: course.data.department_id,
     courseVersionId: lesson.data.course_version_id,

@@ -11,6 +11,12 @@ The row of buttons at the top starts with the **general categories**, then a div
 
 Production Directors build and publish these. You add one under [Departments](admin-people.md#departments).
 
+## Topics on lessons
+
+**Topics** are tags, such as Mixing or Directing, that help people find videos under **Videos** and **Topics**. Open a lesson and choose its topics near the top. They save straight away with no draft, because they aren't part of a version, and they stay with the lesson when you publish a new one.
+
+Department Leaders, Production Directors, and Platform Administrators can add topics, there or under **Lesson topics**. Production Directors and Platform Administrators can also rename and remove them. Removing a topic takes it off every lesson.
+
 ## Start here
 
 Turn on **Start here** beside a course in General. If you can publish it, the course then shows at the top of Training until someone finishes it, on each department's page, and beside each name on Serving teams as Done or Not yet. It never stops anyone joining or serving.

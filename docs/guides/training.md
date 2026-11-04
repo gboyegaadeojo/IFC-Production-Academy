@@ -1,12 +1,18 @@
 # Training
 
-**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by category. **All courses** lists every course, with search and filters for category and level. On a phone, you'll find it under **Courses** on Training.
+**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by category. The **Library** in the side bar has **Courses**, **Videos**, and **Topics**. On a phone, you'll find them above the rows on Training.
 
 ## Anyone can learn anything
 
 Every open department's courses are open to you. You don't need anyone's permission to start one, and you can take a course simply because you're curious.
 
 **Joining a department is a separate thing.** It means you're part of that department's team, so its leader knows you and can plan around you. To join, choose **Request to join** on a department. A leader reviews each request, and some departments are by invitation only.
+
+## The Library
+
+- **Courses** lists every course, with search and filters for category and level.
+- **Videos** lists every lesson with a video, with search and filters for level, category, and topic. Opening one takes you to that lesson in its course, and it counts there like any other lesson.
+- **Topics** gathers videos on one subject, such as Mixing or Directing, whichever course they're in.
 
 ## General categories
 
@@ -16,7 +22,7 @@ Every open department's courses are open to you. You don't need anyone's permiss
 
 Some courses, such as A Guide to Serving, are marked **Start here**. The next one you haven't finished shows at the top of Training, and they're listed under **Before you start** on each department's page. They're a good place to begin, but nothing is locked until you've done them.
 
-Opening a course from Training or All courses takes you straight to what's next.
+Opening a course from Training or Courses takes you straight to what's next.
 
 ## How a department is set out
 

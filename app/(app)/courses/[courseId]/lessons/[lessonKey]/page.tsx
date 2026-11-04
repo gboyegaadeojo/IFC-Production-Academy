@@ -28,6 +28,7 @@ import { recordLessonViewAction } from "./actions";
 import { CompleteToggle } from "./complete-toggle";
 import { RichText } from "@/components/ui/rich-text";
 import { courseHomeLabel } from "@/lib/domain/departments";
+import { getLessonTopics } from "@/lib/data/topics";
 
 export const metadata: Metadata = { title: "Lesson" };
 
@@ -90,6 +91,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
   const moduleTitle = course.modules.find((m) => m.lessons.some((l) => l.key === lessonKey))?.title;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
 
+  const topics = await getLessonTopics(course.id, lessonKey);
   const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
   const doneCount = course.modules
     .flatMap((m) => m.lessons)
@@ -179,6 +181,17 @@ async function LessonContent({ params }: Pick<Props, "params">) {
                       course.department.uses_levels ? course.level.number : null,
                     )}
                   </li>
+                  {topics.map((topic) => (
+                    <li key={topic.id}>
+                      <Link
+                        href={`/videos?topic=${topic.id}`}
+                        prefetch={false}
+                        className="font-medium text-accent-light underline-offset-4 hover:underline"
+                      >
+                        {topic.name}
+                      </Link>
+                    </li>
+                  ))}
                   {lesson.estimatedMinutes ? (
                     <li>About {formatMinutes(lesson.estimatedMinutes)}</li>
                   ) : null}

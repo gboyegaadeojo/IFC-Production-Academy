@@ -145,6 +145,11 @@ export function storedVideo(provider: string | null, ref: string | null): VideoR
   return SOURCES[provider].parse(ref) === ref ? { provider, id: ref } : null;
 }
 
+/** A video's still image, for lists of videos. Only YouTube has one; other sources show their title. */
+export function videoThumbnailUrl(video: VideoRef): string | null {
+  return video.provider === "youtube" ? `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg` : null;
+}
+
 /** What the editor shows for a stored video: the watch link for YouTube, the path for files. */
 export function videoInputValue(video: VideoRef): string {
   return video.provider === "youtube" ? youtubeWatchUrl(video.id) : video.id;

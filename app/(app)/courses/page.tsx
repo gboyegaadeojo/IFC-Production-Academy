@@ -6,7 +6,7 @@ import { listDepartmentCards } from "@/lib/data/departments";
 import { getCourseLibrary } from "@/lib/data/library";
 import { LibraryBrowser } from "./library-browser";
 
-export const metadata: Metadata = { title: "All courses" };
+export const metadata: Metadata = { title: "Courses" };
 
 export default function AllCoursesPage() {
   return (
@@ -23,7 +23,7 @@ async function AllCourses() {
   const courses = await getCourseLibrary(user.id, categories);
   return (
     <div className="page-container flex flex-col gap-6 py-6 sm:py-8 lg:py-10">
-      <h1 className="text-title font-semibold">All courses</h1>
+      <h1 className="text-title font-semibold">Courses</h1>
       <LibraryBrowser
         courses={courses}
         categories={categories.map((c) => ({

@@ -16,6 +16,10 @@ Departments build proficiency in a craft, but some courses belong to the whole t
 - **A Guide to Serving lives in General.** Training stays shown, never a gate: it can be marked Start here and be a step in the Join the team pathway, and the team page shows it beside each name, but it never stops anyone being added to a team.
 - **Learner pages move to a side bar** from 768px. Phones keep their slim bar and bottom tabs, which are easier to reach than the scrolling row in the mock. The Training home becomes rows of courses by category, with a new All courses page and course covers. Opening a course goes straight to its lesson, with the lesson list on the right. Completion stays a learner action (SRS-LESSON-006).
 
+## Videos and Topics (G, 2026-11-04)
+
+The Library in the side bar has Courses, Videos, and Topics, as in MxU. A video is a lesson in its course, not a second copy. Course posters are upright and video thumbnails are wide, also as in MxU, because a video's still image is wide. Department Leaders and Production Directors add topics. Platform Administrators can too, since they build training. Only Production Directors and Platform Administrators rename and remove them.
+
 ## Wording (G, 2026-11-04)
 
 Screens call these **general categories**, because "Topics" is kept for tags on videos, as in MxU. In the code and database they're still `kind = 'topic'`.

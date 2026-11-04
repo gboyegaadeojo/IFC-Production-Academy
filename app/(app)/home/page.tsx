@@ -222,10 +222,22 @@ async function CourseRows({ userId, categories }: { userId: string; categories: 
         <SectionHeading id="courses-heading" eyebrow="Explore">
           Courses
         </SectionHeading>
-        <Link href="/courses" className={buttonClasses("secondary", "gap-1.5", "sm")}>
-          All courses
-          <ArrowRightIcon className="size-3.5" />
-        </Link>
+        <nav aria-label="Library" className="flex flex-wrap gap-2">
+          {[
+            { href: "/courses", label: "All courses" },
+            { href: "/videos", label: "Videos" },
+            { href: "/topics", label: "Topics" },
+          ].map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={buttonClasses("secondary", "gap-1.5", "sm")}
+            >
+              {link.label}
+              <ArrowRightIcon className="size-3.5" />
+            </Link>
+          ))}
+        </nav>
       </div>
       {rows.map(({ category, courses }) => (
         <section
