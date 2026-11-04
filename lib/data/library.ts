@@ -80,10 +80,19 @@ export async function getCourseLibrary(
     throw new Error("Could not load the courses", { cause: (courses.error ?? levels.error)?.code });
   }
   const ids = courses.data.map((row) => row.id);
-  const [summaries, progress] = await Promise.all([
+  const [summaries, progress, courseTags, lessonTags] = await Promise.all([
     publishedSummaries(supabase, ids),
     progressForOpened(userId, ids),
+    supabase.from("course_topics").select("course_id, topic_id").in("course_id", ids),
+    supabase.from("lesson_topics").select("course_id, topic_id").in("course_id", ids),
   ]);
+  if (courseTags.error || lessonTags.error) {
+    throw new Error("Could not load the courses", {
+      cause: (courseTags.error ?? lessonTags.error)?.code,
+    });
+  }
+  // A course counts for its own topics and those of its lessons.
+  const allTags = [...courseTags.data, ...lessonTags.data];
   const levelNumber = new Map(levels.data.map((level) => [level.id, level.number]));
   const { NEXT_PUBLIC_SUPABASE_URL: url } = publicEnv();
 
@@ -114,6 +123,11 @@ export async function getCourseLibrary(
           lessonCount: summary.lessonCount > 0 ? summary.lessonCount : null,
           estimatedMinutes: summary.estimatedMinutes,
           coverUrl: row.cover_image_path ? courseCoverUrl(url, row.cover_image_path) : null,
+          topicIds: [
+            ...new Set(
+              allTags.filter((tag) => tag.course_id === row.id).map((tag) => tag.topic_id),
+            ),
+          ],
           percent: courseProgress?.percent ?? 0,
           state: courseProgress?.state ?? "not_started",
         } satisfies LibraryCourse,

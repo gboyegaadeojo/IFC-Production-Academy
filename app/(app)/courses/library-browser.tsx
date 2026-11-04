@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CoursePoster } from "@/components/course-poster";
+import { TopicFilter } from "@/components/topic-filter";
 import { compactFieldClasses } from "@/components/ui/action-form";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -13,19 +14,24 @@ type Category = { id: string; name: string; kind: string; sortOrder: number };
 export function LibraryBrowser({
   courses,
   categories,
+  topics,
+  initialTopicIds,
 }: {
   courses: LibraryCourse[];
   categories: Category[];
+  topics: { id: string; name: string }[];
+  initialTopicIds: string[];
 }) {
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [level, setLevel] = useState("");
+  const [topicIds, setTopicIds] = useState(initialTopicIds);
   const shown = useMemo(
-    () => filterLibrary(courses, { search, categoryId, level }),
-    [courses, search, categoryId, level],
+    () => filterLibrary(courses, { search, categoryId, level, topicIds }),
+    [courses, search, categoryId, level, topicIds],
   );
   const levels = [...new Set(courses.flatMap((course) => course.level ?? []))].toSorted();
-  const filtered = Boolean(search || categoryId || level);
+  const filtered = Boolean(search || categoryId || level || topicIds.length);
   const withCourses = categories.filter((category) =>
     courses.some((course) => course.category.id === category.id),
   );
@@ -72,6 +78,7 @@ export function LibraryBrowser({
             </option>
           ))}
         </select>
+        <TopicFilter topics={topics} selected={topicIds} onChange={setTopicIds} />
         {filtered ? (
           <button
             type="button"
@@ -79,8 +86,9 @@ export function LibraryBrowser({
               setSearch("");
               setCategoryId("");
               setLevel("");
+              setTopicIds([]);
             }}
-            className={buttonClasses("tertiary", "", "sm")}
+            className={`${buttonClasses("tertiary", "", "sm")} order-2`}
           >
             Clear filters
           </button>

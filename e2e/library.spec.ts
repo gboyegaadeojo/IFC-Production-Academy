@@ -23,6 +23,10 @@ test("a Production Director adds, renames, and removes a topic", async ({ page }
   await page.getByRole("button", { name: "Add topic" }).click();
   const chip = page.getByRole("button", { name, exact: true });
   await expect(chip).toBeVisible();
+  await page.goto("/courses");
+  await page.getByRole("button", { name: /^Topic/ }).click();
+  await expect(page.getByRole("checkbox", { name })).toBeVisible();
+  await page.goto("/admin/topics");
   await chip.click();
   await page.getByLabel("Topic name").fill(`${name} renamed`);
   await page.getByRole("button", { name: /^Rename/ }).click();
