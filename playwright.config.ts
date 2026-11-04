@@ -11,6 +11,8 @@ if (existsSync(".env.local")) {
 const port = Number(process.env.E2E_PORT ?? 3000);
 const baseURL = `http://localhost:${port}`;
 
+const LOAD_TEST = /thirty-people\.spec\.ts/;
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
@@ -22,8 +24,16 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["Pixel 7"] } },
+    { name: "desktop", testIgnore: LOAD_TEST, use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile", testIgnore: LOAD_TEST, use: { ...devices["Pixel 7"] } },
+    // Runs after the others, on an otherwise quiet machine, so its limit measures the app and not
+    // the rest of the test suite competing for the same server.
+    {
+      name: "load",
+      testMatch: LOAD_TEST,
+      dependencies: ["desktop", "mobile"],
+      use: { ...devices["Desktop Chrome"] },
+    },
   ],
   webServer: {
     // CI tests the production build; locally the dev server is fine.
