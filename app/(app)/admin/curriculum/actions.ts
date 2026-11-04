@@ -108,6 +108,29 @@ export async function updateCourseCoverAction(
   return { status: "done", message: "Cover updated. It shows everywhere straight away." };
 }
 
+export async function setCourseStartHereAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const courseId = id.safeParse(formData.get("courseId"));
+  if (!courseId.success) {
+    return failed("unknown");
+  }
+  if (!(await allowed())) {
+    return failed("not_authorized");
+  }
+  const on = formData.get("on") === "true";
+  const result = await curriculum.setCourseStartHere(courseId.data, on);
+  if (!result.ok) {
+    return failed(result.error);
+  }
+  refresh();
+  return {
+    status: "done",
+    message: on ? "It now shows as Start here." : "It no longer shows as Start here.",
+  };
+}
+
 export async function removeCourseCoverAction(
   _: FormState,
   formData: FormData,

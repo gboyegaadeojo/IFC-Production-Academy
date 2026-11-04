@@ -187,6 +187,7 @@ export type CourseEditor = {
   /** The course's cover art, if it has any. A cover isn't part of a version. */
   coverPath: string | null;
   coverUrl: string | null;
+  startHere: boolean;
   /** Topics have no practicals (decision 2026-11-04). */
   isTopic: boolean;
   levelName: string;
@@ -292,11 +293,21 @@ export async function setCourseCover(
   return { ok: true };
 }
 
+/** Marks a topic's course Start here (SRS-CUR-018). The database checks course.publish and the topic. */
+export async function setCourseStartHere(courseId: string, on: boolean): Promise<CurriculumResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_course_start_here", {
+    p_course_id: courseId,
+    p_on: on,
+  });
+  return error ? fail(error) : { ok: true };
+}
+
 export async function getCourseEditor(courseId: string): Promise<CourseEditor | null> {
   const supabase = await createSupabaseServerClient();
   const course = await supabase
     .from("courses")
-    .select("id, department_id, level_id, archived_at, cover_image_path")
+    .select("id, department_id, level_id, archived_at, cover_image_path, start_here")
     .eq("id", courseId)
     .maybeSingle();
   if (course.error) {
@@ -341,6 +352,7 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
     id: course.data.id,
     departmentId: course.data.department_id,
     departmentName: department.data.name,
+    startHere: course.data.start_here,
     coverPath: course.data.cover_image_path,
     coverUrl: course.data.cover_image_path
       ? courseCoverUrl(publicEnv().NEXT_PUBLIC_SUPABASE_URL, course.data.cover_image_path)

@@ -27,6 +27,7 @@ import {
   restoreAction,
   startDraftAction,
   removeCourseCoverAction,
+  setCourseStartHereAction,
   updateCourseCoverAction,
   updateCourseDetailsAction,
   updateModuleAction,
@@ -196,6 +197,30 @@ async function CourseContent({
 
       {tab === "details" && canDraft ? (
         <CoverPanel courseId={course.id} coverUrl={course.coverUrl} coverPath={course.coverPath} />
+      ) : null}
+
+      {tab === "details" && course.isTopic && canPublish ? (
+        <section
+          aria-labelledby="start-here-heading"
+          className="flex max-w-2xl flex-col gap-3 rounded-card border border-border bg-card p-5"
+        >
+          <div className="flex flex-col gap-1">
+            <h2 id="start-here-heading" className="text-heading font-semibold">
+              Start here
+            </h2>
+            <p className="text-small text-text-secondary">
+              {course.startHere ? "This course is marked Start here. " : ""}A Start here course
+              shows at the top of Training until someone finishes it, on each department&apos;s
+              page, and beside each name on the team page. It never stops anyone joining or serving.
+            </p>
+          </div>
+          <ActionForm
+            action={setCourseStartHereAction}
+            submitLabel={course.startHere ? "Stop showing as Start here" : "Mark as Start here"}
+            variant="secondary"
+            hidden={{ courseId: course.id, on: String(!course.startHere) }}
+          />
+        </section>
       ) : null}
 
       {tab === "details" ? (

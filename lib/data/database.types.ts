@@ -210,6 +210,7 @@ export type Database = {
           created_by: string | null;
           archived_at: string | null;
           cover_image_path: string | null;
+          start_here: boolean;
         } & Timestamps;
         Insert: never;
         Update: never;
@@ -1706,6 +1707,14 @@ export type Database = {
       app_branding: {
         Args: Record<string, never>;
         Returns: { app_name: string; app_short_name: string; app_icon_path: string | null }[];
+      };
+      set_course_start_here: {
+        Args: { p_course_id: string; p_on: boolean };
+        Returns: undefined;
+      };
+      start_here_status: {
+        Args: { p_department_id: string };
+        Returns: { user_id: string; course_id: string; course_title: string; finished: boolean }[];
       };
       set_course_cover: {
         Args: { p_course_id: string; p_path: string | null };

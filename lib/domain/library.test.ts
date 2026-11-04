@@ -23,6 +23,7 @@ const course = (
 ): LibraryCourse => ({
   id,
   title: id,
+  href: `/courses/${id}`,
   category: cat,
   level,
   sortOrder: 0,

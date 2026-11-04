@@ -9,7 +9,12 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getSchedulingSource } from "@/lib/data/planning-center";
-import { getServingTeam, getTeamDepartments, type TeamDepartment } from "@/lib/data/teams";
+import {
+  getServingTeam,
+  getStartHereStatus,
+  getTeamDepartments,
+  type TeamDepartment,
+} from "@/lib/data/teams";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
   addableFor,
@@ -92,9 +97,10 @@ function DepartmentChip({ department, current }: { department: TeamDepartment; c
 }
 
 async function DepartmentTeams({ department }: { department: TeamDepartment }) {
-  const [{ positions, people }, source] = await Promise.all([
+  const [{ positions, people }, source, startHere] = await Promise.all([
     getServingTeam(department.id),
     getSchedulingSource(),
+    getStartHereStatus(department.id),
   ]);
   const fromPlanningCenter = source === "planning_center";
   if (positions.length === 0) {
@@ -137,6 +143,7 @@ async function DepartmentTeams({ department }: { department: TeamDepartment }) {
 
       {positions.map((position) => (
         <PositionTeam
+          startHere={startHere}
           key={position.id}
           position={position}
           people={people}
@@ -153,11 +160,13 @@ function PositionTeam({
   people,
   departmentName,
   fromPlanningCenter,
+  startHere,
 }: {
   position: Position;
   people: TeamPerson[];
   departmentName: string;
   fromPlanningCenter: boolean;
+  startHere: Map<string, { title: string; finished: boolean }[]>;
 }) {
   const team = positionTeam(people, position.id);
   const addable = addableFor(people, position.id);
@@ -206,6 +215,11 @@ function PositionTeam({
                   <StatusBadge tone={trained === "Trained" ? "success" : "neutral"}>
                     {trained}
                   </StatusBadge>
+                  {(startHere.get(person.id) ?? []).map((course) => (
+                    <StatusBadge key={course.title} tone={course.finished ? "success" : "neutral"}>
+                      {course.title}: {course.finished ? "Done" : "Not yet"}
+                    </StatusBadge>
+                  ))}
                 </span>
                 {fromPlanningCenter ? null : (
                   <ActionForm

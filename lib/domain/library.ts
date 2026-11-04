@@ -10,6 +10,8 @@ export const COURSE_COVER_MAX_BYTES = 2 * 1024 * 1024;
 export type LibraryCourse = {
   id: string;
   title: string;
+  /** Where opening it goes: the next thing to do, or the overview once it's finished. */
+  href: string;
   category: {
     id: string;
     slug: string;

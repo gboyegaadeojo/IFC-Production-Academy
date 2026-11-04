@@ -1,10 +1,22 @@
 import "server-only";
+import { cache } from "react";
 import type { DepartmentCard } from "@/lib/data/departments";
-import { getLearnerCourses } from "@/lib/data/pathway";
+import { getLearnerCourses, type LearnerCourse } from "@/lib/data/pathway";
 import { getCourseProgressById, getLearnerActivity } from "@/lib/data/progress";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { publicEnv } from "@/lib/env";
+import { courseSteps, stepHref } from "@/lib/domain/learning";
 import { courseCoverUrl, sortLibrary, type LibraryCourse } from "@/lib/domain/library";
+import type { CourseProgress, CourseState } from "@/lib/domain/progress";
+
+/** Opening a course goes straight to what's next (Course Hierarchy mock, approved 2026-11-04). */
+function openHref(course: LearnerCourse, progress: CourseProgress | undefined): string {
+  if (progress?.state === "completed") {
+    return `/courses/${course.id}`;
+  }
+  const step = progress?.next ?? courseSteps(course.modules, course.quizzes, course.practicals)[0];
+  return course.canOpen && step ? stepHref(course.id, step) : `/courses/${course.id}`;
+}
 
 /**
  * Every published course in the categories this person can browse, with their own progress
@@ -46,6 +58,7 @@ export async function getCourseLibrary(
         {
           id: course.id,
           title: course.title,
+          href: openHref(course, courseProgress),
           category: {
             id: category.id,
             slug: category.slug,
@@ -67,3 +80,47 @@ export async function getCourseLibrary(
     }),
   );
 }
+
+export type StartHereCourse = {
+  id: string;
+  title: string;
+  href: string;
+  state: CourseState;
+  estimatedMinutes: number | null;
+};
+
+/**
+ * The courses marked Start here, with this person's progress (SRS-CUR-018). Training and the
+ * department page both show them, and they're never a gate.
+ */
+export const getStartHereCourses = cache(async (userId: string): Promise<StartHereCourse[]> => {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("start_here", true)
+    .is("archived_at", null)
+    .order("sort_order");
+  if (error) {
+    throw new Error("Could not load the courses", { cause: error.code });
+  }
+  const ids = data.map((row) => row.id);
+  const learner = await getLearnerCourses(ids);
+  const progress = await getCourseProgressById(userId, ids, learner);
+  return ids.flatMap((id) => {
+    const course = learner.get(id);
+    if (!course) {
+      return [];
+    }
+    const courseProgress = progress.get(id);
+    return [
+      {
+        id,
+        title: course.title,
+        href: openHref(course, courseProgress),
+        state: courseProgress?.state ?? "not_started",
+        estimatedMinutes: course.estimatedMinutes,
+      },
+    ];
+  });
+});
