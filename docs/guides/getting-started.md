@@ -6,6 +6,7 @@ The Academy is where the production team at Immanuel Fellowship Church learns, g
 
 - **If you're on a production team in Planning Center,** choose the Planning Center button. You don't need a separate password.
 - **If you're not,** choose **Not on a production team? Use an email link instead**, type your email, and open the link we send you. It works once. There's no password to remember.
+- **If you'd like to join the team,** choose **Join the production team** on the sign-in page and fill in the form. You don't need an account for it.
 
 ## Finding your way around
 
