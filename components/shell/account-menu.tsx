@@ -208,7 +208,8 @@ export function AccountMenu({
               </Link>
             </li>
             {/* The sidebar has its own workspace switcher. */}
-            {showAdmin && !inSidebar ? (
+            {/* Admin's own sidebar has the way back, so only there does the menu leave it out. */}
+            {showAdmin && !(inSidebar && inAdmin) ? (
               <li>
                 <Link href={inAdmin ? "/home" : "/admin"} className={item}>
                   <ShieldIcon className="size-[18px] shrink-0" />

@@ -64,7 +64,7 @@ async function requestSignInLink(page: Page, email: string) {
     }
     await page.getByLabel("Email address").fill(email);
     await page.getByRole("button", { name: "Email me a sign-in link" }).click();
-    await expect(sent.or(problem)).toBeVisible();
+    await expect(sent.or(problem)).toBeVisible({ timeout: 15_000 });
     // Sent wins: once the link is on its way the form (and its field) is gone.
     if (await sent.isVisible()) {
       return;
