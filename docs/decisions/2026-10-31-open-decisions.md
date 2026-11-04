@@ -188,7 +188,9 @@ Academy's reminders are the only ones volunteers get.
 
 - **Layout:** landscape, sized for US Letter and A4, with a light background so it prints well.
   The IFC mark sits at the top, then "Production Academy". A thin band in the department's colour
-  runs along one edge. The level badge sits beside the date.
+  runs along one edge. The level badge sits beside the date. **Changed 2026-11-04 (G):** the band
+  runs across the top, and department, level, date, and check details sit together in one ruled
+  band under the course, so no empty space collects. Everything below still applies.
 - **Wording:** "This certifies that **{name}** has completed **{course}**, {department}, Level {n}"
   appears above the issue date (Winnipeg time) and a signature line reading "Production Director,
   Immanuel Fellowship Church".
