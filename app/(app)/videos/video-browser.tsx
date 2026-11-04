@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { compactFieldClasses } from "@/components/ui/action-form";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ChevronDownIcon } from "@/components/ui/icons";
+import { TopicFilter } from "@/components/topic-filter";
 import { VideoCard } from "@/components/video-card";
 import { filterVideos, videoCountLabel, type LibraryVideo } from "@/lib/domain/videos";
 
@@ -31,7 +31,6 @@ export function VideoBrowser({
   const [categoryId, setCategoryId] = useState("");
   const [level, setLevel] = useState("");
   const [topicIds, setTopicIds] = useState(initialTopicIds);
-  const [panelOpen, setPanelOpen] = useState(false);
   const shown = useMemo(
     () => filterVideos(videos, { search, categoryId, level, topicIds }),
     [videos, search, categoryId, level, topicIds],
@@ -84,20 +83,7 @@ export function VideoBrowser({
           <optgroup label="General">{options("topic")}</optgroup>
           <optgroup label="Departments">{options("team")}</optgroup>
         </select>
-        {topics.length > 0 ? (
-          <button
-            type="button"
-            aria-expanded={panelOpen}
-            aria-controls="topic-filter"
-            onClick={() => setPanelOpen(!panelOpen)}
-            className={buttonClasses("secondary", "gap-1.5", "sm")}
-          >
-            Topic{topicIds.length > 0 ? ` (${topicIds.length})` : ""}
-            <ChevronDownIcon
-              className={`size-4 transition-surface ${panelOpen ? "rotate-180" : ""}`}
-            />
-          </button>
-        ) : null}
+        <TopicFilter topics={topics} selected={topicIds} onChange={setTopicIds} />
         {filtered ? (
           <button
             type="button"
@@ -107,39 +93,12 @@ export function VideoBrowser({
               setLevel("");
               setTopicIds([]);
             }}
-            className={buttonClasses("tertiary", "", "sm")}
+            className={`${buttonClasses("tertiary", "", "sm")} order-2`}
           >
             Clear filters
           </button>
         ) : null}
       </div>
-      {panelOpen ? (
-        <fieldset
-          id="topic-filter"
-          className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-x-4 gap-y-1 rounded-card border border-border bg-surface px-4 py-3"
-        >
-          <legend className="px-1 text-small text-text-muted">Choose any topics</legend>
-          {topics.map((topic) => (
-            <label
-              key={topic.id}
-              className="flex min-h-touch items-center gap-2 pointer-fine:min-h-8"
-            >
-              <input
-                type="checkbox"
-                checked={topicIds.includes(topic.id)}
-                onChange={(event) =>
-                  setTopicIds(
-                    event.target.checked
-                      ? [...topicIds, topic.id]
-                      : topicIds.filter((id) => id !== topic.id),
-                  )
-                }
-              />
-              {topic.name}
-            </label>
-          ))}
-        </fieldset>
-      ) : null}
       {filtered ? (
         <p role="status" className="text-small text-text-muted">
           {videoCountLabel(shown.length)}
