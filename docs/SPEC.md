@@ -254,10 +254,11 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ID | Addition | Level |
 | --- | --- | --- |
 | ADD-NOTIF-01 | Gentle reminder after 14 days of inactivity (configurable) | S |
+| ADD-NOTIF-02 | Until launch, notifications show in the app but aren't emailed or sent to devices, except to named testers, and what's held is never sent later. One switch turns them on (decision 2026-11-04) | M |
 | ADD-SCHED-01 | Quick reference: a service-day view with the SOPs for the volunteer's assigned role two taps from Home | S |
 | ADD-REPORT-01 | Readiness matrix for the Production Director: approved volunteers per role per department | S |
 | ADD-REPORT-02 | Volunteers see their own quiz results on Profile: quizzes passed, lessons complete, and each quiz's best score and tries. Leaders see Course progress in Reports: who has finished, is in progress, or hasn't started, with each person's lessons, best quiz score, and practical. There is no overall score or ranking, and neither view affects who serves (G, 2026-11-04) | S |
-| ADD-REPORT-03 | A leader can assign a course to someone from Course progress, and remove it. It shows on that person's Training page until they finish. It's a request only: it never blocks anything, adds them to a team, or counts towards Approved to Serve. Audited, with notices off until launch | S |
+| ADD-REPORT-03 | A leader can assign a course to someone from Course progress, and remove it. It shows on that person's Training page until they finish. It's a request only: it never blocks anything, adds them to a team, or counts towards Approved to Serve. Audited, with a notification in the app and email from launch (ADD-NOTIF-02) | S |
 | ADD-HELP-01 | Help and guides: a guide for every part of the app, readable by anyone at `/help`, with search, and opening from the account menu on the guide for the current page. Tests fail if a screen has no guide | S |
 | ADD-DASH-01 | Service Dashboard: one read-only screen showing the whole service while it runs ([decision](decisions/2026-11-02-service-dashboard.md)) | S |
 | ADD-DASH-02 | Computers and the wall TV only: not on phones or in the installed app. Access follows Planning Center teams, never training | S |
