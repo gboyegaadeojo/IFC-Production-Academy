@@ -60,6 +60,39 @@ test("signing out ends the session", async ({ page }, testInfo) => {
   await expect(page).toHaveURL(/\/sign-in/);
 });
 
+test("after signing out, Back does not show a signed-in page", async ({ page }, testInfo) => {
+  const email = `e2e-signout-back-${testInfo.project.name}-${Date.now()}@example.com`;
+  await signInByEmail(page, email);
+  await page.goto("/sops");
+  await expect(page.getByRole("heading", { level: 1, name: "SOPs" })).toBeVisible();
+
+  await openAccountMenu(page);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(//sign-in/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(//sign-in/);
+  await expect(page.getByRole("heading", { name: /Built to serve/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /account menu$/ })).toHaveCount(0);
+});
+
+test("signing out from Admin ends the session too", async ({ page }) => {
+  test.setTimeout(60_000);
+  await signInByEmail(page, "emery.director@example.com");
+  await page.goto("/admin");
+  await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
+  const narrow = (page.viewportSize()?.width ?? 1280) < 1024;
+  if (narrow) {
+    await page.getByRole("button", { name: /menu/i }).first().click();
+  }
+  await page.getByRole("button", { name: /account menu$/ }).last().click();
+  await page.getByRole("button", { name: "Sign out" }).last().click();
+  await expect(page).toHaveURL(//sign-in/);
+
+  await page.goto("/admin");
+  await expect(page).toHaveURL(//sign-in/);
+});
+
 test("a sign-in link works only once", async ({ page, context }, testInfo) => {
   const email = `e2e-once-${testInfo.project.name}-${Date.now()}@example.com`;
   await page.goto("/sign-in");
