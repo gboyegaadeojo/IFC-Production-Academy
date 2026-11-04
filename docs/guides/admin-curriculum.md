@@ -11,6 +11,12 @@ The row of buttons at the top starts with the **topics**, then a divider, then t
 
 Production Directors build and publish topics. You add a topic under [Departments](admin-people.md#departments).
 
+## Formatting text
+
+The course summary, lesson summary, and lesson text work like a word processor. Use the buttons above the text for **Bold**, **Italic**, **Underline**, **Heading**, **Subheading**, lists, and **Link**. Links need to start with `https://`.
+
+If you paste text that has `#` or `**` markers, they turn into real formatting. Volunteers see the same formatting on the course and lesson pages. Summaries can be up to 5,000 characters and lesson text up to 20,000, and the count under each box shows how much you've used.
+
 ## The key idea: drafts and versions
 
 Changes stay in a draft until you publish, and volunteers keep seeing the live version until then. Each publish is kept as a version you can go back to. People's progress stays linked to the version they earned it on, so publishing never rewrites anyone's history.

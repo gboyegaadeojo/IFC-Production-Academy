@@ -1,12 +1,14 @@
 /**
- * Just enough Markdown for the guides (ADD-HELP-01): headings, paragraphs, lists, tables, code, and
- * inline bold, code, and links. It makes plain data for React to draw, so nothing in a guide can
+ * Just enough Markdown for the guides and course text (ADD-HELP-01, SRS-CUR-016): headings,
+ * paragraphs, lists, tables, code, and inline bold, italic, underline (__like this__), code, and links. It makes plain data for React to draw, so nothing in a guide can
  * ever run as HTML.
  */
 
 export type Inline =
   | { kind: "text"; text: string }
   | { kind: "strong"; children: Inline[] }
+  | { kind: "em"; children: Inline[] }
+  | { kind: "underline"; children: Inline[] }
   | { kind: "code"; text: string }
   | { kind: "link"; href: string; children: Inline[] };
 
@@ -29,7 +31,8 @@ export function headingId(text: string): string {
     .replace(/\s+/g, "-");
 }
 
-const INLINE = /(\*\*(.+?)\*\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)\s]+)\))/;
+const INLINE =
+  /(\*\*(.+?)\*\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)\s]+)\))|(__(.+?)__)|(\*([^*\s](?:[^*]*[^*\s])?)\*)/;
 
 export function parseInline(text: string): Inline[] {
   const out: Inline[] = [];
@@ -47,6 +50,10 @@ export function parseInline(text: string): Inline[] {
       out.push({ kind: "strong", children: parseInline(match[2]) });
     } else if (match[4] !== undefined) {
       out.push({ kind: "code", text: match[4] });
+    } else if (match[9] !== undefined) {
+      out.push({ kind: "underline", children: parseInline(match[9]) });
+    } else if (match[11] !== undefined) {
+      out.push({ kind: "em", children: parseInline(match[11]) });
     } else {
       out.push({
         kind: "link",

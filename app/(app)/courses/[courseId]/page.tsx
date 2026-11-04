@@ -26,6 +26,7 @@ import {
 import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
 import { issueCertificateAction } from "./actions";
 import { CourseOutline } from "./course-outline";
+import { RichText } from "@/components/ui/rich-text";
 
 export const metadata: Metadata = { title: "Course" };
 
@@ -129,7 +130,10 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           </p>
           <h1 className="text-title font-semibold text-balance">{course.title}</h1>
           {course.summary ? (
-            <p className="max-w-[40rem] text-lead text-text-secondary">{course.summary}</p>
+            <RichText
+              source={course.summary}
+              className="max-w-[40rem] text-lead text-text-secondary"
+            />
           ) : null}
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-text-muted">
             {facts.map((fact) => (

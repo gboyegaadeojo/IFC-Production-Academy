@@ -31,6 +31,9 @@ import {
 } from "../actions";
 import { addPracticalAction } from "../practical-actions";
 import { addQuizAction } from "../quiz-actions";
+import { RichText } from "@/components/ui/rich-text";
+import { RichTextField } from "@/components/ui/rich-text-field";
+import { COURSE_SUMMARY_MAX } from "@/lib/domain/rich-text";
 
 export const metadata: Metadata = { title: "Course" };
 
@@ -350,16 +353,15 @@ function DraftEditor({
             <Field
               id="course-summary"
               label="Summary"
-              hint="One or two sentences volunteers see first."
+              hint="What volunteers read first when they open the course."
             >
-              <textarea
+              <RichTextField
                 id="course-summary"
                 name="summary"
-                rows={3}
-                maxLength={1000}
+                label="Summary"
                 defaultValue={draft.summary}
-                aria-describedby="course-summary-hint"
-                className={`${fieldClasses} py-3`}
+                maxLength={COURSE_SUMMARY_MAX}
+                describedBy="course-summary-hint"
               />
             </Field>
             <Field
@@ -608,7 +610,9 @@ function ReadOnlyOutline({ courseId, version }: { courseId: string; version: Ver
       <h2 id="outline-heading" className="text-heading font-semibold">
         Live content
       </h2>
-      {version.summary ? <p className="max-w-2xl text-text-secondary">{version.summary}</p> : null}
+      {version.summary ? (
+        <RichText source={version.summary} className="max-w-2xl text-text-secondary" />
+      ) : null}
       {version.modules.map((courseModule) => (
         <div
           key={courseModule.id}

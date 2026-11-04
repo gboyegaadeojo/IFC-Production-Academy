@@ -185,7 +185,19 @@ test("a leader builds, publishes, and revises a course", async ({ page }) => {
   await page.getByLabel("New lesson title").fill("Rule of thirds");
   await page.getByRole("button", { name: /^Add lesson/ }).click();
   await page.getByRole("link", { name: "Rule of thirds" }).click();
-  await page.getByLabel("Lesson text").fill("Place the speaker's eyes on the top third line.");
+  const lessonText = page.getByLabel("Lesson text");
+  await lessonText.fill("Place the speaker's eyes on the top third line.");
+  await lessonText.press("ControlOrMeta+a");
+  await page
+    .locator("form")
+    .filter({ has: lessonText })
+    .getByRole("toolbar", { name: "Text formatting" })
+    .last()
+    .getByRole("button", { name: "Bold" })
+    .click();
+  await expect(lessonText.locator("strong")).toHaveText(
+    "Place the speaker's eyes on the top third line.",
+  );
   // A link that isn't a YouTube video is explained, not saved (SRS-LESSON-003).
   await page.getByLabel("Video link or file").fill("https://example.com/not-a-video");
   await page.getByRole("button", { name: "Save lesson" }).click();

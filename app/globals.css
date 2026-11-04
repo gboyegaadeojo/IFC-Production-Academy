@@ -197,6 +197,45 @@
   }
 }
 
+/* The rich text editor's content (SRS-CUR-016). Matches how the text reads on the learner pages. */
+.rich-text-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.rich-text-editor h1,
+.rich-text-editor h2 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.rich-text-editor h3 {
+  font-weight: 600;
+}
+.rich-text-editor strong {
+  font-weight: 600;
+}
+.rich-text-editor ul,
+.rich-text-editor ol {
+  padding-left: 1.25rem;
+}
+.rich-text-editor ul {
+  list-style: disc;
+}
+.rich-text-editor ol {
+  list-style: decimal;
+}
+.rich-text-editor a {
+  color: var(--accent-light);
+  text-decoration: underline;
+}
+.rich-text-editor pre {
+  overflow-x: auto;
+  border-radius: 0.5rem;
+  background: var(--hover);
+  padding: 0.5rem 0.75rem;
+}
+
 @theme inline {
   /* Only token colours exist, so a stray palette class fails to style instead of drifting. */
   --color-*: initial;

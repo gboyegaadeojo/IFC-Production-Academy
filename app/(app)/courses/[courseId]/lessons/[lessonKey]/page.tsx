@@ -20,18 +20,13 @@ import { getPassedQuizKeys } from "@/lib/data/quizzes";
 import { getLessonResources } from "@/lib/data/sops";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
-import {
-  courseSteps,
-  formatMinutes,
-  lessonPosition,
-  paragraphs,
-  stepHref,
-} from "@/lib/domain/learning";
+import { courseSteps, formatMinutes, lessonPosition, stepHref } from "@/lib/domain/learning";
 import { progressFor } from "@/lib/domain/progress";
 import { SOP_STATE_LABELS } from "@/lib/domain/sops";
 import { CourseOutline } from "../../course-outline";
 import { recordLessonViewAction } from "./actions";
 import { CompleteToggle } from "./complete-toggle";
+import { RichText } from "@/components/ui/rich-text";
 
 export const metadata: Metadata = { title: "Lesson" };
 
@@ -93,7 +88,6 @@ async function LessonContent({ params }: Pick<Props, "params">) {
   const record = member ? recordLessonViewAction.bind(null, course.id, lessonKey) : null;
   const moduleTitle = course.modules.find((m) => m.lessons.some((l) => l.key === lessonKey))?.title;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
-  const body = paragraphs(lesson.body);
 
   const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
   const doneCount = course.modules
@@ -225,7 +219,10 @@ async function LessonContent({ params }: Pick<Props, "params">) {
             </div>
 
             {lesson.summary ? (
-              <p className="reading-width text-lead text-text-secondary">{lesson.summary}</p>
+              <RichText
+                source={lesson.summary}
+                className="reading-width text-lead text-text-secondary"
+              />
             ) : null}
 
             {lesson.objectives.length > 0 ? (
@@ -250,14 +247,8 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               </section>
             ) : null}
 
-            {body.length > 0 ? (
-              <div className="flex reading-width flex-col gap-4 text-lead text-text">
-                {body.map((paragraph, index) => (
-                  <p key={index} className="whitespace-pre-line">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
+            {lesson.body.trim() ? (
+              <RichText source={lesson.body} className="reading-width text-lead text-text" />
             ) : null}
 
             {resources.length > 0 ? (

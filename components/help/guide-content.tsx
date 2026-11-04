@@ -15,6 +15,18 @@ function InlineParts({ parts, source }: { parts: Inline[]; source: string }) {
                 <InlineParts parts={part.children} source={source} />
               </strong>
             );
+          case "em":
+            return (
+              <em key={index}>
+                <InlineParts parts={part.children} source={source} />
+              </em>
+            );
+          case "underline":
+            return (
+              <u key={index}>
+                <InlineParts parts={part.children} source={source} />
+              </u>
+            );
           case "code":
             return (
               <code key={index} className="rounded-sm bg-hover px-1 font-mono text-[0.92em]">
@@ -71,7 +83,7 @@ function ListBlock({
   );
 }
 
-function GuideBlock({ block, source }: { block: Block; source: string }) {
+export function GuideBlock({ block, source }: { block: Block; source: string }) {
   switch (block.kind) {
     case "heading":
       if (block.level === 1) {
