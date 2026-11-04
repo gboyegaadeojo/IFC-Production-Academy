@@ -48,6 +48,16 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
               <SignInContent searchParams={searchParams} planningCenter={planningCenter} />
             </Suspense>
           </div>
+          {/* For people who aren't on the team yet. The form needs no account. */}
+          <p className="auth-rise text-small text-text-secondary [animation-delay:260ms]">
+            Want to serve with us?{" "}
+            <Link
+              href="/serve-with-us"
+              className="font-medium text-accent-light underline underline-offset-4"
+            >
+              Join the production team
+            </Link>
+          </p>
         </div>
 
         <div className="auth-rise flex flex-wrap items-end justify-between gap-4 [animation-delay:300ms]">
