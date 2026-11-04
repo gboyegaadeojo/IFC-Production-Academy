@@ -7,7 +7,6 @@ import {
   lessonCountLabel,
   lessonPosition,
   orderedOutline,
-  paragraphs,
   stepHref,
   type OutlineModule,
 } from "./learning";
@@ -97,10 +96,6 @@ describe("formatting", () => {
     expect(formatMinutes(45)).toBe("45 min");
     expect(formatMinutes(60)).toBe("1 h");
     expect(formatMinutes(90)).toBe("1 h 30 min");
-  });
-
-  it("splits lesson text into paragraphs on blank lines", () => {
-    expect(paragraphs("One\nstill one\n\n  Two  \n\n\n")).toEqual(["One\nstill one", "Two"]);
   });
 
   it("labels lesson counts", () => {

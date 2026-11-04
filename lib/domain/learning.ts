@@ -100,14 +100,6 @@ export function formatMinutes(minutes: number): string {
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
 }
 
-/** Lesson text is plain text; blank lines separate paragraphs. */
-export function paragraphs(body: string): string[] {
-  return body
-    .split(/\r?\n\s*\r?\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter((paragraph) => paragraph.length > 0);
-}
-
 export function lessonCountLabel(count: number): string {
   return count === 1 ? "1 lesson" : `${count} lessons`;
 }

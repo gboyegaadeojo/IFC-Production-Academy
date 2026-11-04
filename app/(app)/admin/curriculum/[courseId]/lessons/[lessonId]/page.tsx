@@ -13,6 +13,9 @@ import { AccessDenied } from "../../../../access-denied";
 import { PageSkeleton } from "../../../../page-skeleton";
 import { deleteLessonAction, updateLessonAction } from "../../../actions";
 import { addLessonResourceAction, removeLessonResourceAction } from "../../../../sops/actions";
+import { RichText } from "@/components/ui/rich-text";
+import { RichTextField } from "@/components/ui/rich-text-field";
+import { LESSON_BODY_MAX, LESSON_SUMMARY_MAX } from "@/lib/domain/rich-text";
 
 export const metadata: Metadata = { title: "Lesson" };
 
@@ -104,14 +107,13 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               label="Summary"
               hint="What this lesson covers, in a sentence or two."
             >
-              <textarea
+              <RichTextField
                 id="lesson-summary"
                 name="summary"
-                rows={2}
-                maxLength={1000}
+                label="Summary"
                 defaultValue={lesson.summary}
-                aria-describedby="lesson-summary-hint"
-                className={`${fieldClasses} py-3`}
+                maxLength={LESSON_SUMMARY_MAX}
+                describedBy="lesson-summary-hint"
               />
             </Field>
             <Field id="lesson-objectives" label="Objectives" hint="One per line.">
@@ -190,14 +192,14 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               label="Lesson text"
               hint="Steps, tips, and notes. Attach SOPs under Resources below."
             >
-              <textarea
+              <RichTextField
                 id="lesson-body"
                 name="body"
-                rows={12}
-                maxLength={20000}
+                label="Lesson text"
                 defaultValue={lesson.body}
-                aria-describedby="lesson-body-hint"
-                className={`${fieldClasses} py-3`}
+                maxLength={LESSON_BODY_MAX}
+                describedBy="lesson-body-hint"
+                minHeight="min-h-72"
               />
             </Field>
           </ActionForm>
@@ -308,7 +310,9 @@ async function LessonContent({ params }: Pick<Props, "params">) {
         </>
       ) : (
         <article className="flex flex-col gap-4 rounded-card border border-border bg-card p-5">
-          {lesson.summary ? <p className="text-text-secondary">{lesson.summary}</p> : null}
+          {lesson.summary ? (
+            <RichText source={lesson.summary} className="text-text-secondary" />
+          ) : null}
           {lesson.video ? (
             <p className="text-small text-text-muted">
               Has a {videoSource(lesson.video.provider).label} video.
@@ -321,7 +325,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
               ))}
             </ul>
           ) : null}
-          <p className="whitespace-pre-line">{lesson.body}</p>
+          <RichText source={lesson.body} />
         </article>
       )}
     </div>

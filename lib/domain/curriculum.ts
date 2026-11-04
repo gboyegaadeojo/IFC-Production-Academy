@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { parseVideo, type VideoRef } from "@/lib/domain/video";
+import { COURSE_SUMMARY_MAX, LESSON_SUMMARY_MAX } from "./rich-text";
 
 export type CourseVersionStatus =
   "draft" | "pending_review" | "published" | "superseded" | "archived";
@@ -121,7 +122,7 @@ export const courseTitleSchema = titleField;
 
 export const courseDetailsSchema = z.object({
   title: titleField,
-  summary: z.string().trim().max(1000, "Keep the summary under 1,000 characters."),
+  summary: z.string().trim().max(COURSE_SUMMARY_MAX, "Keep the summary under 5,000 characters."),
   objectives: objectivesField,
   estimatedMinutes: minutesField(6000),
 });
@@ -161,7 +162,7 @@ export const videoField = z
 export const lessonSchema = z.object({
   moduleId: z.uuid(),
   title: titleField,
-  summary: z.string().trim().max(1000, "Keep the summary under 1,000 characters."),
+  summary: z.string().trim().max(LESSON_SUMMARY_MAX, "Keep the summary under 5,000 characters."),
   objectives: objectivesField,
   estimatedMinutes: minutesField(600),
   isRequired: z.boolean(),
