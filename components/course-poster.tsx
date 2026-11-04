@@ -20,7 +20,12 @@ export function CoursePoster({
   const style = { "--dept": departmentHueVar(course.category.hue) } as CSSProperties;
   const facts = courseFacts(course);
   return (
-    <Link href={course.href} style={style} className="group flex flex-col gap-2 rounded-card">
+    <Link
+      href={course.href}
+      prefetch={false}
+      style={style}
+      className="group flex flex-col gap-2 rounded-card"
+    >
       <span className="relative block aspect-[3/4] overflow-hidden rounded-card border border-[color-mix(in_srgb,var(--dept)_35%,var(--border))] transition-surface group-hover:shadow-[var(--shadow-lift)]">
         {course.coverUrl ? (
           // Covers are public files with no image service on this plan, so a plain image is right.
