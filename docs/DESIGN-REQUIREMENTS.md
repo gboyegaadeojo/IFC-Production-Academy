@@ -75,7 +75,7 @@ You are the principal product designer, senior frontend engineer, and accessibil
 ### 3.1 Learner navigation
 Primary: **Home**, **Explore**, **My Learning**, **Resources** (only when implemented/available). Secondary: notifications, profile, account, and admin workspace (permission-gated). Do not expose dead destinations. For the initial product, hide or disable future navigation until real routes and content exist.
 
-**Desktop:** compact top bar with IFC Academy wordmark; persistent or collapsible learner sidebar only if navigation complexity justifies it. Keep main content generous, not confined to the existing `max-w-6xl` for all screens. Search appears only when functional.
+**Desktop:** a persistent learner side bar from 768px, with the wordmark, the links, and the account (G, 2026-11-04, replacing the top bar). Keep main content generous, not confined to the existing `max-w-6xl` for all screens. Search appears only when functional.
 
 **Mobile:** 44px minimum interactive targets; compact top header, accessible menu/drawer; optionally bottom navigation for 3–4 high-frequency learner destinations if implemented. Never use a desktop sidebar squeezed into a mobile viewport.
 
@@ -101,7 +101,7 @@ On deep screens use compact breadcrumbs, department context, and a single clear 
 
 ## 4. Visual design system
 
-> **Updated 2026-11-01 (new look, approved by G in the "Academy New Look Mock").** Light is now the default theme: a lavender-white canvas, white cards, one purple action colour, soft amber and green status pills, and pastel icon tiles in the admin sidebar, inspired by IFC's Church Budget app. Dark stays available with the same accents. Type is **Inter** (Geist Mono for small labels), two steps smaller: body 14px, small 12px, display 26–32px. Learner pages keep the top bar; only Admin uses the sidebar. The exact values and their contrast checks live in `app/globals.css`; where this section's tables differ, `globals.css` wins.
+> **Updated 2026-11-01 (new look, approved by G in the "Academy New Look Mock").** Light is now the default theme: a lavender-white canvas, white cards, one purple action colour, soft amber and green status pills, and pastel icon tiles in the admin sidebar, inspired by IFC's Church Budget app. Dark stays available with the same accents. Type is **Inter** (Geist Mono for small labels), two steps smaller: body 14px, small 12px, display 26–32px. Learner pages move to a side bar on 2026-11-04 (decision 2026-11-04-course-categories); phones keep the slim bar and bottom tabs. The exact values and their contrast checks live in `app/globals.css`; where this section's tables differ, `globals.css` wins.
 
 ### 4.1 Colour tokens
 Dark is the signature theme; design an equally intentional light theme and respect system preference if theme switching is supported.

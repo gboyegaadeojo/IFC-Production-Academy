@@ -306,15 +306,15 @@ test("App name and logo, for design review", async ({ page }) => {
   await capture(page, "branding-1440");
 });
 
-test("the top bar's parts never overlap, at any width", async ({ page }) => {
+test("the side bar's links and account never overlap, at any width", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   const nav = page.getByRole("navigation", { name: "Academy" }).first();
-  const toggle = page.getByRole("switch", { name: "Dark mode" }).first();
+  const toggle = page.locator("aside").getByRole("switch", { name: "Dark mode" });
   for (const width of [768, 834, 1024, 1280]) {
     await page.setViewportSize({ width, height: 800 });
     const links = await nav.boundingBox();
     const box = await toggle.boundingBox();
-    expect(links && box && links.x + links.width <= box.x, `at ${width}px`).toBe(true);
+    expect(links && box && links.y + links.height <= box.y, `at ${width}px`).toBe(true);
   }
 });
 

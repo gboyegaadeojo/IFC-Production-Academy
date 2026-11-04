@@ -323,7 +323,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
           </article>
 
           <aside aria-label="Course outline" className="hidden lg:block">
-            <div className="sticky top-24 flex max-h-[calc(100dvh-7rem)] flex-col gap-3 overflow-y-auto rounded-card border border-border bg-card p-3">
+            <div className="sticky top-6 flex max-h-[calc(100dvh-3rem)] flex-col gap-3 overflow-y-auto rounded-card border border-border bg-card p-3">
               <div className="flex flex-col gap-2 px-3 pt-1">
                 <Link
                   href={`/courses/${course.id}`}
