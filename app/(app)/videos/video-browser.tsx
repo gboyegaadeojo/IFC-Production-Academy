@@ -11,7 +11,11 @@ import { filterVideos, videoCountLabel, type LibraryVideo } from "@/lib/domain/v
 type Category = { id: string; name: string; kind: string };
 type Topic = { id: string; name: string };
 
-/** Filters run in the browser, since every video the person can see is already here. */
+/**
+ * Topic is an extra filter (G, 2026-11-04): the page opens on its filters, and lessons only show once
+ * someone searches or chooses one, so it never reads as every course laid out lesson by lesson.
+ * Filters run in the browser, since every video the person can see is already here.
+ */
 export function VideoBrowser({
   videos,
   topics,
@@ -48,20 +52,20 @@ export function VideoBrowser({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search videos"
           aria-label="Search videos"
-          className={`${fieldClasses} max-w-xl min-w-52 flex-1`}
+          className={`${fieldClasses} min-h-8 max-w-md min-w-44 flex-1 px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
         />
         <select
           aria-label="Level"
           value={level}
           onChange={(event) => setLevel(event.target.value)}
-          className={`${fieldClasses} w-auto`}
+          className={`${fieldClasses} min-h-8 w-auto px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
         >
           <option value="">All levels</option>
           {levels.map((number) => (
@@ -74,7 +78,7 @@ export function VideoBrowser({
           aria-label="Category"
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
-          className={`${fieldClasses} w-auto`}
+          className={`${fieldClasses} min-h-8 w-auto px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
         >
           <option value="">All categories</option>
           <optgroup label="General">{options("topic")}</optgroup>
@@ -86,7 +90,7 @@ export function VideoBrowser({
             aria-expanded={panelOpen}
             aria-controls="topic-filter"
             onClick={() => setPanelOpen(!panelOpen)}
-            className={buttonClasses("secondary", "gap-1.5")}
+            className={buttonClasses("secondary", "gap-1.5", "sm")}
           >
             Topic{topicIds.length > 0 ? ` (${topicIds.length})` : ""}
             <ChevronDownIcon
@@ -103,7 +107,7 @@ export function VideoBrowser({
               setLevel("");
               setTopicIds([]);
             }}
-            className={buttonClasses("tertiary")}
+            className={buttonClasses("tertiary", "", "sm")}
           >
             Clear filters
           </button>
@@ -136,15 +140,43 @@ export function VideoBrowser({
           ))}
         </fieldset>
       ) : null}
-      <p role="status" className="text-small text-text-muted">
-        {videoCountLabel(shown.length)}
-      </p>
-      {shown.length === 0 ? (
-        <EmptyState title={filtered ? "No videos match" : "No videos yet"}>
-          {filtered
-            ? "Try a different word, or clear the filters."
-            : "Videos appear here when a course with videos is published."}
-        </EmptyState>
+      {filtered ? (
+        <p role="status" className="text-small text-text-muted">
+          {videoCountLabel(shown.length)}
+        </p>
+      ) : null}
+      {!filtered ? (
+        videos.length === 0 ? (
+          <EmptyState title="No videos yet">
+            Videos appear here when a course with videos is published.
+          </EmptyState>
+        ) : (
+          <section
+            aria-labelledby="choose-heading"
+            className="flex max-w-[40rem] flex-col gap-3 rounded-card border border-border bg-surface p-4"
+          >
+            <h2 id="choose-heading" className="font-semibold">
+              Search, or choose a filter to find videos
+            </h2>
+            {topics.length > 0 ? (
+              <ul className="flex flex-wrap gap-1.5">
+                {topics.map((topic) => (
+                  <li key={topic.id}>
+                    <button
+                      type="button"
+                      onClick={() => setTopicIds([topic.id])}
+                      className="min-h-control rounded-pill border border-border-strong bg-surface px-3 text-small font-medium text-text-secondary transition-surface hover:bg-hover"
+                    >
+                      {topic.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </section>
+        )
+      ) : shown.length === 0 ? (
+        <EmptyState title="No videos match">Try a different word, or clear the filters.</EmptyState>
       ) : (
         <ul className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {shown.map((video) => (

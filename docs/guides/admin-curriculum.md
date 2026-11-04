@@ -13,7 +13,7 @@ Production Directors build and publish these. You add one under [Departments](ad
 
 ## Topics on lessons
 
-**Topics** are tags, such as Mixing or Directing, that help people find videos under **Videos** and **Topics**. Open a lesson and choose its topics near the top. They save straight away with no draft, because they aren't part of a version, and they stay with the lesson when you publish a new one.
+**Topics** are tags, such as Mixing or Directing, that help people find videos: **Topic** is a filter on the **Videos** page. Open a lesson and choose its topics near the top. They save straight away with no draft, because they aren't part of a version, and they stay with the lesson when you publish a new one.
 
 Department Leaders, Production Directors, and Platform Administrators can add topics, there or under **Lesson topics**. Production Directors and Platform Administrators can also rename and remove them. Removing a topic takes it off every lesson.
 

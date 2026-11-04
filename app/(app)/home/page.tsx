@@ -226,7 +226,6 @@ async function CourseRows({ userId, categories }: { userId: string; categories: 
           {[
             { href: "/courses", label: "All courses" },
             { href: "/videos", label: "Videos" },
-            { href: "/topics", label: "Topics" },
           ].map((link) => (
             <Link
               key={link.href}

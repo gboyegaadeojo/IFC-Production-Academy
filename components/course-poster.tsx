@@ -26,7 +26,7 @@ export function CoursePoster({
       style={style}
       className="group flex flex-col gap-2 rounded-card"
     >
-      <span className="relative block aspect-[3/4] overflow-hidden rounded-card border border-[color-mix(in_srgb,var(--dept)_35%,var(--border))] transition-surface group-hover:shadow-[var(--shadow-lift)]">
+      <span className="relative block aspect-[3/4] overflow-hidden rounded-card border border-[color-mix(in_srgb,var(--dept)_35%,var(--border))] transition-[translate,box-shadow] duration-[var(--duration-base)] ease-standard group-hover:-translate-y-1 group-hover:shadow-[var(--shadow-lift)] group-focus-visible:-translate-y-1 motion-reduce:translate-y-0!">
         {course.coverUrl ? (
           // Covers are public files with no image service on this plan, so a plain image is right.
           // eslint-disable-next-line @next/next/no-img-element

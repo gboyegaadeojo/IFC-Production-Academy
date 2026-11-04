@@ -18,7 +18,7 @@ Departments build proficiency in a craft, but some courses belong to the whole t
 
 ## Videos and Topics (G, 2026-11-04)
 
-The Library in the side bar has Courses, Videos, and Topics, as in MxU. A video is a lesson in its course, not a second copy. Course posters are upright and video thumbnails are wide, also as in MxU, because a video's still image is wide. Department Leaders and Production Directors add topics. Platform Administrators can too, since they build training. Only Production Directors and Platform Administrators rename and remove them.
+The Library in the side bar has Courses and Videos. Topic is an extra filter on Videos, so there's no separate Topics page, and Videos opens on its filters instead of listing every lesson, because a full list read as every course laid out lesson by lesson (G, 2026-11-04). A video is a lesson in its course, not a second copy. Course posters are upright and video thumbnails are wide, also as in MxU, because a video's still image is wide. Department Leaders and Production Directors add topics. Platform Administrators can too, since they build training. Only Production Directors and Platform Administrators rename and remove them.
 
 ## Wording (G, 2026-11-04)
 

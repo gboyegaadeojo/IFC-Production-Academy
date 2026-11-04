@@ -33,10 +33,10 @@ export const HELP_PAGES: readonly HelpPage[] = [
   {
     slug: "training",
     title: "Training",
-    summary: "Departments, courses, videos, topics, quizzes, practicals, and certificates.",
+    summary: "Departments, courses, videos, quizzes, practicals, and certificates.",
     section: "Using the app",
     source: "docs/guides/training.md",
-    paths: ["/home", "/departments", "/courses", "/videos", "/topics", "/certificates"],
+    paths: ["/home", "/departments", "/courses", "/videos", "/certificates"],
   },
   {
     slug: "schedule",

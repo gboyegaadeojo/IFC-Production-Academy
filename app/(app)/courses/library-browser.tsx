@@ -40,20 +40,20 @@ export function LibraryBrowser({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search courses"
           aria-label="Search courses"
-          className={`${fieldClasses} max-w-xl min-w-52 flex-1`}
+          className={`${fieldClasses} min-h-8 max-w-md min-w-44 flex-1 px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
         />
         <select
           aria-label="Category"
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
-          className={`${fieldClasses} w-auto`}
+          className={`${fieldClasses} min-h-8 w-auto px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
         >
           <option value="">All categories</option>
           <optgroup label="General">{options("topic")}</optgroup>
@@ -63,7 +63,7 @@ export function LibraryBrowser({
           aria-label="Level"
           value={level}
           onChange={(event) => setLevel(event.target.value)}
-          className={`${fieldClasses} w-auto`}
+          className={`${fieldClasses} min-h-8 w-auto px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
         >
           <option value="">All levels</option>
           {levels.map((number) => (
@@ -80,7 +80,7 @@ export function LibraryBrowser({
               setCategoryId("");
               setLevel("");
             }}
-            className={buttonClasses("tertiary")}
+            className={buttonClasses("tertiary", "", "sm")}
           >
             Clear filters
           </button>

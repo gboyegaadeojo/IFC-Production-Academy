@@ -5,14 +5,13 @@ test.beforeEach(async () => {
   test.skip(!(await mailpitAvailable()), "Local Supabase is not running");
 });
 
-test("a volunteer can open Videos and Topics", async ({ page }) => {
+test("Videos opens on its filters, and lists videos only after a search", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   await page.goto("/videos");
   await expect(page.getByRole("heading", { level: 1, name: "Videos" })).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: /\d+ videos?/ })).toHaveCount(0);
   await page.getByLabel("Search videos").fill("no video has this title");
   await expect(page.getByText("No videos match")).toBeVisible();
-  await page.goto("/topics");
-  await expect(page.getByRole("heading", { level: 1, name: "Topics" })).toBeVisible();
 });
 
 test("a volunteer finds courses by search and category", async ({ page }) => {

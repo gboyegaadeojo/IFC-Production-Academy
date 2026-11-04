@@ -1,6 +1,6 @@
 # Training
 
-**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by category. The **Library** in the side bar has **Courses**, **Videos**, and **Topics**. On a phone, you'll find them above the rows on Training.
+**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by category. The **Library** in the side bar has **Courses** and **Videos**. On a phone, you'll find them above the rows on Training.
 
 ## Anyone can learn anything
 
@@ -11,8 +11,7 @@ Every open department's courses are open to you. You don't need anyone's permiss
 ## The Library
 
 - **Courses** lists every course, with search and filters for category and level.
-- **Videos** lists every lesson with a video, with search and filters for level, category, and topic. Opening one takes you to that lesson in its course, and it counts there like any other lesson.
-- **Topics** gathers videos on one subject, such as Mixing or Directing, whichever course they're in.
+- **Videos** finds a lesson's video, whichever course it's in. It opens on its search and filters for level, category, and topic, and shows videos once you search or choose one. Opening a video takes you to that lesson in its course, and it counts there like any other lesson.
 
 ## General categories
 

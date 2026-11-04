@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { videoThumbnailUrl } from "./video";
-import { filterVideos, topicVideoCounts, videoCountLabel, type LibraryVideo } from "./videos";
+import { filterVideos, videoCountLabel, type LibraryVideo } from "./videos";
 
 const category = (id: string) => ({
   id,
@@ -54,13 +54,6 @@ describe("filterVideos", () => {
     expect(keys(filterVideos(all, { ...none, categoryId: "audio", level: "2" }))).toEqual([
       "Mixing",
     ]);
-  });
-});
-
-describe("topicVideoCounts", () => {
-  it("counts each topic's videos", () => {
-    expect(topicVideoCounts(all).get("t1")).toBe(1);
-    expect(topicVideoCounts(all).get("missing")).toBeUndefined();
   });
 });
 
