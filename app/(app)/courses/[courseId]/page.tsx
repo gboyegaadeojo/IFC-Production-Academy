@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ActionForm } from "@/components/ui/action-form";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
 import { ArrowRightIcon, ChevronLeftIcon, LockIcon } from "@/components/ui/icons";
@@ -24,7 +25,7 @@ import {
   stepHref,
 } from "@/lib/domain/learning";
 import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
-import { issueCertificateAction } from "./actions";
+import { issueCertificateAction, restartCourseAction } from "./actions";
 import { CourseOutline } from "./course-outline";
 import { RichText } from "@/components/ui/rich-text";
 import { getCourseTopics } from "@/lib/data/topics";
@@ -76,8 +77,8 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
         practicalsPassed,
       )
     : null;
-  const certificate =
-    summary?.state === "completed" ? await getMyCertificateForCourse(user.id, course.id) : null;
+  // Starting over keeps a certificate, so it's looked up whatever the progress says.
+  const certificate = summary ? await getMyCertificateForCourse(user.id, course.id) : null;
   const minutes = totals.estimatedMinutes ?? course.estimatedMinutes;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
   const topics = await getCourseTopics(course.id);
@@ -197,6 +198,11 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
                   <ArrowRightIcon className="size-4" />
                 </Link>
               ) : null}
+              <StartOver
+                courseId={course.id}
+                title={course.title}
+                hasCertificate={Boolean(certificate)}
+              />
             </div>
           ) : course.canOpen && first ? (
             <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
@@ -212,6 +218,14 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
                 Start the course
                 <ArrowRightIcon className="size-4" />
               </Link>
+              {certificate && !certificate.revoked ? (
+                <Link
+                  href={`/certificates/${certificate.reference}`}
+                  className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+                >
+                  You still have your certificate
+                </Link>
+              ) : null}
             </div>
           ) : (
             <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
@@ -293,5 +307,48 @@ function CourseSkeleton() {
         <Skeleton className="h-48" />
       </div>
     </div>
+  );
+}
+
+/**
+ * Begin a course again, after a warning (SRS-PROG-009). It says exactly what goes and what stays,
+ * because it changes what someone sees, even though the old results are kept on record.
+ */
+function StartOver({
+  courseId,
+  title,
+  hasCertificate,
+}: {
+  courseId: string;
+  title: string;
+  hasCertificate: boolean;
+}) {
+  return (
+    <ConfirmDialog
+      triggerLabel="Start over"
+      srLabel={title}
+      title={`Start ${title} over?`}
+      message={
+        <div className="flex flex-col gap-2">
+          <p>
+            This clears your completed lessons, your place in each video, and your quiz results for
+            this course. You&apos;ll begin again from the first lesson and retake its quizzes.
+          </p>
+          <p>
+            {hasCertificate ? "Your certificate stays. " : ""}Any practical you&apos;ve passed
+            stays, and this doesn&apos;t change whether you&apos;re approved to serve.
+          </p>
+          <p className="font-medium text-text">You can&apos;t undo this yourself.</p>
+        </div>
+      }
+    >
+      <ActionForm
+        action={restartCourseAction}
+        submitLabel="Yes, start over"
+        pendingLabel="Starting over…"
+        variant="destructive"
+        hidden={{ courseId }}
+      />
+    </ConfirmDialog>
   );
 }
