@@ -20,6 +20,9 @@ import { formatDate } from "@/lib/domain/dates";
 import { COURSE_REPORT_LABELS, READINESS_REPORT_LABELS } from "@/lib/domain/reports";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
+import { getCourseProgress } from "@/lib/data/course-progress";
+import { hasCapability } from "@/lib/domain/capabilities";
+import { CourseProgress } from "./course-progress";
 
 export const metadata: Metadata = { title: "Reports" };
 
@@ -31,7 +34,7 @@ export default function ReportsPage({ searchParams }: PageProps<"/admin/reports"
   );
 }
 
-const REPORTS = ["training", "readiness", "matrix"] as const;
+const REPORTS = ["training", "progress", "readiness", "matrix"] as const;
 type Report = (typeof REPORTS)[number];
 
 /**
@@ -43,10 +46,10 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
   if (!allowed) {
     return <AccessDenied />;
   }
-  const departments = await getReportDepartments(grants);
   const query = await searchParams;
-  const department = departments.find((d) => d.id === query.department) ?? departments[0] ?? null;
   const report: Report = REPORTS.find((r) => r === query.report) ?? "training";
+  const departments = await getReportDepartments(grants, { includeTopics: report === "progress" });
+  const department = departments.find((d) => d.id === query.department) ?? departments[0] ?? null;
   const href = (next: Report) =>
     `/admin/reports?department=${department?.id ?? ""}${next === "training" ? "" : `&report=${next}`}`;
 
@@ -74,7 +77,11 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
             )}
             {department.canExport && report !== "matrix" ? (
               <a
-                href={`/admin/reports/export?department=${department.id}&report=${report}`}
+                href={`/admin/reports/export?department=${department.id}&report=${report}${
+                  report === "progress" && typeof query.course === "string"
+                    ? `&course=${query.course}`
+                    : ""
+                }`}
                 className={buttonClasses("secondary", "w-fit")}
                 download
               >
@@ -86,6 +93,7 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
             label="Report"
             tabs={[
               { href: href("training"), label: "Training", current: report === "training" },
+              { href: href("progress"), label: "Course progress", current: report === "progress" },
               { href: href("readiness"), label: "Readiness", current: report === "readiness" },
               {
                 href: href("matrix"),
@@ -94,7 +102,15 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
               },
             ]}
           />
-          {report === "training" ? (
+          {report === "progress" ? (
+            <CourseProgressReport
+              departmentId={department.id}
+              courseId={typeof query.course === "string" ? query.course : null}
+              canMentor={
+                !department.isTopic && hasCapability(grants, "mentoring.assign", department.id)
+              }
+            />
+          ) : report === "training" ? (
             <ReportRows load={getTrainingReport(department.id)} Table={TrainingTable} />
           ) : report === "readiness" ? (
             <ReportRows load={getReadinessReport(department.id)} Table={ReadinessTable} />
@@ -110,6 +126,34 @@ async function ReportsContent({ searchParams }: Pick<PageProps<"/admin/reports">
         </>
       )}
     </div>
+  );
+}
+
+async function CourseProgressReport({
+  departmentId,
+  courseId,
+  canMentor,
+}: {
+  departmentId: string;
+  courseId: string | null;
+  canMentor: boolean;
+}) {
+  const { courses, view } = await getCourseProgress(departmentId, courseId);
+  if (!view) {
+    return (
+      <EmptyState title="No course progress yet">
+        This shows once a course here is published and someone can take it.
+      </EmptyState>
+    );
+  }
+  return (
+    <CourseProgress
+      key={view.courseId}
+      courses={courses}
+      view={view}
+      departmentId={departmentId}
+      canMentor={canMentor}
+    />
   );
 }
 

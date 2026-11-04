@@ -25,6 +25,8 @@ import { initials } from "@/lib/domain/people";
 import { membershipLabel } from "@/lib/domain/profile";
 import { DisplayNameForm } from "./display-name-form";
 import { courseHomeLabel } from "@/lib/domain/departments";
+import { getMyQuizResults } from "@/lib/data/quiz-results";
+import { QuizResults } from "./quiz-results";
 
 export const metadata: Metadata = { title: "Your profile" };
 
@@ -50,13 +52,15 @@ const MEMBERSHIP_TONES: Record<MembershipStatus, StatusTone> = {
  */
 async function ProfileContent() {
   const user = await requireActiveUser();
-  const [profile, certificates, achievements, planningCenter, positionTeams] = await Promise.all([
-    getMyProfile(user.id),
-    getMyCertificates(user.id),
-    getMyAchievements(user.id),
-    getMyPlanningCenter(),
-    getMyPositionTeams(user.id),
-  ]);
+  const [profile, certificates, achievements, planningCenter, positionTeams, results] =
+    await Promise.all([
+      getMyProfile(user.id),
+      getMyCertificates(user.id),
+      getMyAchievements(user.id),
+      getMyPlanningCenter(),
+      getMyPositionTeams(user.id),
+      getMyQuizResults(user.id),
+    ]);
   if (!profile) {
     notFound();
   }
@@ -72,13 +76,28 @@ async function ProfileContent() {
 
   return (
     <div className="page-container flex flex-col gap-8 py-8 lg:py-12">
-      <header className="flex flex-col gap-2">
-        <p className="eyebrow">Account</p>
-        <h1 className="text-title font-semibold">Your profile</h1>
-        <p className="max-w-[40rem] text-lead text-text-secondary">
-          How you appear to leaders, and where you&apos;re training and serving.
-        </p>
+      <header className="flex flex-wrap items-center gap-3.5 rounded-card border border-border bg-[linear-gradient(120deg,var(--accent-soft),var(--surface)_62%)] p-4.5">
+        <span
+          aria-hidden="true"
+          className="flex size-14 shrink-0 items-center justify-center rounded-pill bg-accent text-heading font-semibold text-on-accent"
+        >
+          {initials(profile.displayName)}
+        </span>
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h1 className="text-title font-semibold">
+            <span className="sr-only">Your profile: </span>
+            {profile.displayName}
+          </h1>
+          <p className="text-text-secondary">
+            {profile.memberships
+              .filter((m) => m.status === "active")
+              .map((m) => m.departmentName)
+              .join(" · ") || "Member since " + formatDate(profile.joinedAt)}
+          </p>
+        </div>
       </header>
+
+      <QuizResults quizzes={results.quizzes} lessonsComplete={results.lessonsComplete} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[21.25rem_minmax(0,1fr)]">
         <section

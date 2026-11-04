@@ -7,6 +7,8 @@ import {
   getTrainingReport,
   logReportExport,
 } from "@/lib/data/reports";
+import { getCourseProgress } from "@/lib/data/course-progress";
+import { lessonsDone } from "@/lib/domain/course-progress";
 import {
   COURSE_REPORT_LABELS,
   csvFileName,
@@ -18,7 +20,11 @@ import {
 // audited before the file is sent. Names and training facts only: no emails, no mentoring notes.
 // Logs carry status only.
 
-const query = z.object({ department: z.uuid(), report: z.enum(["training", "readiness"]) });
+const query = z.object({
+  department: z.uuid(),
+  report: z.enum(["training", "progress", "readiness"]),
+  course: z.uuid().nullable(),
+});
 
 function plain(status: number): Response {
   return new Response(null, { status, headers: { "Cache-Control": "private, no-store" } });
@@ -35,20 +41,50 @@ export async function GET(request: Request): Promise<Response> {
   const input = query.safeParse({
     department: url.searchParams.get("department"),
     report: url.searchParams.get("report"),
+    course: url.searchParams.get("course"),
   });
   if (!input.success) {
     return plain(400);
   }
-  const department = (await getReportDepartments(await getMyCapabilities())).find(
-    (d) => d.id === input.data.department,
-  );
+  const department = (
+    await getReportDepartments(await getMyCapabilities(), {
+      includeTopics: input.data.report === "progress",
+    })
+  ).find((d) => d.id === input.data.department);
   if (!department?.canExport) {
     return plain(403);
   }
 
   let csv: string;
   let rows: number;
-  if (input.data.report === "training") {
+  if (input.data.report === "progress") {
+    const { view } = await getCourseProgress(department.id, input.data.course);
+    if (!view) {
+      return plain(404);
+    }
+    const people = view.people;
+    rows = people.length;
+    csv = toCsv(
+      [
+        "Volunteer",
+        "Course",
+        "Status",
+        "Lessons marked complete",
+        "Lessons",
+        "Best quiz score",
+        "Practicals passed",
+      ],
+      people.map((person) => [
+        person.name,
+        view.courseTitle,
+        person.status,
+        lessonsDone(person, view),
+        view.lessons.length,
+        person.quizzes.length ? Math.max(...person.quizzes.map((quiz) => quiz.best.score)) : null,
+        view.practicals.filter((p) => person.passedPracticals.includes(p.key)).length,
+      ]),
+    );
+  } else if (input.data.report === "training") {
     const report = await getTrainingReport(department.id);
     rows = report.length;
     csv = toCsv(
@@ -78,7 +114,13 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 
-  if (!(await logReportExport(department.id, input.data.report, rows))) {
+  if (
+    !(await logReportExport(
+      department.id,
+      input.data.report === "progress" ? "training" : input.data.report,
+      rows,
+    ))
+  ) {
     return plain(403);
   }
   return new Response(csv, {

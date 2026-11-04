@@ -12,6 +12,7 @@ import {
 // names and training facts only: no emails, no mentoring notes.
 
 export type ReportDepartment = {
+  isTopic: boolean;
   id: string;
   name: string;
   slug: string;
@@ -21,13 +22,14 @@ export type ReportDepartment = {
 
 export async function getReportDepartments(
   grants: readonly CapabilityGrant[],
+  /** Course progress also covers General and Leadership. Team reports don't, as nobody joins them. */
+  options: { includeTopics?: boolean } = {},
 ): Promise<ReportDepartment[]> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("departments")
-    .select("id, name, slug, hue, sort_order")
-    .eq("kind", "team")
-    .order("sort_order");
+  const query = supabase.from("departments").select("id, name, slug, hue, kind, sort_order");
+  const { data, error } = await (options.includeTopics ? query : query.eq("kind", "team")).order(
+    "sort_order",
+  );
   if (error) {
     throw new Error("Could not load departments", { cause: error.code });
   }
@@ -39,6 +41,7 @@ export async function getReportDepartments(
       slug: d.slug,
       hue: d.hue,
       canExport: hasCapability(grants, "report.export", d.id),
+      isTopic: d.kind === "topic",
     }));
 }
 
