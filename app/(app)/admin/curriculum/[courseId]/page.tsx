@@ -11,7 +11,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getCourseEditor, type ModuleOutline, type VersionDetail } from "@/lib/data/curriculum";
 import { formatDateTime } from "@/lib/domain/admin";
-import { hasCapability } from "@/lib/domain/capabilities";
+import { hasCapability, hasCapabilityAnywhere } from "@/lib/domain/capabilities";
 import { VERSION_STATUS_LABELS } from "@/lib/domain/curriculum";
 import { passRuleLabel } from "@/lib/domain/practical";
 import { rulesLabel } from "@/lib/domain/quiz";
@@ -36,6 +36,8 @@ import { addQuizAction } from "../quiz-actions";
 import { RichText } from "@/components/ui/rich-text";
 import { RichTextField } from "@/components/ui/rich-text-field";
 import { COURSE_SUMMARY_MAX } from "@/lib/domain/rich-text";
+import { getCourseTopics, listTopics } from "@/lib/data/topics";
+import { CourseTopics } from "./course-topics";
 
 export const metadata: Metadata = { title: "Course" };
 
@@ -91,6 +93,10 @@ async function CourseContent({
   const draft = course.open?.status === "draft" ? course.open : null;
   const shown = course.open ?? course.live;
   const title = shown?.title ?? "Untitled course";
+  const [allTopics, courseTopics] =
+    tab === "details" && canDraft
+      ? await Promise.all([listTopics(), getCourseTopics(course.id)])
+      : [[], []];
   const tabHref = (next: Tab) =>
     next === "lessons"
       ? `/admin/curriculum/${course.id}`
@@ -195,7 +201,20 @@ async function CourseContent({
       ) : null}
 
       {tab === "details" && canDraft ? (
-        <CoverPanel courseId={course.id} coverUrl={course.coverUrl} coverPath={course.coverPath} />
+        <>
+          <CourseTopics
+            courseId={course.id}
+            courseTitle={title}
+            topics={allTopics}
+            initial={courseTopics.map((topic) => topic.id)}
+            canAdd={hasCapabilityAnywhere(grants, "topic.create")}
+          />
+          <CoverPanel
+            courseId={course.id}
+            coverUrl={course.coverUrl}
+            coverPath={course.coverPath}
+          />
+        </>
       ) : null}
 
       {tab === "details" ? (
