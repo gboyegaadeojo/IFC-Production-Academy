@@ -201,13 +201,15 @@ export async function getContinueLearning(
 export async function getCourseProgressById(
   userId: string,
   courseIds: readonly string[],
+  /** The courses, if the caller has already loaded them. */
+  known?: Map<string, LearnerCourse>,
 ): Promise<Map<string, CourseProgress>> {
   if (courseIds.length === 0) {
     return new Map();
   }
   const [activity, courses, passed, practicalsPassed] = await Promise.all([
     getLearnerActivity(userId, courseIds),
-    getLearnerCourses(courseIds),
+    known ?? getLearnerCourses(courseIds),
     getPassedQuizKeys(userId, [...courseIds]),
     getPassedPracticalKeys(userId, [...courseIds]),
   ]);

@@ -153,6 +153,7 @@ IDs come from your package. Rows marked **ADD-** are additions from my draft tha
 | SRS-CUR-007 | Published changes create a revision | M |
 | SRS-CUR-008 | Updates never erase historic completion or certification | M |
 | SRS-CUR-009 | Activate or deactivate a department without deployment | M |
+| SRS-CUR-017 | Training shows rows of courses by category. All courses lists them with search, category, and level filters. A course can have cover art, which isn't versioned; without one, it shows its title on its category's colour (G, 2026-11-04) | S |
 | SRS-CUR-016 | Course summaries, lesson summaries, and lesson text are rich text: bold, italic, underline, headings, lists, and https links. Stored as Markdown and drawn as plain data, so nothing in it can run as HTML (G, 2026-11-04) | S |
 | SRS-CUR-015 | A course sits in one category: a department (a team people join) or a topic (courses only, such as General and Leadership; no members, positions, competencies, or practicals; levels optional). Topics are data and never count towards Approved to Serve (G, 2026-11-04) | M |
 | ADD-CUR-01 | Drag-and-drop ordering of modules and lessons | S |

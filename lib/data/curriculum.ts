@@ -3,6 +3,8 @@ import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { peopleById, personFor, type PersonSummary } from "@/lib/data/admin/shared";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import type { DepartmentKind } from "@/lib/domain/departments";
+import { courseCoverUrl } from "@/lib/domain/library";
+import { publicEnv } from "@/lib/env";
 import { storedVideo, type VideoRef } from "@/lib/domain/video";
 import { getVersionPracticals, type PracticalDetail } from "@/lib/data/practicals";
 import { getVersionQuizzes, type QuizOutline } from "@/lib/data/quizzes";
@@ -182,6 +184,9 @@ export type CourseEditor = {
   id: string;
   departmentId: string;
   departmentName: string;
+  /** The course's cover art, if it has any. A cover isn't part of a version. */
+  coverPath: string | null;
+  coverUrl: string | null;
   /** Topics have no practicals (decision 2026-11-04). */
   isTopic: boolean;
   levelName: string;
@@ -257,11 +262,41 @@ async function loadVersionDetail(
   };
 }
 
+/**
+ * Sets or clears a course's cover (SRS-CUR-017). Storage and the database each check course.draft.
+ * Null bytes clear it. The old file goes last, and leaving it behind would do no harm.
+ */
+export async function setCourseCover(
+  courseId: string,
+  previousPath: string | null,
+  image: { bytes: Uint8Array; extension: string; contentType: string } | null,
+): Promise<CurriculumResult> {
+  const supabase = await createSupabaseServerClient();
+  const path = image ? `${courseId}/${crypto.randomUUID()}.${image.extension}` : null;
+  if (image && path) {
+    const upload = await supabase.storage.from("course-covers").upload(path, image.bytes, {
+      contentType: image.contentType,
+      upsert: false,
+    });
+    if (upload.error) {
+      return { ok: false, error: "not_authorized" };
+    }
+  }
+  const { error } = await supabase.rpc("set_course_cover", { p_course_id: courseId, p_path: path });
+  if (error) {
+    return fail(error);
+  }
+  if (previousPath) {
+    await supabase.storage.from("course-covers").remove([previousPath]);
+  }
+  return { ok: true };
+}
+
 export async function getCourseEditor(courseId: string): Promise<CourseEditor | null> {
   const supabase = await createSupabaseServerClient();
   const course = await supabase
     .from("courses")
-    .select("id, department_id, level_id, archived_at")
+    .select("id, department_id, level_id, archived_at, cover_image_path")
     .eq("id", courseId)
     .maybeSingle();
   if (course.error) {
@@ -306,6 +341,10 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
     id: course.data.id,
     departmentId: course.data.department_id,
     departmentName: department.data.name,
+    coverPath: course.data.cover_image_path,
+    coverUrl: course.data.cover_image_path
+      ? courseCoverUrl(publicEnv().NEXT_PUBLIC_SUPABASE_URL, course.data.cover_image_path)
+      : null,
     levelName: department.data.uses_levels
       ? `Level ${level.data.number}: ${level.data.name}`
       : department.data.name,

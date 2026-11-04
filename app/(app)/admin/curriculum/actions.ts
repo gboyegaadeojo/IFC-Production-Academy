@@ -15,6 +15,7 @@ import {
   moduleSchema,
   type CurriculumError,
 } from "@/lib/domain/curriculum";
+import { COURSE_COVER_MAX_BYTES, coverImageType } from "@/lib/domain/library";
 
 // Every action: validate input with Zod, fail fast without the capability, then let the database
 // decide (RLS for draft edits, functions for the lifecycle). SRS-CUR-001..008, SRS-RBAC-001.
@@ -69,6 +70,65 @@ export async function startDraftAction(_: FormState, formData: FormData): Promis
     status: "done",
     message: "You're editing a new draft. The live version stays as it is until you publish.",
   };
+}
+
+/** A course's cover art (SRS-CUR-017). The file's bytes decide its type, not its name. */
+export async function updateCourseCoverAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const courseId = id.safeParse(formData.get("courseId"));
+  const previous = z
+    .string()
+    .nullable()
+    .safeParse(formData.get("previousPath") || null);
+  const file = formData.get("cover");
+  if (!courseId.success || !previous.success) {
+    return failed("unknown");
+  }
+  if (!(file instanceof File) || file.size === 0) {
+    return error("Choose an image first.");
+  }
+  if (file.size > COURSE_COVER_MAX_BYTES) {
+    return error("That image is over 2 MB. Try saving a smaller copy.");
+  }
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const type = coverImageType(bytes);
+  if (!type) {
+    return error("That file couldn't be read as an image. Use a PNG, JPEG, or WebP.");
+  }
+  if (!(await allowed())) {
+    return failed("not_authorized");
+  }
+  const result = await curriculum.setCourseCover(courseId.data, previous.data, { bytes, ...type });
+  if (!result.ok) {
+    return failed(result.error);
+  }
+  refresh();
+  return { status: "done", message: "Cover updated. It shows everywhere straight away." };
+}
+
+export async function removeCourseCoverAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const courseId = id.safeParse(formData.get("courseId"));
+  const previous = z
+    .string()
+    .nullable()
+    .safeParse(formData.get("previousPath") || null);
+  if (!courseId.success || !previous.success) {
+    return failed("unknown");
+  }
+  if (!(await allowed())) {
+    return failed("not_authorized");
+  }
+  const result = await curriculum.setCourseCover(courseId.data, previous.data, null);
+  if (!result.ok) {
+    return failed(result.error);
+  }
+  refresh();
+  return { status: "done", message: "Cover removed." };
 }
 
 export async function updateCourseDetailsAction(

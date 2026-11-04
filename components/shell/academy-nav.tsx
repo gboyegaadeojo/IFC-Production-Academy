@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BookOpenIcon,
   CalendarRangeIcon,
   DashboardIcon,
   FileTextIcon,
@@ -12,15 +13,25 @@ import {
 } from "@/components/ui/icons";
 
 /** The learner destinations (DESIGN §3.1), shared by the side bar and the phone tab bar. */
-const LINKS: { href: string; label: string; icon: (props: { className?: string }) => ReactNode }[] =
-  [
-    { href: "/home", label: "Training", icon: GraduationCapIcon },
-    { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
-    { href: "/serve", label: "Checklist", icon: ListChecksIcon },
-    { href: "/sops", label: "SOPs", icon: FileTextIcon },
-  ];
+const LINKS: {
+  href: string;
+  label: string;
+  icon: (props: { className?: string }) => ReactNode;
+  /** Phones have four tabs; All courses is a link on Training there. */
+  sideBarOnly?: boolean;
+}[] = [
+  { href: "/home", label: "Training", icon: GraduationCapIcon },
+  { href: "/courses", label: "All courses", icon: BookOpenIcon, sideBarOnly: true },
+  { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
+  { href: "/serve", label: "Checklist", icon: ListChecksIcon },
+  { href: "/sops", label: "SOPs", icon: FileTextIcon },
+];
 
 function isCurrent(pathname: string, href: string): boolean {
+  // A course's own page isn't "All courses": someone may have come from Training.
+  if (href === "/courses") {
+    return pathname === href;
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -90,7 +101,7 @@ export function AcademyTabBar() {
       className="sticky bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
     >
       <ul className="grid grid-cols-4">
-        {LINKS.map((link) => {
+        {LINKS.filter((link) => !link.sideBarOnly).map((link) => {
           const current = isCurrent(pathname, link.href);
           const Icon = link.icon;
           return (

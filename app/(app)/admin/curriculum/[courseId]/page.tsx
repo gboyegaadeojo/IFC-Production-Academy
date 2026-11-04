@@ -26,6 +26,8 @@ import {
   publishAction,
   restoreAction,
   startDraftAction,
+  removeCourseCoverAction,
+  updateCourseCoverAction,
   updateCourseDetailsAction,
   updateModuleAction,
 } from "../actions";
@@ -192,6 +194,10 @@ async function CourseContent({
         )
       ) : null}
 
+      {tab === "details" && canDraft ? (
+        <CoverPanel courseId={course.id} coverUrl={course.coverUrl} coverPath={course.coverPath} />
+      ) : null}
+
       {tab === "details" ? (
         draft && canDraft ? (
           <DraftEditor courseId={course.id} draft={draft} part="details" />
@@ -203,7 +209,7 @@ async function CourseContent({
             <dl className="flex flex-col gap-3">
               <div>
                 <dt className="text-small text-text-muted">Summary</dt>
-                <dd>{shown.summary || "No summary yet."}</dd>
+                <dd>{shown.summary ? <RichText source={shown.summary} /> : "No summary yet."}</dd>
               </div>
               <div>
                 <dt className="text-small text-text-muted">Objectives</dt>
@@ -765,6 +771,77 @@ function QuizzesPanel({
           </ActionForm>
         </div>
       ) : null}
+    </section>
+  );
+}
+
+/** Cover art belongs to the course, so it changes straight away with no draft (SRS-CUR-017). */
+function CoverPanel({
+  courseId,
+  coverUrl,
+  coverPath,
+}: {
+  courseId: string;
+  coverUrl: string | null;
+  coverPath: string | null;
+}) {
+  const hidden = { courseId, previousPath: coverPath ?? "" };
+  return (
+    <section
+      aria-labelledby="cover-heading"
+      className="flex max-w-2xl flex-col gap-4 rounded-card border border-border bg-card p-5 sm:flex-row"
+    >
+      {coverUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={coverUrl}
+          alt="The current cover"
+          className="aspect-[3/4] w-28 shrink-0 rounded-button border border-border object-cover"
+        />
+      ) : (
+        <span className="flex aspect-[3/4] w-28 shrink-0 items-center justify-center rounded-button border border-dashed border-border-strong p-2 text-center text-small text-text-muted">
+          No cover yet
+        </span>
+      )}
+      <div className="flex min-w-0 flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <h2 id="cover-heading" className="text-heading font-semibold">
+            Course cover
+          </h2>
+          <p className="text-small text-text-secondary">
+            Upright, about 900 by 1200 pixels. A PNG, JPEG, or WebP up to 2 MB. It shows straight
+            away, with no draft. Until there&apos;s a cover, the course shows its title on its
+            category&apos;s colour.
+          </p>
+        </div>
+        <ActionForm
+          action={updateCourseCoverAction}
+          submitLabel={coverUrl ? "Replace cover" : "Upload cover"}
+          pendingLabel="Uploading…"
+          hidden={hidden}
+          className="flex flex-col gap-3"
+        >
+          <Field id="course-cover" label="Image file">
+            <input
+              id="course-cover"
+              name="cover"
+              type="file"
+              required
+              accept="image/png,image/jpeg,image/webp"
+              className="text-small"
+            />
+          </Field>
+        </ActionForm>
+        {coverUrl ? (
+          <ActionForm
+            action={removeCourseCoverAction}
+            submitLabel="Remove cover"
+            pendingLabel="Removing…"
+            variant="secondary"
+            hidden={hidden}
+          />
+        ) : null}
+      </div>
     </section>
   );
 }

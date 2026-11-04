@@ -9,11 +9,12 @@ The Academy is where the production team at Immanuel Fellowship Church learns, g
 
 ## Finding your way around
 
-The side bar has four places. On a phone they're along the bottom.
+The side bar has these places. On a phone, the main four are along the bottom, and **All courses** is on Training.
 
 | Place | What it's for | Guide |
 | --- | --- | --- |
 | **Training** | Departments, courses, and how far you've got | [Training](training.md) |
+| **All courses** | Every course, with search and filters | [Training](training.md) |
 | **Schedule** | When you're serving, and who with | [Schedule](schedule.md) |
 | **Checklist** | What to do before and after this service | [Checklist](checklist.md) |
 | **SOPs** | The team's written procedures | [SOPs](sops.md) |
