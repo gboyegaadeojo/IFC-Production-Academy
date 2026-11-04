@@ -60,28 +60,6 @@ create trigger topics_set_updated_at before update on public.topics
 create trigger topics_audit after insert or update on public.topics
   for each row execute function private.audit_change('topic');
 
--- Whether the person holds a capability in any department, or across the organization.
-create function private.has_capability_anywhere(p_capability text)
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from public.user_roles ur
-    join public.role_capabilities rc on rc.role_id = ur.role_id
-    join public.capabilities c on c.id = rc.capability_id
-    join public.profiles p on p.id = ur.user_id
-    where ur.user_id = (select auth.uid())
-      and ur.revoked_at is null
-      and p.status = 'active'
-      and c.key = p_capability
-  );
-$$;
-revoke all on function private.has_capability_anywhere(text) from public, anon, authenticated;
-
 -- Safe to retry: a name already in use returns that topic.
 create function public.create_topic(p_name text)
 returns uuid
