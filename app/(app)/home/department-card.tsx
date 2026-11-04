@@ -254,6 +254,7 @@ export function MembershipStatus({
           join
         />
       );
+    case "topic":
     case "unavailable":
       return null;
   }

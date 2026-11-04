@@ -24,7 +24,9 @@ export async function listDepartmentCards(userId: string): Promise<DepartmentCar
   const [departmentsResult, membershipsResult] = await Promise.all([
     supabase
       .from("departments")
-      .select("id, slug, name, summary, status, enrolment_mode, hue, icon, sort_order")
+      .select(
+        "id, slug, name, summary, status, enrolment_mode, kind, uses_levels, hue, icon, sort_order",
+      )
       .order("sort_order"),
     // Leaders can read other people's memberships too, so filter to this person explicitly.
     supabase
@@ -46,6 +48,8 @@ export async function listDepartmentCards(userId: string): Promise<DepartmentCar
     summary: row.summary,
     status: row.status,
     enrolmentMode: row.enrolment_mode,
+    kind: row.kind,
+    usesLevels: row.uses_levels,
     hue: row.hue,
     icon: row.icon,
     sortOrder: row.sort_order,

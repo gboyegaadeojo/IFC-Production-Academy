@@ -53,7 +53,7 @@ select is(
 -- ---------------------------------------------------------------------------
 select pg_temp.act_as('20000000-0000-4000-8000-000000000001');
 select results_eq(
-  $$ select slug, status::text from public.departments order by sort_order $$,
+  $$ select slug, status::text from public.departments where kind = 'team' order by sort_order $$,
   $$ values ('camera-operations', 'active'),
             ('audio-engineering', 'active'),
             ('computer-graphics-propresenter', 'active'),

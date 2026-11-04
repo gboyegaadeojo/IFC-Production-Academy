@@ -142,7 +142,14 @@ export type LearnerCourse = {
   summary: string;
   objectives: string[];
   estimatedMinutes: number | null;
-  department: { id: string; slug: string; name: string; hue: string; icon: string };
+  department: {
+    id: string;
+    slug: string;
+    name: string;
+    hue: string;
+    icon: string;
+    uses_levels: boolean;
+  };
   level: { number: number; name: string };
   /** Empty when the person may not read the lessons (not a member). */
   modules: OutlineModule[];
@@ -186,7 +193,7 @@ export async function getLearnerCourses(
   const [departments, levels, modules, lessons, quizzes, practicals] = await Promise.all([
     supabase
       .from("departments")
-      .select("id, slug, name, hue, icon")
+      .select("id, slug, name, hue, icon, uses_levels")
       .in("id", [...new Set(open.map((course) => course.department_id))]),
     supabase
       .from("levels")

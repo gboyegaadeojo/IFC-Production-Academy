@@ -4,6 +4,7 @@ import { IfcMark } from "@/components/brand";
 import { QrCode } from "@/components/qr-code";
 import { formatLongDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
+import { courseHomeLabel } from "@/lib/domain/departments";
 
 // The serif on ifcwpg.com, used only for the recipient's name (decision 4). Loaded here so only
 // certificate pages download it.
@@ -17,7 +18,7 @@ export type CertificateSheetProps = {
   recipientName: string;
   courseTitle: string;
   departmentName: string;
-  levelNumber: number;
+  levelNumber: number | null;
   versionNumber: number;
   issuedAt: string;
   reference: string;
@@ -76,10 +77,8 @@ export function CertificateSheet(props: CertificateSheetProps) {
             {props.courseTitle}
           </p>
           <p className="flex items-center gap-2 text-paper-muted">
-            <LevelBadge level={props.levelNumber} />
-            <span>
-              {props.departmentName} · Level {props.levelNumber}
-            </span>
+            {props.levelNumber === null ? null : <LevelBadge level={props.levelNumber} />}
+            <span>{courseHomeLabel(props.departmentName, props.levelNumber)}</span>
           </p>
         </div>
 

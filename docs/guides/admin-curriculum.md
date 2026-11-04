@@ -1,6 +1,15 @@
 # Admin: curriculum
 
-**Curriculum** is where you build each level's courses. You publish your own department's work. Nobody else has to approve it, unless your department has turned on review before publishing.
+**Curriculum** is where you build courses, for a topic or for a level in a department. You publish your own department's work. Nobody else has to approve it, unless your department has turned on review before publishing.
+
+## Topics and departments
+
+The row of buttons at the top starts with the **topics**, then a divider, then the **departments**.
+
+- A **department** is a team. Its courses sit in three levels, and they can have practical assessments.
+- A **topic**, such as General or Leadership, is courses for anyone on the production team. Some topics use levels and some are one list. Topics have lessons, quizzes, versions, and certificates, but no practical assessments, so the Practicals tab doesn't appear.
+
+Production Directors build and publish topics. You add a topic under [Departments](admin-people.md#departments).
 
 ## The key idea: drafts and versions
 

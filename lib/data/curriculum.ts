@@ -2,6 +2,7 @@ import "server-only";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { peopleById, personFor, type PersonSummary } from "@/lib/data/admin/shared";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
+import type { DepartmentKind } from "@/lib/domain/departments";
 import { storedVideo, type VideoRef } from "@/lib/domain/video";
 import { getVersionPracticals, type PracticalDetail } from "@/lib/data/practicals";
 import { getVersionQuizzes, type QuizOutline } from "@/lib/data/quizzes";
@@ -34,6 +35,8 @@ export type CurriculumOverview = {
   name: string;
   hue: string;
   icon: string;
+  kind: DepartmentKind;
+  usesLevels: boolean;
   canDraft: boolean;
   levels: {
     id: string;
@@ -50,7 +53,7 @@ export async function getCurriculumOverview(
   const supabase = await createSupabaseServerClient();
   const departments = await supabase
     .from("departments")
-    .select("id, name, hue, icon, sort_order")
+    .select("id, name, hue, icon, kind, uses_levels, sort_order")
     .order("sort_order");
   if (departments.error) {
     throw new Error("Could not load departments", { cause: departments.error.code });
@@ -99,6 +102,8 @@ export async function getCurriculumOverview(
     name: department.name,
     hue: department.hue,
     icon: department.icon,
+    kind: department.kind,
+    usesLevels: department.uses_levels,
     canDraft: hasCapability(grants, "course.draft", department.id),
     levels: levels.data
       .filter((level) => level.department_id === department.id)
@@ -177,6 +182,8 @@ export type CourseEditor = {
   id: string;
   departmentId: string;
   departmentName: string;
+  /** Topics have no practicals (decision 2026-11-04). */
+  isTopic: boolean;
   levelName: string;
   archived: boolean;
   /** The draft or version in review, if any; otherwise null. */
@@ -264,7 +271,11 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
     return null;
   }
   const [department, level, versions] = await Promise.all([
-    supabase.from("departments").select("name").eq("id", course.data.department_id).single(),
+    supabase
+      .from("departments")
+      .select("name, kind, uses_levels")
+      .eq("id", course.data.department_id)
+      .single(),
     supabase.from("levels").select("number, name").eq("id", course.data.level_id).single(),
     supabase
       .from("course_versions")
@@ -295,7 +306,10 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
     id: course.data.id,
     departmentId: course.data.department_id,
     departmentName: department.data.name,
-    levelName: `Level ${level.data.number}: ${level.data.name}`,
+    levelName: department.data.uses_levels
+      ? `Level ${level.data.number}: ${level.data.name}`
+      : department.data.name,
+    isTopic: department.data.kind === "topic",
     archived: course.data.archived_at !== null,
     open: openRow ? await loadVersionDetail(supabase, openRow) : null,
     live: liveRow ? await loadVersionDetail(supabase, liveRow) : null,

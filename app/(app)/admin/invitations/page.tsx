@@ -55,6 +55,7 @@ async function InvitationsContent({
   ]);
   // Only open departments the person may invite to.
   const choices = departments
+    .filter((d) => d.kind === "team")
     .filter((d) => d.status === "active" && hasCapability(grants, "member.invite", d.id))
     .map((d) => ({ id: d.id, name: d.name, hue: d.hue, icon: d.icon }));
   const hueFor = new Map(departments.map((d) => [d.id, d]));

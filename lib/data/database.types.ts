@@ -71,12 +71,16 @@ export type Database = {
           icon: string;
           cover_image_path: string | null;
           sort_order: number;
+          kind: Database["public"]["Enums"]["department_kind"];
+          uses_levels: boolean;
         } & Timestamps;
         Insert: {
           id?: string;
           organization_id: string;
           slug: string;
           name: string;
+          kind?: Database["public"]["Enums"]["department_kind"];
+          uses_levels?: boolean;
           summary?: string;
           status?: Database["public"]["Enums"]["department_status"];
           enrolment_mode?: Database["public"]["Enums"]["enrolment_mode"];
@@ -710,7 +714,7 @@ export type Database = {
           recipient_name: string;
           course_title: string;
           department_name: string;
-          level_number: number;
+          level_number: number | null;
           version_number: number;
           issued_at: string;
           revoked_at: string | null;
@@ -2132,6 +2136,7 @@ export type Database = {
     };
     Enums: {
       account_status: "active" | "suspended" | "deactivated";
+      department_kind: "team" | "topic";
       department_status: "active" | "coming_soon" | "inactive";
       enrolment_mode: "request" | "invite_only" | "open";
       membership_status: "requested" | "active" | "declined" | "removed";

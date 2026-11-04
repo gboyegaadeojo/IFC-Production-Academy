@@ -31,7 +31,11 @@ export async function listDepartmentMembers(
 ): Promise<DepartmentMembers[]> {
   const supabase = await createSupabaseServerClient();
   const [departmentsResult, membershipsResult] = await Promise.all([
-    supabase.from("departments").select("id, name, hue, icon, sort_order").order("sort_order"),
+    supabase
+      .from("departments")
+      .select("id, name, hue, icon, sort_order")
+      .eq("kind", "team")
+      .order("sort_order"),
     supabase
       .from("department_memberships")
       .select("id, department_id, user_id, status, requested_at, decided_at")

@@ -123,7 +123,9 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
       <div className="grid gap-6 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-14">
         <header className="flex flex-col gap-3 border-l-2 border-[var(--dept)] pl-4 sm:gap-4 sm:pl-5 lg:col-start-1">
           <p className="eyebrow">
-            Level {course.level.number} · {course.level.name}
+            {course.department.uses_levels
+              ? `Level ${course.level.number} · ${course.level.name}`
+              : course.department.name}
           </p>
           <h1 className="text-title font-semibold text-balance">{course.title}</h1>
           {course.summary ? (

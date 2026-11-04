@@ -35,6 +35,8 @@ The Service Dashboard Editor role is limited to 3 people, here as well as on the
 
 **Departments** is for adding, opening, pausing, or renaming a department. Changes take effect straight away and go in the audit log. Nobody's training history changes.
 
+**Topics** have their own list lower on the page. A topic, such as General or Leadership, is courses only: nobody joins it, and it has no positions or practical assessments, so it doesn't appear in membership requests, invitations, teams, or reports. Choose **Add a topic** to add one, and tick **Use three levels** if its courses should be in levels.
+
 A new department gets the three levels straight away. For each one, you choose:
 
 | Setting | Choices |

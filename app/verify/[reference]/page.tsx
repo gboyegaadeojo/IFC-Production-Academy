@@ -6,6 +6,7 @@ import { getBranding } from "@/lib/data/branding";
 import { checkCertificate } from "@/lib/data/certificates";
 import { normaliseReference } from "@/lib/domain/certificates";
 import { formatDate } from "@/lib/domain/dates";
+import { courseHomeLabel } from "@/lib/domain/departments";
 
 export const metadata: Metadata = {
   title: "Check a certificate",
@@ -69,7 +70,7 @@ async function CheckResult({ params }: Pick<PageProps<"/verify/[reference]">, "p
       <div className="flex flex-col gap-1">
         <h1 className="text-heading font-semibold text-balance">{certificate.courseTitle}</h1>
         <p className="text-text-secondary">
-          {certificate.departmentName} · Level {certificate.levelNumber}
+          {courseHomeLabel(certificate.departmentName, certificate.levelNumber)}
         </p>
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2">
