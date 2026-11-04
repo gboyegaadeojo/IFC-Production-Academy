@@ -77,23 +77,23 @@ async function DepartmentsContent() {
       <section aria-labelledby="topics-heading" className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <h2 id="topics-heading" className="text-heading font-semibold">
-            Topics
+            General categories
           </h2>
           <p className="max-w-[44rem] text-small text-text-secondary">
             Courses for anyone on the production team, such as General and Leadership. Nobody joins
-            a topic, and it has no positions or practicals.
+            one, and it has no positions or practicals.
           </p>
         </div>
         <details className="group max-w-2xl rounded-card border border-border bg-surface p-4">
           <summary className="inline-flex min-h-button cursor-pointer list-none items-center rounded-button border border-border-strong px-3 text-small font-medium text-text hover:bg-hover [&::-webkit-details-marker]:hidden">
-            + Add a topic
+            + Add a general category
           </summary>
           <div className="mt-4">
             <NewDepartmentForm kind="topic" />
           </div>
         </details>
         {topics.length > 0 ? (
-          <CategoryTable caption="Topics in display order" rows={topics} />
+          <CategoryTable caption="General categories in display order" rows={topics} />
         ) : null}
       </section>
     </div>
@@ -109,7 +109,7 @@ function CategoryTable({ caption, rows }: { caption: string; rows: DepartmentSet
         <thead className="border-b border-border text-text-muted">
           <tr>
             <th scope="col" className="px-4 py-3 font-medium">
-              {isTopics ? "Topic" : "Department"}
+              {isTopics ? "Category" : "Department"}
             </th>
             <th scope="col" className="px-4 py-3 font-medium">
               {isTopics ? "Levels" : "How people join"}
@@ -130,7 +130,7 @@ function CategoryTable({ caption, rows }: { caption: string; rows: DepartmentSet
             >
               <td className="px-4 py-3">
                 <span className="flex items-center gap-3">
-                  <span className="flex size-8 items-center justify-center rounded-button border border-border text-[var(--dept)]">
+                  <span className="flex size-9 items-center justify-center rounded-button border border-[color-mix(in_srgb,var(--dept)_18%,var(--border))] bg-[color-mix(in_srgb,var(--dept)_11%,var(--surface))] text-[var(--dept)]">
                     <DepartmentIcon icon={department.icon} className="size-4" />
                   </span>
                   <span className="flex flex-col">

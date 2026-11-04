@@ -33,7 +33,7 @@ export function AcademyHeader() {
 /** The learner side bar from 768px (G, 2026-11-04): the brand, the links, then the account. */
 export function AcademySidebar() {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-56 shrink-0 flex-col gap-4 border-r border-border bg-surface px-3 py-4 md:flex print:hidden">
+    <aside className="sticky top-0 hidden h-dvh w-54 shrink-0 flex-col gap-4 border-r border-border bg-surface px-3 py-4 md:flex print:hidden">
       <Link href="/home" className="flex min-h-touch items-center rounded-button px-2">
         <Wordmark />
       </Link>

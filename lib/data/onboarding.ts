@@ -39,6 +39,8 @@ export type PathwaySummary = {
 };
 
 export type Choice = { id: string; name: string };
+/** A course to assign, with where it lives. Only a team department's course changes membership. */
+export type CourseChoice = Choice & { categoryName: string; isTeam: boolean; sortKey: number };
 
 /** The pathways someone looks after, and the ones they could set up. */
 export async function getPathways(grants: readonly CapabilityGrant[]): Promise<{
@@ -120,7 +122,7 @@ export type PathwayEditor = {
   /** Names for summaries and the step settings. */
   roles: Choice[];
   people: Choice[];
-  courses: Choice[];
+  courses: CourseChoice[];
   servingRoles: Choice[];
   /** Open departments, for "Choose a department", with the pathway each one starts (if any). */
   departments: (Choice & { pathwayId: string | null })[];
@@ -148,6 +150,7 @@ export async function getPathwayEditor(pathwayId: string): Promise<PathwayEditor
     entries,
     roles,
     courses,
+    courseCategories,
     versions,
     servingRoles,
     people,
@@ -175,6 +178,7 @@ export async function getPathwayEditor(pathwayId: string): Promise<PathwayEditor
       .eq("status", "active"),
     supabase.from("roles").select("id, name").order("name"),
     supabase.from("courses").select("id, department_id").is("archived_at", null),
+    supabase.from("departments").select("id, name, kind, sort_order"),
     supabase.from("course_versions").select("course_id, title").eq("status", "published"),
     departmentId
       ? supabase
@@ -203,6 +207,7 @@ export async function getPathwayEditor(pathwayId: string): Promise<PathwayEditor
     entries,
     roles,
     courses,
+    courseCategories,
     versions,
     servingRoles,
     departments,
@@ -244,8 +249,18 @@ export async function getPathwayEditor(pathwayId: string): Promise<PathwayEditor
       : (people.data ?? []).map((p) => ({ id: p.user_id, name: p.display_name })),
     courses: (courses.data ?? [])
       .filter((c) => courseTitle.has(c.id))
-      .map((c) => ({ id: c.id, name: courseTitle.get(c.id) ?? "" }))
-      .toSorted((a, b) => a.name.localeCompare(b.name)),
+      .map((c) => {
+        const category = courseCategories.data?.find((d) => d.id === c.department_id);
+        return {
+          id: c.id,
+          name: courseTitle.get(c.id) ?? "",
+          categoryName: category?.name ?? "",
+          isTeam: category?.kind === "team",
+          // General categories first, then departments, each in their set order.
+          sortKey: (category?.kind === "team" ? 100000 : 0) + (category?.sort_order ?? 0),
+        };
+      })
+      .toSorted((a, b) => a.sortKey - b.sortKey || a.name.localeCompare(b.name)),
     servingRoles: (servingRoles.data ?? []).map((r) => ({ id: r.id, name: r.name })),
     departments: (departments.data ?? []).map((d) => ({
       id: d.id,

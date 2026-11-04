@@ -186,3 +186,35 @@ export function Field({
     </div>
   );
 }
+
+/** A small button that posts straight away, such as moving a row up. Its label is for screen readers. */
+export function IconActionForm({
+  action,
+  hidden,
+  label,
+  icon,
+  disabled = false,
+}: {
+  action: FormAction;
+  hidden: Record<string, string>;
+  label: string;
+  icon: ReactNode;
+  disabled?: boolean;
+}) {
+  const [, formAction, pending] = useActionState(action, idle);
+  return (
+    <form action={formAction}>
+      {Object.entries(hidden).map(([name, value]) => (
+        <input key={name} type="hidden" name={name} value={value} />
+      ))}
+      <button
+        type="submit"
+        disabled={disabled || pending}
+        aria-label={label}
+        className="flex size-8 items-center justify-center rounded-button border border-border text-text-secondary transition-surface hover:bg-hover disabled:opacity-35 pointer-coarse:size-11"
+      >
+        {icon}
+      </button>
+    </form>
+  );
+}

@@ -171,6 +171,9 @@ function PositionTeam({
   const team = positionTeam(people, position.id);
   const addable = addableFor(people, position.id);
   const headingId = `position-${position.id}`;
+  const startHereTitles = [
+    ...new Set([...startHere.values()].flatMap((courses) => courses.map((course) => course.title))),
+  ];
 
   return (
     <section aria-labelledby={headingId} className="flex max-w-3xl flex-col gap-3">
@@ -199,43 +202,73 @@ function PositionTeam({
           Nobody can be scheduled as {position.name} yet.
         </p>
       ) : (
-        <ul
-          aria-label={`${position.name} team`}
-          className="flex flex-col divide-y divide-border rounded-card border border-border"
-        >
-          {team.map((person) => {
-            const trained = trainingLabel(person, position.id);
-            return (
-              <li
-                key={person.id}
-                className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium">{person.name}</span>
-                  <StatusBadge tone={trained === "Trained" ? "success" : "neutral"}>
-                    {trained}
-                  </StatusBadge>
-                  {(startHere.get(person.id) ?? []).map((course) => (
-                    <StatusBadge key={course.title} tone={course.finished ? "success" : "neutral"}>
-                      {course.title}: {course.finished ? "Done" : "Not yet"}
-                    </StatusBadge>
-                  ))}
-                </span>
+        <div className="relative overflow-x-auto rounded-card border border-border bg-surface">
+          <table
+            aria-label={`${position.name} team`}
+            className="stack-table w-full text-left text-small"
+          >
+            <thead className="border-b border-border text-text-muted">
+              <tr>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  Name
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  For this position
+                </th>
+                {startHereTitles.map((title) => (
+                  <th key={title} scope="col" className="px-4 py-3 font-medium">
+                    {title}
+                  </th>
+                ))}
                 {fromPlanningCenter ? null : (
-                  <ActionForm
-                    action={removeFromTeamAction}
-                    submitLabel="Remove"
-                    pendingLabel="Removing…"
-                    variant="tertiary"
-                    hidden={{ roleId: position.id, userId: person.id }}
-                    srLabel={`${person.name} from ${position.name}`}
-                    className="flex"
-                  />
+                  <th scope="col" className="px-4 py-3 font-medium">
+                    <span className="sr-only">Actions</span>
+                  </th>
                 )}
-              </li>
-            );
-          })}
-        </ul>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {team.map((person) => {
+                const trained = trainingLabel(person, position.id);
+                return (
+                  <tr key={person.id}>
+                    <td className="px-4 py-3 font-medium text-text">{person.name}</td>
+                    <td data-label="For this position" className="px-4 py-3">
+                      <StatusBadge tone={trained === "Trained" ? "success" : "neutral"}>
+                        {trained}
+                      </StatusBadge>
+                    </td>
+                    {startHereTitles.map((title) => {
+                      const finished = startHere
+                        .get(person.id)
+                        ?.some((course) => course.title === title && course.finished);
+                      return (
+                        <td key={title} data-label={title} className="px-4 py-3">
+                          <StatusBadge tone={finished ? "success" : "neutral"}>
+                            {finished ? "Done" : "Not yet"}
+                          </StatusBadge>
+                        </td>
+                      );
+                    })}
+                    {fromPlanningCenter ? null : (
+                      <td className="px-4 py-3 text-right">
+                        <ActionForm
+                          action={removeFromTeamAction}
+                          submitLabel="Remove"
+                          pendingLabel="Removing…"
+                          variant="tertiary"
+                          hidden={{ roleId: position.id, userId: person.id }}
+                          srLabel={`${person.name} from ${position.name}`}
+                          className="flex justify-end"
+                        />
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
       {!fromPlanningCenter && addable.length > 0 ? (
         <details className="rounded-card border border-border bg-surface px-5 py-3">

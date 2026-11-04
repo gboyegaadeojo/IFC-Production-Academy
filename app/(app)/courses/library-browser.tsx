@@ -56,7 +56,7 @@ export function LibraryBrowser({
           className={`${fieldClasses} w-auto`}
         >
           <option value="">All categories</option>
-          <optgroup label="Topics">{options("topic")}</optgroup>
+          <optgroup label="General">{options("topic")}</optgroup>
           <optgroup label="Departments">{options("team")}</optgroup>
         </select>
         <select

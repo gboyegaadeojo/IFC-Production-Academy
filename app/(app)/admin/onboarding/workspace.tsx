@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import type { Choice } from "@/lib/data/onboarding";
+import type { Choice, CourseChoice } from "@/lib/data/onboarding";
 import type { StepKind } from "@/lib/domain/onboarding";
 import { Builder, type BuilderStage } from "./builder";
 import { AddStage, StageSettings } from "./stage-settings";
@@ -39,7 +39,7 @@ export function Workspace({
   steps: WorkspaceStep[];
   roles: Choice[];
   people: Choice[];
-  courses: Choice[];
+  courses: CourseChoice[];
   servingRoles: Choice[];
   departments: (Choice & { pathwayId: string | null })[];
   initial: Selection;
