@@ -440,6 +440,8 @@ export type LessonDetail = {
   /** Stable across versions. */
   key: string;
   courseId: string;
+  /** "Video Directing Concepts · Camera Directing · Level 1". */
+  whereItLives: string;
   departmentId: string;
   courseVersionId: string;
   editable: boolean;
@@ -472,7 +474,7 @@ export async function getLesson(lessonId: string): Promise<LessonDetail | null> 
   const [version, modules] = await Promise.all([
     supabase
       .from("course_versions")
-      .select("course_id, status")
+      .select("course_id, status, title")
       .eq("id", lesson.data.course_version_id)
       .single(),
     supabase
@@ -486,16 +488,34 @@ export async function getLesson(lessonId: string): Promise<LessonDetail | null> 
   }
   const course = await supabase
     .from("courses")
-    .select("department_id")
+    .select("department_id, level_id")
     .eq("id", version.data.course_id)
     .single();
   if (course.error) {
     throw new Error("Could not load the lesson", { cause: course.error.code });
   }
+  const [category, level] = await Promise.all([
+    supabase
+      .from("departments")
+      .select("name, uses_levels")
+      .eq("id", course.data.department_id)
+      .single(),
+    supabase.from("levels").select("number").eq("id", course.data.level_id).single(),
+  ]);
+  if (category.error || level.error) {
+    throw new Error("Could not load the lesson", { cause: (category.error ?? level.error)?.code });
+  }
   return {
     id: lesson.data.id,
     key: lesson.data.lesson_key,
     courseId: version.data.course_id,
+    whereItLives: [
+      version.data.title,
+      category.data.name,
+      category.data.uses_levels ? `Level ${level.data.number}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
     departmentId: course.data.department_id,
     courseVersionId: lesson.data.course_version_id,
     editable: version.data.status === "draft",

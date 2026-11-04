@@ -12,7 +12,7 @@ Onboarding takes someone from "I want to serve" to ready for a team. You build e
 
 Set up **Join the team** first: everyone who wants to serve starts there, then moves on to a department's pathway.
 
-Open **Onboarding pathways**. Add stages, such as "Week 1". Then drag steps from the **Step library** onto a stage, or press **Add**. Select a step to change what it does. A step marked **Needs setup** isn't finished, and **Waits here** means people pause on it until it's done.
+Open **Onboarding pathways**. Add stages, such as "Week 1". Then choose **Add a step** to open the **Step library**, and drag steps onto a stage, or press **Add**. Select a step to change what it does. A step marked **Needs setup** isn't finished, and **Waits here** means people pause on it until it's done.
 
 The steps you can use:
 

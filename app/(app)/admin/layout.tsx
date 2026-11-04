@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: LayoutProps<"/admin">) {
         <Navigation />
       </Suspense>
       <div className="min-w-0 flex-1 px-4 py-8 md:px-8 lg:py-10 xl:px-12">
-        <div className="mx-auto w-full max-w-[72rem]">{children}</div>
+        <div className="w-full max-w-[72rem]">{children}</div>
       </div>
     </div>
   );

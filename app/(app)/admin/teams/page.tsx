@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Metadata } from "next";
+import { ChevronDownIcon } from "@/components/ui/icons";
+import { DepartmentIcon } from "@/components/department-icon";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ActionForm, Field, fieldClasses, SwitchForm } from "@/components/ui/action-form";
@@ -51,12 +53,17 @@ async function TeamsContent({ searchParams }: Pick<PageProps<"/admin/teams">, "s
   const departments = await getTeamDepartments(grants);
   const params = await searchParams;
   const selected = departments.find((d) => d.id === params.department) ?? departments[0];
+  const source = await getSchedulingSource();
 
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Serving teams"
-        description="Who serves in each position, with their training beside their name, and what each position sees on the day. While Planning Center schedules, people are added to positions there, and appear here after the next read."
+        description={
+          source === "planning_center"
+            ? "Team managers add people in Planning Center when they're ready, and they appear here after the next read. Training shows here so you know who may need a hand."
+            : "Team managers add people when they're ready. Training shows here so you know who may need a hand."
+        }
       />
       {departments.length > 1 ? (
         <nav aria-label="Choose a department" className="flex flex-wrap gap-2">
@@ -115,31 +122,34 @@ async function DepartmentTeams({ department }: { department: TeamDepartment }) {
 
   return (
     <div className="flex flex-col gap-8">
-      <section aria-labelledby="everyone-heading" className="flex flex-col gap-3">
-        <h2 id="everyone-heading" className="flex items-center gap-2 text-heading font-semibold">
+      <details className="group rounded-card border border-border bg-surface [&_summary::-webkit-details-marker]:hidden">
+        <summary className="flex min-h-touch cursor-pointer list-none items-center gap-2 px-4 py-2 font-medium">
           All {department.name} team members
           <span className="tabular text-small font-normal text-text-muted">{everyone.length}</span>
-        </h2>
-        {everyone.length === 0 ? (
-          <p className="text-small text-text-muted">
-            Nobody yet. Add people to each position below.
-          </p>
-        ) : (
-          <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
-            {everyone.map(({ person, positions: theirs }) => (
-              <li key={person.id} className="flex items-center gap-3 px-4 py-3">
-                <Avatar name={person.name} />
-                <div className="flex min-w-0 flex-col">
-                  <span className="font-medium">{person.name}</span>
-                  <span className="text-small text-text-secondary">
-                    {theirs.map((p) => p.name).join(" · ")}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+          <ChevronDownIcon className="ml-auto size-4 text-text-muted transition-surface group-open:rotate-180" />
+        </summary>
+        <div className="border-t border-border">
+          {everyone.length === 0 ? (
+            <p className="text-small text-text-muted">
+              Nobody yet. Add people to each position below.
+            </p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-border">
+              {everyone.map(({ person, positions: theirs }) => (
+                <li key={person.id} className="flex items-center gap-3 px-4 py-3">
+                  <Avatar name={person.name} />
+                  <div className="flex min-w-0 flex-col">
+                    <span className="font-medium">{person.name}</span>
+                    <span className="text-small text-text-secondary">
+                      {theirs.map((p) => p.name).join(" · ")}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </details>
 
       {positions.map((position) => (
         <PositionTeam
@@ -147,10 +157,14 @@ async function DepartmentTeams({ department }: { department: TeamDepartment }) {
           key={position.id}
           position={position}
           people={people}
-          departmentName={department.name}
+          department={department}
           fromPlanningCenter={fromPlanningCenter}
         />
       ))}
+      <p className="max-w-[40rem] rounded-card border border-border bg-card px-3 py-2.5 text-small text-text-secondary">
+        This is information for the team manager, never a block. A column appears for each course
+        marked Start here in Curriculum.
+      </p>
     </div>
   );
 }
@@ -158,44 +172,44 @@ async function DepartmentTeams({ department }: { department: TeamDepartment }) {
 function PositionTeam({
   position,
   people,
-  departmentName,
+  department,
   fromPlanningCenter,
   startHere,
 }: {
   position: Position;
   people: TeamPerson[];
-  departmentName: string;
+  department: TeamDepartment;
   fromPlanningCenter: boolean;
   startHere: Map<string, { title: string; finished: boolean }[]>;
 }) {
   const team = positionTeam(people, position.id);
   const addable = addableFor(people, position.id);
   const headingId = `position-${position.id}`;
+  const departmentName = department.name;
   const startHereTitles = [
     ...new Set([...startHere.values()].flatMap((courses) => courses.map((course) => course.title))),
   ];
 
   return (
-    <section aria-labelledby={headingId} className="flex max-w-3xl flex-col gap-3">
-      <h2 id={headingId} className="flex items-center gap-2 text-heading font-semibold">
-        {position.name}
-        <span className="tabular text-small font-normal text-text-muted">{team.length}</span>
-      </h2>
-      <div className="flex flex-col text-small text-text-secondary">
-        <SwitchForm
-          action={setSeesAllAction}
-          hidden={{ roleId: position.id }}
-          name="seesAll"
-          checked={Boolean(position.seesAll)}
-          label="Sees all departments"
-        />
-        <SwitchForm
-          action={setLeadsAction}
-          hidden={{ roleId: position.id }}
-          name="leads"
-          checked={Boolean(position.leadsService)}
-          label="Gets the Director role while scheduled"
-        />
+    <section
+      aria-labelledby={headingId}
+      style={{ "--dept": departmentHueVar(department.hue) } as CSSProperties}
+      className="flex flex-col gap-3"
+    >
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="flex size-9 shrink-0 items-center justify-center rounded-button border border-[color-mix(in_srgb,var(--dept)_18%,var(--border))] bg-[color-mix(in_srgb,var(--dept)_11%,var(--surface))] text-[var(--dept)]"
+        >
+          <DepartmentIcon icon={department.icon} className="size-4" />
+        </span>
+        <div className="flex flex-col">
+          <h2 id={headingId} className="flex items-center gap-2 text-heading font-semibold">
+            {position.name}
+            <span className="tabular text-small font-normal text-text-muted">{team.length}</span>
+          </h2>
+          <p className="text-small text-text-muted">{departmentName}</p>
+        </div>
       </div>
       {team.length === 0 ? (
         <p className="text-small text-text-muted">
@@ -270,6 +284,22 @@ function PositionTeam({
           </table>
         </div>
       )}
+      <div className="flex flex-col text-small text-text-secondary">
+        <SwitchForm
+          action={setSeesAllAction}
+          hidden={{ roleId: position.id }}
+          name="seesAll"
+          checked={Boolean(position.seesAll)}
+          label="Sees all departments"
+        />
+        <SwitchForm
+          action={setLeadsAction}
+          hidden={{ roleId: position.id }}
+          name="leads"
+          checked={Boolean(position.leadsService)}
+          label="Gets the Director role while scheduled"
+        />
+      </div>
       {!fromPlanningCenter && addable.length > 0 ? (
         <details className="rounded-card border border-border bg-surface px-5 py-3">
           <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-accent-light">

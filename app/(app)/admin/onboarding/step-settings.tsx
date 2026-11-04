@@ -15,8 +15,6 @@ import {
 } from "@/lib/domain/onboarding";
 import type { Choice, CourseChoice } from "@/lib/data/onboarding";
 import { removeStepAction, saveStepAction } from "./actions";
-import { TONE } from "./builder";
-import { StepIcon } from "./step-icon";
 
 /**
  * Edit one step (approved mock, 2026-11-01): its name and what it does. Each kind shows only the
@@ -65,25 +63,16 @@ export function StepSettings({
   );
 
   return (
-    <section
-      aria-labelledby="settings-heading"
-      className="flex flex-col gap-4 rounded-card border border-border bg-surface p-4"
-    >
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden="true"
-          className={`flex size-9 items-center justify-center rounded-button ${TONE[meta.tone]}`}
-        >
-          <StepIcon kind={step.kind} className="size-[18px]" />
+    <section aria-labelledby="settings-heading" className="flex flex-col gap-4">
+      <div className="flex flex-col">
+        <h4 id="settings-heading" className="font-semibold">
+          {meta.label}
+        </h4>
+        <span className="text-small text-text-muted">
+          {meta.waits
+            ? `Waits here: ${meta.hint.charAt(0).toLowerCase()}${meta.hint.slice(1)}`
+            : "Happens straight away"}
         </span>
-        <div className="flex flex-col">
-          <h2 id="settings-heading" className="font-semibold">
-            {meta.label}
-          </h2>
-          <span className="text-small text-text-muted">
-            {meta.waits ? "Waits here until done" : "Happens straight away"}
-          </span>
-        </div>
       </div>
 
       {needsSetup ? (
