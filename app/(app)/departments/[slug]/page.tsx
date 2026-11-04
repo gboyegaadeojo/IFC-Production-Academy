@@ -56,6 +56,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
     notFound();
   }
   const { department, levels, canOpenCourses } = pathway;
+  const isTopic = department.kind === "topic";
   const style = { "--dept": departmentHueVar(department.hue) } as CSSProperties;
   const courses = levels.flatMap((level) => level.courses);
   const published = courses.length;
@@ -65,7 +66,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
           user.id,
           courses.map((course) => course.id),
         ),
-        getMyReadiness(user.id, department.id),
+        isTopic ? null : getMyReadiness(user.id, department.id),
       ])
     : [new Map<string, CourseProgress>(), null];
 
@@ -106,7 +107,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
             <DepartmentIcon icon={department.icon} className="size-7 sm:size-8" />
           </span>
           <div className="flex min-w-0 flex-col gap-1.5">
-            <p className="eyebrow">Department</p>
+            <p className="eyebrow">{isTopic ? "Topic" : "Department"}</p>
             <h1 id="department-heading" className="text-title font-semibold text-balance">
               {department.name}
             </h1>
@@ -114,13 +115,23 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
               {department.summary}
             </p>
             <div className="hidden flex-wrap items-center gap-x-4 gap-y-2 text-small text-text-muted sm:flex">
-              <Facts published={published} lessons={lessons} minutes={minutes} />
+              <Facts
+                published={published}
+                lessons={lessons}
+                minutes={minutes}
+                usesLevels={department.usesLevels}
+              />
             </div>
           </div>
         </div>
         <p className="text-text-secondary sm:hidden">{department.summary}</p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-small text-text-muted sm:hidden">
-          <Facts published={published} lessons={lessons} minutes={minutes} />
+          <Facts
+            published={published}
+            lessons={lessons}
+            minutes={minutes}
+            usesLevels={department.usesLevels}
+          />
         </div>
         <div className="flex flex-col gap-2 sm:items-end">
           <div className="flex flex-col gap-2 sm:items-end">
@@ -141,9 +152,9 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
 
       <section aria-labelledby="pathway-heading" className="flex flex-col gap-5">
         <div className="flex flex-col gap-1">
-          <p className="eyebrow">Pathway</p>
+          {department.usesLevels ? <p className="eyebrow">Pathway</p> : null}
           <h2 id="pathway-heading" className="text-heading font-semibold">
-            Three levels, one step at a time
+            {department.usesLevels ? "Three levels, one step at a time" : "Courses"}
           </h2>
           {!canOpenCourses ? (
             <p className="flex items-center gap-2 text-small text-text-secondary">
@@ -160,13 +171,14 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
                 canOpen={canOpenCourses}
                 isLast={index === levels.length - 1}
                 progress={progress}
+                usesLevels={department.usesLevels}
               />
             </li>
           ))}
         </ol>
       </section>
 
-      <Readiness departmentName={department.name} readiness={readiness} />
+      {isTopic ? null : <Readiness departmentName={department.name} readiness={readiness} />}
     </div>
   );
 }
@@ -175,13 +187,15 @@ function Facts({
   published,
   lessons,
   minutes,
+  usesLevels,
 }: {
   published: number;
   lessons: number;
   minutes: number;
+  usesLevels: boolean;
 }) {
   if (published === 0) {
-    return <span>Three levels · no courses published yet</span>;
+    return <span>{usesLevels ? "Three levels · no" : "No"} courses published yet</span>;
   }
   return (
     <>
@@ -198,13 +212,22 @@ function LevelStep({
   canOpen,
   isLast,
   progress,
+  usesLevels,
 }: {
   level: PathwayLevel;
   canOpen: boolean;
   isLast: boolean;
   progress: ReadonlyMap<string, CourseProgress>;
+  usesLevels: boolean;
 }) {
   const empty = level.courses.length === 0;
+  if (!usesLevels) {
+    return empty ? (
+      <p className="text-small text-text-muted">Courses are coming soon.</p>
+    ) : (
+      <CourseCards level={level} canOpen={canOpen} progress={progress} />
+    );
+  }
   return (
     <article
       aria-labelledby={`level-${level.id}`}
@@ -241,57 +264,66 @@ function LevelStep({
             {level.summary}
           </p>
         ) : null}
-        {empty ? null : (
-          <ul className="mt-3 grid gap-3 md:grid-cols-[repeat(auto-fill,minmax(18rem,1fr))]">
-            {level.courses.map((course) => {
-              const courseProgress = progress.get(course.id);
-              const percent = courseProgress?.percent ?? 0;
-              const meta = [
-                courseProgress
-                  ? `${courseProgress.countedCompleted} of ${lessonCountLabel(courseProgress.countedTotal)}`
-                  : course.lessonCount !== null
-                    ? lessonCountLabel(course.lessonCount)
-                    : null,
-                course.estimatedMinutes ? `About ${formatMinutes(course.estimatedMinutes)}` : null,
-              ].filter(Boolean);
-              return (
-                <li key={course.id}>
-                  {canOpen ? (
-                    <Link
-                      href={`/courses/${course.id}`}
-                      className="group flex lift flex-col gap-3 rounded-card border border-border bg-card px-4 py-3.5"
-                    >
-                      <span className="flex items-center gap-3">
-                        <span className="flex-1 font-semibold text-text transition-surface group-hover:text-accent-light group-focus-visible:text-accent-light">
-                          {course.title}
-                        </span>
-                        <ChevronRightIcon className="size-4 shrink-0 text-text-muted transition-surface group-hover:translate-x-1 group-hover:text-accent-light group-focus-visible:translate-x-1 group-focus-visible:text-accent-light" />
-                      </span>
-                      {courseProgress ? (
-                        <ProgressBar
-                          percent={percent}
-                          label={`${course.title}: ${percent}% done`}
-                        />
-                      ) : null}
-                      <span className="flex flex-wrap justify-between gap-x-3 text-small text-text-muted">
-                        {meta.map((item) => (
-                          <span key={item}>{item}</span>
-                        ))}
-                      </span>
-                    </Link>
-                  ) : (
-                    <span className="flex flex-col gap-1 rounded-card border border-dashed border-border px-4 py-3.5">
-                      <span className="font-medium text-text-secondary">{course.title}</span>
-                      <span className="text-small text-text-muted">Not open yet</span>
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
+        {empty ? null : <CourseCards level={level} canOpen={canOpen} progress={progress} />}
       </div>
     </article>
+  );
+}
+
+function CourseCards({
+  level,
+  canOpen,
+  progress,
+}: {
+  level: PathwayLevel;
+  canOpen: boolean;
+  progress: ReadonlyMap<string, CourseProgress>;
+}) {
+  return (
+    <ul className="mt-3 grid gap-3 md:grid-cols-[repeat(auto-fill,minmax(18rem,1fr))]">
+      {level.courses.map((course) => {
+        const courseProgress = progress.get(course.id);
+        const percent = courseProgress?.percent ?? 0;
+        const meta = [
+          courseProgress
+            ? `${courseProgress.countedCompleted} of ${lessonCountLabel(courseProgress.countedTotal)}`
+            : course.lessonCount !== null
+              ? lessonCountLabel(course.lessonCount)
+              : null,
+          course.estimatedMinutes ? `About ${formatMinutes(course.estimatedMinutes)}` : null,
+        ].filter(Boolean);
+        return (
+          <li key={course.id}>
+            {canOpen ? (
+              <Link
+                href={`/courses/${course.id}`}
+                className="group flex lift flex-col gap-3 rounded-card border border-border bg-card px-4 py-3.5"
+              >
+                <span className="flex items-center gap-3">
+                  <span className="flex-1 font-semibold text-text transition-surface group-hover:text-accent-light group-focus-visible:text-accent-light">
+                    {course.title}
+                  </span>
+                  <ChevronRightIcon className="size-4 shrink-0 text-text-muted transition-surface group-hover:translate-x-1 group-hover:text-accent-light group-focus-visible:translate-x-1 group-focus-visible:text-accent-light" />
+                </span>
+                {courseProgress ? (
+                  <ProgressBar percent={percent} label={`${course.title}: ${percent}% done`} />
+                ) : null}
+                <span className="flex flex-wrap justify-between gap-x-3 text-small text-text-muted">
+                  {meta.map((item) => (
+                    <span key={item}>{item}</span>
+                  ))}
+                </span>
+              </Link>
+            ) : (
+              <span className="flex flex-col gap-1 rounded-card border border-dashed border-border px-4 py-3.5">
+                <span className="font-medium text-text-secondary">{course.title}</span>
+                <span className="text-small text-text-muted">Not open yet</span>
+              </span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

@@ -79,21 +79,25 @@ export function DepartmentForm({ department }: { department: DepartmentSettings 
             {status !== department.status ? " This takes effect when you save." : ""}
           </p>
         </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor={ids.enrolment} className="text-small font-medium text-text-secondary">
-            How people join
-          </label>
-          <select
-            id={ids.enrolment}
-            name="enrolmentMode"
-            defaultValue={department.enrolmentMode}
-            className={fieldClasses}
-          >
-            <option value="request">They ask, a leader approves</option>
-            <option value="open">Anyone can join, no approval</option>
-            <option value="invite_only">By invitation only</option>
-          </select>
-        </div>
+        {department.kind === "topic" ? (
+          <input type="hidden" name="enrolmentMode" value={department.enrolmentMode} />
+        ) : (
+          <div className="flex flex-col gap-2">
+            <label htmlFor={ids.enrolment} className="text-small font-medium text-text-secondary">
+              How people join
+            </label>
+            <select
+              id={ids.enrolment}
+              name="enrolmentMode"
+              defaultValue={department.enrolmentMode}
+              className={fieldClasses}
+            >
+              <option value="request">They ask, a leader approves</option>
+              <option value="open">Anyone can join, no approval</option>
+              <option value="invite_only">By invitation only</option>
+            </select>
+          </div>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-4">
         <Button

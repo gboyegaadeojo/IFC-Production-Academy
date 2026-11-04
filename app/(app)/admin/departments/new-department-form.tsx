@@ -5,7 +5,7 @@ import { useActionState, useState } from "react";
 import { DEPARTMENT_ICON_OPTIONS, DepartmentIcon } from "@/components/department-icon";
 import { fieldClasses } from "@/components/ui/action-form";
 import { Button } from "@/components/ui/button";
-import { DEPARTMENT_HUES, departmentHueVar } from "@/lib/domain/departments";
+import { DEPARTMENT_HUES, departmentHueVar, type DepartmentKind } from "@/lib/domain/departments";
 import { createDepartmentAction, type DepartmentFormState } from "./actions";
 
 const idle: DepartmentFormState = { status: "idle" };
@@ -15,7 +15,9 @@ const idle: DepartmentFormState = { status: "idle" };
  * three levels straight away; curriculum, positions, checklists and onboarding are set up the same
  * way as for every other department.
  */
-export function NewDepartmentForm() {
+export function NewDepartmentForm({ kind = "team" }: { kind?: DepartmentKind }) {
+  const isTopic = kind === "topic";
+  const prefix = isTopic ? "new-topic" : "new-dept";
   const [state, action, pending] = useActionState(createDepartmentAction, idle);
   const [name, setName] = useState("");
   const [icon, setIcon] = useState("livestream");
@@ -25,6 +27,7 @@ export function NewDepartmentForm() {
 
   return (
     <form action={action} className="flex flex-col gap-5">
+      <input type="hidden" name="kind" value={kind} />
       <div
         style={{ "--dept": departmentHueVar(hue) } as CSSProperties}
         className="flex items-center gap-3 rounded-card border border-border bg-card p-3"
@@ -34,36 +37,42 @@ export function NewDepartmentForm() {
           <DepartmentIcon icon={icon} className="size-5" />
         </span>
         <span className="flex flex-col">
-          <span className="font-semibold">{name.trim() || "New department"}</span>
+          <span className="font-semibold">
+            {name.trim() || (isTopic ? "New topic" : "New department")}
+          </span>
           <span className="text-small text-text-muted">How it will look on Training</span>
         </span>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="new-dept-name" className="text-small font-medium text-text-secondary">
+        <label htmlFor={`${prefix}-name`} className="text-small font-medium text-text-secondary">
           Name
         </label>
         <input
-          id="new-dept-name"
+          id={`${prefix}-name`}
           name="name"
           required
           maxLength={80}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Livestream Operations"
+          placeholder={isTopic ? "Volunteer Care" : "Livestream Operations"}
           className={fieldClasses}
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="new-dept-summary" className="text-small font-medium text-text-secondary">
+        <label htmlFor={`${prefix}-summary`} className="text-small font-medium text-text-secondary">
           One line about it (optional)
         </label>
         <textarea
-          id="new-dept-summary"
+          id={`${prefix}-summary`}
           name="summary"
           maxLength={300}
           rows={2}
-          placeholder="Run the stream so people at home can join the service."
+          placeholder={
+            isTopic
+              ? "Looking after each other as a team."
+              : "Run the stream so people at home can join the service."
+          }
           className={`${fieldClasses} py-2`}
         />
       </div>
@@ -116,27 +125,37 @@ export function NewDepartmentForm() {
       </fieldset>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="new-dept-join" className="text-small font-medium text-text-secondary">
-            How people join
+        {isTopic ? (
+          <label className="flex items-center gap-2 self-end pb-2 text-small text-text-secondary">
+            <input type="checkbox" name="usesLevels" />
+            Use three levels
           </label>
-          <select
-            id="new-dept-join"
-            name="enrolmentMode"
-            defaultValue="request"
-            className={fieldClasses}
-          >
-            <option value="request">They ask, a leader approves</option>
-            <option value="open">Anyone can join, no approval</option>
-            <option value="invite_only">By invitation only</option>
-          </select>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="new-dept-join" className="text-small font-medium text-text-secondary">
+              How people join
+            </label>
+            <select
+              id="new-dept-join"
+              name="enrolmentMode"
+              defaultValue="request"
+              className={fieldClasses}
+            >
+              <option value="request">They ask, a leader approves</option>
+              <option value="open">Anyone can join, no approval</option>
+              <option value="invite_only">By invitation only</option>
+            </select>
+          </div>
+        )}
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="new-dept-status" className="text-small font-medium text-text-secondary">
+          <label
+            htmlFor={`${prefix}-status`}
+            className="text-small font-medium text-text-secondary"
+          >
             Status
           </label>
           <select
-            id="new-dept-status"
+            id={`${prefix}-status`}
             name="status"
             defaultValue="coming_soon"
             className={fieldClasses}
@@ -158,7 +177,7 @@ export function NewDepartmentForm() {
         </p>
       ) : null}
       <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Adding…" : "Add department"}
+        {pending ? "Adding…" : isTopic ? "Add topic" : "Add department"}
       </Button>
     </form>
   );

@@ -19,6 +19,7 @@ export async function getTeamDepartments(
     .from("departments")
     .select("id, name, hue, icon, status, sort_order")
     .neq("status", "inactive")
+    .eq("kind", "team")
     .order("sort_order");
   if (error) {
     throw new Error("Could not load departments", { cause: error.code });

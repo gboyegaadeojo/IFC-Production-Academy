@@ -10,7 +10,7 @@ export type CertificateSummary = {
   courseId: string;
   courseTitle: string;
   departmentName: string;
-  levelNumber: number;
+  levelNumber: number | null;
   versionNumber: number;
   issuedAt: string;
   revoked: boolean;
@@ -60,7 +60,7 @@ export type VerifiedCertificate = {
   recipientName: string;
   courseTitle: string;
   departmentName: string;
-  levelNumber: number;
+  levelNumber: number | null;
   versionNumber: number;
   issuedAt: string;
   revoked: boolean;
@@ -98,7 +98,7 @@ export type CheckedCertificate = {
   recipientInitials: string;
   courseTitle: string;
   departmentName: string;
-  levelNumber: number;
+  levelNumber: number | null;
   issuedAt: string;
   revoked: boolean;
 };

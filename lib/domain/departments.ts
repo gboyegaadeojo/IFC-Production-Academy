@@ -5,6 +5,8 @@
 
 export type DepartmentStatus = "active" | "coming_soon" | "inactive";
 export type EnrolmentMode = "request" | "invite_only" | "open";
+/** A team is a department people join. A topic, such as General, is courses only. */
+export type DepartmentKind = "team" | "topic";
 export type MembershipStatus = "requested" | "active" | "declined" | "removed";
 
 export type Department = {
@@ -14,6 +16,8 @@ export type Department = {
   summary: string;
   status: DepartmentStatus;
   enrolmentMode: EnrolmentMode;
+  kind: DepartmentKind;
+  usesLevels: boolean;
   hue: string;
   icon: string;
   sortOrder: number;
@@ -33,6 +37,7 @@ export type DepartmentCardState =
   | { kind: "can_join" }
   | { kind: "coming_soon" }
   | { kind: "invite_only" }
+  | { kind: "topic" }
   | { kind: "unavailable" };
 
 const OPEN_STATUSES: ReadonlySet<MembershipStatus> = new Set(["requested", "active"]);
@@ -65,11 +70,14 @@ function isMoreCurrent(candidate: Membership, existing: Membership): boolean {
 
 /** What a volunteer can do with a department card. Membership never implies approval to serve. */
 export function departmentCardState(
-  department: Pick<Department, "status" | "enrolmentMode">,
+  department: Pick<Department, "status" | "enrolmentMode"> & { kind?: DepartmentKind },
   membership: Pick<Membership, "status"> | null | undefined,
 ): DepartmentCardState {
   if (department.status === "inactive") {
     return { kind: "unavailable" };
+  }
+  if (department.kind === "topic") {
+    return { kind: "topic" };
   }
   if (membership?.status === "active") {
     return { kind: "member" };
@@ -156,6 +164,11 @@ export function requestMembershipErrorMessage(error: RequestMembershipError): st
     case "unknown":
       return "Your request didn't go through. Check your connection and try again.";
   }
+}
+
+/** Where a course sits, for labels: "Camera Directing · Level 1", or just "General" without levels. */
+export function courseHomeLabel(departmentName: string, levelNumber: number | null): string {
+  return levelNumber === null ? departmentName : `${departmentName} · Level ${levelNumber}`;
 }
 
 /**

@@ -48,7 +48,11 @@ async function loadRolesAndDepartments(
 ) {
   const [roles, departments, roleCapabilities, capabilities] = await Promise.all([
     supabase.from("roles").select("id, key, name, description, department_scoped").order("name"),
-    supabase.from("departments").select("id, name, sort_order").order("sort_order"),
+    supabase
+      .from("departments")
+      .select("id, name, sort_order")
+      .eq("kind", "team")
+      .order("sort_order"),
     supabase.from("role_capabilities").select("role_id, capability_id"),
     supabase.from("capabilities").select("id, key, description").order("key"),
   ]);

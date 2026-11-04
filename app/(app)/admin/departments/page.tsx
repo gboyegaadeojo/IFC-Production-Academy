@@ -6,7 +6,7 @@ import { Drawer } from "@/components/ui/drawer";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { listDepartmentSettings } from "@/lib/data/admin/departments";
+import { listDepartmentSettings, type DepartmentSettings } from "@/lib/data/admin/departments";
 import { formatDateTime } from "@/lib/domain/admin";
 import {
   departmentHueVar,
@@ -49,7 +49,9 @@ async function DepartmentsContent() {
   if (!allowed) {
     return <AccessDenied />;
   }
-  const departments = await listDepartmentSettings();
+  const all = await listDepartmentSettings();
+  const departments = all.filter((department) => department.kind === "team");
+  const topics = all.filter((department) => department.kind === "topic");
 
   return (
     <div className="flex flex-col gap-6">
@@ -70,74 +72,111 @@ async function DepartmentsContent() {
           <NewDepartmentForm />
         </div>
       </details>
-      <div className="relative overflow-x-auto rounded-card border border-border">
-        <table className="stack-table w-full min-w-[40rem] text-left text-small">
-          <caption className="sr-only">Departments in display order</caption>
-          <thead className="border-b border-border text-text-muted">
-            <tr>
-              <th scope="col" className="px-4 py-3 font-medium">
-                Department
-              </th>
-              <th scope="col" className="px-4 py-3 font-medium">
-                How people join
-              </th>
-              <th scope="col" className="px-4 py-3 font-medium">
-                Status
-              </th>
-              <th scope="col" className="px-4 py-3 font-medium">
-                <span className="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {departments.map((department) => (
-              <tr
-                key={department.id}
-                style={{ "--dept": departmentHueVar(department.hue) } as CSSProperties}
-              >
-                <td className="px-4 py-3">
-                  <span className="flex items-center gap-3">
-                    <span className="flex size-8 items-center justify-center rounded-button border border-border text-[var(--dept)]">
-                      <DepartmentIcon icon={department.icon} className="size-4" />
-                    </span>
-                    <span className="flex flex-col">
-                      <span className="font-medium text-text">{department.name}</span>
-                      <span className="text-text-muted">
-                        Changed {formatDateTime(department.updatedAt)}
-                      </span>
+      <CategoryTable caption="Departments in display order" rows={departments} />
+
+      <section aria-labelledby="topics-heading" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 id="topics-heading" className="text-heading font-semibold">
+            Topics
+          </h2>
+          <p className="max-w-[44rem] text-small text-text-secondary">
+            Courses for anyone on the production team, such as General and Leadership. Nobody joins
+            a topic, and it has no positions or practicals.
+          </p>
+        </div>
+        <details className="group max-w-2xl rounded-card border border-border bg-surface p-4">
+          <summary className="inline-flex min-h-button cursor-pointer list-none items-center rounded-button border border-border-strong px-3 text-small font-medium text-text hover:bg-hover [&::-webkit-details-marker]:hidden">
+            + Add a topic
+          </summary>
+          <div className="mt-4">
+            <NewDepartmentForm kind="topic" />
+          </div>
+        </details>
+        {topics.length > 0 ? (
+          <CategoryTable caption="Topics in display order" rows={topics} />
+        ) : null}
+      </section>
+    </div>
+  );
+}
+
+function CategoryTable({ caption, rows }: { caption: string; rows: DepartmentSettings[] }) {
+  const isTopics = rows[0]?.kind === "topic";
+  return (
+    <div className="relative overflow-x-auto rounded-card border border-border">
+      <table className="stack-table w-full min-w-[40rem] text-left text-small">
+        <caption className="sr-only">{caption}</caption>
+        <thead className="border-b border-border text-text-muted">
+          <tr>
+            <th scope="col" className="px-4 py-3 font-medium">
+              {isTopics ? "Topic" : "Department"}
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              {isTopics ? "Levels" : "How people join"}
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              Status
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {rows.map((department) => (
+            <tr
+              key={department.id}
+              style={{ "--dept": departmentHueVar(department.hue) } as CSSProperties}
+            >
+              <td className="px-4 py-3">
+                <span className="flex items-center gap-3">
+                  <span className="flex size-8 items-center justify-center rounded-button border border-border text-[var(--dept)]">
+                    <DepartmentIcon icon={department.icon} className="size-4" />
+                  </span>
+                  <span className="flex flex-col">
+                    <span className="font-medium text-text">{department.name}</span>
+                    <span className="text-text-muted">
+                      Changed {formatDateTime(department.updatedAt)}
                     </span>
                   </span>
-                </td>
-                <td data-label="How people join" className="px-4 py-3 text-text-secondary">
-                  {ENROLMENT_LABELS[department.enrolmentMode]}
-                </td>
-                <td data-label="Status" className="px-4 py-3">
-                  <StatusBadge tone={STATUS_TONES[department.status]}>
-                    {STATUS_LABELS[department.status]}
-                  </StatusBadge>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <Drawer
-                    title={`Edit ${department.name}`}
-                    triggerLabel={` ${department.name}`}
-                    trigger={<span className="text-small text-text">Edit</span>}
-                    triggerClassName="border border-border-strong"
-                    side="right"
-                    wide
-                  >
-                    <div className="flex flex-col gap-4 p-2">
-                      <p className="text-small text-text-muted">
-                        Last changed {formatDateTime(department.updatedAt)}
-                      </p>
-                      <DepartmentForm department={department} />
-                    </div>
-                  </Drawer>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </span>
+              </td>
+              <td
+                data-label={isTopics ? "Levels" : "How people join"}
+                className="px-4 py-3 text-text-secondary"
+              >
+                {isTopics
+                  ? department.usesLevels
+                    ? "Three levels"
+                    : "No levels"
+                  : ENROLMENT_LABELS[department.enrolmentMode]}
+              </td>
+              <td data-label="Status" className="px-4 py-3">
+                <StatusBadge tone={STATUS_TONES[department.status]}>
+                  {STATUS_LABELS[department.status]}
+                </StatusBadge>
+              </td>
+              <td className="px-4 py-3 text-right">
+                <Drawer
+                  title={`Edit ${department.name}`}
+                  triggerLabel={` ${department.name}`}
+                  trigger={<span className="text-small text-text">Edit</span>}
+                  triggerClassName="border border-border-strong"
+                  side="right"
+                  wide
+                >
+                  <div className="flex flex-col gap-4 p-2">
+                    <p className="text-small text-text-muted">
+                      Last changed {formatDateTime(department.updatedAt)}
+                    </p>
+                    <DepartmentForm department={department} />
+                  </div>
+                </Drawer>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

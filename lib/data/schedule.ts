@@ -271,7 +271,11 @@ export async function getEventDetail(
       .eq("event_id", eventId)
       .in("status", ["pending", "confirmed", "declined"])
       .order("assigned_at", { ascending: false }),
-    supabase.from("departments").select("id, name, sort_order").order("sort_order"),
+    supabase
+      .from("departments")
+      .select("id, name, sort_order")
+      .eq("kind", "team")
+      .order("sort_order"),
     supabase.from("serving_roles").select("id, department_id, name, archived_at").order("name"),
   ]);
   if (positions.error || assignments.error || departments.error || roles.error) {

@@ -188,6 +188,7 @@ export async function getReadinessAdmin(
   const departments = await supabase
     .from("departments")
     .select("id, name, hue, sort_order")
+    .eq("kind", "team")
     .order("sort_order");
   if (departments.error) {
     throw new Error("Could not load departments", { cause: departments.error.code });

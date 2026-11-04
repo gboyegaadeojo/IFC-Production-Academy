@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { toAdminError } from "@/lib/domain/admin";
 import {
   departmentSlug,
+  type DepartmentKind,
   type DepartmentStatus,
   type EnrolmentMode,
 } from "@/lib/domain/departments";
@@ -14,6 +15,8 @@ export type DepartmentSettings = {
   summary: string;
   status: DepartmentStatus;
   enrolmentMode: EnrolmentMode;
+  kind: DepartmentKind;
+  usesLevels: boolean;
   hue: string;
   icon: string;
   updatedAt: string;
@@ -24,7 +27,9 @@ export async function listDepartmentSettings(): Promise<DepartmentSettings[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("departments")
-    .select("id, name, summary, status, enrolment_mode, hue, icon, updated_at, sort_order")
+    .select(
+      "id, name, summary, status, enrolment_mode, kind, uses_levels, hue, icon, updated_at, sort_order",
+    )
     .order("sort_order");
   if (error) {
     throw new Error("Could not load departments", { cause: error.code });
@@ -35,6 +40,8 @@ export async function listDepartmentSettings(): Promise<DepartmentSettings[]> {
     summary: row.summary,
     status: row.status,
     enrolmentMode: row.enrolment_mode,
+    kind: row.kind,
+    usesLevels: row.uses_levels,
     hue: row.hue,
     icon: row.icon,
     updatedAt: row.updated_at,
@@ -85,6 +92,8 @@ export async function createDepartment(input: {
   icon: string;
   status: DepartmentStatus;
   enrolmentMode: EnrolmentMode;
+  kind: DepartmentKind;
+  usesLevels: boolean;
 }): Promise<AdminResult & { id?: string }> {
   const supabase = await createSupabaseServerClient();
   const [existing, me] = await Promise.all([
@@ -111,6 +120,8 @@ export async function createDepartment(input: {
       icon: input.icon,
       status: input.status,
       enrolment_mode: input.enrolmentMode,
+      kind: input.kind,
+      uses_levels: input.usesLevels,
       sort_order: sortOrder,
     })
     .select("id")

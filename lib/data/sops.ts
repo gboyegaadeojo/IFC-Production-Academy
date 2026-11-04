@@ -469,6 +469,7 @@ export async function getSopDepartments(
   const { data, error } = await supabase
     .from("departments")
     .select("id, name, sort_order")
+    .eq("kind", "team")
     .order("sort_order");
   if (error) {
     throw new Error("Could not load departments", { cause: error.code });

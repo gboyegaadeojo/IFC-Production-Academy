@@ -24,6 +24,7 @@ import { levelProgressLabel, type DepartmentLearning } from "@/lib/domain/home";
 import { initials } from "@/lib/domain/people";
 import { membershipLabel } from "@/lib/domain/profile";
 import { DisplayNameForm } from "./display-name-form";
+import { courseHomeLabel } from "@/lib/domain/departments";
 
 export const metadata: Metadata = { title: "Your profile" };
 
@@ -305,7 +306,7 @@ function Certificates({
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="font-medium text-text">{certificate.courseTitle}</span>
                   <span className="text-small text-text-muted">
-                    {certificate.departmentName} · Level {certificate.levelNumber} · issued{" "}
+                    {courseHomeLabel(certificate.departmentName, certificate.levelNumber)} · issued{" "}
                     {formatDate(certificate.issuedAt)}
                   </span>
                 </span>

@@ -112,10 +112,12 @@ export async function getAdminOverview(grants: readonly CapabilityGrant[]): Prom
           .select("id", { count: "exact", head: true })
           .neq("status", "active")
       : null,
-    can("departments") ? supabase.from("departments").select("status") : null,
+    can("departments") ? supabase.from("departments").select("status").eq("kind", "team") : null,
     can("audit") ? listAuditEntries(null) : null,
     can("competencies") ? supabase.rpc("department_training_summary") : null,
-    can("competencies") ? supabase.from("departments").select("id, hue, icon, status") : null,
+    can("competencies")
+      ? supabase.from("departments").select("id, hue, icon, status").eq("kind", "team")
+      : null,
     can("onboarding-follow-ups") ? countFollowUps(supabase) : null,
   ]);
 

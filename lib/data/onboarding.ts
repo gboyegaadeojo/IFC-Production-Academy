@@ -57,6 +57,7 @@ export async function getPathways(grants: readonly CapabilityGrant[]): Promise<{
       .from("departments")
       .select("id, name, hue, icon, status, sort_order")
       .neq("status", "inactive")
+      .eq("kind", "team")
       .order("sort_order"),
     supabase.from("onboarding_steps").select("pathway_id").is("archived_at", null),
     supabase.from("onboarding_entries").select("pathway_id").eq("status", "active"),
@@ -184,7 +185,12 @@ export async function getPathwayEditor(pathwayId: string): Promise<PathwayEditor
           .order("name")
       : supabase.from("serving_roles").select("id, name").is("archived_at", null).order("name"),
     supabase.rpc("onboarding_leaders", { p_pathway_id: pathwayId }),
-    supabase.from("departments").select("id, name").eq("status", "active").order("sort_order"),
+    supabase
+      .from("departments")
+      .select("id, name")
+      .eq("status", "active")
+      .eq("kind", "team")
+      .order("sort_order"),
     supabase
       .from("onboarding_pathways")
       .select("id, department_id")

@@ -57,7 +57,9 @@ const newDepartmentSchema = z.object({
   hue: z.enum(DEPARTMENT_HUES.map((h) => h.key) as [string, ...string[]]),
   icon: z.enum(DEPARTMENT_ICON_OPTIONS.map((i) => i.key) as [string, ...string[]]),
   status: z.enum(["active", "coming_soon", "inactive"]),
-  enrolmentMode: z.enum(["request", "open", "invite_only"]),
+  enrolmentMode: z.enum(["request", "open", "invite_only"]).default("request"),
+  kind: z.enum(["team", "topic"]),
+  usesLevels: z.boolean(),
 });
 
 /**
@@ -74,7 +76,10 @@ export async function createDepartmentAction(
     hue: formData.get("hue"),
     icon: formData.get("icon"),
     status: formData.get("status"),
-    enrolmentMode: formData.get("enrolmentMode"),
+    enrolmentMode: formData.get("enrolmentMode") ?? undefined,
+    kind: formData.get("kind"),
+    // Teams always have levels. A topic chooses.
+    usesLevels: formData.get("kind") !== "topic" || formData.get("usesLevels") === "on",
   });
   if (!parsed.success) {
     return {
@@ -93,6 +98,9 @@ export async function createDepartmentAction(
   refresh();
   return {
     status: "done",
-    message: `${parsed.data.name} is added, with its three levels. Set up its courses, positions and onboarding next.`,
+    message:
+      parsed.data.kind === "topic"
+        ? `${parsed.data.name} is added. Build its courses in Curriculum.`
+        : `${parsed.data.name} is added, with its three levels. Set up its courses, positions and onboarding next.`,
   };
 }

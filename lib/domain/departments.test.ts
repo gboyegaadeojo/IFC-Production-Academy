@@ -3,6 +3,7 @@ import {
   browsableDepartments,
   currentMembershipByDepartment,
   departmentCardState,
+  courseHomeLabel,
   departmentHueVar,
   requestMembershipErrorMessage,
   toRequestMembershipError,
@@ -12,7 +13,28 @@ import {
 
 const open = { status: "active", enrolmentMode: "request" } as const;
 
+describe("courseHomeLabel", () => {
+  it("names the level only where there is one", () => {
+    expect(courseHomeLabel("Camera Directing", 1)).toBe("Camera Directing · Level 1");
+    expect(courseHomeLabel("General", null)).toBe("General");
+  });
+});
+
 describe("departmentCardState", () => {
+  it("offers nothing to join on a topic, even with an old membership", () => {
+    const topic = { ...open, kind: "topic" } as const;
+    expect(departmentCardState(topic, null)).toEqual({ kind: "topic" });
+    expect(departmentCardState(topic, { status: "active" })).toEqual({ kind: "topic" });
+  });
+
+  it("still hides an inactive topic", () => {
+    expect(
+      departmentCardState({ status: "inactive", enrolmentMode: "request", kind: "topic" }, null),
+    ).toEqual({
+      kind: "unavailable",
+    });
+  });
+
   it("offers a request when there is no membership", () => {
     expect(departmentCardState(open, null)).toEqual({ kind: "can_request", previously: null });
   });

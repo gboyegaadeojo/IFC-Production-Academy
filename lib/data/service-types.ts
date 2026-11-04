@@ -180,7 +180,11 @@ export async function getSchedulableRoles(
   const supabase = await createSupabaseServerClient();
   const [roles, departments] = await Promise.all([
     supabase.from("serving_roles").select("id, name, department_id").is("archived_at", null),
-    supabase.from("departments").select("id, name, sort_order").order("sort_order"),
+    supabase
+      .from("departments")
+      .select("id, name, sort_order")
+      .eq("kind", "team")
+      .order("sort_order"),
   ]);
   if (roles.error || departments.error) {
     throw new Error("Could not load positions", {

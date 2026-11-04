@@ -44,7 +44,10 @@ export default function TrainingPage() {
  */
 async function TrainingContent() {
   const user = await requireActiveUser();
-  const departments = await listDepartmentCards(user.id);
+  const categories = await listDepartmentCards(user.id);
+  // Topics are courses only, so they have their own list and nothing to join (decision 2026-11-04).
+  const departments = categories.filter((d) => d.kind === "team");
+  const topics = categories.filter((d) => d.kind === "topic");
   const state = homeState(departments);
   const memberOf = departments.filter((d) => d.state.kind === "member");
   const others = departments.filter((d) => d.state.kind !== "member");
@@ -55,7 +58,7 @@ async function TrainingContent() {
     // Training is open to everyone (decision 2026-11-01): courses started in any department count.
     getContinueLearning(
       user.id,
-      departments.map((d) => d.id),
+      categories.map((d) => d.id),
     ),
     memberOf.length > 0 ? getMyAchievements(user.id) : null,
     getMyOnboarding(),
@@ -130,6 +133,24 @@ async function TrainingContent() {
       ) : null}
 
       <HowTrainingWorks open={state !== "member"} />
+
+      {topics.length > 0 ? (
+        <section aria-labelledby="topics-heading" className="flex flex-col gap-4">
+          <SectionHeading id="topics-heading" eyebrow="For everyone">
+            Topics
+          </SectionHeading>
+          <ul className="grid gap-3 lg:grid-cols-2">
+            {topics.map((topic) => (
+              <li key={topic.id} className="flex lg:last:odd:col-span-2">
+                <ExploreRow
+                  department={topic}
+                  continuing={continuing.find((c) => c.course.department.id === topic.id)}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <section
         id="departments"

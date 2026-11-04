@@ -146,7 +146,7 @@ async function CourseContent({
 
       <Tabs
         label="Course sections"
-        tabs={TABS.map((key) => ({
+        tabs={TABS.filter((key) => key !== "practicals" || !course.isTopic).map((key) => ({
           href: tabHref(key),
           label: TAB_LABELS[key],
           current: key === tab,
