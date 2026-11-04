@@ -13,9 +13,9 @@ Production Directors build and publish these. You add one under [Departments](ad
 
 ## Topics on courses and lessons
 
-**Topics** are tags, such as Mixing or Directing, that help people find things: **Topic** is a filter on the **Courses** and **Videos** pages. Open a lesson and click its topics in the box at the top, or open a course's **Details** tab to do the same for the course. **+ New topic** adds one.
+**Topics** are tags, such as Mixing or Directing, that help people find things: **Topic** is a filter on the **Courses** and **Explore** pages. Open a lesson and click its topics in the box at the top, or open a course's **Details** tab to do the same for the course. **+ New topic** adds one.
 
-A course's topics also count for all its lessons under **Videos**, and a lesson's topics also count for its course under **Courses**. They save straight away with no draft, because they aren't part of a version, and they stay when you publish a new one.
+A topic on a course shows that course. It doesn't list all its lessons as single videos: tag a lesson for that. A lesson's topics also bring up its course. They save straight away with no draft, because they aren't part of a version, and they stay when you publish a new one.
 
 Department Leaders, Production Directors, and Platform Administrators can add topics, there or under **Topics**. Production Directors and Platform Administrators can also choose a topic on that page to rename or remove it. Removing a topic takes it off every course and lesson.
 

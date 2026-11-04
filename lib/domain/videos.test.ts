@@ -18,6 +18,7 @@ const video = (
   topicIds: string[],
 ): LibraryVideo => ({
   key,
+  courseId: "course",
   title: key,
   href: `/${key}`,
   thumbnailUrl: null,

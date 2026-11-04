@@ -13,9 +13,12 @@ import { courseFacts, type LibraryCourse } from "@/lib/domain/library";
 export function CoursePoster({
   course,
   showCategory = false,
+  note,
 }: {
   course: LibraryCourse;
   showCategory?: boolean;
+  /** An extra line, such as how many of its videos match a search. */
+  note?: string;
 }) {
   const style = { "--dept": departmentHueVar(course.category.hue) } as CSSProperties;
   const facts = courseFacts(course);
@@ -51,6 +54,7 @@ export function CoursePoster({
           <span className="text-small font-medium text-[var(--dept)]">{course.category.name}</span>
         ) : null}
         {facts ? <span className="text-small text-text-muted">{facts}</span> : null}
+        {note ? <span className="text-small text-text-secondary">{note}</span> : null}
         {course.state === "completed" ? (
           <span className="flex items-center gap-1 text-small font-medium text-success">
             <CheckIcon className="size-3.5" />

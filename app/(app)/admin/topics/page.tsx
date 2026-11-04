@@ -30,7 +30,7 @@ async function AdminTopics() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Topics"
-        description="Tag courses and lessons so people can find them under Courses and Videos. You choose their topics while editing them. Leaders of any department can add a topic, and Production Directors tidy the list."
+        description="Tag courses and lessons so people can find them under Courses and Explore. You choose their topics while editing them. Leaders of any department can add a topic, and Production Directors tidy the list."
       />
       <section
         aria-labelledby="topics-heading"

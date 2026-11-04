@@ -184,7 +184,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
                   {topics.map((topic) => (
                     <li key={topic.id}>
                       <Link
-                        href={`/videos?topic=${topic.id}`}
+                        href={`/explore?topic=${topic.id}`}
                         prefetch={false}
                         className="font-medium text-accent-light underline-offset-4 hover:underline"
                       >
