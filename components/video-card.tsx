@@ -13,7 +13,7 @@ export function VideoCard({ video }: { video: LibraryVideo }) {
       style={style}
       className="group flex flex-col gap-1 rounded-card"
     >
-      <span className="relative mb-1 block aspect-video overflow-hidden rounded-card border border-[color-mix(in_srgb,var(--dept)_35%,var(--border))] transition-surface group-hover:shadow-[var(--shadow-lift)]">
+      <span className="relative mb-1 block aspect-video overflow-hidden rounded-card border border-[color-mix(in_srgb,var(--dept)_35%,var(--border))] transition-[translate,box-shadow] duration-[var(--duration-base)] ease-standard group-hover:-translate-y-1 group-hover:shadow-[var(--shadow-lift)] group-focus-visible:-translate-y-1 motion-reduce:translate-y-0!">
         {video.thumbnailUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={video.thumbnailUrl} alt="" loading="lazy" className="size-full object-cover" />

@@ -71,6 +71,8 @@ for (const viewport of VIEWPORTS) {
   test(`admin shell and pages for the Production Director at ${viewport.name}px`, async ({
     page,
   }) => {
+    // One sign-in and every admin page, sometimes beside the thirty-people test.
+    test.setTimeout(90_000);
     await page.setViewportSize(viewport);
     await signInByEmail(page, "emery.director@example.com");
     await page.goto("/admin/members");

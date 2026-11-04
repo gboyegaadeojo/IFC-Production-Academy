@@ -16,7 +16,7 @@ export default function VideosPage({ searchParams }: PageProps<"/videos">) {
   );
 }
 
-/** Every lesson with a video, with search and filters (SRS-CUR-019). Anyone can open any of them. */
+/** Find a lesson's video by search and filters (SRS-CUR-019). Anyone can open any of them. */
 async function Videos({ searchParams }: Pick<PageProps<"/videos">, "searchParams">) {
   const user = await requireActiveUser();
   const categories = await listDepartmentCards(user.id);

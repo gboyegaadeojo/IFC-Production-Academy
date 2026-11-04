@@ -1,5 +1,5 @@
 /**
- * Videos and Topics (SRS-CUR-019): lessons with a video, found by search, level, category, and topic.
+ * Videos (SRS-CUR-019): lessons with a video, found by search, level, category, and topic.
  * A video is a lesson in its course, not a second copy. Pure rules.
  */
 import type { LibraryCourse } from "./library";
@@ -36,17 +36,6 @@ export function filterVideos(videos: readonly LibraryVideo[], filter: VideoFilte
       (!filter.level || String(video.level) === filter.level) &&
       (filter.topicIds.length === 0 || filter.topicIds.some((id) => video.topicIds.includes(id))),
   );
-}
-
-/** How many of these videos each topic has. */
-export function topicVideoCounts(videos: readonly LibraryVideo[]): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const video of videos) {
-    for (const id of video.topicIds) {
-      counts.set(id, (counts.get(id) ?? 0) + 1);
-    }
-  }
-  return counts;
 }
 
 export function videoCountLabel(count: number): string {

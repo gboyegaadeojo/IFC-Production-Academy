@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CoursePoster } from "@/components/course-poster";
-import { fieldClasses } from "@/components/ui/action-form";
+import { compactFieldClasses } from "@/components/ui/action-form";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { filterLibrary, type LibraryCourse } from "@/lib/domain/library";
@@ -40,20 +40,20 @@ export function LibraryBrowser({
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <input
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search courses"
           aria-label="Search courses"
-          className={`${fieldClasses} max-w-xl min-w-52 flex-1`}
+          className={`${compactFieldClasses} max-w-md min-w-44 flex-1`}
         />
         <select
           aria-label="Category"
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
-          className={`${fieldClasses} w-auto`}
+          className={`${compactFieldClasses} w-auto`}
         >
           <option value="">All categories</option>
           <optgroup label="General">{options("topic")}</optgroup>
@@ -63,7 +63,7 @@ export function LibraryBrowser({
           aria-label="Level"
           value={level}
           onChange={(event) => setLevel(event.target.value)}
-          className={`${fieldClasses} w-auto`}
+          className={`${compactFieldClasses} w-auto`}
         >
           <option value="">All levels</option>
           {levels.map((number) => (
@@ -80,7 +80,7 @@ export function LibraryBrowser({
               setCategoryId("");
               setLevel("");
             }}
-            className={buttonClasses("tertiary")}
+            className={buttonClasses("tertiary", "", "sm")}
           >
             Clear filters
           </button>

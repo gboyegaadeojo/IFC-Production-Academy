@@ -11,7 +11,6 @@ import {
   GraduationCapIcon,
   ListChecksIcon,
   PlayCircleIcon,
-  TagIcon,
 } from "@/components/ui/icons";
 
 type NavLink = {
@@ -28,7 +27,6 @@ const NAV_GROUPS: { heading: string | null; links: NavLink[] }[] = [
     links: [
       { href: "/courses", label: "Courses", icon: BookOpenIcon },
       { href: "/videos", label: "Videos", icon: PlayCircleIcon },
-      { href: "/topics", label: "Topics", icon: TagIcon },
     ],
   },
   {
