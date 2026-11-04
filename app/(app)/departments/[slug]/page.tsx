@@ -18,6 +18,7 @@ import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyReadiness, type MyReadiness } from "@/lib/data/competency";
+import { getStartHereCourses } from "@/lib/data/library";
 import { getDepartmentPathway, type PathwayLevel } from "@/lib/data/pathway";
 import { getCourseProgressById } from "@/lib/data/progress";
 import { COMPETENCY_STATE_LABELS, competencyState, missingLabel } from "@/lib/domain/competency";
@@ -150,6 +151,12 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
         </div>
       </section>
 
+      {isTopic ? null : (
+        <Suspense fallback={null}>
+          <BeforeYouStart userId={user.id} />
+        </Suspense>
+      )}
+
       <section aria-labelledby="pathway-heading" className="flex flex-col gap-5">
         <div className="flex flex-col gap-1">
           {department.usesLevels ? <p className="eyebrow">Pathway</p> : null}
@@ -180,6 +187,39 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
 
       {isTopic ? null : <Readiness departmentName={department.name} readiness={readiness} />}
     </div>
+  );
+}
+
+/** Start here courses, on every department (SRS-CUR-018). Shown, never a gate. */
+async function BeforeYouStart({ userId }: { userId: string }) {
+  const courses = await getStartHereCourses(userId);
+  if (courses.length === 0) {
+    return null;
+  }
+  return (
+    <section
+      aria-labelledby="before-you-start"
+      className="flex flex-col gap-2 rounded-card border border-border bg-card px-4 py-3"
+    >
+      <h2 id="before-you-start" className="text-small font-semibold">
+        Before you start
+      </h2>
+      <ul className="flex flex-col gap-1.5">
+        {courses.map((course) => (
+          <li key={course.id} className="flex flex-wrap items-center gap-2">
+            <Link
+              href={course.href}
+              className="font-medium text-accent-light underline-offset-4 hover:underline"
+            >
+              {course.title}
+            </Link>
+            {course.state === "completed" ? (
+              <StatusBadge tone="success">Finished</StatusBadge>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }
 

@@ -18,14 +18,14 @@ import { getContinueLearning, type ContinueCourse } from "@/lib/data/progress";
 import { formatDateTime } from "@/lib/domain/admin";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { homeState, type HomeState } from "@/lib/domain/home";
-import { stepHref } from "@/lib/domain/learning";
+import { formatMinutes, stepHref } from "@/lib/domain/learning";
 import { volunteerPathways } from "@/lib/domain/onboarding";
 import { greetingName } from "@/lib/domain/people";
 import { InstallApp } from "@/components/pwa/install-app";
 import { ExploreRow, MemberDepartmentCard } from "./department-card";
 import { NextSteps } from "./next-steps";
 import { CoursePoster } from "@/components/course-poster";
-import { getCourseLibrary } from "@/lib/data/library";
+import { getCourseLibrary, getStartHereCourses } from "@/lib/data/library";
 import { libraryRows } from "@/lib/domain/library";
 
 export const metadata: Metadata = { title: "Training" };
@@ -105,6 +105,10 @@ async function TrainingContent() {
 
       {current?.progress.next ? <ContinueCard continuing={current} /> : null}
 
+      <Suspense fallback={null}>
+        <StartHere userId={user.id} />
+      </Suspense>
+
       <InstallApp variant="banner" />
 
       {onboarding.map((pathway) => (
@@ -172,6 +176,37 @@ async function TrainingContent() {
         )}
       </section>
     </div>
+  );
+}
+
+/** The first Start here course not finished yet (SRS-CUR-018). A suggestion, never a gate. */
+async function StartHere({ userId }: { userId: string }) {
+  const course = (await getStartHereCourses(userId)).find((c) => c.state !== "completed");
+  if (!course) {
+    return null;
+  }
+  const started = course.state !== "not_started";
+  return (
+    <section
+      aria-labelledby="start-here-heading"
+      className="flex flex-col gap-3 rounded-card border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
+    >
+      <div className="flex min-w-0 flex-col gap-1">
+        <p className="eyebrow">Start here</p>
+        <h2 id="start-here-heading" className="text-subheading font-semibold">
+          {course.title}
+        </h2>
+        <p className="text-small text-text-secondary">
+          A good place for everyone on the team to begin.
+          {course.estimatedMinutes ? ` About ${formatMinutes(course.estimatedMinutes)}.` : ""}
+        </p>
+      </div>
+      <Link href={course.href} className={buttonClasses("primary", "shrink-0")}>
+        {started ? "Continue" : "Start the course"}
+        <span className="sr-only">: {course.title}</span>
+        <ArrowRightIcon className="size-4" />
+      </Link>
+    </section>
   );
 }
 

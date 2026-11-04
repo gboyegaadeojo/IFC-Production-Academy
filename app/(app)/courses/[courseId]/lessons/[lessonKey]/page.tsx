@@ -27,6 +27,7 @@ import { CourseOutline } from "../../course-outline";
 import { recordLessonViewAction } from "./actions";
 import { CompleteToggle } from "./complete-toggle";
 import { RichText } from "@/components/ui/rich-text";
+import { courseHomeLabel } from "@/lib/domain/departments";
 
 export const metadata: Metadata = { title: "Lesson" };
 
@@ -172,6 +173,12 @@ async function LessonContent({ params }: Pick<Props, "params">) {
                   {lesson.title}
                 </h1>
                 <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-text-muted">
+                  <li className="font-medium text-[var(--dept)]">
+                    {courseHomeLabel(
+                      course.department.name,
+                      course.department.uses_levels ? course.level.number : null,
+                    )}
+                  </li>
                   {lesson.estimatedMinutes ? (
                     <li>About {formatMinutes(lesson.estimatedMinutes)}</li>
                   ) : null}

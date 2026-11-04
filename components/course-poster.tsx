@@ -21,7 +21,8 @@ export function CoursePoster({
   const facts = courseFacts(course);
   return (
     <Link
-      href={`/courses/${course.id}`}
+      href={course.href}
+      prefetch={false}
       style={style}
       className="group flex flex-col gap-2 rounded-card"
     >

@@ -1,51 +1,105 @@
 import "server-only";
+import { cache } from "react";
 import type { DepartmentCard } from "@/lib/data/departments";
-import { getLearnerCourses } from "@/lib/data/pathway";
 import { getCourseProgressById, getLearnerActivity } from "@/lib/data/progress";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { publicEnv } from "@/lib/env";
 import { courseCoverUrl, sortLibrary, type LibraryCourse } from "@/lib/domain/library";
+import type { CourseProgress, CourseState } from "@/lib/domain/progress";
+
+type Client = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
+/** Where a poster goes. That page works out the next step when someone actually opens it. */
+const openHref = (courseId: string) => `/courses/${courseId}/open`;
+
+/** Titles and lesson counts, without each course's outline: these pages list many courses. */
+async function publishedSummaries(supabase: Client, courseIds: string[]) {
+  const versions = await supabase
+    .from("course_versions")
+    .select("id, course_id, title, estimated_minutes")
+    .eq("status", "published")
+    .in("course_id", courseIds);
+  if (versions.error) {
+    throw new Error("Could not load the courses", { cause: versions.error.code });
+  }
+  const lessons = await supabase
+    .from("lessons")
+    .select("course_version_id")
+    .in(
+      "course_version_id",
+      versions.data.map((version) => version.id),
+    );
+  if (lessons.error) {
+    throw new Error("Could not load the courses", { cause: lessons.error.code });
+  }
+  const counts = new Map<string, number>();
+  for (const lesson of lessons.data) {
+    counts.set(lesson.course_version_id, (counts.get(lesson.course_version_id) ?? 0) + 1);
+  }
+  return new Map(
+    versions.data.map((version) => [
+      version.course_id,
+      {
+        title: version.title,
+        estimatedMinutes: version.estimated_minutes,
+        lessonCount: counts.get(version.id) ?? 0,
+      },
+    ]),
+  );
+}
+
+/** Progress only for courses this person has opened. Everything else hasn't been started. */
+async function progressForOpened(
+  userId: string,
+  courseIds: string[],
+): Promise<Map<string, CourseProgress>> {
+  const activity = await getLearnerActivity(userId, courseIds);
+  return getCourseProgressById(userId, [...activity.keys()]);
+}
 
 /**
  * Every published course in the categories this person can browse, with their own progress
- * (SRS-CUR-017). It reads them all at once, so the number of calls doesn't grow with the courses.
+ * (SRS-CUR-017). The number of calls doesn't grow with the courses, and Training shows it, so it
+ * has to stay light (the thirty-people test).
  */
 export async function getCourseLibrary(
   userId: string,
   categories: readonly DepartmentCard[],
 ): Promise<LibraryCourse[]> {
   const supabase = await createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("courses")
-    .select("id, department_id, sort_order, cover_image_path")
-    .in(
-      "department_id",
-      categories.map((category) => category.id),
-    )
-    .is("archived_at", null);
-  if (error) {
-    throw new Error("Could not load the courses", { cause: error.code });
+  const categoryIds = categories.map((category) => category.id);
+  const [courses, levels] = await Promise.all([
+    supabase
+      .from("courses")
+      .select("id, department_id, level_id, sort_order, cover_image_path")
+      .in("department_id", categoryIds)
+      .is("archived_at", null),
+    supabase.from("levels").select("id, number").in("department_id", categoryIds),
+  ]);
+  if (courses.error || levels.error) {
+    throw new Error("Could not load the courses", { cause: (courses.error ?? levels.error)?.code });
   }
-  const ids = data.map((row) => row.id);
-  const learner = await getLearnerCourses(ids);
-  // Most courses are untouched, so only work out progress for the ones this person has opened.
-  const activity = await getLearnerActivity(userId, ids);
-  const progress = await getCourseProgressById(userId, [...activity.keys()], learner);
+  const ids = courses.data.map((row) => row.id);
+  const [summaries, progress] = await Promise.all([
+    publishedSummaries(supabase, ids),
+    progressForOpened(userId, ids),
+  ]);
+  const levelNumber = new Map(levels.data.map((level) => [level.id, level.number]));
   const { NEXT_PUBLIC_SUPABASE_URL: url } = publicEnv();
 
   return sortLibrary(
-    data.flatMap((row) => {
-      const course = learner.get(row.id);
+    courses.data.flatMap((row) => {
+      const summary = summaries.get(row.id);
       const category = categories.find((c) => c.id === row.department_id);
-      if (!course || !category) {
+      if (!summary || !category) {
         return [];
       }
       const courseProgress = progress.get(row.id);
-      const lessons = course.modules.reduce((n, m) => n + m.lessons.length, 0);
       return [
         {
-          id: course.id,
-          title: course.title,
+          id: row.id,
+          title: summary.title,
+          href: openHref(row.id),
           category: {
             id: category.id,
             slug: category.slug,
@@ -55,10 +109,10 @@ export async function getCourseLibrary(
             icon: category.icon,
             sortOrder: category.sortOrder,
           },
-          level: category.usesLevels ? course.level.number : null,
+          level: category.usesLevels ? (levelNumber.get(row.level_id) ?? null) : null,
           sortOrder: row.sort_order,
-          lessonCount: course.canOpen ? lessons : null,
-          estimatedMinutes: course.estimatedMinutes,
+          lessonCount: summary.lessonCount > 0 ? summary.lessonCount : null,
+          estimatedMinutes: summary.estimatedMinutes,
           coverUrl: row.cover_image_path ? courseCoverUrl(url, row.cover_image_path) : null,
           percent: courseProgress?.percent ?? 0,
           state: courseProgress?.state ?? "not_started",
@@ -67,3 +121,50 @@ export async function getCourseLibrary(
     }),
   );
 }
+
+export type StartHereCourse = {
+  id: string;
+  title: string;
+  href: string;
+  state: CourseState;
+  estimatedMinutes: number | null;
+};
+
+/**
+ * The courses marked Start here, with this person's progress (SRS-CUR-018). Training and the
+ * department page both show them, and they're never a gate.
+ */
+export const getStartHereCourses = cache(async (userId: string): Promise<StartHereCourse[]> => {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("start_here", true)
+    .is("archived_at", null)
+    .order("sort_order");
+  if (error) {
+    throw new Error("Could not load the courses", { cause: error.code });
+  }
+  const ids = data.map((row) => row.id);
+  if (ids.length === 0) {
+    return [];
+  }
+  const [summaries, progress] = await Promise.all([
+    publishedSummaries(supabase, ids),
+    progressForOpened(userId, ids),
+  ]);
+  return ids.flatMap((id) => {
+    const summary = summaries.get(id);
+    return summary
+      ? [
+          {
+            id,
+            title: summary.title,
+            href: openHref(id),
+            state: progress.get(id)?.state ?? "not_started",
+            estimatedMinutes: summary.estimatedMinutes,
+          },
+        ]
+      : [];
+  });
+});

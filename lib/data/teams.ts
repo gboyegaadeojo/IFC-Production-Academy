@@ -29,6 +29,27 @@ export async function getTeamDepartments(
     .map((d) => ({ id: d.id, name: d.name, hue: d.hue, icon: d.icon }));
 }
 
+/** Start here courses each person has finished or not, by person (SRS-CUR-018). Never a gate. */
+export async function getStartHereStatus(
+  departmentId: string,
+): Promise<Map<string, { title: string; finished: boolean }[]>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("start_here_status", {
+    p_department_id: departmentId,
+  });
+  if (error) {
+    throw new Error("Could not load the teams", { cause: error.code });
+  }
+  const byPerson = new Map<string, { title: string; finished: boolean }[]>();
+  for (const row of data) {
+    byPerson.set(row.user_id, [
+      ...(byPerson.get(row.user_id) ?? []),
+      { title: row.course_title, finished: row.finished },
+    ]);
+  }
+  return byPerson;
+}
+
 /** The department's positions (serving roles), and everyone with where they stand on each. */
 export async function getServingTeam(
   departmentId: string,

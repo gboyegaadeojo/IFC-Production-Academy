@@ -12,6 +12,12 @@ Every open department's courses are open to you. You don't need anyone's permiss
 
 **Topics**, such as General and Leadership, are courses for everyone on the production team, whichever department you serve in. There's nothing to join: open a topic and start a course. Finishing one earns a certificate, but it doesn't count towards being Approved to Serve.
 
+## Start here
+
+Some courses, such as A Guide to Serving, are marked **Start here**. The next one you haven't finished shows at the top of Training, and they're listed under **Before you start** on each department's page. They're a good place to begin, but nothing is locked until you've done them.
+
+Opening a course from Training or All courses takes you straight to what's next.
+
 ## How a department is set out
 
 Each department has three levels, one step at a time. Each level has courses, and each course has lessons, and usually a quiz and a practical assessment.
