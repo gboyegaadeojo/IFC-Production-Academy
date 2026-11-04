@@ -114,7 +114,7 @@ const SECTIONS: readonly AdminSection[] = [
     group: "Services & Scheduling",
   },
   { key: "curriculum", href: "/admin/curriculum", label: "Curriculum", group: "Training Academy" },
-  { key: "topics", href: "/admin/topics", label: "Lesson topics", group: "Training Academy" },
+  { key: "topics", href: "/admin/topics", label: "Topics", group: "Training Academy" },
   { key: "sops", href: "/admin/sops", label: "SOP library", group: "Training Academy" },
   {
     key: "assessments",

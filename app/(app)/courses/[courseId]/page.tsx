@@ -28,6 +28,7 @@ import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
 import { issueCertificateAction, restartCourseAction } from "./actions";
 import { CourseOutline } from "./course-outline";
 import { RichText } from "@/components/ui/rich-text";
+import { getCourseTopics } from "@/lib/data/topics";
 
 export const metadata: Metadata = { title: "Course" };
 
@@ -80,6 +81,7 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
   const certificate = summary ? await getMyCertificateForCourse(user.id, course.id) : null;
   const minutes = totals.estimatedMinutes ?? course.estimatedMinutes;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
+  const topics = await getCourseTopics(course.id);
   const facts = course.canOpen
     ? [
         lessonCountLabel(totals.lessons),
@@ -139,6 +141,17 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-text-muted">
             {facts.map((fact) => (
               <li key={fact}>{fact}</li>
+            ))}
+            {topics.map((topic) => (
+              <li key={topic.id}>
+                <Link
+                  href={`/courses?topic=${topic.id}`}
+                  prefetch={false}
+                  className="font-medium text-accent-light underline-offset-4 hover:underline"
+                >
+                  {topic.name}
+                </Link>
+              </li>
             ))}
           </ul>
         </header>

@@ -238,8 +238,14 @@ test("admin sidebar states at 390, 768, 1024 and 1440px", async ({ page }) => {
     await page.screenshot({ path: `${DIR}/admin-sidebar-long-${viewport.name}.png` });
     const iconsOnly = page.getByRole("button", { name: "Icons only" });
     await pressUntil(iconsOnly, "aria-pressed", "true");
-    await nav.getByRole("button", { name: "Services & Scheduling" }).click();
-    await expect(page.getByRole("group", { name: "Services & Scheduling" })).toBeVisible();
+    // Hovering can open the flyout first, and a click then closes it, so click until it's open.
+    const flyout = page.getByRole("group", { name: "Services & Scheduling" });
+    await expect(async () => {
+      if (!(await flyout.isVisible())) {
+        await nav.getByRole("button", { name: "Services & Scheduling" }).click();
+      }
+      await expect(flyout).toBeVisible({ timeout: 1_000 });
+    }).toPass({ timeout: 15_000 });
     await page.screenshot({ path: `${DIR}/admin-sidebar-collapsed-${viewport.name}.png` });
     await page.keyboard.press("Escape");
     await pressUntil(iconsOnly, "aria-pressed", "false");

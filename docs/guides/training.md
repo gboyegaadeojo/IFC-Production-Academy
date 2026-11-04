@@ -10,7 +10,7 @@ Every open department's courses are open to you. You don't need anyone's permiss
 
 ## The Library
 
-- **Courses** lists every course, with search and filters for category and level.
+- **Courses** lists every course, with search and filters for category, level, and topic.
 - **Videos** finds a lesson's video, whichever course it's in. It opens on its search and filters for level, category, and topic, and shows videos once you search or choose one. Opening a video takes you to that lesson in its course, and it counts there like any other lesson.
 
 ## General categories
