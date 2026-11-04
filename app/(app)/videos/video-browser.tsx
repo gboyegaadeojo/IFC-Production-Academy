@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
+import { compactFieldClasses } from "@/components/ui/action-form";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ChevronDownIcon } from "@/components/ui/icons";
@@ -59,13 +59,13 @@ export function VideoBrowser({
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search videos"
           aria-label="Search videos"
-          className={`${fieldClasses} min-h-8 max-w-md min-w-44 flex-1 px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
+          className={`${compactFieldClasses} max-w-md min-w-44 flex-1`}
         />
         <select
           aria-label="Level"
           value={level}
           onChange={(event) => setLevel(event.target.value)}
-          className={`${fieldClasses} min-h-8 w-auto px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
+          className={`${compactFieldClasses} w-auto`}
         >
           <option value="">All levels</option>
           {levels.map((number) => (
@@ -78,7 +78,7 @@ export function VideoBrowser({
           aria-label="Category"
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
-          className={`${fieldClasses} min-h-8 w-auto px-2.5 py-0 text-small pointer-coarse:min-h-11 pointer-coarse:text-field`}
+          className={`${compactFieldClasses} w-auto`}
         >
           <option value="">All categories</option>
           <optgroup label="General">{options("topic")}</optgroup>
