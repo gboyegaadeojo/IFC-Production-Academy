@@ -11,11 +11,11 @@ test("Explore opens on its filters, and shows results only after a search", asyn
   await expect(page).toHaveURL(/\/explore$/);
   await expect(page.getByRole("heading", { level: 1, name: "Explore" })).toBeVisible();
   const search = page.getByLabel("Search courses and videos");
-  await expect(page.getByRole("heading", { level: 2, name: "Courses" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 2, name: /^Courses/ })).toHaveCount(0);
   await search.fill("no course or video has this title");
   await expect(page.getByText("Nothing matches")).toBeVisible();
   await search.fill("Sample course");
-  await expect(page.getByRole("heading", { level: 2, name: "Courses" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 2, name: /^Courses/ })).toBeVisible();
 });
 
 test("a Production Director adds, renames, and removes a topic", async ({ page }) => {
