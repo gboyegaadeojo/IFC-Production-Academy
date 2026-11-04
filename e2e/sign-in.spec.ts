@@ -16,6 +16,12 @@ test("the sign-in page offers an email link only", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Email me a sign-in link" })).toBeVisible();
 });
 
+test("the sign-in page links to the form for joining the team", async ({ page }) => {
+  await page.goto("/sign-in");
+  await page.getByRole("link", { name: "Join the production team" }).click();
+  await expect(page).toHaveURL(/\/serve-with-us$/);
+});
+
 test("an invalid email address gets a plain-language error", async ({ page }) => {
   await page.goto("/sign-in");
   await page.getByLabel("Email address").fill("not-an-email");
