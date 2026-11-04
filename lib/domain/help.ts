@@ -33,10 +33,10 @@ export const HELP_PAGES: readonly HelpPage[] = [
   {
     slug: "training",
     title: "Training",
-    summary: "Departments, courses, quizzes, practicals, and certificates.",
+    summary: "Departments, courses, videos, topics, quizzes, practicals, and certificates.",
     section: "Using the app",
     source: "docs/guides/training.md",
-    paths: ["/home", "/departments", "/courses", "/certificates"],
+    paths: ["/home", "/departments", "/courses", "/videos", "/topics", "/certificates"],
   },
   {
     slug: "schedule",
@@ -101,7 +101,7 @@ export const HELP_PAGES: readonly HelpPage[] = [
     summary: "Building and publishing courses, lessons, quizzes, and practicals.",
     section: "For leaders",
     source: "docs/guides/admin-curriculum.md",
-    adminSections: ["curriculum"],
+    adminSections: ["curriculum", "topics"],
   },
   {
     slug: "admin-sops",

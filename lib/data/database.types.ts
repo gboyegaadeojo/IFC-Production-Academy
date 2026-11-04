@@ -201,6 +201,30 @@ export type Database = {
         Update: { name?: string; summary?: string };
         Relationships: [];
       };
+      topics: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          created_by: string | null;
+          archived_at: string | null;
+        } & Timestamps;
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      lesson_topics: {
+        Row: {
+          course_id: string;
+          lesson_key: string;
+          topic_id: string;
+          added_by: string | null;
+          added_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       courses: {
         Row: {
           id: string;
@@ -1707,6 +1731,13 @@ export type Database = {
       app_branding: {
         Args: Record<string, never>;
         Returns: { app_name: string; app_short_name: string; app_icon_path: string | null }[];
+      };
+      create_topic: { Args: { p_name: string }; Returns: string };
+      rename_topic: { Args: { p_topic_id: string; p_name: string }; Returns: undefined };
+      remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
+      set_lesson_topics: {
+        Args: { p_course_id: string; p_lesson_key: string; p_topic_ids: string[] };
+        Returns: undefined;
       };
       move_course: {
         Args: { p_course_id: string; p_direction: number };

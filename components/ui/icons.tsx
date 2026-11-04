@@ -129,6 +129,20 @@ export const MonitorIcon = (props: IconProps) => (
 
 // Admin sidebar groups and controls: Lucide's shapes (ISC licence), drawn in this family.
 
+export const PlayCircleIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m10 8.5 5 3.5-5 3.5z" />
+  </Icon>
+);
+
+export const TagIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12.6 2.6a2 2 0 0 0-1.4-.6H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z" />
+    <circle cx="7.5" cy="7.5" r="0.75" />
+  </Icon>
+);
+
 export const BookOpenIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M12 7v14" />

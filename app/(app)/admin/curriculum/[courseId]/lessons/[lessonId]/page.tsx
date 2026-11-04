@@ -16,6 +16,9 @@ import { addLessonResourceAction, removeLessonResourceAction } from "../../../..
 import { RichText } from "@/components/ui/rich-text";
 import { RichTextField } from "@/components/ui/rich-text-field";
 import { LESSON_BODY_MAX, LESSON_SUMMARY_MAX } from "@/lib/domain/rich-text";
+import { getLessonTopics, listTopics } from "@/lib/data/topics";
+import { hasCapability, hasCapabilityAnywhere } from "@/lib/domain/capabilities";
+import { LessonTopics } from "./lesson-topics";
 
 export const metadata: Metadata = { title: "Lesson" };
 
@@ -32,7 +35,7 @@ export default function LessonPage({ params }: Props) {
 }
 
 async function LessonContent({ params }: Pick<Props, "params">) {
-  const { allowed } = await getAdminAccess("curriculum");
+  const { allowed, grants } = await getAdminAccess("curriculum");
   if (!allowed) {
     return <AccessDenied />;
   }
@@ -45,7 +48,10 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     notFound();
   }
   const libraryConnected = mediaLibraryEnabled();
-  const [resources, departmentSops] = await Promise.all([
+  const canTag = hasCapability(grants, "course.draft", lesson.departmentId);
+  const [allTopics, lessonTopics, resources, departmentSops] = await Promise.all([
+    canTag ? listTopics() : Promise.resolve([]),
+    canTag ? getLessonTopics(courseId, lesson.key) : Promise.resolve([]),
     getLessonResources(lesson.id),
     lesson.editable ? getSopsForStaff([lesson.departmentId]) : Promise.resolve([]),
   ]);
@@ -70,6 +76,16 @@ async function LessonContent({ params }: Pick<Props, "params">) {
           </p>
         )}
       </div>
+
+      {canTag ? (
+        <LessonTopics
+          courseId={courseId}
+          lessonKey={lesson.key}
+          topics={allTopics}
+          initial={lessonTopics.map((topic) => topic.id)}
+          canAdd={hasCapabilityAnywhere(grants, "topic.create")}
+        />
+      ) : null}
 
       {lesson.editable ? (
         <>

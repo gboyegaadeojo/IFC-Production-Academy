@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -10,25 +10,45 @@ import {
   FileTextIcon,
   GraduationCapIcon,
   ListChecksIcon,
+  PlayCircleIcon,
+  TagIcon,
 } from "@/components/ui/icons";
 
-/** The learner destinations (DESIGN §3.1), shared by the side bar and the phone tab bar. */
-const LINKS: {
+type NavLink = {
   href: string;
   label: string;
   icon: (props: { className?: string }) => ReactNode;
-  /** Phones have four tabs; All courses is a link on Training there. */
-  sideBarOnly?: boolean;
-}[] = [
-  { href: "/home", label: "Training", icon: GraduationCapIcon },
-  { href: "/courses", label: "All courses", icon: BookOpenIcon, sideBarOnly: true },
-  { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
-  { href: "/serve", label: "Checklist", icon: ListChecksIcon },
-  { href: "/sops", label: "SOPs", icon: FileTextIcon },
+};
+
+/** The learner destinations (DESIGN §3.1). The side bar has them all, in these groups. */
+const NAV_GROUPS: { heading: string | null; links: NavLink[] }[] = [
+  { heading: null, links: [{ href: "/home", label: "Training", icon: GraduationCapIcon }] },
+  {
+    heading: "Library",
+    links: [
+      { href: "/courses", label: "Courses", icon: BookOpenIcon },
+      { href: "/videos", label: "Videos", icon: PlayCircleIcon },
+      { href: "/topics", label: "Topics", icon: TagIcon },
+    ],
+  },
+  {
+    heading: "Serving",
+    links: [
+      { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
+      { href: "/serve", label: "Checklist", icon: ListChecksIcon },
+      { href: "/sops", label: "SOPs", icon: FileTextIcon },
+    ],
+  },
 ];
 
+/** Phones have four tabs. The Library is linked from Training there. */
+const TAB_HREFS = new Set(["/home", "/schedule", "/serve", "/sops"]);
+const TAB_LINKS = NAV_GROUPS.flatMap((group) => group.links).filter((link) =>
+  TAB_HREFS.has(link.href),
+);
+
 function isCurrent(pathname: string, href: string): boolean {
-  // A course's own page isn't "All courses": someone may have come from Training.
+  // A course's own page isn't the Courses list: someone may have come from Training.
   if (href === "/courses") {
     return pathname === href;
   }
@@ -70,10 +90,22 @@ export function AcademyNav({ extra }: { extra?: ReactNode }) {
   return (
     <nav aria-label="Academy">
       <ul className="flex flex-col gap-1">
-        {LINKS.map((link) => (
-          <li key={link.href}>
-            <AcademyNavLink href={link.href} label={link.label} icon={link.icon} />
-          </li>
+        {NAV_GROUPS.map((group) => (
+          <Fragment key={group.heading ?? "main"}>
+            {group.heading ? (
+              <li
+                aria-hidden="true"
+                className="mt-3 px-2 pb-0.5 text-small font-medium text-text-muted"
+              >
+                {group.heading}
+              </li>
+            ) : null}
+            {group.links.map((link) => (
+              <li key={link.href}>
+                <AcademyNavLink href={link.href} label={link.label} icon={link.icon} />
+              </li>
+            ))}
+          </Fragment>
         ))}
         {extra}
       </ul>
@@ -101,7 +133,7 @@ export function AcademyTabBar() {
       className="sticky bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
     >
       <ul className="grid grid-cols-4">
-        {LINKS.filter((link) => !link.sideBarOnly).map((link) => {
+        {TAB_LINKS.map((link) => {
           const current = isCurrent(pathname, link.href);
           const Icon = link.icon;
           return (

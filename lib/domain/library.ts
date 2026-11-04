@@ -1,5 +1,5 @@
 /**
- * The course library (SRS-CUR-017): rows of courses by category on Training, and All courses with
+ * The course library (SRS-CUR-017): rows of courses by category on Training, and Courses with
  * search and filters. Pure rules; nothing here knows about a specific category.
  */
 import type { DepartmentKind } from "./departments";
