@@ -350,7 +350,7 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await positionTeam.getByRole("button", { name: "Add", exact: true }).click();
   await expect(
     positionTeam
-      .getByRole("list", { name: "Sample role (seed data) team" })
+      .getByRole("table", { name: "Sample role (seed data) team" })
       .getByText(name, { exact: true }),
   ).toBeVisible();
   await scheduler.goto("/admin/schedule");
