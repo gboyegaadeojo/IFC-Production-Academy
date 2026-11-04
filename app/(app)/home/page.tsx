@@ -225,7 +225,7 @@ async function CourseRows({ userId, categories }: { userId: string; categories: 
         <nav aria-label="Library" className="flex flex-wrap gap-2">
           {[
             { href: "/courses", label: "All courses" },
-            { href: "/videos", label: "Videos" },
+            { href: "/explore", label: "Explore" },
           ].map((link) => (
             <Link
               key={link.href}

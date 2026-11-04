@@ -5,13 +5,17 @@ test.beforeEach(async () => {
   test.skip(!(await mailpitAvailable()), "Local Supabase is not running");
 });
 
-test("Videos opens on its filters, and lists videos only after a search", async ({ page }) => {
+test("Explore opens on its filters, and shows results only after a search", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   await page.goto("/videos");
-  await expect(page.getByRole("heading", { level: 1, name: "Videos" })).toBeVisible();
-  await expect(page.getByRole("status").filter({ hasText: /\d+ videos?/ })).toHaveCount(0);
-  await page.getByLabel("Search videos").fill("no video has this title");
-  await expect(page.getByText("No videos match")).toBeVisible();
+  await expect(page).toHaveURL(/\/explore$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Explore" })).toBeVisible();
+  const search = page.getByLabel("Search courses and videos");
+  await expect(page.getByRole("heading", { level: 2, name: /^Courses/ })).toHaveCount(0);
+  await search.fill("no course or video has this title");
+  await expect(page.getByText("Nothing matches")).toBeVisible();
+  await search.fill("Sample course");
+  await expect(page.getByRole("heading", { level: 2, name: /^Courses/ })).toBeVisible();
 });
 
 test("a Production Director adds, renames, and removes a topic", async ({ page }) => {

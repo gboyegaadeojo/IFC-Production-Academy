@@ -1,5 +1,5 @@
 /**
- * Videos (SRS-CUR-019): lessons with a video, found by search, level, category, and topic.
+ * Single videos on Explore (SRS-CUR-019): lessons with a video, found by search, level, category, and topic.
  * A video is a lesson in its course, not a second copy. Pure rules.
  */
 import type { LibraryCourse } from "./library";
@@ -7,6 +7,7 @@ import type { LibraryCourse } from "./library";
 export type LibraryVideo = {
   /** The lesson's stable key. */
   key: string;
+  courseId: string;
   title: string;
   href: string;
   thumbnailUrl: string | null;

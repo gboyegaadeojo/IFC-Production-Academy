@@ -23,7 +23,7 @@ export function CourseTopics({
       initial={initial}
       canAdd={canAdd}
       save={(topicIds) => saveCourseTopicsAction({ courseId, topicIds })}
-      hint="Topics help people find this course under Courses, and its lessons under Videos. They save straight away."
+      hint="Topics help people find this course under Courses and Explore. They save straight away."
     >
       <div className="flex flex-col gap-0.5">
         <span className="text-small text-text-muted">Editing a course</span>

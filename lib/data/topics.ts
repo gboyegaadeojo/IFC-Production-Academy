@@ -139,19 +139,16 @@ export async function getVideoLibrary(
     throw new Error("Could not load videos", { cause: (courses.error ?? levels.error)?.code });
   }
   const courseIds = courses.data.map((course) => course.id);
-  const [versions, tags, courseTags] = await Promise.all([
+  const [versions, tags] = await Promise.all([
     supabase
       .from("course_versions")
       .select("id, course_id, title")
       .eq("status", "published")
       .in("course_id", courseIds),
     supabase.from("lesson_topics").select("lesson_key, topic_id").in("course_id", courseIds),
-    supabase.from("course_topics").select("course_id, topic_id").in("course_id", courseIds),
   ]);
-  if (versions.error || tags.error || courseTags.error) {
-    throw new Error("Could not load videos", {
-      cause: (versions.error ?? tags.error ?? courseTags.error)?.code,
-    });
+  if (versions.error || tags.error) {
+    throw new Error("Could not load videos", { cause: (versions.error ?? tags.error)?.code });
   }
   const lessons = await supabase
     .from("lessons")
@@ -211,6 +208,7 @@ export async function getVideoLibrary(
           ? [
               {
                 key: lesson.lesson_key,
+                courseId: course.id,
                 title: lesson.title,
                 href: `/courses/${course.id}/lessons/${lesson.lesson_key}`,
                 thumbnailUrl: videoThumbnailUrl(video),
@@ -218,17 +216,10 @@ export async function getVideoLibrary(
                 courseTitle: course.title,
                 category: course.category,
                 level: course.level,
-                // A lesson counts for its own topics and its course's.
-                topicIds: [
-                  ...new Set([
-                    ...tags.data
-                      .filter((tag) => tag.lesson_key === lesson.lesson_key)
-                      .map((tag) => tag.topic_id),
-                    ...courseTags.data
-                      .filter((tag) => tag.course_id === course.id)
-                      .map((tag) => tag.topic_id),
-                  ]),
-                ],
+                // Only its own tags: a tagged course shows as a course, not all its lessons (G, 2026-11-04).
+                topicIds: tags.data
+                  .filter((tag) => tag.lesson_key === lesson.lesson_key)
+                  .map((tag) => tag.topic_id),
               },
             ]
           : [];

@@ -19,7 +19,7 @@ The side bar has these places. On a phone, the main four are along the bottom, a
 | Place | What it's for | Guide |
 | --- | --- | --- |
 | **Training** | Departments, courses, and how far you've got | [Training](training.md) |
-| **Courses, Videos** | The Library: find any course or video, with search and filters | [Training](training.md) |
+| **Courses, Explore** | The Library: find any course or video, with search and filters | [Training](training.md) |
 | **Schedule** | When you're serving, and who with | [Schedule](schedule.md) |
 | **Checklist** | What to do before and after this service | [Checklist](checklist.md) |
 | **SOPs** | The team's written procedures | [SOPs](sops.md) |

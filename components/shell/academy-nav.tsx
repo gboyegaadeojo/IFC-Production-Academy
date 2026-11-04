@@ -26,7 +26,7 @@ const NAV_GROUPS: { heading: string | null; links: NavLink[] }[] = [
     heading: "Library",
     links: [
       { href: "/courses", label: "Courses", icon: BookOpenIcon },
-      { href: "/videos", label: "Videos", icon: PlayCircleIcon },
+      { href: "/explore", label: "Explore", icon: PlayCircleIcon },
     ],
   },
   {
