@@ -3,9 +3,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Fragment, Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
-import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import {
+  ActionForm,
+  Field,
+  fieldClasses,
+  IconActionForm,
+  SwitchForm,
+} from "@/components/ui/action-form";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ChevronRightIcon } from "@/components/ui/icons";
+import { buttonClasses } from "@/components/ui/button";
+import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
@@ -14,7 +21,7 @@ import { courseStateLabel, type CourseState } from "@/lib/domain/curriculum";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
-import { createCourseAction } from "./actions";
+import { createCourseAction, moveCourseAction, setCourseStartHereAction } from "./actions";
 import { CourseRowMenu } from "./course-row-menu";
 
 export const metadata: Metadata = { title: "Curriculum" };
@@ -49,7 +56,7 @@ async function CurriculumContent({
     return <AccessDenied />;
   }
   const overview = await getCurriculumOverview(grants);
-  // Topics come first, set apart from the teams (decision 2026-11-04).
+  // General categories come first, set apart from the departments (decision 2026-11-04).
   const topics = overview.filter((category) => category.kind === "topic");
   const teams = overview.filter((category) => category.kind === "team");
   const departments = [...topics, ...teams];
@@ -61,11 +68,11 @@ async function CurriculumContent({
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Curriculum"
-        description="Build each topic's and department's courses. Changes stay in a draft until you publish, and every publish is kept as a version you can go back to."
+        description="Build each course. Changes stay in a draft until you publish, and every publish is kept as a version you can go back to."
       />
 
       {departments.length > 1 ? (
-        <nav aria-label="Topics and departments" className="flex flex-wrap items-center gap-2">
+        <nav aria-label="Categories and departments" className="flex flex-wrap items-center gap-2">
           {departments.map((department, index) => {
             const current = department.id === selected?.id;
             const firstTeam = index > 0 && department.id === teams[0]?.id;
@@ -97,13 +104,180 @@ async function CurriculumContent({
       ) : null}
 
       {selected ? (
-        <Workspace department={selected} />
+        selected.usesLevels ? (
+          <Workspace department={selected} />
+        ) : (
+          <CourseList category={selected} />
+        )
       ) : (
         <EmptyState title="Nothing to build for yet">
           You don&apos;t look after any department&apos;s curriculum yet.
         </EmptyState>
       )}
     </div>
+  );
+}
+
+/** A category without levels: one ordered list (Course Hierarchy mock, approved 2026-11-04). */
+function CourseList({ category }: { category: CurriculumOverview[number] }) {
+  const style = { "--dept": departmentHueVar(category.hue) } as CSSProperties;
+  const level = category.levels[0];
+  const courses = level?.courses ?? [];
+  return (
+    <section
+      aria-labelledby={`curriculum-${category.id}`}
+      style={style}
+      className="flex flex-col gap-4"
+    >
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden="true"
+          className="flex size-9 shrink-0 items-center justify-center rounded-button border border-[color-mix(in_srgb,var(--dept)_18%,var(--border))] bg-[color-mix(in_srgb,var(--dept)_11%,var(--surface))] text-[var(--dept)]"
+        >
+          <DepartmentIcon icon={category.icon} className="size-4" />
+        </span>
+        <div className="flex flex-col">
+          <h2 id={`curriculum-${category.id}`} className="text-heading font-semibold">
+            {category.name}
+          </h2>
+          <p className="text-small text-text-secondary">
+            Courses for the whole production team, with no levels and nothing to join. Published by
+            Production Directors.
+          </p>
+        </div>
+      </div>
+      {courses.length === 0 ? (
+        <p className="text-small text-text-secondary">
+          No courses yet.{category.canDraft ? " Add the first one below." : ""}
+        </p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-border rounded-card border border-border bg-surface">
+          {courses.map((course, index) => (
+            <li
+              key={course.id}
+              className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2.5 px-3.5 py-3 md:grid-cols-[auto_minmax(0,1fr)_auto_auto]"
+            >
+              <div className="flex gap-0.5">
+                {category.canDraft ? (
+                  <>
+                    <MoveButton
+                      courseId={course.id}
+                      title={course.state.title}
+                      direction="up"
+                      disabled={index === 0}
+                    />
+                    <MoveButton
+                      courseId={course.id}
+                      title={course.state.title}
+                      direction="down"
+                      disabled={index === courses.length - 1}
+                    />
+                  </>
+                ) : null}
+              </div>
+              <div className="flex min-w-0 flex-col gap-0.5">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">{course.state.title}</span>
+                  <StatusBadge tone={tone(course.state)}>
+                    {courseStateLabel(course.state)}
+                  </StatusBadge>
+                </span>
+                {course.facts ? (
+                  <span className="text-small text-text-muted">{course.facts}</span>
+                ) : null}
+              </div>
+              {category.canPublish ? (
+                <div className="col-span-2 md:col-span-1">
+                  <SwitchForm
+                    action={setCourseStartHereAction}
+                    hidden={{ courseId: course.id }}
+                    name="on"
+                    checked={course.startHere}
+                    label="Start here"
+                  />
+                </div>
+              ) : (
+                <span className="hidden md:block" />
+              )}
+              <div className="col-span-2 flex items-center gap-1.5 md:col-span-1">
+                {category.canPublish &&
+                (course.state.kind === "unpublished" || course.state.draftId) ? (
+                  <Link
+                    href={`/admin/curriculum/${course.id}?tab=publish`}
+                    className={buttonClasses("secondary", "", "sm")}
+                  >
+                    Publish<span className="sr-only"> {course.state.title}</span>
+                  </Link>
+                ) : null}
+                <Link
+                  href={`/admin/curriculum/${course.id}`}
+                  className={buttonClasses("secondary", "", "sm")}
+                >
+                  Edit<span className="sr-only"> {course.state.title}</span>
+                </Link>
+                {course.state.kind === "unpublished" && category.canDraft ? (
+                  <CourseRowMenu courseId={course.id} title={course.state.title} />
+                ) : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {category.canDraft && level ? (
+        <details className="max-w-xl">
+          <summary
+            className={`${buttonClasses("primary", "w-fit")} cursor-pointer list-none [&::-webkit-details-marker]:hidden`}
+          >
+            + Add a course
+          </summary>
+          <ActionForm
+            action={createCourseAction}
+            submitLabel="Create course"
+            pendingLabel="Creating…"
+            hidden={{ levelId: level.id }}
+            className="mt-3 flex flex-col gap-3"
+          >
+            <Field id={`new-course-${level.id}`} label="Course title">
+              <input
+                id={`new-course-${level.id}`}
+                name="title"
+                required
+                maxLength={120}
+                className={fieldClasses}
+              />
+            </Field>
+          </ActionForm>
+        </details>
+      ) : null}
+      {category.canPublish ? (
+        <p className="text-small text-text-muted">
+          Start here puts the course at the top of Training for anyone who hasn&apos;t finished it,
+          and on each department&apos;s page.
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
+function MoveButton({
+  courseId,
+  title,
+  direction,
+  disabled,
+}: {
+  courseId: string;
+  title: string;
+  direction: "up" | "down";
+  disabled: boolean;
+}) {
+  return (
+    <IconActionForm
+      action={moveCourseAction}
+      hidden={{ courseId, direction }}
+      disabled={disabled}
+      label={`Move ${title} ${direction}`}
+      icon={<ChevronDownIcon className={`size-4 ${direction === "up" ? "rotate-180" : ""}`} />}
+    />
   );
 }
 
@@ -126,8 +300,8 @@ function Workspace({ department }: { department: CurriculumOverview[number] }) {
       </h2>
       {department.kind === "topic" ? (
         <p className="max-w-[44rem] text-small text-text-secondary">
-          A topic is courses only, for anyone on the production team. Nobody joins it, and it has no
-          practicals or positions.
+          Courses only, for anyone on the production team. Nobody joins, and it has no practicals or
+          positions. Published by Production Directors.
         </p>
       ) : null}
       <ol className={`grid gap-4 ${department.usesLevels ? "xl:grid-cols-3" : ""}`}>

@@ -1708,6 +1708,10 @@ export type Database = {
         Args: Record<string, never>;
         Returns: { app_name: string; app_short_name: string; app_icon_path: string | null }[];
       };
+      move_course: {
+        Args: { p_course_id: string; p_direction: number };
+        Returns: undefined;
+      };
       set_course_start_here: {
         Args: { p_course_id: string; p_on: boolean };
         Returns: undefined;

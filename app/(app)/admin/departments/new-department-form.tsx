@@ -38,7 +38,7 @@ export function NewDepartmentForm({ kind = "team" }: { kind?: DepartmentKind }) 
         </span>
         <span className="flex flex-col">
           <span className="font-semibold">
-            {name.trim() || (isTopic ? "New topic" : "New department")}
+            {name.trim() || (isTopic ? "New category" : "New department")}
           </span>
           <span className="text-small text-text-muted">How it will look on Training</span>
         </span>
@@ -177,7 +177,7 @@ export function NewDepartmentForm({ kind = "team" }: { kind?: DepartmentKind }) 
         </p>
       ) : null}
       <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Adding…" : isTopic ? "Add topic" : "Add department"}
+        {pending ? "Adding…" : isTopic ? "Add category" : "Add department"}
       </Button>
     </form>
   );

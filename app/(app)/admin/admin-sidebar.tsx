@@ -403,7 +403,7 @@ export function AdminSidebar({
                         <Link
                           href={section.href}
                           aria-current={current ? "page" : undefined}
-                          className={`${ROW} text-small ${current ? ACTIVE : IDLE}`}
+                          className={`${ROW} font-medium ${current ? ACTIVE : IDLE}`}
                         >
                           <span className="min-w-0 flex-1 truncate">{section.label}</span>
                           <CountBadge count={counts[section.key]} label={countLabel(section.key)} />
@@ -531,7 +531,7 @@ function Flyout({
                 href={section.href}
                 onClick={close}
                 aria-current={current ? "page" : undefined}
-                className={`${ROW} text-small ${current ? ACTIVE : IDLE}`}
+                className={`${ROW} font-medium ${current ? ACTIVE : IDLE}`}
               >
                 <span className="min-w-0 flex-1 truncate">{section.label}</span>
                 <CountBadge count={counts[section.key]} label={countLabel(section.key)} />

@@ -78,7 +78,7 @@ export async function createDepartmentAction(
     status: formData.get("status"),
     enrolmentMode: formData.get("enrolmentMode") ?? undefined,
     kind: formData.get("kind"),
-    // Teams always have levels. A topic chooses.
+    // Departments always have levels. A general category chooses.
     usesLevels: formData.get("kind") !== "topic" || formData.get("usesLevels") === "on",
   });
   if (!parsed.success) {

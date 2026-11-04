@@ -44,8 +44,15 @@ export type CurriculumOverview = {
     id: string;
     number: number;
     name: string;
-    courses: { id: string; state: CourseState }[];
+    courses: {
+      id: string;
+      state: CourseState;
+      startHere: boolean;
+      /** The version being shown: "5 lessons · 25 min · 1 quiz". */
+      facts: string;
+    }[];
   }[];
+  canPublish: boolean;
 }[];
 
 /** Departments the person looks after, with their levels and courses (SRS-CUR-002). */
@@ -77,9 +84,10 @@ export async function getCurriculumOverview(
       .order("number"),
     supabase
       .from("courses")
-      .select("id, level_id, sort_order, archived_at")
+      .select("id, level_id, sort_order, archived_at, start_here")
       .in("department_id", ids)
-      .order("sort_order"),
+      .order("sort_order")
+      .order("created_at"),
   ]);
   if (levels.error || courses.error) {
     throw new Error("Could not load the curriculum", {
@@ -89,7 +97,7 @@ export async function getCurriculumOverview(
   const versions = courses.data.length
     ? await supabase
         .from("course_versions")
-        .select("id, course_id, status, version_number, title")
+        .select("id, course_id, status, version_number, title, estimated_minutes")
         .in(
           "course_id",
           courses.data.map((c) => c.id),
@@ -98,6 +106,39 @@ export async function getCurriculumOverview(
   if (versions.error) {
     throw new Error("Could not load course versions", { cause: versions.error.code });
   }
+  // The draft if there is one, otherwise the live version. Old versions don't count.
+  const shownVersions = courses.data.flatMap((course) => {
+    const mine = versions.data.filter((v) => v.course_id === course.id);
+    const shown =
+      mine.find((v) => v.status === "draft" || v.status === "pending_review") ??
+      mine.find((v) => v.status === "published");
+    return shown ? [shown] : [];
+  });
+  const shownIds = shownVersions.map((v) => v.id);
+  const [lessonRows, quizRows] = await Promise.all([
+    supabase.from("lessons").select("course_version_id").in("course_version_id", shownIds),
+    supabase.from("quizzes").select("course_version_id").in("course_version_id", shownIds),
+  ]);
+  if (lessonRows.error || quizRows.error) {
+    throw new Error("Could not load the curriculum", {
+      cause: (lessonRows.error ?? quizRows.error)?.code,
+    });
+  }
+  const factsFor = (courseId: string) => {
+    const version = shownVersions.find((v) => v.course_id === courseId);
+    if (!version) {
+      return "";
+    }
+    const lessons = lessonRows.data.filter((l) => l.course_version_id === version.id).length;
+    const quizzes = quizRows.data.filter((q) => q.course_version_id === version.id).length;
+    return [
+      lessons === 1 ? "1 lesson" : `${lessons} lessons`,
+      version.estimated_minutes ? `${version.estimated_minutes} min` : null,
+      quizzes === 0 ? null : quizzes === 1 ? "1 quiz" : `${quizzes} quizzes`,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+  };
 
   return managed.map((department) => ({
     id: department.id,
@@ -107,6 +148,7 @@ export async function getCurriculumOverview(
     kind: department.kind,
     usesLevels: department.uses_levels,
     canDraft: hasCapability(grants, "course.draft", department.id),
+    canPublish: hasCapability(grants, "course.publish", department.id),
     levels: levels.data
       .filter((level) => level.department_id === department.id)
       .map((level) => ({
@@ -127,7 +169,16 @@ export async function getCurriculumOverview(
                 })),
               course.archived_at !== null,
             );
-            return state ? [{ id: course.id, state }] : [];
+            return state
+              ? [
+                  {
+                    id: course.id,
+                    state,
+                    startHere: course.start_here,
+                    facts: factsFor(course.id),
+                  },
+                ]
+              : [];
           }),
       })),
   }));
@@ -187,7 +238,6 @@ export type CourseEditor = {
   /** The course's cover art, if it has any. A cover isn't part of a version. */
   coverPath: string | null;
   coverUrl: string | null;
-  startHere: boolean;
   /** Topics have no practicals (decision 2026-11-04). */
   isTopic: boolean;
   levelName: string;
@@ -293,6 +343,16 @@ export async function setCourseCover(
   return { ok: true };
 }
 
+/** Moves a course up or down within its level. The database checks course.draft. */
+export async function moveCourse(courseId: string, direction: -1 | 1): Promise<CurriculumResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("move_course", {
+    p_course_id: courseId,
+    p_direction: direction,
+  });
+  return error ? fail(error) : { ok: true };
+}
+
 /** Marks a topic's course Start here (SRS-CUR-018). The database checks course.publish and the topic. */
 export async function setCourseStartHere(courseId: string, on: boolean): Promise<CurriculumResult> {
   const supabase = await createSupabaseServerClient();
@@ -307,7 +367,7 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
   const supabase = await createSupabaseServerClient();
   const course = await supabase
     .from("courses")
-    .select("id, department_id, level_id, archived_at, cover_image_path, start_here")
+    .select("id, department_id, level_id, archived_at, cover_image_path")
     .eq("id", courseId)
     .maybeSingle();
   if (course.error) {
@@ -352,7 +412,6 @@ export async function getCourseEditor(courseId: string): Promise<CourseEditor | 
     id: course.data.id,
     departmentId: course.data.department_id,
     departmentName: department.data.name,
-    startHere: course.data.start_here,
     coverPath: course.data.cover_image_path,
     coverUrl: course.data.cover_image_path
       ? courseCoverUrl(publicEnv().NEXT_PUBLIC_SUPABASE_URL, course.data.cover_image_path)

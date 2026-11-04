@@ -50,7 +50,7 @@ export function AcademyNavLink({
     <Link
       href={href}
       aria-current={current ? "page" : undefined}
-      className={`flex min-h-touch items-center gap-2.5 rounded-button px-2.5 text-small transition-surface ${
+      className={`flex min-h-touch items-center gap-2 rounded-button px-2 text-body font-medium transition-surface ${
         current
           ? "bg-accent-soft font-semibold text-accent-light"
           : "text-text-secondary hover:bg-hover hover:text-text"

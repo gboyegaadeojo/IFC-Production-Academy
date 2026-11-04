@@ -48,7 +48,7 @@ export default function TrainingPage() {
 async function TrainingContent() {
   const user = await requireActiveUser();
   const categories = await listDepartmentCards(user.id);
-  // Topics are courses only, so they appear in the rows and never in "join a department".
+  // General categories are courses only, so they appear in the rows and never in "join a department".
   const departments = categories.filter((d) => d.kind === "team");
   const state = homeState(departments);
   const memberOf = departments.filter((d) => d.state.kind === "member");

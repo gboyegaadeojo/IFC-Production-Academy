@@ -13,7 +13,7 @@ import {
   type AssignMode,
   type StepKind,
 } from "@/lib/domain/onboarding";
-import type { Choice } from "@/lib/data/onboarding";
+import type { Choice, CourseChoice } from "@/lib/data/onboarding";
 import { removeStepAction, saveStepAction } from "./actions";
 import { TONE } from "./builder";
 import { StepIcon } from "./step-icon";
@@ -35,7 +35,7 @@ export function StepSettings({
   step: { id: string; kind: StepKind; title: string; config: Record<string, unknown> };
   roles: Choice[];
   people: Choice[];
-  courses: Choice[];
+  courses: CourseChoice[];
   servingRoles: Choice[];
   departments: (Choice & { pathwayId: string | null })[];
 }) {
@@ -43,6 +43,8 @@ export function StepSettings({
   const c = step.config;
   const text = (key: string, fallback = "") => (c[key] === undefined ? fallback : String(c[key]));
   const [mode, setMode] = useState<AssignMode>((c.mode as AssignMode) ?? "turns");
+  const [courseId, setCourseId] = useState(text("course_id"));
+  const chosenCourse = courses.find((course) => course.id === courseId);
   const [subject, setSubject] = useState(text("subject"));
   const [body, setBody] = useState(text("body"));
   const [template, setTemplate] = useState("");
@@ -244,11 +246,36 @@ export function StepSettings({
 
         {step.kind === "course" ? (
           <>
-            {select("course_id", "Course", courses, undefined, "Choose a published course")}
+            <Field id={id("course_id")} label="Course">
+              <select
+                id={id("course_id")}
+                name="cfg_course_id"
+                value={courseId}
+                onChange={(event) => setCourseId(event.target.value)}
+                className={fieldClasses}
+              >
+                <option value="">Choose a published course</option>
+                {[...new Set(courses.map((course) => course.categoryName))].map((category) => (
+                  <optgroup key={category} label={category}>
+                    {courses
+                      .filter((course) => course.categoryName === category)
+                      .map((course) => (
+                        <option key={course.id} value={course.id}>
+                          {course.name}
+                        </option>
+                      ))}
+                  </optgroup>
+                ))}
+              </select>
+            </Field>
             <p className="rounded-button border border-border bg-card p-2.5 text-small text-text-secondary">
               <span className="font-semibold text-text">Moves on by itself</span> when the Academy
-              records the course finished. Nobody ticks it. Assigning it makes them a member of the
-              course&apos;s department, which puts them on its team, not approval to serve.
+              records the course finished. Nobody ticks it.{" "}
+              {chosenCourse?.isTeam
+                ? `It also makes them a member of ${chosenCourse.categoryName}, which puts them on its team, not approval to serve.`
+                : chosenCourse
+                  ? "It doesn't make them a member of any department."
+                  : ""}
             </p>
           </>
         ) : null}

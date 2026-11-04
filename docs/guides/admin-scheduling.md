@@ -16,7 +16,7 @@ The setup is in the [Planning Center setup guide](../runbooks/scheduling.md).
 
 ## Serving teams
 
-**Serving teams** shows who serves in each position, with their training and any Start here course (Done or Not yet) beside their name, and what each position sees on the day. These are there to help you, and they never stop anyone being added. While Planning Center schedules, you add people to positions there, and they appear here after the next read.
+**Serving teams** shows who serves in each position, with their training, and a column for each Start here course (Done or Not yet), and what each position sees on the day. These are there to help you, and they never stop anyone being added. While Planning Center schedules, you add people to positions there, and they appear here after the next read.
 
 Each position has settings for the day:
 

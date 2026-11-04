@@ -108,7 +108,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
             <DepartmentIcon icon={department.icon} className="size-7 sm:size-8" />
           </span>
           <div className="flex min-w-0 flex-col gap-1.5">
-            <p className="eyebrow">{isTopic ? "Topic" : "Department"}</p>
+            <p className="eyebrow">{isTopic ? "Category" : "Department"}</p>
             <h1 id="department-heading" className="text-title font-semibold text-balance">
               {department.name}
             </h1>

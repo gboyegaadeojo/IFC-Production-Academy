@@ -1,19 +1,19 @@
 # Admin: curriculum
 
-**Curriculum** is where you build courses, for a topic or for a level in a department. You publish your own department's work. Nobody else has to approve it, unless your department has turned on review before publishing.
+**Curriculum** is where you build courses, for a general category or for a level in a department. You publish your own department's work. Nobody else has to approve it, unless your department has turned on review before publishing.
 
-## Topics and departments
+## General categories and departments
 
-The row of buttons at the top starts with the **topics**, then a divider, then the **departments**.
+The row of buttons at the top starts with the **general categories**, then a divider, then the **departments**.
 
 - A **department** is a team. Its courses sit in three levels, and they can have practical assessments.
-- A **topic**, such as General or Leadership, is courses for anyone on the production team. Some topics use levels and some are one list. Topics have lessons, quizzes, versions, and certificates, but no practical assessments, so the Practicals tab doesn't appear.
+- A **general category**, such as General or Leadership, is courses for anyone on the production team. Some use levels, and some are one list you can put in order with the arrows. They have lessons, quizzes, versions, and certificates, but no practical assessments, so the Practicals tab doesn't appear.
 
-Production Directors build and publish topics. You add a topic under [Departments](admin-people.md#departments).
+Production Directors build and publish these. You add one under [Departments](admin-people.md#departments).
 
 ## Start here
 
-Open a topic's course and go to **Details** to choose **Mark as Start here**. If you can publish that topic, the course then shows at the top of Training until someone finishes it, on each department's page, and beside each name on Serving teams as Done or Not yet. It never stops anyone joining or serving.
+Turn on **Start here** beside a course in General. If you can publish it, the course then shows at the top of Training until someone finishes it, on each department's page, and beside each name on Serving teams as Done or Not yet. It never stops anyone joining or serving.
 
 ## Course covers
 

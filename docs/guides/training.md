@@ -1,6 +1,6 @@
 # Training
 
-**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by topic and department. **All courses** lists every course, with search and filters for category and level. On a phone, you'll find it under **Courses** on Training.
+**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by category. **All courses** lists every course, with search and filters for category and level. On a phone, you'll find it under **Courses** on Training.
 
 ## Anyone can learn anything
 
@@ -8,9 +8,9 @@ Every open department's courses are open to you. You don't need anyone's permiss
 
 **Joining a department is a separate thing.** It means you're part of that department's team, so its leader knows you and can plan around you. To join, choose **Request to join** on a department. A leader reviews each request, and some departments are by invitation only.
 
-## Topics
+## General categories
 
-**Topics**, such as General and Leadership, are courses for everyone on the production team, whichever department you serve in. There's nothing to join: open a topic and start a course. Finishing one earns a certificate, but it doesn't count towards being Approved to Serve.
+**General categories**, such as General and Leadership, are courses for everyone on the production team, whichever department you serve in. There's nothing to join: open a topic and start a course. Finishing one earns a certificate, but it doesn't count towards being Approved to Serve.
 
 ## Start here
 
