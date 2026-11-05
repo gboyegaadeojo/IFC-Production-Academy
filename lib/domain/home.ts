@@ -128,7 +128,7 @@ export function departmentProgressLabel(published: number, done: number, total: 
     return `${courses} · ${total} ${lessons} to start`;
   }
   return done === total
-    ? `${courses} · All ${total} ${lessons} complete`
+    ? `${courses} · ${total === 1 ? "1 lesson" : `All ${total} lessons`} complete`
     : `${courses} · ${done} of ${total} ${lessons}`;
 }
 

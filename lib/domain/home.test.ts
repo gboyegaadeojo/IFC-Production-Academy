@@ -177,6 +177,6 @@ describe("a department's ring on Training", () => {
     expect(departmentProgressLabel(1, 0, 10)).toBe("1 course · 10 lessons to start");
     expect(departmentProgressLabel(1, 3, 10)).toBe("1 course · 3 of 10 lessons");
     expect(departmentProgressLabel(1, 10, 10)).toBe("1 course · All 10 lessons complete");
-    expect(departmentProgressLabel(1, 1, 1)).toBe("1 course · All 1 lesson complete");
+    expect(departmentProgressLabel(1, 1, 1)).toBe("1 course · 1 lesson complete");
   });
 });
