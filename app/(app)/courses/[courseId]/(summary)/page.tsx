@@ -108,32 +108,33 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
   const liveCertificate = certificate && !certificate.revoked ? certificate : null;
 
   // The card above the lessons: the next step, the first lesson, or nothing while a practical waits.
-  const card = summary?.next
-    ? {
-        label: "Continue",
-        title: summary.next.title,
-        href: stepHref(course.id, summary.next),
-        thumbnail: nextLesson?.thumbnailUrl,
-      }
-    : !first
-      ? null
-      : !started
-        ? course.canOpen
-          ? {
-              label: "Start here",
-              title: first.title,
-              href: `/courses/${course.id}/lessons/${first.key}`,
-              thumbnail: first.thumbnailUrl,
-            }
-          : null
-        : summary?.state === "completed"
-          ? {
-              label: "Watch again",
-              title: first.title,
-              href: `/courses/${course.id}/lessons/${first.key}`,
-              thumbnail: first.thumbnailUrl,
-            }
-          : null;
+  const card =
+    started && summary?.next
+      ? {
+          label: "Continue",
+          title: summary.next.title,
+          href: stepHref(course.id, summary.next),
+          thumbnail: nextLesson?.thumbnailUrl,
+        }
+      : !first
+        ? null
+        : !started
+          ? course.canOpen
+            ? {
+                label: "Start here",
+                title: first.title,
+                href: `/courses/${course.id}/lessons/${first.key}`,
+                thumbnail: first.thumbnailUrl,
+              }
+            : null
+          : summary?.state === "completed"
+            ? {
+                label: "Watch again",
+                title: first.title,
+                href: `/courses/${course.id}/lessons/${first.key}`,
+                thumbnail: first.thumbnailUrl,
+              }
+            : null;
 
   return (
     <div
@@ -227,7 +228,7 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           </ul>
         </header>
         <div className="col-span-2 flex flex-col gap-2 xl:col-span-1 xl:col-start-2 xl:items-start xl:self-start">
-          {summary?.next ? (
+          {started && summary?.next ? (
             <Link
               href={stepHref(course.id, summary.next)}
               className={buttonClasses(
