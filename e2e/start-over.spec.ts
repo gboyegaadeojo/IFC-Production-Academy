@@ -13,6 +13,7 @@ test("a learner starts a course over, after a warning", async ({ page }, testInf
   await page.goto("/courses");
   await page.getByLabel("Search courses").fill("Sample course");
   await page.getByRole("main").getByRole("listitem").getByRole("link").first().click();
+  await page.getByRole("link", { name: "Start the course" }).click();
   await expect(page).toHaveURL(/\/lessons\//);
   await page.getByRole("button", { name: "Mark complete" }).first().click();
   await expect(page.getByRole("button", { name: /Completed/ }).first()).toBeVisible();
