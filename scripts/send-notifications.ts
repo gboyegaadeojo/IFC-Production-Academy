@@ -61,7 +61,14 @@ async function sendPendingPush(supabaseUrl: string, serviceKey: string, siteUrl:
   );
 }
 
-type Claimed = { id: string; email: string; title: string; body: string; link: string | null };
+type Claimed = {
+  id: string;
+  email: string;
+  kind: string;
+  title: string;
+  body: string;
+  link: string | null;
+};
 type ClaimedOnboarding = {
   id: string;
   email: string;

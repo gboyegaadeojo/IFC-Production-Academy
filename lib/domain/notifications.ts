@@ -1,3 +1,5 @@
+import { calmEmailHtml } from "./email-design.ts";
+
 /**
  * Notifications (SRS-NOTIF-001..006). Labels, and the email built from a notification. No
  * imports, so the scheduled email job (scripts/send-notifications.ts) can run this file directly.
@@ -193,69 +195,113 @@ export function isNotificationKind(value: string): value is NotificationKind {
   return Object.hasOwn(NOTIFICATION_KIND_LABELS, value);
 }
 
-function escapeHtml(text: string): string {
-  return text
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
 /** The link only ever points inside the Academy. */
 export function notificationUrl(siteUrl: string, link: string | null): string {
   const base = siteUrl.replace(/\/+$/, "");
   return link && /^\/[A-Za-z0-9/_.?=&-]*$/.test(link) ? `${base}${link}` : `${base}/notifications`;
 }
 
-/** The email for one notification: plain text and simple HTML, with how to turn it off. */
+/** What the button says for each kind: what it does, not "Open". */
+const BUTTON_LABELS: Record<NotificationKind, string> = {
+  membership_approved: "Start learning",
+  assignment_scheduled: "Confirm or decline",
+  assessment_recorded: "See your result",
+  mentoring_paired: "Open mentoring",
+  sop_review_due: "Review the SOP",
+  serving_reminder: "See your schedule",
+  learning_nudge: "Continue",
+  assessment_requested: "See who's waiting",
+  competency_expiring: "See your profile",
+  cover_requested: "See the spot",
+  schedule_update: "See your schedule",
+  onboarding_task: "See the follow-up",
+  onboarding_update: "See their progress",
+  course_assigned: "Start the course",
+  service_changed: "See your schedule",
+  join_requested: "Review the request",
+  cover_open: "Find someone",
+  approved_to_serve: "See your profile",
+  certificate_ready: "Get your certificate",
+  new_course: "See the course",
+  sop_updated: "Read the update",
+  mentor_note: "Read the note",
+};
+
+export function emailButtonLabel(kind: string): string {
+  return isNotificationKind(kind) ? BUTTON_LABELS[kind] : "Open the Academy";
+}
+
+/**
+ * The email for one notification (Calm design, decision 2026-11-05): the title is the subject, the
+ * message is the preview line, and one button says what it does. Plain text too, with how to turn
+ * emails off.
+ */
 export function notificationEmail(
-  notification: { title: string; body: string; link: string | null },
+  notification: { kind?: string; title: string; body: string; link: string | null },
   siteUrl: string,
   appName = "IFC Production Academy",
 ): { subject: string; text: string; html: string } {
   const url = notificationUrl(siteUrl, notification.link);
   const settings = notificationUrl(siteUrl, "/notifications");
-  const subject = `${appName}: ${notification.title}`.slice(0, 200);
+  const button = emailButtonLabel(notification.kind ?? "");
+  const subject = notification.title.slice(0, 200);
   const text = [
     notification.title,
     "",
     notification.body,
     "",
-    `Open the Academy: ${url}`,
+    `${button}: ${url}`,
     "",
     `You can choose which emails you get at ${settings}`,
+    appName,
   ].join("\n");
-  const html = [
-    `<p><strong>${escapeHtml(notification.title)}</strong></p>`,
-    notification.body ? `<p>${escapeHtml(notification.body)}</p>` : "",
-    `<p><a href="${escapeHtml(url)}">Open the Academy</a></p>`,
-    `<p style="color:#666;font-size:12px">You can choose which emails you get on your <a href="${escapeHtml(settings)}">notifications page</a>.</p>`,
-  ].join("");
+  const html = calmEmailHtml({
+    preheader: notification.body,
+    title: notification.title,
+    paragraphs: notification.body ? [notification.body] : [],
+    button: { label: button, url },
+    iconUrl: `${siteUrl.replace(/\/+$/, "")}/icons/icon-192.png`,
+    footer: {
+      text: "You can choose which emails you get on your",
+      link: { label: "notifications page", url: settings },
+    },
+    appName,
+  });
   return { subject, text, html };
 }
 
 /**
- * An onboarding pathway email, as its leader wrote it. Many people have no account yet, so they
- * can't reach notification settings: they're told to reply instead (decision 7, CASL).
+ * An onboarding pathway email, as its leader wrote it, in the Calm design. Many people have no
+ * account yet, so they can't reach notification settings: they're told to reply instead
+ * (decision 7, CASL).
  */
 export function onboardingEmail(
   email: { subject: string; body: string; hasAccount: boolean },
   siteUrl: string,
   appName = "IFC Production Academy",
 ): { subject: string; text: string; html: string } {
+  const settings = notificationUrl(siteUrl, "/notifications");
   const footer = email.hasAccount
-    ? `You can choose which emails you get at ${notificationUrl(siteUrl, "/notifications")}`
+    ? `You can choose which emails you get at ${settings}`
     : "If you'd rather not get these emails, reply and let us know.";
   const text = [email.body, "", `From ${appName}. ${footer}`].join("\n");
   const paragraphs = email.body
     .split(/\n\s*\n/)
     .map((paragraph) => paragraph.trim())
-    .filter((paragraph) => paragraph.length > 0)
-    .map((paragraph) => `<p>${escapeHtml(paragraph).replaceAll("\n", "<br>")}</p>`);
-  const html = [
-    ...paragraphs,
-    `<p style="color:#666;font-size:12px">From ${escapeHtml(appName)}. ${escapeHtml(footer)}</p>`,
-  ].join("");
+    .filter((paragraph) => paragraph.length > 0);
+  const html = calmEmailHtml({
+    preheader: paragraphs[0] ?? email.subject,
+    title: email.subject,
+    paragraphs,
+    button: null,
+    iconUrl: `${siteUrl.replace(/\/+$/, "")}/icons/icon-192.png`,
+    footer: email.hasAccount
+      ? {
+          text: "You can choose which emails you get on your",
+          link: { label: "notifications page", url: settings },
+        }
+      : { text: "If you'd rather not get these emails, reply and let us know." },
+    appName,
+  });
   return { subject: email.subject.slice(0, 200), text, html };
 }
