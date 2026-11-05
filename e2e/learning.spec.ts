@@ -232,7 +232,10 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
 
   // Workflow B (SPEC §3): the volunteer asks to be assessed, a leader ticks what they saw, and the
   // Academy works out the result. A pass grants the competency; Approved to Serve follows.
-  await volunteer.getByRole("link", { name: /^Continue/ }).click();
+  await volunteer
+    .getByRole("link", { name: /^Continue/ })
+    .first()
+    .click();
   await expect(
     volunteer.getByRole("heading", { level: 1, name: "Sample practical (seed data)" }),
   ).toBeVisible();
