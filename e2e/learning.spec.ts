@@ -197,7 +197,11 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
 
   // The quiz (SRS-QUIZ-001..005): one question at a time, an answer needed to move on, a check
   // before submitting, and a result the app works out.
-  await volunteer.getByRole("link", { name: /^Continue/ }).click();
+  // The main button and the card both go to the next step.
+  await volunteer
+    .getByRole("link", { name: /^Continue/ })
+    .first()
+    .click();
   await expect(
     volunteer.getByRole("heading", { level: 1, name: "Sample quiz (seed data)" }),
   ).toBeVisible();
