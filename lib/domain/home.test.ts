@@ -3,6 +3,8 @@ import {
   countedLessons,
   courseCountLabel,
   homeState,
+  levelCardLabel,
+  levelPercent,
   levelProgressLabel,
   summariseLearning,
 } from "./home";
@@ -135,5 +137,33 @@ describe("courseCountLabel", () => {
     expect(courseCountLabel(1)).toBe("1 course");
     expect(courseCountLabel(0)).toBe("0 courses");
     expect(courseCountLabel(4)).toBe("4 courses");
+  });
+});
+
+describe("a level on a department card", () => {
+  const level = { levelId: "l", number: 1, name: "Foundations" };
+  const at = (publishedCourses: number, lessonsTotal: number, lessonsDone: number) => ({
+    ...level,
+    publishedCourses,
+    lessonsTotal,
+    lessonsDone,
+  });
+
+  it("says a level with no courses isn't open yet, and leaves its bar empty", () => {
+    expect(levelCardLabel(at(0, 0, 0))).toBe("Not open yet");
+    expect(levelPercent(at(0, 0, 0))).toBe(0);
+  });
+
+  it("gives the count of lessons", () => {
+    expect(levelCardLabel(at(1, 10, 3))).toBe("3 of 10");
+  });
+
+  it("falls back to the course count when there are no lessons", () => {
+    expect(levelCardLabel(at(2, 0, 0))).toBe("2 courses");
+  });
+
+  it("fills the bar by the real amount, so one lesson doesn't look like ten", () => {
+    expect(levelPercent(at(1, 10, 1))).toBe(10);
+    expect(levelPercent(at(1, 10, 10))).toBe(100);
   });
 });

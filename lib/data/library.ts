@@ -9,7 +9,7 @@ import type { CourseProgress, CourseState } from "@/lib/domain/progress";
 
 type Client = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
-/** Where a poster goes. That page works out the next step when someone actually opens it. */
+/** Where a Start the course button goes. That page works out the next step on the click. */
 const openHref = (courseId: string) => `/courses/${courseId}/open`;
 
 /** Titles and lesson counts, without each course's outline: these pages list many courses. */
@@ -108,7 +108,8 @@ export async function getCourseLibrary(
         {
           id: row.id,
           title: summary.title,
-          href: openHref(row.id),
+          // A poster opens the course's summary, which has its own Start or Continue (G, 2026-11-05).
+          href: `/courses/${row.id}`,
           category: {
             id: category.id,
             slug: category.slug,
