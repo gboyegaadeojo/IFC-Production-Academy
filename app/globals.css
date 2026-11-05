@@ -358,6 +358,14 @@ body {
   font-kerning: normal;
 }
 
+/* In the installed app, no elastic bounce past the top or bottom: it dragged the bars with it. */
+@media (display-mode: standalone) {
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+}
+
 /* Visible focus everywhere (WCAG 2.2 AA, SPEC §6). */
 :focus-visible {
   outline: 2px solid var(--accent-light);
