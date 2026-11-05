@@ -171,6 +171,8 @@ Use a standard ease-out curve such as `cubic-bezier(.2,0,0,1)`. No perpetual flo
 ## 6. Screen requirements — learner experience
 
 ### 6.1 Home (`app/(app)/home/page.tsx`)
+Built as Design D of the Home Page mock (G, 2026-11-05): **Coming up** or, for someone new, **Getting started**, with departments and a few courses to try beside it. Where the text below differs, this wins.
+
 **Goal:** Show the next meaningful action and the available learning world.
 
 **New volunteer:** compact editorial hero, introductory line, prominent “Explore departments”, rich department cards, clear explanation of training versus approval to serve in a short informational section.

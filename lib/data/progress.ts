@@ -4,6 +4,7 @@ import { getLearnerCourses, type LearnerCourse } from "@/lib/data/pathway";
 import { getPassedPracticalKeys } from "@/lib/data/practicals";
 import { getPassedQuizKeys } from "@/lib/data/quizzes";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { flattenLessons, stepHref } from "@/lib/domain/learning";
 import {
   courseProgress,
   lessonProgressByKey,
@@ -175,6 +176,16 @@ export type ContinueCourse = {
   course: Pick<LearnerCourse, "id" | "title" | "department" | "level">;
   progress: CourseProgress;
   hasRequired: boolean;
+  nextHref: string;
+  /** Null when the next step is a quiz or a practical. */
+  nextLesson: {
+    number: number;
+    total: number;
+    minutes: number | null;
+    thumbnailUrl: string | null;
+  } | null;
+  /** A required practical not passed yet, unless it's the next step. */
+  practical: { title: string; href: string } | null;
 };
 
 /** Up to three recently opened, unfinished courses for Home. Empty when nothing was started. */
@@ -212,6 +223,14 @@ export async function getContinueLearning(
     if (progress.state === "completed" || !progress.next) {
       return [];
     }
+    const next = progress.next;
+    const lessons = flattenLessons(course.modules);
+    const lessonIndex = next.kind === "lesson" ? lessons.findIndex((l) => l.key === next.key) : -1;
+    const lesson = lessons[lessonIndex];
+    const practical = course.practicals.find(
+      (item) =>
+        item.isRequired && item.key !== next.key && !practicalsPassed.get(course.id)?.has(item.key),
+    );
     return [
       {
         course: {
@@ -222,6 +241,21 @@ export async function getContinueLearning(
         },
         progress,
         hasRequired: course.modules.some((m) => m.lessons.some((l) => l.isRequired)),
+        nextHref: stepHref(course.id, next),
+        nextLesson: lesson
+          ? {
+              number: lessonIndex + 1,
+              total: lessons.length,
+              minutes: lesson.estimatedMinutes,
+              thumbnailUrl: lesson.thumbnailUrl ?? null,
+            }
+          : null,
+        practical: practical
+          ? {
+              title: practical.title,
+              href: stepHref(course.id, { kind: "practical", key: practical.key }),
+            }
+          : null,
       },
     ];
   });

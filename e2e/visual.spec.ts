@@ -31,18 +31,16 @@ for (const viewport of VIEWPORTS) {
     await signInByEmail(page, `visual-new-${viewport.name}-${Date.now()}@example.com`);
 
     // New volunteer: one clear next step, every department discoverable.
-    await expect(page.getByRole("link", { name: "Explore departments" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Getting started" })).toBeVisible();
     await expect(page.getByText("How serving works")).toBeVisible();
     await capture(page, `home-new-${viewport.name}`);
 
-    // Pending: the request status comes first; other departments stay discoverable.
+    // Pending: the request shows as a step; other departments stay discoverable.
     await page
       .getByRole("article", { name: "Camera Operations" })
       .getByRole("button", { name: "Request to join Camera Operations" })
       .click();
-    await expect(page.getByRole("heading", { name: "Your request" })).toBeVisible();
-    await expect(page.getByText("Waiting for a leader")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Explore departments" })).toHaveCount(0);
+    await expect(page.getByText("Request sent. Waiting for a leader.")).toBeVisible();
     await capture(page, `home-pending-${viewport.name}`);
 
     await openAccountMenu(page);
@@ -53,7 +51,7 @@ for (const viewport of VIEWPORTS) {
     await page.setViewportSize(viewport);
     // Avery is a fake seed member of Camera Operations, which has one fake published course.
     await signInByEmail(page, "avery.volunteer@example.com");
-    await expect(page.getByRole("heading", { name: "Keep learning" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Your departments" })).toBeVisible();
     // Other tests may publish more Camera courses or record progress, so match any real count.
     const camera = page.getByRole("article", { name: "Camera Operations" });
     await expect(

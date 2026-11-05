@@ -416,10 +416,13 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
     volunteer.getByRole("status").filter({ hasText: "Marked as not complete." }),
   ).toHaveCount(1);
 
-  // Training picks up where they left off, in the Continue card at the top.
+  // Training picks up where they left off, at the top of Coming up.
   await volunteer.goto("/home");
-  const resume = volunteer.getByRole("region", { name: "Sample course (seed data)" });
-  await expect(resume.getByText("Next: Sample lesson")).toBeVisible();
-  await expect(resume.getByRole("link")).toHaveAttribute("href", /\/lessons\//);
+  const resume = volunteer.getByRole("region", { name: "Coming up" });
+  await expect(resume.getByRole("heading", { level: 3, name: "Sample lesson" })).toBeVisible();
+  await expect(resume.getByRole("link", { name: /^Continue/ })).toHaveAttribute(
+    "href",
+    /\/lessons\//,
+  );
   await volunteerContext.close();
 });
