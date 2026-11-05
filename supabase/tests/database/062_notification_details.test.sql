@@ -9,8 +9,8 @@ insert into auth.users (instance_id, id, aud, role, email, raw_user_meta_data, c
 create temporary table ctx on commit drop as
 select (select id from public.departments where kind = 'team' order by sort_order limit 1) as department_id;
 insert into public.serving_roles (department_id, name) select department_id, 'Fake detail role' from ctx;
-insert into public.events (title, starts_at, ends_at)
-values ('Fake detail service', '2030-11-10T15:00:00Z', '2030-11-10T17:00:00Z');
+insert into public.events (organization_id, title, starts_at, ends_at)
+values ((select id from public.organizations limit 1), 'Fake detail service', '2030-11-10T15:00:00Z', '2030-11-10T17:00:00Z');
 insert into public.event_positions (event_id, department_id, role_id)
 select e.id, (select department_id from ctx), r.id
 from public.events e, public.serving_roles r
