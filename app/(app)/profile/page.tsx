@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
 import { AwardIcon, ChevronRightIcon } from "@/components/ui/icons";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
 import { getMyAchievements } from "@/lib/data/achievements";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -32,7 +32,7 @@ export const metadata: Metadata = { title: "Your profile" };
 
 export default function ProfilePage() {
   return (
-    <Suspense fallback={<ProfileSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <ProfileContent />
     </Suspense>
   );
@@ -337,24 +337,5 @@ function Certificates({
         </ul>
       )}
     </section>
-  );
-}
-
-function ProfileSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-8 py-8 lg:py-12" aria-busy="true">
-      <LoadingStatus label="Loading your profile…" />
-      <div className="flex flex-col gap-3">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-12 w-72 max-w-full" />
-      </div>
-      <div className="grid gap-6 lg:grid-cols-[21.25rem_minmax(0,1fr)]">
-        <Skeleton className="h-80" />
-        <div className="flex flex-col gap-5">
-          <Skeleton className="h-64" />
-          <Skeleton className="h-28" />
-        </div>
-      </div>
-    </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LibrarySwitch } from "@/components/shell/library-switch";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards } from "@/lib/data/departments";
 import { getCourseLibrary } from "@/lib/data/library";
@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Explore" };
 
 export default function ExplorePage({ searchParams }: PageProps<"/explore">) {
   return (
-    <Suspense fallback={<ExploreSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <Explore searchParams={searchParams} />
     </Suspense>
   );
@@ -40,17 +40,6 @@ async function Explore({ searchParams }: Pick<PageProps<"/explore">, "searchPara
         categories={categories.map((c) => ({ id: c.id, name: c.name, kind: c.kind }))}
         initialTopicIds={chosen ? [chosen.id] : []}
       />
-    </div>
-  );
-}
-
-function ExploreSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-5 py-8 lg:py-10" aria-busy="true">
-      <LoadingStatus label="Loading…" />
-      <Skeleton className="h-8 w-40" />
-      <Skeleton className="h-10 max-w-xl" />
-      <Skeleton className="h-40 max-w-[40rem]" />
     </div>
   );
 }

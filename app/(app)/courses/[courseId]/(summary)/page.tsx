@@ -9,7 +9,7 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
 import { ArrowRightIcon, ChevronLeftIcon, LockIcon } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyCertificateForCourse } from "@/lib/data/certificates";
 import { getLearnerCourse, canLearnIn } from "@/lib/data/pathway";
@@ -25,8 +25,8 @@ import {
   stepHref,
 } from "@/lib/domain/learning";
 import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
-import { issueCertificateAction, restartCourseAction } from "./actions";
-import { CourseOutline } from "./course-outline";
+import { issueCertificateAction, restartCourseAction } from "../actions";
+import { CourseOutline } from "../course-outline";
 import { RichText } from "@/components/ui/rich-text";
 import { getCourseTopics } from "@/lib/data/topics";
 
@@ -36,7 +36,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function CoursePage({ params }: PageProps<"/courses/[courseId]">) {
   return (
-    <Suspense fallback={<CourseSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <CourseContent params={params} />
     </Suspense>
   );
@@ -287,24 +287,6 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
             </section>
           ) : null}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function CourseSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-10 py-8 lg:py-12" aria-busy="true">
-      <LoadingStatus label="Loading the course…" />
-      <Skeleton className="h-4 w-64" />
-      <div className="grid gap-10 lg:grid-cols-[1fr_22rem]">
-        <div className="flex min-w-0 flex-col gap-4">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-12 w-96 max-w-full" />
-          <Skeleton className="h-6 w-[32rem] max-w-full" />
-          <Skeleton className="mt-6 h-64" />
-        </div>
-        <Skeleton className="h-48" />
       </div>
     </div>
   );
