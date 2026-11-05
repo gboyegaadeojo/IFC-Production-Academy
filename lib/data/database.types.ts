@@ -1789,6 +1789,7 @@ export type Database = {
         Returns: undefined;
       };
       alerts_setup_needed: { Args: Record<string, never>; Returns: boolean };
+      queue_serving_reminders: { Args: Record<string, never>; Returns: number };
       set_alerts_unavailable: { Args: { p_unavailable: boolean }; Returns: undefined };
       team_alert_status: {
         Args: Record<string, never>;

@@ -2,6 +2,10 @@
 
 **Schedule** shows when you're serving and who with.
 
+## Reminders
+
+The Academy reminds you if you haven't answered after two days, two days before you serve, and on the morning you serve. Planning Center sends its own reminders too, so you may get both. Between 8 pm and 8 am reminders wait until the morning.
+
 ## Planning Center does the scheduling
 
 Leaders schedule in Planning Center, and the Academy reads from it every 15 minutes. So some things you do there, not here:

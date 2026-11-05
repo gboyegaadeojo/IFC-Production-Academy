@@ -170,6 +170,9 @@ set local session_replication_role = replica;
 update public.lesson_progress set last_viewed_at = now() - interval '22 days', updated_at = now() - interval '22 days'
  where user_id = 'f1000000-0000-4000-8000-000000000006';
 set local session_replication_role = origin;
+-- One learning reminder a day: the 21-day nudge comes on a later day than the 7-day one.
+update public.notifications set created_at = now() - interval '2 days'
+ where user_id = 'f1000000-0000-4000-8000-000000000006' and kind = 'learning_nudge';
 select public.queue_reminders();
 select is(pg_temp.count_for('f1000000-0000-4000-8000-000000000006', 'learning_nudge'), 2,
   'and once more at three weeks');

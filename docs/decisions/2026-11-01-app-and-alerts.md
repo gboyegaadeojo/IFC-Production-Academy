@@ -22,7 +22,7 @@ G wants to install the Academy on Android and iPhone and to get alerts that drop
 ## Limits
 - **iPhone and iPad:** alerts need iOS or iPadOS 16.4 or later and the Home Screen app.
 - **Alert content:** the alert's title and body are the notification's. They are encrypted end to end to the device.
-- **Quiet hours:** they apply to email only. Phones have Do Not Disturb.
+- **Quiet hours:** they cover alerts too, since [2026-11-05](2026-11-05-alerts.md).
 - **Per-type choices:** none for alerts yet. Each device gets every kind of notification.
 
 ## Volunteers

@@ -28,16 +28,22 @@ deploy workflow already uses.
 1. Queues reminders (`queue_sop_review_reminders` and `queue_reminders`), each once:
    - SOP review due a week before the review date, and overdue a week after it;
    - "Please confirm" 48 hours after someone is scheduled, if they haven't answered;
-   - "Serving soon" from 10:00 two days before an event, to the confirmed volunteer and their
-     supervisor;
+   - "Serving soon" from 10:00 two days before an event, to the confirmed volunteer, and to their
+     supervisor for the Academy's own services;
+   - "Serving today" from 08:00 on the day;
+   - "Still to start" 7 days after a course is assigned, if they haven't started it;
    - "Keep going" 7 and 21 days after someone last worked on a course they started;
    - a practical assessment request still open after 7 days, to the department's leaders;
    - a competency expiring within 30 days, where expiry is on.
 
-   An assessment request also notifies the department's trainers the moment it's made.
+   These cover Planning Center's services too, so some people also get Planning Center's own
+   reminders. G chose that, in `docs/decisions/2026-11-05-alerts.md`. Learning reminders (the nudges
+   and "Still to start") are limited to one a day per person, and a skipped one is written on a later
+   day. An assessment request also notifies the department's trainers the moment it's made.
    Times follow decision 8 in `docs/decisions/2026-10-31-open-decisions.md`.
-2. Holds email during quiet hours, 20:00 to 08:00 Winnipeg time; it goes out at 08:00. Sign-in
-   links aren't affected, because Supabase sends them.
+2. Holds email and device alerts during quiet hours, 20:00 to 08:00 Winnipeg time; they go out at
+   08:00. Sign-in links aren't affected, because Supabase sends them. The Send a test alert button
+   isn't held either, because it isn't a notification.
 3. Claims up to 50 pending emails at a time (`claim_email_notifications`), skipping kinds the
    person turned off and accounts that aren't active.
 4. Sends each through Resend and records the result (`complete_email_notification`). A failed
