@@ -80,7 +80,11 @@ async function LessonContent({ params }: Pick<Props, "params">) {
     notFound();
   }
   const progress = progressFor(courseProgress, lessonKey);
-  const resources = (await getLessonResources(lesson.id)).filter(
+  const [allResources, topics] = await Promise.all([
+    getLessonResources(lesson.id),
+    getLessonTopics(course.id, lessonKey),
+  ]);
+  const resources = allResources.filter(
     (resource) => resource.state !== "archived" && resource.state !== "not_published",
   );
   // The next lesson, or the quiz that follows this module.
@@ -91,7 +95,6 @@ async function LessonContent({ params }: Pick<Props, "params">) {
   const moduleTitle = course.modules.find((m) => m.lessons.some((l) => l.key === lessonKey))?.title;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
 
-  const topics = await getLessonTopics(course.id, lessonKey);
   const lessonCount = course.modules.reduce((n, m) => n + m.lessons.length, 0);
   const doneCount = course.modules
     .flatMap((m) => m.lessons)

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { getLearnerCourses, type LearnerCourse } from "@/lib/data/pathway";
 import { getPassedPracticalKeys } from "@/lib/data/practicals";
 import { getPassedQuizKeys } from "@/lib/data/quizzes";
@@ -38,6 +39,28 @@ function toProgressRow(row: Row): ProgressRow {
   };
 }
 
+const PROGRESS_LIMIT = 2000;
+
+async function readProgress(userId: string, courseIds?: readonly string[]): Promise<Row[]> {
+  const supabase = await createSupabaseServerClient();
+  let query = supabase
+    .from("lesson_progress")
+    .select(COLUMNS)
+    .eq("user_id", userId)
+    .order("last_viewed_at", { ascending: false })
+    .limit(PROGRESS_LIMIT);
+  if (courseIds) {
+    query = query.in("course_id", [...courseIds]);
+  }
+  const { data, error } = await query;
+  if (error) {
+    throw new Error("Could not load progress", { cause: error.code });
+  }
+  return data;
+}
+
+const readAllProgress = cache((userId: string) => readProgress(userId));
+
 /** The learner's progress in one course, by lesson key, across every version they studied. */
 export async function getCourseProgress(
   userId: string,
@@ -70,22 +93,19 @@ export async function getLearnerActivity(
   if (courseIds && courseIds.length === 0) {
     return new Map();
   }
-  const supabase = await createSupabaseServerClient();
-  let query = supabase
-    .from("lesson_progress")
-    .select(COLUMNS)
-    .eq("user_id", userId)
-    .order("last_viewed_at", { ascending: false })
-    .limit(2000);
+  // Sections of a page share one read of everything. Past the limit, that read may be missing a
+  // course's rows, so ask for those courses directly.
+  const everything = await readAllProgress(userId);
+  let rows = everything;
   if (courseIds) {
-    query = query.in("course_id", [...courseIds]);
-  }
-  const { data, error } = await query;
-  if (error) {
-    throw new Error("Could not load progress", { cause: error.code });
+    const wanted = new Set(courseIds);
+    rows =
+      everything.length < PROGRESS_LIMIT
+        ? everything.filter((row) => wanted.has(row.course_id))
+        : await readProgress(userId, courseIds);
   }
   const byCourse = new Map<string, Row[]>();
-  for (const row of data) {
+  for (const row of rows) {
     byCourse.set(row.course_id, [...(byCourse.get(row.course_id) ?? []), row]);
   }
   return new Map(
@@ -166,11 +186,14 @@ export async function getContinueLearning(
     return [];
   }
   const activity = await getLearnerActivity(userId);
-  const ids = recentCourseIds(activity, memberDepartmentIds, 3);
+  // Every opened course, not just these three: the rest of Training wants them too, and this way
+  // they all come in one read.
+  const opened = recentCourseIds(activity, memberDepartmentIds, activity.size);
+  const ids = opened.slice(0, 3);
   const [courses, passed, practicalsPassed] = await Promise.all([
-    getLearnerCourses(ids),
-    getPassedQuizKeys(userId, ids),
-    getPassedPracticalKeys(userId, ids),
+    getLearnerCourses(opened),
+    getPassedQuizKeys(userId, opened),
+    getPassedPracticalKeys(userId, opened),
   ]);
   return ids.flatMap((id) => {
     const course = courses.get(id);

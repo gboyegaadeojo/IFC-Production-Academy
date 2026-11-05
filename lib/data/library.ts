@@ -5,15 +5,25 @@ import { getCourseProgressById, getLearnerActivity } from "@/lib/data/progress";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { publicEnv } from "@/lib/env";
 import { courseCoverUrl, sortLibrary, type LibraryCourse } from "@/lib/domain/library";
+import { perRequestBatch } from "@/lib/domain/per-request";
 import type { CourseProgress, CourseState } from "@/lib/domain/progress";
-
-type Client = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
 /** Where a Start the course button goes. That page works out the next step on the click. */
 const openHref = (courseId: string) => `/courses/${courseId}/open`;
 
-/** Titles and lesson counts, without each course's outline: these pages list many courses. */
-async function publishedSummaries(supabase: Client, courseIds: string[]) {
+type CourseSummary = { title: string; estimatedMinutes: number | null; lessonCount: number };
+
+/**
+ * Titles and lesson counts, without each course's outline: these pages list many courses. Each
+ * course is read once per page, however many sections want it.
+ */
+const publishedSummaries = perRequestBatch(
+  cache(() => new Map<string, Promise<CourseSummary | undefined>>()),
+  readPublishedSummaries,
+);
+
+async function readPublishedSummaries(courseIds: string[]): Promise<Map<string, CourseSummary>> {
+  const supabase = await createSupabaseServerClient();
   const versions = await supabase
     .from("course_versions")
     .select("id, course_id, title, estimated_minutes")
@@ -81,7 +91,7 @@ export async function getCourseLibrary(
   }
   const ids = courses.data.map((row) => row.id);
   const [summaries, progress, courseTags, lessonTags] = await Promise.all([
-    publishedSummaries(supabase, ids),
+    publishedSummaries(ids),
     progressForOpened(userId, ids),
     supabase.from("course_topics").select("course_id, topic_id").in("course_id", ids),
     supabase.from("lesson_topics").select("course_id, topic_id").in("course_id", ids),
@@ -161,7 +171,6 @@ export const getStartHereCourses = cache(async (userId: string): Promise<StartHe
     throw new Error("Could not load the courses", { cause: error.code });
   }
   return courseCards(
-    supabase,
     userId,
     data.map((row) => row.id),
   );
@@ -183,22 +192,17 @@ export async function getPublishedCourseCards(
   }
   const live = new Set(data.map((row) => row.id));
   return courseCards(
-    supabase,
     userId,
     courseIds.filter((id) => live.has(id)),
   );
 }
 
-async function courseCards(
-  supabase: Client,
-  userId: string,
-  ids: string[],
-): Promise<StartHereCourse[]> {
+async function courseCards(userId: string, ids: string[]): Promise<StartHereCourse[]> {
   if (ids.length === 0) {
     return [];
   }
   const [summaries, progress] = await Promise.all([
-    publishedSummaries(supabase, ids),
+    publishedSummaries(ids),
     progressForOpened(userId, ids),
   ]);
   return ids.flatMap((id) => {
