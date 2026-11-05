@@ -401,6 +401,10 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
     .click();
   await volunteer.getByRole("button", { name: /^Completed/ }).click();
   await expect(volunteer.getByRole("button", { name: "Mark complete" })).toBeVisible();
+  // The button changes on the tap, so wait for the save before leaving the page.
+  await expect(
+    volunteer.getByRole("status").filter({ hasText: "Marked as not complete." }),
+  ).toHaveCount(1);
 
   // Training picks up where they left off, in the Continue card at the top.
   await volunteer.goto("/home");
