@@ -62,7 +62,7 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   // The volunteer is now a member. Membership is not approval to serve.
   await volunteer.reload();
   const joined = volunteer
-    .getByRole("region", { name: "Keep learning" })
+    .getByRole("region", { name: "Your departments" })
     .getByRole("article", { name: "Audio Engineering" });
   await expect(joined).toBeVisible();
   await expect(joined.getByText(/^Approved:/)).toHaveCount(0);
@@ -118,7 +118,7 @@ test("a leader invites someone, who signs in from the link and joins", async ({ 
   await expect(guest).toHaveURL(/\/home$/);
   await expect(
     guest
-      .getByRole("region", { name: "Keep learning" })
+      .getByRole("region", { name: "Your departments" })
       .getByRole("article", { name: "Audio Engineering" }),
   ).toBeVisible();
 

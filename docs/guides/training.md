@@ -1,6 +1,11 @@
 # Training
 
-**Training** is your home in the Academy. It shows what to do next, your departments, and rows of courses by category. The **Library** in the side bar has **Courses** and **Explore**. On a phone, choose **Courses** on the bottom bar, then switch between **Courses** and **Explore** at the top.
+**Training** is your home in the Academy. It's a plan you work down, with your departments and a few courses to try beside it. On a phone, those come after the plan.
+
+- **Coming up** shows what's **Next** with a button to carry on, then **This week** (courses a leader assigned and when you're serving), then **When you're ready** (practicals and other courses you've started).
+- **Getting started** shows instead when you're new: add your name, start your first course, join a department, and get the app.
+
+ The **Library** in the side bar has **Courses** and **Explore**. On a phone, choose **Courses** on the bottom bar, then switch between **Courses** and **Explore** at the top.
 
 ## Anyone can learn anything
 
@@ -19,13 +24,13 @@ Every open department's courses are open to you. You don't need anyone's permiss
 
 ## Assigned to you
 
-If a leader asks you to take a course, it shows under **Assigned to you** near the top of Training until you finish it. Go at your own pace. It doesn't stop you doing anything else, and it doesn't put you on a team.
+If a leader asks you to take a course, it shows in **Coming up** on Training until you finish it, marked **Assigned by a leader**. Go at your own pace. It doesn't stop you doing anything else, and it doesn't put you on a team.
 
 ## Start here
 
-Some courses, such as A Guide to Serving, are marked **Start here**. The next one you haven't finished shows at the top of Training, and they're listed under **Before you start** on each department's page. They're a good place to begin, but nothing is locked until you've done them.
+Some courses, such as A Guide to Serving, are marked **Start here**. The ones you haven't finished show in your plan on Training, and they're listed under **Before you start** on each department's page. They're a good place to begin, but nothing is locked until you've done them.
 
-Choosing a course anywhere opens its summary, with a button to start or continue. To jump straight back in, use **Continue** at the top of Training.
+Choosing a course anywhere opens its summary, with a button to start or continue. To jump straight back in, use **Continue** under **Next** on Training.
 
 ## How a department is set out
 
