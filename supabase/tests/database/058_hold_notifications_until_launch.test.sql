@@ -57,7 +57,8 @@ select is((select count(*)::int from public.audit_events where target_table = 'n
 
 -- Launch.
 update public.organizations set notifications_live = true;
-select private.notify('a8000000-0000-4000-8000-000000000001', 'learning_nudge', 'Fake', 'Fake', '/home', 'live-volunteer');
+-- Not a learning reminder: those are limited to one a day, and one was written above.
+select private.notify('a8000000-0000-4000-8000-000000000001', 'course_assigned', 'Fake', 'Fake', '/home', 'live-volunteer');
 select is((select email_status::text from public.notifications where dedupe_key = 'live-volunteer'), 'pending',
   'after launch, a volunteer gets the email');
 select is((select push_status from public.notifications where dedupe_key = 'live-volunteer'), 'pending',
