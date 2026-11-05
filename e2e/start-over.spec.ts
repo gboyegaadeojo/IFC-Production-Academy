@@ -17,6 +17,8 @@ test("a learner starts a course over, after a warning", async ({ page }, testInf
   await expect(page).toHaveURL(/\/lessons\//);
   await page.getByRole("button", { name: "Mark complete" }).first().click();
   await expect(page.getByRole("button", { name: /Completed/ }).first()).toBeVisible();
+  // The button changes on the tap, so wait for the save before leaving the page.
+  await expect(page.getByRole("status").filter({ hasText: "Marked complete." })).toHaveCount(1);
 
   await page.goto(page.url().replace(/\/lessons\/.*$/, ""));
   const startOver = page.getByRole("button", { name: /^Start over/ });
