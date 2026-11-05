@@ -1418,6 +1418,7 @@ export type Database = {
           user_id: string;
           kind: Database["public"]["Enums"]["notification_kind"];
           email: boolean;
+          push: boolean;
           updated_at: string;
         };
         Insert: never;
@@ -1790,6 +1791,14 @@ export type Database = {
       };
       alerts_setup_needed: { Args: Record<string, never>; Returns: boolean };
       queue_serving_reminders: { Args: Record<string, never>; Returns: number };
+      queue_cover_reminders: { Args: Record<string, never>; Returns: number };
+      set_notification_push: {
+        Args: {
+          p_kind: Database["public"]["Enums"]["notification_kind"];
+          p_push: boolean;
+        };
+        Returns: undefined;
+      };
       set_alerts_unavailable: { Args: { p_unavailable: boolean }; Returns: undefined };
       team_alert_status: {
         Args: Record<string, never>;
@@ -2291,7 +2300,15 @@ export type Database = {
         | "schedule_update"
         | "onboarding_task"
         | "onboarding_update"
-        | "course_assigned";
+        | "course_assigned"
+        | "service_changed"
+        | "join_requested"
+        | "cover_open"
+        | "approved_to_serve"
+        | "certificate_ready"
+        | "new_course"
+        | "sop_updated"
+        | "mentor_note";
       onboarding_step_kind:
         | "trigger_form"
         | "trigger_manual"

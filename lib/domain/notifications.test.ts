@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  APP_ONLY_KINDS,
   emailChoiceGroups,
   isQuietHours,
   NOTIFICATION_GROUPS,
@@ -90,7 +91,8 @@ describe("notification kinds", () => {
 
   it("puts every kind in exactly one email group", () => {
     const grouped = NOTIFICATION_GROUPS.flatMap((group) => group.kinds);
-    expect(grouped.toSorted()).toEqual([...NOTIFICATION_KINDS].sort());
+    const offered = NOTIFICATION_KINDS.filter((kind) => !APP_ONLY_KINDS.includes(kind));
+    expect(grouped.toSorted()).toEqual(offered.sort());
   });
 });
 

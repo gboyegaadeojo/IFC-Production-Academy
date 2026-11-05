@@ -7,7 +7,7 @@ import {
   type NotificationGroup,
   type NotificationKind,
 } from "@/lib/domain/notifications";
-import { setEmailChoiceAction } from "./actions";
+import { setEmailChoiceAction, setPhoneChoiceAction } from "./actions";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -18,18 +18,28 @@ const STATUS: Record<SaveState, string> = {
   error: "That didn't save. Try again.",
 };
 
+const CHANNELS = {
+  email: { title: "Email me", id: "email-heading", save: setEmailChoiceAction },
+  phone: { title: "Alert my phone", id: "phone-heading", save: setPhoneChoiceAction },
+} as const;
+
 /**
- * Email choices as switches that save on their own (SRS-NOTIF-002; approved mock, 2026-11-01).
+ * Email and phone choices as switches that save on their own (SRS-NOTIF-002; approved mock, 2026-11-01).
  * Each is a native checkbox with role="switch", so it works with the keyboard and screen readers;
  * a failed save puts the switch back and says so.
  */
-export function EmailChoices({
+export function NotificationSwitches({
+  channel,
+  note,
   groups,
   initial,
 }: {
+  channel: keyof typeof CHANNELS;
+  note: string;
   groups: readonly NotificationGroup[];
   initial: Record<NotificationKind, boolean>;
 }) {
+  const { title, id, save } = CHANNELS[channel];
   const [choices, setChoices] = useState(initial);
   const [state, setState] = useState<SaveState>("idle");
   const [, startTransition] = useTransition();
@@ -39,7 +49,7 @@ export function EmailChoices({
     setChoices((current) => ({ ...current, [kind]: email }));
     setState("saving");
     startTransition(async () => {
-      const result = await setEmailChoiceAction(kind, email);
+      const result = await save(kind, email);
       if (result.ok) {
         setState("saved");
       } else {
@@ -50,13 +60,10 @@ export function EmailChoices({
   }
 
   return (
-    <section
-      aria-labelledby="email-heading"
-      className="rounded-card border border-border bg-surface"
-    >
+    <section aria-labelledby={id} className="rounded-card border border-border bg-surface">
       <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
-        <h2 id="email-heading" className="font-semibold">
-          Email me
+        <h2 id={id} className="font-semibold">
+          {title}
         </h2>
         <p
           id={statusId}
@@ -66,6 +73,7 @@ export function EmailChoices({
           {STATUS[state]}
         </p>
       </div>
+      <p className="border-b border-border px-5 py-3 text-small text-text-secondary">{note}</p>
       {groups.map((group) => (
         <fieldset key={group.id} className="border-t border-border py-1.5 first-of-type:border-t-0">
           <legend className="sr-only">{group.title}</legend>

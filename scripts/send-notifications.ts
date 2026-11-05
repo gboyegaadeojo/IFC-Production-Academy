@@ -131,7 +131,8 @@ async function main(): Promise<void> {
   const sopReminders = await rpc<number>(supabaseUrl, serviceKey, "queue_sop_review_reminders", {});
   const reminders = await rpc<number>(supabaseUrl, serviceKey, "queue_reminders", {});
   const serving = await rpc<number>(supabaseUrl, serviceKey, "queue_serving_reminders", {});
-  console.log(`Reminders checked: ${sopReminders + reminders + serving} due.`);
+  const cover = await rpc<number>(supabaseUrl, serviceKey, "queue_cover_reminders", {});
+  console.log(`Reminders checked: ${sopReminders + reminders + serving + cover} due.`);
   // Freeze the checklist record of services whose day has ended (checklist app US-07b).
   const frozen = await rpc<number>(supabaseUrl, serviceKey, "freeze_service_checklist_records", {});
   console.log(`Checklist records frozen: ${frozen}.`);

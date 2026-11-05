@@ -44,7 +44,7 @@ Open your name, then **Your profile**. It shows the name leaders see, your depar
 
 ## Notifications
 
-Until the Academy launches, notifications stay in the app. Open your name, then **Notifications**. Everything shows here, such as being scheduled or an assessment result. Below that, you choose which kinds also come by email.
+Until the Academy launches, notifications stay in the app. Open your name, then **Notifications**. Everything shows here, such as being scheduled or an assessment result. Below that, you choose which kinds reach your phone and which come by email. New courses, certificates, and SOP updates stay in the app. Once your phone has alerts on, you only get an email if a service is moved or cancelled, or for anything you've turned off for your phone.
 
 ## Put it on your phone
 
