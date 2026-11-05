@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { listDepartmentCards, type DepartmentCard } from "@/lib/data/departments";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import {
@@ -7,6 +8,7 @@ import {
   type CourseQuiz,
   type OutlineModule,
 } from "@/lib/domain/learning";
+import { perRequestBatch } from "@/lib/domain/per-request";
 import { storedVideo, type VideoRef } from "@/lib/domain/video";
 
 // Learner pages (DESIGN §6.3–6.5). Read-only. Row-level security decides what each person sees:
@@ -163,16 +165,16 @@ export type LearnerCourse = {
 /**
  * The live versions of several courses, with their outlines when readable, by course id. A course
  * that isn't published is left out. It reads them all at once: Cloudflare's free plan allows 50
- * calls per page, so this must not grow with the number of courses (app review, item 2).
+ * calls per page, so this must not grow with the number of courses (app review, item 2). Each
+ * course is read once per page, however many sections want it.
  */
-export async function getLearnerCourses(
-  courseIds: readonly string[],
-): Promise<Map<string, LearnerCourse>> {
+export const getLearnerCourses = perRequestBatch(
+  cache(() => new Map<string, Promise<LearnerCourse | undefined>>()),
+  readLearnerCourses,
+);
+
+async function readLearnerCourses(ids: readonly string[]): Promise<Map<string, LearnerCourse>> {
   const out = new Map<string, LearnerCourse>();
-  const ids = [...new Set(courseIds)];
-  if (ids.length === 0) {
-    return out;
-  }
   const supabase = await createSupabaseServerClient();
   const courses = await supabase
     .from("courses")

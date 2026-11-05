@@ -1,7 +1,9 @@
 import "server-only";
+import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import { reorder, toCurriculumError, type CurriculumError } from "@/lib/domain/curriculum";
+import { perRequestBatch } from "@/lib/domain/per-request";
 import {
   toPracticalError,
   type PracticalError,
@@ -258,10 +260,23 @@ export async function getPassedPracticalKeys(
   userId: string,
   courseIds: readonly string[],
 ): Promise<Map<string, Set<string>>> {
+  return passedReader(userId)(courseIds);
+}
+
+// One per person, because a leader's page can ask about someone else.
+const passedReader = cache((userId: string) => {
+  const held = new Map<string, Promise<Set<string> | undefined>>();
+  return perRequestBatch(
+    () => held,
+    (ids) => readPassedPracticalKeys(userId, ids),
+  );
+});
+
+async function readPassedPracticalKeys(
+  userId: string,
+  courseIds: readonly string[],
+): Promise<Map<string, Set<string>>> {
   const passed = new Map<string, Set<string>>();
-  if (courseIds.length === 0) {
-    return passed;
-  }
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("practical_assessments")

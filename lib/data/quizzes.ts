@@ -1,7 +1,9 @@
 import "server-only";
+import { cache } from "react";
 import { peopleById, personFor, type PersonSummary } from "@/lib/data/admin/shared";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { reorder, toCurriculumError, type CurriculumError } from "@/lib/domain/curriculum";
+import { perRequestBatch } from "@/lib/domain/per-request";
 import {
   quizStatus,
   toQuizError,
@@ -180,10 +182,23 @@ export async function getPassedQuizKeys(
   userId: string,
   courseIds: readonly string[],
 ): Promise<Map<string, Set<string>>> {
+  return passedReader(userId)(courseIds);
+}
+
+// One per person, because a leader's page can ask about someone else.
+const passedReader = cache((userId: string) => {
+  const held = new Map<string, Promise<Set<string> | undefined>>();
+  return perRequestBatch(
+    () => held,
+    (ids) => readPassedQuizKeys(userId, ids),
+  );
+});
+
+async function readPassedQuizKeys(
+  userId: string,
+  courseIds: readonly string[],
+): Promise<Map<string, Set<string>>> {
   const passed = new Map<string, Set<string>>();
-  if (courseIds.length === 0) {
-    return passed;
-  }
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("quiz_attempts")
