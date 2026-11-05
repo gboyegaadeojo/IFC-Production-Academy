@@ -125,33 +125,47 @@ export function AcademyTabBar() {
   ) {
     return null;
   }
+  // Fixed, not sticky: a sticky bar is part of the page, so iPhone's bounce at the top or bottom
+  // drags it along. The spacer keeps the page's last lines clear of it.
   return (
-    <nav
-      aria-label="Academy"
-      className="sticky bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
-    >
-      <ul className="grid grid-cols-5">
-        {TAB_LINKS.map((link) => {
-          // Explore sits inside the Courses tab on phones.
-          const current =
-            isCurrent(pathname, link.href) || (link.href === "/courses" && pathname === "/explore");
-          const Icon = link.icon;
-          return (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                aria-current={current ? "page" : undefined}
-                className={`flex min-h-14 flex-col items-center justify-center gap-1 text-small transition-surface ${
-                  current ? "font-medium text-text" : "text-text-muted hover:text-text"
-                }`}
-              >
-                <Icon className={`size-5 ${current ? "text-accent-light" : ""}`} />
-                {link.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <>
+      <div
+        aria-hidden="true"
+        className="h-[calc(3.5rem+1px+env(safe-area-inset-bottom))] shrink-0 md:hidden print:hidden"
+      />
+      <nav
+        aria-label="Academy"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
+      >
+        <TabList pathname={pathname} />
+      </nav>
+    </>
+  );
+}
+
+function TabList({ pathname }: { pathname: string }) {
+  return (
+    <ul className="grid grid-cols-5">
+      {TAB_LINKS.map((link) => {
+        // Explore sits inside the Courses tab on phones.
+        const current =
+          isCurrent(pathname, link.href) || (link.href === "/courses" && pathname === "/explore");
+        const Icon = link.icon;
+        return (
+          <li key={link.href}>
+            <Link
+              href={link.href}
+              aria-current={current ? "page" : undefined}
+              className={`flex min-h-14 flex-col items-center justify-center gap-1 text-small transition-surface ${
+                current ? "font-medium text-text" : "text-text-muted hover:text-text"
+              }`}
+            >
+              <Icon className={`size-5 ${current ? "text-accent-light" : ""}`} />
+              {link.label}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
