@@ -28,8 +28,8 @@ select
   (select id from public.departments where kind = 'team' order by sort_order offset 1 limit 1) as other;
 grant select on test_departments to authenticated;
 
-insert into public.department_memberships (user_id, department_id, status)
-select ('a9000000-0000-4000-8000-00000000000' || n)::uuid, (select ours from test_departments), 'active'
+insert into public.department_memberships (user_id, department_id, status, decided_at)
+select ('a9000000-0000-4000-8000-00000000000' || n)::uuid, (select ours from test_departments), 'active', now()
 from generate_series(1, 3) n;
 
 insert into public.user_roles (user_id, role_id, department_id)
