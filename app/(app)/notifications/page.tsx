@@ -12,7 +12,7 @@ import {
   UserCheckIcon,
   UsersIcon,
 } from "@/components/ui/icons";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import {
   getMyEmailPreferences,
@@ -34,7 +34,7 @@ export const metadata: Metadata = { title: "Notifications" };
 
 export default function NotificationsPage() {
   return (
-    <Suspense fallback={<NotificationsSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <NotificationsContent />
     </Suspense>
   );
@@ -184,21 +184,5 @@ function FeedItem({ notification, now }: { notification: AppNotification; now: D
         <span className="sr-only">{formatDateTime(notification.createdAt)}</span>
       </time>
     </Link>
-  );
-}
-
-function NotificationsSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-8 py-8 lg:py-12" aria-busy="true">
-      <LoadingStatus label="Loading notifications…" />
-      <div className="flex flex-col gap-3">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-12 w-72 max-w-full" />
-      </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Skeleton className="h-72" />
-        <Skeleton className="h-96" />
-      </div>
-    </div>
   );
 }

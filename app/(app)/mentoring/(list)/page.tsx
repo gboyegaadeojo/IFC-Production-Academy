@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyPairings } from "@/lib/data/mentoring";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "Mentoring" };
 
 export default function MentoringPage() {
   return (
-    <Suspense fallback={<MentoringSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <MentoringContent />
     </Suspense>
   );
@@ -57,16 +57,6 @@ async function MentoringContent() {
           ))}
         </ul>
       )}
-    </div>
-  );
-}
-
-function MentoringSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-8 py-8 lg:py-12" aria-busy="true">
-      <LoadingStatus label="Loading mentoring…" />
-      <Skeleton className="h-10 w-64" />
-      <Skeleton className="h-32 max-w-3xl" />
     </div>
   );
 }

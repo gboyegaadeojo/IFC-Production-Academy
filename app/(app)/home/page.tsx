@@ -7,7 +7,8 @@ import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ArrowRightIcon, ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getMyAchievements } from "@/lib/data/achievements";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -33,7 +34,7 @@ export const metadata: Metadata = { title: "Training" };
 
 export default function TrainingPage() {
   return (
-    <Suspense fallback={<TrainingSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <TrainingContent />
     </Suspense>
   );
@@ -534,23 +535,5 @@ function ContinueCard({ continuing }: { continuing: ContinueCourse }) {
         </span>
       </Link>
     </section>
-  );
-}
-
-function TrainingSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-12 py-8 lg:py-12" aria-busy="true">
-      <LoadingStatus label="Loading your training…" />
-      <div className="flex flex-col gap-4">
-        <Skeleton className="h-4 w-40" />
-        <Skeleton className="h-12 w-80 max-w-full" />
-        <Skeleton className="h-6 w-[36rem] max-w-full" />
-      </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        {Array.from({ length: 2 }, (_, index) => (
-          <Skeleton key={index} className="h-80" />
-        ))}
-      </div>
-    </div>
   );
 }

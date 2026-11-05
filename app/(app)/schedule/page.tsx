@@ -5,7 +5,7 @@ import { refreshAction } from "@/app/(app)/admin/planning-center/actions";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { buttonClasses } from "@/components/ui/button";
 import { CalendarRangeIcon, CheckIcon, PlaneIcon } from "@/components/ui/icons";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
@@ -62,7 +62,7 @@ const PLANNING_CENTER_URL = "https://services.planningcenteronline.com";
 
 export default function SchedulePage({ searchParams }: PageProps<"/schedule">) {
   return (
-    <Suspense fallback={<ScheduleSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <ScheduleContent searchParams={searchParams} />
     </Suspense>
   );
@@ -735,15 +735,5 @@ function MonthLink({
     >
       {children}
     </Link>
-  );
-}
-
-function ScheduleSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-8 py-8 lg:py-12" aria-busy="true">
-      <LoadingStatus label="Loading your schedule…" />
-      <Skeleton className="h-10 w-64" />
-      <Skeleton className="h-40 max-w-3xl" />
-    </div>
   );
 }

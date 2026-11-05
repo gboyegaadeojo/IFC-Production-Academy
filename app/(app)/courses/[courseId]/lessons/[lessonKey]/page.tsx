@@ -10,7 +10,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { Drawer } from "@/components/ui/drawer";
 import { ArrowLeftIcon, ChevronLeftIcon, ChevronRightIcon, ListIcon } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getLearnerCourse, getLearnerLesson, canLearnIn } from "@/lib/data/pathway";
 import { mediaLibraryEnabled } from "@/lib/data/media";
@@ -38,7 +38,7 @@ type Props = PageProps<"/courses/[courseId]/lessons/[lessonKey]">;
 
 export default function LessonPage({ params }: Props) {
   return (
-    <Suspense fallback={<LessonSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <LessonContent params={params} />
     </Suspense>
   );
@@ -384,22 +384,5 @@ async function LessonContent({ params }: Pick<Props, "params">) {
         </Link>
       </nav>
     </>
-  );
-}
-
-function LessonSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-8 py-8 lg:py-10" aria-busy="true">
-      <LoadingStatus label="Loading the lesson…" />
-      <Skeleton className="h-4 w-72 max-w-full" />
-      <div className="grid gap-8 lg:grid-cols-[1fr_19rem]">
-        <div className="flex min-w-0 flex-col gap-4">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-10 w-96 max-w-full" />
-          <Skeleton className="h-64" />
-        </div>
-        <Skeleton className="hidden h-80 lg:block" />
-      </div>
-    </div>
   );
 }

@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getSopLibrary, sopTitle } from "@/lib/data/sops";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { ALL_PRODUCTION_VALUE, sopAudience } from "@/lib/domain/sops";
-import { SopBrowser, type SopBrowserRow } from "./sop-browser";
+import { SopBrowser, type SopBrowserRow } from "../sop-browser";
 
 export const metadata: Metadata = { title: "SOP library" };
 
 export default function SopLibraryPage() {
   return (
-    <Suspense fallback={<LibrarySkeleton />}>
+    <Suspense fallback={<Loading />}>
       <LibraryContent />
     </Suspense>
   );
@@ -61,17 +61,6 @@ async function LibraryContent() {
       ) : (
         <SopBrowser rows={rows} departments={departments} />
       )}
-    </div>
-  );
-}
-
-function LibrarySkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-4 py-6 lg:py-8" aria-busy="true">
-      <LoadingStatus label="Loading the SOP library…" />
-      <Skeleton className="h-10 w-64" />
-      <Skeleton className="h-9 max-w-2xl" />
-      <Skeleton className="h-64" />
     </div>
   );
 }

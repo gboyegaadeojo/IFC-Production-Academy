@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { LibrarySwitch } from "@/components/shell/library-switch";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import { listDepartmentCards } from "@/lib/data/departments";
 import { getCourseLibrary } from "@/lib/data/library";
 import { listTopics } from "@/lib/data/topics";
-import { LibraryBrowser } from "./library-browser";
+import { LibraryBrowser } from "../library-browser";
 
 export const metadata: Metadata = { title: "Courses" };
 
 export default function AllCoursesPage({ searchParams }: PageProps<"/courses">) {
   return (
-    <Suspense fallback={<LibrarySkeleton />}>
+    <Suspense fallback={<Loading />}>
       <AllCourses searchParams={searchParams} />
     </Suspense>
   );
@@ -43,21 +43,6 @@ async function AllCourses({ searchParams }: Pick<PageProps<"/courses">, "searchP
           sortOrder: c.sortOrder,
         }))}
       />
-    </div>
-  );
-}
-
-function LibrarySkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-6 py-8 lg:py-10" aria-busy="true">
-      <LoadingStatus label="Loading the courses…" />
-      <Skeleton className="h-8 w-48" />
-      <Skeleton className="h-10 max-w-xl" />
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {Array.from({ length: 4 }, (_, index) => (
-          <Skeleton key={index} className="aspect-[3/4]" />
-        ))}
-      </div>
     </div>
   );
 }

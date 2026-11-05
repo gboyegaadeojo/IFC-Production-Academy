@@ -14,7 +14,7 @@ import {
   LockIcon,
 } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
-import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
+import Loading from "./loading";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyReadiness, type MyReadiness } from "@/lib/data/competency";
@@ -35,7 +35,7 @@ const SLUG = /^[a-z0-9-]{1,80}$/;
 
 export default function DepartmentPage({ params }: PageProps<"/departments/[slug]">) {
   return (
-    <Suspense fallback={<DepartmentSkeleton />}>
+    <Suspense fallback={<Loading />}>
       <DepartmentContent params={params} />
     </Suspense>
   );
@@ -485,20 +485,5 @@ function Readiness({
         ) : null}
       </div>
     </section>
-  );
-}
-
-function DepartmentSkeleton() {
-  return (
-    <div className="page-container flex flex-col gap-8 py-8 lg:py-10" aria-busy="true">
-      <LoadingStatus label="Loading the department…" />
-      <Skeleton className="h-4 w-40" />
-      <Skeleton className="h-36" />
-      <div className="flex flex-col gap-4">
-        {Array.from({ length: 3 }, (_, index) => (
-          <Skeleton key={index} className="h-20" />
-        ))}
-      </div>
-    </div>
   );
 }
