@@ -29,7 +29,6 @@ export function AccountMenu({
   planningCenter = false,
   showAdmin,
   unread = 0,
-  signOut,
   placement = "header",
   compact = false,
 }: {
@@ -42,7 +41,6 @@ export function AccountMenu({
   showAdmin: boolean;
   /** Unread notifications, shown on the button and the Notifications link. */
   unread?: number;
-  signOut: () => Promise<void>;
   /** In the admin sidebar's footer the menu opens upwards, or sideways when it's icons only. */
   placement?: "header" | "sidebar";
   /** Icons-only sidebar: just the avatar. */
@@ -219,7 +217,8 @@ export function AccountMenu({
             ) : null}
           </ul>
           <div className="mx-1.5 border-t border-border py-1.5">
-            <form action={signOut}>
+            {/* A plain post, not a server action: see app/auth/sign-out/route.ts. */}
+            <form action="/auth/sign-out" method="post">
               <button type="submit" className={`${item} w-full`}>
                 <LogOutIcon className="size-[18px] shrink-0" />
                 Sign out
