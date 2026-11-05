@@ -49,10 +49,9 @@ test("a course poster opens the summary, not the first lesson", async ({ page })
   await expect(page.getByRole("link", { name: /Start the course|Continue/ }).first()).toBeVisible();
 });
 
-test("a department card on Training names each level", async ({ page }) => {
+test("a department card on Training shows a ring of lessons complete", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
-  const levels = page.getByRole("list", { name: "Lessons complete in each level" }).first();
-  await expect(levels.getByText("Level 1")).toBeVisible();
+  await expect(page.getByRole("img", { name: /% of lessons complete$/ }).first()).toBeVisible();
 });
 
 test("on a phone, Courses is on the bottom bar, with Explore a switch inside", async ({

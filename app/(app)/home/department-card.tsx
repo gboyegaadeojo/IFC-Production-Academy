@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import Link from "next/link";
 import { DepartmentIcon } from "@/components/department-icon";
 import { buttonClasses } from "@/components/ui/button";
-import { ArrowRightIcon, ChevronRightIcon } from "@/components/ui/icons";
+import { ArrowRightIcon, CheckIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { DepartmentCard as DepartmentCardData } from "@/lib/data/departments";
 import type { ContinueCourse } from "@/lib/data/progress";
@@ -10,8 +10,8 @@ import { formatDateTime } from "@/lib/domain/admin";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
   courseCountLabel,
-  levelCardLabel,
-  levelPercent,
+  departmentProgress,
+  departmentProgressLabel,
   type DepartmentLearning,
 } from "@/lib/domain/home";
 import { stepHref } from "@/lib/domain/learning";
@@ -19,8 +19,8 @@ import { RequestMembershipButton } from "./request-membership-button";
 
 /**
  * A department you belong to (Training mock, approved 2026-11-02): one compact card with its icon,
- * what's there, and each level named with a bar and count (Design B, approved 2026-11-05). The whole
- * card opens the department, with the Lift hover. Approval comes from its own record and is never inferred from lessons
+ * what's there, and a ring of lessons complete (Design A, approved 2026-11-05). The whole card
+ * opens the department, with the Lift hover. Approval comes from its own record and is never inferred from lessons
  * (SPEC §3, SRS-PROG-007).
  */
 export function MemberDepartmentCard({
@@ -35,7 +35,7 @@ export function MemberDepartmentCard({
   const headingId = `department-${department.id}`;
   const style = { "--dept": departmentHueVar(department.hue) } as CSSProperties;
   const published = learning?.publishedCourses ?? 0;
-  const levels = learning?.levels ?? [];
+  const { done, total, percent } = departmentProgress(learning?.levels ?? []);
 
   return (
     <article
@@ -59,27 +59,8 @@ export function MemberDepartmentCard({
           </Link>
         </h3>
         <p className="text-small text-text-muted">
-          {published > 0 ? courseCountLabel(published) : "Courses coming soon"}
+          {departmentProgressLabel(published, done, total)}
         </p>
-        {published > 0 ? (
-          <ul aria-label="Lessons complete in each level" className="mt-1.5 flex max-w-sm gap-2">
-            {levels.map((level) => (
-              <li key={level.levelId} className="flex min-w-0 flex-1 flex-col gap-1 text-small">
-                <span className="font-medium text-text-secondary">Level {level.number}</span>
-                <span aria-hidden="true" className="h-1.5 overflow-hidden rounded-pill bg-border">
-                  <span
-                    className="block h-full rounded-pill bg-[var(--dept)]"
-                    style={{ width: `${levelPercent(level)}%` }}
-                  />
-                </span>
-                <span className="tabular leading-tight text-text-muted">
-                  {levelCardLabel(level)}
-                  {level.lessonsTotal > 0 ? <span className="sr-only"> lessons</span> : null}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
       </div>
       {approvedRoles.length > 0 ? (
         <StatusBadge tone="success">
@@ -87,8 +68,48 @@ export function MemberDepartmentCard({
           {approvedRoles.length > 1 ? ` +${approvedRoles.length - 1}` : ""}
         </StatusBadge>
       ) : null}
+      {total > 0 ? <ProgressRing done={done} total={total} percent={percent} /> : null}
       <ChevronRightIcon className="size-4 shrink-0 text-text-muted transition-surface group-hover:translate-x-1 group-hover:text-accent-light" />
     </article>
+  );
+}
+
+/** Lessons marked complete, never approval to serve. The words beside it give the same count. */
+function ProgressRing({ done, total, percent }: { done: number; total: number; percent: number }) {
+  const radius = 19;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <span
+      role="img"
+      aria-label={`${percent}% of lessons complete`}
+      className="relative size-[2.875rem] shrink-0"
+    >
+      <svg viewBox="0 0 46 46" aria-hidden="true" className="size-full -rotate-90">
+        <circle cx="23" cy="23" r={radius} fill="none" strokeWidth="4.5" stroke="var(--border)" />
+        {done > 0 ? (
+          <circle
+            cx="23"
+            cy="23"
+            r={radius}
+            fill="none"
+            strokeWidth="4.5"
+            strokeLinecap="round"
+            stroke="var(--dept)"
+            strokeDasharray={`${(percent / 100) * circumference} ${circumference}`}
+          />
+        ) : null}
+      </svg>
+      <span
+        aria-hidden="true"
+        className="tabular absolute inset-0 flex items-center justify-center text-small font-semibold"
+      >
+        {done === total ? (
+          <CheckIcon className="size-[1.125rem] text-[var(--dept)]" />
+        ) : (
+          `${percent}%`
+        )}
+      </span>
+    </span>
   );
 }
 

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  departmentProgress,
+  departmentProgressLabel,
   countedLessons,
   courseCountLabel,
   homeState,
-  levelCardLabel,
-  levelPercent,
   levelProgressLabel,
   summariseLearning,
 } from "./home";
@@ -140,30 +140,43 @@ describe("courseCountLabel", () => {
   });
 });
 
-describe("a level on a department card", () => {
-  const level = { levelId: "l", number: 1, name: "Foundations" };
-  const at = (publishedCourses: number, lessonsTotal: number, lessonsDone: number) => ({
-    ...level,
-    publishedCourses,
+describe("a department's ring on Training", () => {
+  const level = (lessonsTotal: number, lessonsDone: number) => ({
+    levelId: "l",
+    number: 1,
+    name: "Foundations",
+    publishedCourses: 1,
     lessonsTotal,
     lessonsDone,
   });
 
-  it("says a level with no courses isn't open yet, and leaves its bar empty", () => {
-    expect(levelCardLabel(at(0, 0, 0))).toBe("Not open yet");
-    expect(levelPercent(at(0, 0, 0))).toBe(0);
+  it("adds up the lessons across levels", () => {
+    expect(departmentProgress([level(10, 10), level(8, 3)])).toEqual({
+      done: 13,
+      total: 18,
+      percent: 72,
+    });
   });
 
-  it("gives the count of lessons", () => {
-    expect(levelCardLabel(at(1, 10, 3))).toBe("3 of 10");
+  it("shows the real amount, so one lesson doesn't look like ten", () => {
+    expect(departmentProgress([level(10, 1)]).percent).toBe(10);
+    expect(departmentProgress([level(10, 10)]).percent).toBe(100);
   });
 
-  it("falls back to the course count when there are no lessons", () => {
-    expect(levelCardLabel(at(2, 0, 0))).toBe("2 courses");
+  it("only reads 100 once every lesson is complete", () => {
+    expect(departmentProgress([level(200, 199)]).percent).toBe(99);
   });
 
-  it("fills the bar by the real amount, so one lesson doesn't look like ten", () => {
-    expect(levelPercent(at(1, 10, 1))).toBe(10);
-    expect(levelPercent(at(1, 10, 10))).toBe(100);
+  it("copes with a department that has no lessons", () => {
+    expect(departmentProgress([])).toEqual({ done: 0, total: 0, percent: 0 });
+  });
+
+  it("says where someone is in words", () => {
+    expect(departmentProgressLabel(0, 0, 0)).toBe("Courses coming soon");
+    expect(departmentProgressLabel(2, 0, 0)).toBe("2 courses");
+    expect(departmentProgressLabel(1, 0, 10)).toBe("1 course · 10 lessons to start");
+    expect(departmentProgressLabel(1, 3, 10)).toBe("1 course · 3 of 10 lessons");
+    expect(departmentProgressLabel(1, 10, 10)).toBe("1 course · All 10 lessons complete");
+    expect(departmentProgressLabel(1, 1, 1)).toBe("1 course · All 1 lesson complete");
   });
 });

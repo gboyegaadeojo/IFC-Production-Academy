@@ -18,7 +18,7 @@ Departments build proficiency in a craft, but some courses belong to the whole t
 
 ## Videos and Topics (G, 2026-11-04)
 
-Choosing a course poster opens the course's summary, with its own Start or Continue, as the department page does. The Continue card on Training still goes straight to the next lesson (G, 2026-11-05). Department cards on Training name each level with its own bar and count, replacing unlabelled lines that lit up fully after one lesson (G, 2026-11-05, Design B).
+Choosing a course poster opens the course's summary, with its own Start or Continue, as the department page does. The Continue card on Training still goes straight to the next lesson (G, 2026-11-05). Department cards on Training show a ring of lessons complete across the department, with the count in words, replacing unlabelled lines that lit up fully after one lesson (G, 2026-11-05, Design A).
 
 The Library in the side bar has Courses and Explore (first called Videos). Results show courses first, then single videos, and a topic on a course shows the course, not all its lessons (G, 2026-11-04). Topic is an extra filter, so there's no separate Topics page, and Explore opens on its filters instead of listing every lesson, because a full list read as every course laid out lesson by lesson (G, 2026-11-04). Leaders can tag courses as well as lessons (G, 2026-11-04), and Courses has the same Topic filter. A video is a lesson in its course, not a second copy. Course posters are upright and video thumbnails are wide, also as in MxU, because a video's still image is wide. Department Leaders and Production Directors add topics. Platform Administrators can too, since they build training. Only Production Directors and Platform Administrators rename and remove them.
 
