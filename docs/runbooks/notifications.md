@@ -7,9 +7,15 @@ chooses which kinds reach their phone and their email.
 
 ## What they look like
 
-Every email uses the Calm design in `lib/domain/email-design.ts`: the app's icon, the title as the
-subject, the message as the inbox preview, and one button named for what it does
-(`emailButtonLabel`). Sign-in emails use the same design, sent by the app.
+Every email uses the Calm design in `lib/domain/email-design.ts`: the app's current logo (served at
+`/brand/icon`, so a new logo shows even in emails already sent), the title as the subject, the
+message as the inbox preview, a details box where it applies, and one button named for what it does
+(`emailButtonLabel`).
+
+The details box (when, role and service; a course and its length; due and expiry dates) and a
+shorter line for phone alerts are looked up as each notification is written, from what its dedupe
+key names (`private.add_notification_details()`). If nothing is found, the email has no box and the
+alert uses the message. Sign-in emails use the same design, sent by the app.
 
 ## Sign-in emails
 

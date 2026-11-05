@@ -68,6 +68,7 @@ type Claimed = {
   title: string;
   body: string;
   link: string | null;
+  details: { label: string; value: string }[] | null;
 };
 type ClaimedOnboarding = {
   id: string;
