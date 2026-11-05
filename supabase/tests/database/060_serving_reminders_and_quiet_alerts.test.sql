@@ -58,13 +58,76 @@ select throws_ok($$ select public.queue_serving_reminders() $$, '42501', null, '
 reset role;
 select lives_ok($$ select public.queue_serving_reminders() $$, 'the job can');
 
--- A Planning Center service reminds; the Academy's own stays with queue_reminders.
-insert into public.events (title, starts_at, ends_at, source)
-values ('Fake PCO service', now() + interval '30 hours', now() + interval '32 hours', 'planning_center')
-on conflict do nothing;
-select ok(
-  exists (select 1 from public.events where title = 'Fake PCO service' and source = 'planning_center'),
-  'a Planning Center service can be set up for this test');
+-- Real services: a Planning Center one reminds; the Academy's own stays with queue_reminders.
+insert into auth.users (instance_id, id, aud, role, email, raw_user_meta_data, created_at, updated_at)
+select '00000000-0000-0000-0000-000000000000', ('aa000000-0000-4000-8000-00000000000' || n)::uuid,
+       'authenticated', 'authenticated', 'reminders-' || n || '@example.com',
+       jsonb_build_object('display_name', 'Fake Person ' || n), now(), now()
+from generate_series(2, 5) n;
+
+create temporary table ctx on commit drop as
+select (select id from public.departments where kind = 'team' order by sort_order limit 1) as department_id;
+insert into public.serving_roles (department_id, name)
+select department_id, 'Fake camera' from ctx;
+
+insert into public.events (title, starts_at, ends_at, source, external_id) values
+  ('Fake PCO soon', now() + interval '30 hours', now() + interval '32 hours', 'planning_center', 'fake-pco-1'),
+  ('Fake PCO later', now() + interval '5 days', now() + interval '5 days 2 hours', 'planning_center', 'fake-pco-2');
+insert into public.events (title, starts_at, ends_at) values
+  ('Fake Academy later', now() + interval '5 days', now() + interval '5 days 2 hours');
+
+create function pg_temp.assign(p_user uuid, p_event text, p_status public.assignment_status)
+returns void language plpgsql as $f$
+declare
+  v_event uuid := (select id from public.events where title = p_event);
+  v_department uuid := (select department_id from ctx);
+  v_role uuid := (select id from public.serving_roles where name = 'Fake camera');
+  v_position uuid;
+begin
+  insert into public.event_positions (event_id, department_id, role_id)
+  values (v_event, v_department, v_role) returning id into v_position;
+  insert into public.event_assignments
+    (position_id, event_id, department_id, role_id, user_id, status, readiness, assigned_by, assigned_at)
+  values (v_position, v_event, v_department, v_role, p_user, p_status,
+          private.readiness_for(p_user, v_role), null, now() - interval '7 days');
+end;
+$f$;
+
+select pg_temp.assign('aa000000-0000-4000-8000-000000000002', 'Fake PCO later', 'pending');
+select pg_temp.assign('aa000000-0000-4000-8000-000000000003', 'Fake PCO soon', 'confirmed');
+select pg_temp.assign('aa000000-0000-4000-8000-000000000004', 'Fake Academy later', 'pending');
+
+select public.queue_serving_reminders();
+select public.queue_serving_reminders();
+select is(
+  (select title from public.notifications where user_id = 'aa000000-0000-4000-8000-000000000002'),
+  'Please confirm: Fake camera', 'Planning Center services ask for a reply after 48 hours');
+select is(
+  (select count(*)::int from public.notifications where user_id = 'aa000000-0000-4000-8000-000000000003' and dedupe_key like 'serving_soon:%'),
+  1, 'Planning Center services remind before serving, once however often the job runs');
+select is_empty(
+  $q$ select 1 from public.notifications where user_id = 'aa000000-0000-4000-8000-000000000004' $q$,
+  'the Academy''s own services stay with queue_reminders, so nobody gets two');
+
+-- Everything here still waits behind the launch switch.
+select is(
+  (select email_status::text from public.notifications where user_id = 'aa000000-0000-4000-8000-000000000002'),
+  'skipped', 'nothing is emailed before launch');
+select is(
+  (select push_status from public.notifications where user_id = 'aa000000-0000-4000-8000-000000000002'),
+  'none', 'nothing goes to a phone before launch');
+
+-- An assigned course not started after 7 days reminds once; started or removed ones don't.
+insert into public.course_assignments (user_id, course_id, department_id, assigned_at)
+select 'aa000000-0000-4000-8000-000000000005', c.id, c.department_id, now() - interval '8 days'
+from public.courses c
+join public.course_versions v on v.course_id = c.id and v.status = 'published'
+where c.archived_at is null
+limit 1;
+select public.queue_serving_reminders();
+select is(
+  (select count(*)::int from public.notifications where user_id = 'aa000000-0000-4000-8000-000000000005' and title like 'Still to start:%'),
+  1, 'an assigned course not started after a week reminds them');
 
 select * from finish();
 rollback;
