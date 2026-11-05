@@ -25,11 +25,13 @@ If a leader asks you to take a course, it shows under **Assigned to you** near t
 
 Some courses, such as A Guide to Serving, are marked **Start here**. The next one you haven't finished shows at the top of Training, and they're listed under **Before you start** on each department's page. They're a good place to begin, but nothing is locked until you've done them.
 
-Opening a course from Training or Courses takes you straight to what's next.
+Choosing a course anywhere opens its summary, with a button to start or continue. To jump straight back in, use **Continue** at the top of Training.
 
 ## How a department is set out
 
 Each department has three levels, one step at a time. Each level has courses, and each course has lessons, and usually a quiz and a practical assessment.
+
+On Training, each department you belong to shows every level with a bar and how many lessons you've marked complete, such as **Level 1, 3 of 10**. A level with no courses yet says **Not open yet**. A full bar means the lessons are complete. It doesn't mean you're approved to serve.
 
 | Label on a department | What it means |
 | --- | --- |

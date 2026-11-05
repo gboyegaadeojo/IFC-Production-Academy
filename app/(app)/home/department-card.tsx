@@ -8,14 +8,19 @@ import type { DepartmentCard as DepartmentCardData } from "@/lib/data/department
 import type { ContinueCourse } from "@/lib/data/progress";
 import { formatDateTime } from "@/lib/domain/admin";
 import { departmentHueVar } from "@/lib/domain/departments";
-import { courseCountLabel, type DepartmentLearning } from "@/lib/domain/home";
+import {
+  courseCountLabel,
+  levelCardLabel,
+  levelPercent,
+  type DepartmentLearning,
+} from "@/lib/domain/home";
 import { stepHref } from "@/lib/domain/learning";
 import { RequestMembershipButton } from "./request-membership-button";
 
 /**
  * A department you belong to (Training mock, approved 2026-11-02): one compact card with its icon,
- * what's there, your lessons done, and a thin bar per level. The whole card opens the department,
- * with the Lift hover. Approval comes from its own record and is never inferred from lessons
+ * what's there, and each level named with a bar and count (Design B, approved 2026-11-05). The whole
+ * card opens the department, with the Lift hover. Approval comes from its own record and is never inferred from lessons
  * (SPEC §3, SRS-PROG-007).
  */
 export function MemberDepartmentCard({
@@ -31,8 +36,6 @@ export function MemberDepartmentCard({
   const style = { "--dept": departmentHueVar(department.hue) } as CSSProperties;
   const published = learning?.publishedCourses ?? 0;
   const levels = learning?.levels ?? [];
-  const total = levels.reduce((n, level) => n + level.lessonsTotal, 0);
-  const done = levels.reduce((n, level) => n + level.lessonsDone, 0);
 
   return (
     <article
@@ -55,33 +58,27 @@ export function MemberDepartmentCard({
             {department.name}
           </Link>
         </h3>
-        <p className="flex flex-wrap gap-x-1.5 text-small text-text-muted">
-          {published > 0 ? (
-            <>
-              <span>{courseCountLabel(published)} ·</span>
-              <span>
-                {done} of {total} {total === 1 ? "lesson" : "lessons"}
-              </span>
-            </>
-          ) : (
-            <span>Courses coming soon</span>
-          )}
+        <p className="text-small text-text-muted">
+          {published > 0 ? courseCountLabel(published) : "Courses coming soon"}
         </p>
-        {levels.length > 0 ? (
-          <span aria-hidden="true" className="mt-1.5 flex gap-1">
+        {published > 0 ? (
+          <ul aria-label="Lessons complete in each level" className="mt-1.5 flex max-w-sm gap-2">
             {levels.map((level) => (
-              <span
-                key={level.levelId}
-                className={`h-1 max-w-14 flex-1 rounded-pill ${
-                  level.lessonsDone > 0
-                    ? "bg-[var(--dept)]"
-                    : level.publishedCourses > 0
-                      ? "bg-[color-mix(in_srgb,var(--dept)_45%,var(--border))]"
-                      : "bg-border"
-                }`}
-              />
+              <li key={level.levelId} className="flex min-w-0 flex-1 flex-col gap-1 text-small">
+                <span className="font-medium text-text-secondary">Level {level.number}</span>
+                <span aria-hidden="true" className="h-1.5 overflow-hidden rounded-pill bg-border">
+                  <span
+                    className="block h-full rounded-pill bg-[var(--dept)]"
+                    style={{ width: `${levelPercent(level)}%` }}
+                  />
+                </span>
+                <span className="tabular leading-tight text-text-muted">
+                  {levelCardLabel(level)}
+                  {level.lessonsTotal > 0 ? <span className="sr-only"> lessons</span> : null}
+                </span>
+              </li>
             ))}
-          </span>
+          </ul>
         ) : null}
       </div>
       {approvedRoles.length > 0 ? (

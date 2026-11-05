@@ -7,9 +7,9 @@ import { courseSteps, stepHref } from "@/lib/domain/learning";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Opening a course from a poster goes straight to what's next, or to the overview once it's
- * finished (Course Hierarchy mock, approved 2026-11-04). Worked out here, on the click, because the
- * pages that list courses can't afford every course's outline.
+ * A Start the course button on Training goes straight to what's next, or to the overview once it's
+ * finished. Worked out here, on the click, because Training can't afford every course's outline.
+ * Posters open the overview instead (G, 2026-11-05).
  */
 export default async function OpenCoursePage({ params }: PageProps<"/courses/[courseId]/open">) {
   const user = await requireActiveUser();

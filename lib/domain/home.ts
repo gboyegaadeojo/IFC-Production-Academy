@@ -102,6 +102,22 @@ export function courseCountLabel(count: number): string {
   return count === 1 ? "1 course" : `${count} courses`;
 }
 
+/** A level on a department card: "4 of 12", "Not open yet", or the course count without lessons. */
+export function levelCardLabel(level: LevelSummary): string {
+  if (level.publishedCourses === 0) {
+    return "Not open yet";
+  }
+  if (level.lessonsTotal === 0) {
+    return courseCountLabel(level.publishedCourses);
+  }
+  return `${level.lessonsDone} of ${level.lessonsTotal}`;
+}
+
+/** How full a level's bar is. It shows the real amount, so one lesson never looks like ten. */
+export function levelPercent(level: LevelSummary): number {
+  return level.lessonsTotal === 0 ? 0 : Math.round((level.lessonsDone / level.lessonsTotal) * 100);
+}
+
 /** "4 of 12 lessons", "No courses yet", or the course count when lessons aren't readable. */
 export function levelProgressLabel(level: LevelSummary): string {
   if (level.publishedCourses === 0) {

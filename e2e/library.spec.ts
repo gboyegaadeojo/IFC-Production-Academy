@@ -40,6 +40,21 @@ test("a Production Director adds, renames, and removes a topic", async ({ page }
   await expect(renamed).toHaveCount(0);
 });
 
+test("a course poster opens the summary, not the first lesson", async ({ page }) => {
+  await signInByEmail(page, "avery.volunteer@example.com");
+  await page.goto("/courses");
+  const course = "cccccccc-0000-4000-8000-000000000001";
+  await page.locator(`a[href="/courses/${course}"]`).first().click();
+  await page.waitForURL(`**/courses/${course}`);
+  await expect(page.getByRole("link", { name: /Start the course|Continue/ }).first()).toBeVisible();
+});
+
+test("a department card on Training names each level", async ({ page }) => {
+  await signInByEmail(page, "avery.volunteer@example.com");
+  const levels = page.getByRole("list", { name: "Lessons complete in each level" }).first();
+  await expect(levels.getByText("Level 1")).toBeVisible();
+});
+
 test("on a phone, Courses is on the bottom bar, with Explore a switch inside", async ({
   page,
   isMobile,
