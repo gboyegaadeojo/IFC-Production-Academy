@@ -102,20 +102,34 @@ export function courseCountLabel(count: number): string {
   return count === 1 ? "1 course" : `${count} courses`;
 }
 
-/** A level on a department card: "4 of 12", "Not open yet", or the course count without lessons. */
-export function levelCardLabel(level: LevelSummary): string {
-  if (level.publishedCourses === 0) {
-    return "Not open yet";
-  }
-  if (level.lessonsTotal === 0) {
-    return courseCountLabel(level.publishedCourses);
-  }
-  return `${level.lessonsDone} of ${level.lessonsTotal}`;
+/** Lessons across a department's levels, for its ring on Training. */
+export function departmentProgress(levels: readonly LevelSummary[]): {
+  done: number;
+  total: number;
+  /** Rounded down, so it only reads 100 once every lesson is complete. */
+  percent: number;
+} {
+  const total = levels.reduce((n, level) => n + level.lessonsTotal, 0);
+  const done = levels.reduce((n, level) => n + level.lessonsDone, 0);
+  return { done, total, percent: total === 0 ? 0 : Math.floor((done / total) * 100) };
 }
 
-/** How full a level's bar is. It shows the real amount, so one lesson never looks like ten. */
-export function levelPercent(level: LevelSummary): number {
-  return level.lessonsTotal === 0 ? 0 : Math.round((level.lessonsDone / level.lessonsTotal) * 100);
+/** The words beside the ring: "1 course · 3 of 10 lessons". They say why a new level lowers it. */
+export function departmentProgressLabel(published: number, done: number, total: number): string {
+  if (published === 0) {
+    return "Courses coming soon";
+  }
+  const courses = courseCountLabel(published);
+  if (total === 0) {
+    return courses;
+  }
+  const lessons = total === 1 ? "lesson" : "lessons";
+  if (done === 0) {
+    return `${courses} · ${total} ${lessons} to start`;
+  }
+  return done === total
+    ? `${courses} · ${total === 1 ? "1 lesson" : `All ${total} lessons`} complete`
+    : `${courses} · ${done} of ${total} ${lessons}`;
 }
 
 /** "4 of 12 lessons", "No courses yet", or the course count when lessons aren't readable. */

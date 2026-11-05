@@ -31,7 +31,7 @@ Choosing a course anywhere opens its summary, with a button to start or continue
 
 Each department has three levels, one step at a time. Each level has courses, and each course has lessons, and usually a quiz and a practical assessment.
 
-On Training, each department you belong to shows every level with a bar and how many lessons you've marked complete, such as **Level 1, 3 of 10**. A level with no courses yet says **Not open yet**. A full bar means the lessons are complete. It doesn't mean you're approved to serve.
+On Training, each department you belong to has a ring showing how many of its lessons you've marked complete, with the count beside it, such as **3 of 10 lessons**. When a new level opens, the ring drops because there are more lessons to do, and what you've finished still counts. A tick means the lessons so far are complete. It doesn't mean you're approved to serve.
 
 | Label on a department | What it means |
 | --- | --- |

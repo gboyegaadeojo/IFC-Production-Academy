@@ -55,12 +55,15 @@ for (const viewport of VIEWPORTS) {
     await signInByEmail(page, "avery.volunteer@example.com");
     await expect(page.getByRole("heading", { name: "Keep learning" })).toBeVisible();
     // Other tests may publish more Camera courses or record progress, so match any real count.
+    const camera = page.getByRole("article", { name: "Camera Operations" });
     await expect(
-      page
-        .getByRole("article", { name: "Camera Operations" })
-        .getByText(/^\d+ of \d+ lessons?$/)
+      camera
+        .getByText(
+          /^\d+ courses? · (\d+ lessons? to start|\d+ of \d+ lessons?|.*lessons? complete)$/,
+        )
         .first(),
     ).toBeVisible();
+    await expect(camera.getByRole("img", { name: /% of lessons complete$/ })).toBeVisible();
     // Membership is never shown as approval to serve.
     await expect(page.getByText("Approved to serve", { exact: true })).toHaveCount(1);
     await capture(page, `home-member-${viewport.name}`);
