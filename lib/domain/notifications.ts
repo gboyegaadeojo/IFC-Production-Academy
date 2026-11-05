@@ -38,7 +38,7 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
 
 export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   assignment_scheduled: "When I'm scheduled to serve",
-  serving_reminder: "Reminders to confirm, and two days before I serve",
+  serving_reminder: "Reminders to confirm, two days before I serve, and that morning",
   cover_requested: "When a teammate asks for someone to cover their spot",
   schedule_update: "When someone covers for me, or changes a schedule I run",
   course_assigned: "When a leader asks me to take a course",
