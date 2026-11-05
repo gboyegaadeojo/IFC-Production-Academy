@@ -3,7 +3,17 @@
 The Academy writes a notification when something happens for a person: joining a department,
 being scheduled, a practical assessment result, a mentoring pairing, or an SOP they own coming
 due for review. Everyone sees theirs in the app under **Notifications** (account menu), and
-chooses which kinds also come by email.
+chooses which kinds reach their phone and their email.
+
+## Which way each one travels
+
+Set in `private.route_notification()`, and decided in `docs/decisions/2026-11-05-alerts.md`:
+
+- **In the app:** everything.
+- **App only:** a certificate ready, a new course, and an updated SOP.
+- **Phone alert:** everything else, on devices with alerts on, unless the person turned that kind off.
+- **Email:** if the person has no alerts on a phone, or turned that kind off for their phone, and as
+  they've chosen. A moved or cancelled service comes by email as well as by alert.
 
 Emails are sent every 15 minutes by `.github/workflows/notifications.yml`, which runs
 `scripts/send-notifications.ts`. A Cloudflare timer starts it, because GitHub's own schedule can run
@@ -25,7 +35,8 @@ deploy workflow already uses.
 
 ## What the job does
 
-1. Queues reminders (`queue_sop_review_reminders` and `queue_reminders`), each once:
+1. Queues reminders (`queue_sop_review_reminders`, `queue_reminders`, `queue_serving_reminders`,
+   and `queue_cover_reminders`), each once:
    - SOP review due a week before the review date, and overdue a week after it;
    - "Please confirm" 48 hours after someone is scheduled, if they haven't answered;
    - "Serving soon" from 10:00 two days before an event, to the confirmed volunteer, and to their
@@ -34,7 +45,8 @@ deploy workflow already uses.
    - "Still to start" 7 days after a course is assigned, if they haven't started it;
    - "Keep going" 7 and 21 days after someone last worked on a course they started;
    - a practical assessment request still open after 7 days, to the department's leaders;
-   - a competency expiring within 30 days, where expiry is on.
+   - a competency expiring within 30 days, where expiry is on;
+   - a cover request still open within two days of the service, to those who schedule.
 
    These cover Planning Center's services too, so some people also get Planning Center's own
    reminders. G chose that, in `docs/decisions/2026-11-05-alerts.md`. Learning reminders (the nudges

@@ -17,7 +17,22 @@ export type NotificationKind =
   | "schedule_update"
   | "onboarding_task"
   | "onboarding_update"
-  | "course_assigned";
+  | "course_assigned"
+  | "service_changed"
+  | "join_requested"
+  | "cover_open"
+  | "approved_to_serve"
+  | "certificate_ready"
+  | "new_course"
+  | "sop_updated"
+  | "mentor_note";
+
+/** These stay in the app, so there's nothing to choose (decision 2026-11-05). */
+export const APP_ONLY_KINDS: readonly NotificationKind[] = [
+  "certificate_ready",
+  "new_course",
+  "sop_updated",
+];
 
 export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "assignment_scheduled",
@@ -34,6 +49,12 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "sop_review_due",
   "onboarding_task",
   "onboarding_update",
+  "service_changed",
+  "join_requested",
+  "cover_open",
+  "approved_to_serve",
+  "mentor_note",
+  ...APP_ONLY_KINDS,
 ];
 
 export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
@@ -51,6 +72,14 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   sop_review_due: "When an SOP I own is due or overdue for review",
   onboarding_task: "When someone new needs me to follow up",
   onboarding_update: "When someone moves on in onboarding",
+  service_changed: "When a service I'm on is moved or cancelled",
+  join_requested: "When someone asks to join a department I lead",
+  cover_open: "When a spot still needs cover close to the service",
+  approved_to_serve: "When I'm approved to serve in a role",
+  mentor_note: "When my mentor or mentee shares a note",
+  certificate_ready: "When a certificate is ready",
+  new_course: "When my department has a new course",
+  sop_updated: "When an SOP in my department is updated",
 };
 
 /** A short note under some email choices, saying where or when it comes from. */
@@ -73,7 +102,13 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
   {
     id: "serving",
     title: "Serving",
-    kinds: ["assignment_scheduled", "serving_reminder", "cover_requested", "schedule_update"],
+    kinds: [
+      "assignment_scheduled",
+      "serving_reminder",
+      "service_changed",
+      "cover_requested",
+      "schedule_update",
+    ],
   },
   {
     id: "training",
@@ -83,14 +118,23 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "course_assigned",
       "learning_nudge",
       "assessment_recorded",
+      "approved_to_serve",
       "competency_expiring",
       "mentoring_paired",
+      "mentor_note",
     ],
   },
   {
     id: "leading",
     title: "Leading",
-    kinds: ["assessment_requested", "sop_review_due", "onboarding_task", "onboarding_update"],
+    kinds: [
+      "assessment_requested",
+      "join_requested",
+      "cover_open",
+      "sop_review_due",
+      "onboarding_task",
+      "onboarding_update",
+    ],
   },
 ];
 

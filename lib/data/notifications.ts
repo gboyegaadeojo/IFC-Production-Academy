@@ -59,21 +59,28 @@ export async function markAllRead(): Promise<boolean> {
   return !error;
 }
 
-/** Email on or off per kind. A kind with no saved choice is on. */
-export async function getMyEmailPreferences(
-  userId: string,
-): Promise<Map<NotificationKind, boolean>> {
+export type NotificationChoices = {
+  email: Map<NotificationKind, boolean>;
+  phone: Map<NotificationKind, boolean>;
+};
+
+/** Email and phone alerts on or off per kind. A kind with no saved choice is on. */
+export async function getMyNotificationChoices(userId: string): Promise<NotificationChoices> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase
     .from("notification_preferences")
-    .select("kind, email")
+    .select("kind, email, push")
     .eq("user_id", userId);
   if (error) {
     throw new Error("Could not load preferences", { cause: error.code });
   }
-  return new Map(
-    data.flatMap((row) => (isNotificationKind(row.kind) ? [[row.kind, row.email]] : [])),
+  const rows = data.flatMap((row) =>
+    isNotificationKind(row.kind) ? [{ ...row, kind: row.kind }] : [],
   );
+  return {
+    email: new Map(rows.map((row) => [row.kind, row.email])),
+    phone: new Map(rows.map((row) => [row.kind, row.push])),
+  };
 }
 
 /**
@@ -100,6 +107,12 @@ const LEADING_CAPABILITIES: ReadonlySet<string> = new Set([
   "department.manage",
   "onboarding.manage",
 ]);
+
+export async function setPhonePreference(kind: NotificationKind, push: boolean): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_notification_push", { p_kind: kind, p_push: push });
+  return !error;
+}
 
 export async function setEmailPreference(kind: NotificationKind, email: boolean): Promise<boolean> {
   const supabase = await createSupabaseServerClient();

@@ -15,7 +15,7 @@ import {
 import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import {
-  getMyEmailPreferences,
+  getMyNotificationChoices,
   getMyNotifications,
   offersLeadingChoices,
   type AppNotification,
@@ -28,7 +28,7 @@ import {
   type NotificationKind,
 } from "@/lib/domain/notifications";
 import { markAllReadAction } from "./actions";
-import { EmailChoices } from "./email-choices";
+import { NotificationSwitches } from "./email-choices";
 
 export const metadata: Metadata = { title: "Notifications" };
 
@@ -48,14 +48,16 @@ async function NotificationsContent() {
   const user = await requireActiveUser();
   const [notifications, preferences, leads] = await Promise.all([
     getMyNotifications(user.id),
-    getMyEmailPreferences(user.id),
+    getMyNotificationChoices(user.id),
     offersLeadingChoices(user.id),
   ]);
   const unread = notifications.filter((n) => !n.read).length;
   // A kind with no saved choice is on.
-  const initial = Object.fromEntries(
-    NOTIFICATION_KINDS.map((kind) => [kind, preferences.get(kind) ?? true]),
-  ) as Record<NotificationKind, boolean>;
+  const choicesFrom = (saved: ReadonlyMap<NotificationKind, boolean>) =>
+    Object.fromEntries(NOTIFICATION_KINDS.map((kind) => [kind, saved.get(kind) ?? true])) as Record<
+      NotificationKind,
+      boolean
+    >;
   const now = new Date();
 
   return (
@@ -122,7 +124,18 @@ async function NotificationsContent() {
               Get the app
             </Link>
           </section>
-          <EmailChoices groups={emailChoiceGroups(leads)} initial={initial} />
+          <NotificationSwitches
+            channel="phone"
+            note="What reaches your phone, on devices with alerts on. New courses, certificates, and SOP updates stay here in the app."
+            groups={emailChoiceGroups(leads)}
+            initial={choicesFrom(preferences.phone)}
+          />
+          <NotificationSwitches
+            channel="email"
+            note="With alerts on a phone, you only get an email if a service is moved or cancelled, or for anything you've turned off for your phone."
+            groups={emailChoiceGroups(leads)}
+            initial={choicesFrom(preferences.email)}
+          />
         </div>
       </div>
     </div>
@@ -147,6 +160,14 @@ const KIND_ICON: Record<
   sop_review_due: { icon: FileTextIcon, tone: "text-text-secondary" },
   onboarding_task: { icon: UserCheckIcon, tone: "text-warning" },
   onboarding_update: { icon: UsersIcon, tone: "text-accent-light" },
+  service_changed: { icon: CalendarRangeIcon, tone: "text-warning" },
+  join_requested: { icon: UsersIcon, tone: "text-accent-light" },
+  cover_open: { icon: UsersIcon, tone: "text-warning" },
+  approved_to_serve: { icon: CheckIcon, tone: "text-success" },
+  certificate_ready: { icon: CheckIcon, tone: "text-success" },
+  new_course: { icon: GraduationCapIcon, tone: "text-accent-light" },
+  sop_updated: { icon: FileTextIcon, tone: "text-text-secondary" },
+  mentor_note: { icon: UsersIcon, tone: "text-accent-light" },
 };
 
 function FeedItem({ notification, now }: { notification: AppNotification; now: Date }) {
