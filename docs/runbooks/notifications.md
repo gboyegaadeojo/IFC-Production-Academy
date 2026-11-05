@@ -9,10 +9,24 @@ chooses which kinds reach their phone and their email.
 
 Every email uses the Calm design in `lib/domain/email-design.ts`: the app's icon, the title as the
 subject, the message as the inbox preview, and one button named for what it does
-(`emailButtonLabel`). The sign-in email is a copy of the same design in
-`supabase/templates/magic-link.html`. **Supabase doesn't read that file in production:** after
-changing it, paste it into Supabase (Authentication → Email templates → Magic link, and Confirm
-signup).
+(`emailButtonLabel`). Sign-in emails use the same design, sent by the app.
+
+## Sign-in emails
+
+Supabase makes the one-time sign-in token, then calls the app's `/api/auth/send-email` through
+its **Send Email hook**. The app checks Supabase's signature, builds the email
+(`lib/domain/auth-email.ts`), and sends it through Resend. So sign-in emails have the same design
+as everything else, and nothing is pasted into Supabase.
+
+- Secrets: `SEND_EMAIL_HOOK_SECRET` (GitHub Actions), plus `RESEND_API_KEY` and `NOTIFY_FROM`.
+  The deploy copies all three into Cloudflare.
+- The hook: Supabase → Authentication → Hooks → Send Email, type HTTPS, URL
+  `<site>/api/auth/send-email`, with the same secret.
+- If the app or Resend can't send, Supabase shows the person an error and nothing is sent, so they
+  can try again or use Planning Center sign-in.
+- **Local development** doesn't use the hook: Supabase sends with
+  `supabase/templates/magic-link.html` into Mailpit, as before.
+- **To switch it off,** turn the hook off in Supabase. Supabase then sends with its own template.
 
 ## Which way each one travels
 
