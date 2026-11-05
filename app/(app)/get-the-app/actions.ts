@@ -9,6 +9,7 @@ import {
   removeMySubscription,
   saveMySubscription,
   sendTestAlert,
+  setAlertsUnavailable,
 } from "@/lib/data/push";
 
 const base64Url = (min: number, max: number) =>
@@ -22,6 +23,14 @@ const Subscription = z.object({
   p256dh: base64Url(80, 100),
   auth: base64Url(16, 32),
 });
+
+/** "My phone can't do this", and taking it back (decision 2026-11-05). */
+export async function setAlertsUnavailableAction(unavailable: boolean): Promise<void> {
+  const user = await getCurrentUser();
+  if (user?.status === "active" && (await setAlertsUnavailable(unavailable))) {
+    refresh();
+  }
+}
 
 /** Turns alerts on for this device (the browser's push subscription). */
 export async function savePushSubscriptionAction(input: {

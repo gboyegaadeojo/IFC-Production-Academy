@@ -1,6 +1,10 @@
+import { Suspense } from "react";
 import { AcademyHeader, AcademySidebar } from "@/components/shell/academy-header";
+import { AlertsSetupBanner } from "@/components/shell/alerts-setup-banner";
 import { AcademyTabBar } from "@/components/shell/academy-nav";
 import { HideOnAdmin } from "@/components/shell/hide-on-admin";
+import { getCurrentUser } from "@/lib/data/auth";
+import { getAlertsSetupNeeded } from "@/lib/data/push";
 
 /**
  * Signed-in shell (DESIGN §3): the learner side bar from 768px, or the slim bar and tab bar on
@@ -18,10 +22,21 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           <AcademySidebar />
         </HideOnAdmin>
         <main id="main" className="flex min-w-0 flex-1 flex-col">
+          <HideOnAdmin>
+            <Suspense fallback={null}>
+              <AlertsSetup />
+            </Suspense>
+          </HideOnAdmin>
           {children}
         </main>
       </div>
       <AcademyTabBar />
     </>
   );
+}
+
+/** Only people on a team without a phone set up are asked. It never blocks the page. */
+async function AlertsSetup() {
+  const user = await getCurrentUser();
+  return user?.status === "active" && (await getAlertsSetupNeeded()) ? <AlertsSetupBanner /> : null;
 }
