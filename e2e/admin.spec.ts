@@ -357,7 +357,10 @@ test("a leader publishes an SOP, attaches it to a lesson, and a member opens it"
   expect((await file.body()).subarray(0, 5).toString()).toBe("%PDF-");
 
   await member.goto(`/courses/${courseId}`);
-  await member.getByRole("link", { name: /^(Start the course|Continue)/ }).click();
+  await member
+    .getByRole("link", { name: /^(Start the course|Continue)/ })
+    .first()
+    .click();
   await expect(member.getByRole("heading", { level: 1, name: "Powering up" })).toBeVisible();
   await expect(
     member

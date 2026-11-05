@@ -21,12 +21,14 @@ test("a learner starts a course over, after a warning", async ({ page }, testInf
   await expect(page.getByRole("status").filter({ hasText: "Marked complete." })).toHaveCount(1);
 
   await page.goto(page.url().replace(/\/lessons\/.*$/, ""));
+  await page.getByRole("button", { name: "Actions" }).click();
   const startOver = page.getByRole("button", { name: /^Start over/ });
   await startOver.click();
   const warning = page.getByRole("alertdialog");
   await expect(warning).toContainText("You can't undo this yourself.");
   await warning.getByRole("button", { name: "Cancel" }).click();
-  await expect(page.getByText("Your progress")).toBeVisible();
+  await expect(warning).toBeHidden();
+  await expect(page.getByRole("link", { name: /^Continue/ }).first()).toBeVisible();
 
   await startOver.click();
   await page.getByRole("button", { name: "Yes, start over" }).click();

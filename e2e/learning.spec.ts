@@ -49,7 +49,10 @@ for (const viewport of VIEWPORTS) {
     await capture(page, `course-member-${viewport.name}`);
 
     // Avery may already have opened the lesson (other tests), so either button may show.
-    await page.getByRole("link", { name: /^(Start the course|Continue)/ }).click();
+    await page
+      .getByRole("link", { name: /^(Start the course|Continue)/ })
+      .first()
+      .click();
     await expect(page.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
     await expect(page.getByText("Lesson 1 of 1")).toBeVisible();
     await expect(page.getByText("Fake lesson text for local development.")).toBeVisible();
@@ -194,7 +197,11 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
 
   // The quiz (SRS-QUIZ-001..005): one question at a time, an answer needed to move on, a check
   // before submitting, and a result the app works out.
-  await volunteer.getByRole("link", { name: /^Continue/ }).click();
+  // The main button and the card both go to the next step.
+  await volunteer
+    .getByRole("link", { name: /^Continue/ })
+    .first()
+    .click();
   await expect(
     volunteer.getByRole("heading", { level: 1, name: "Sample quiz (seed data)" }),
   ).toBeVisible();
@@ -225,7 +232,10 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
 
   // Workflow B (SPEC §3): the volunteer asks to be assessed, a leader ticks what they saw, and the
   // Academy works out the result. A pass grants the competency; Approved to Serve follows.
-  await volunteer.getByRole("link", { name: /^Continue/ }).click();
+  await volunteer
+    .getByRole("link", { name: /^Continue/ })
+    .first()
+    .click();
   await expect(
     volunteer.getByRole("heading", { level: 1, name: "Sample practical (seed data)" }),
   ).toBeVisible();

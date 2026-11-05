@@ -9,7 +9,9 @@ import {
   type OutlineModule,
 } from "@/lib/domain/learning";
 import { perRequestBatch } from "@/lib/domain/per-request";
-import { storedVideo, type VideoRef } from "@/lib/domain/video";
+import { courseCoverUrl } from "@/lib/domain/library";
+import { storedVideo, videoThumbnailUrl, type VideoRef } from "@/lib/domain/video";
+import { publicEnv } from "@/lib/env";
 
 // Learner pages (DESIGN §6.3–6.5). Read-only. Row-level security decides what each person sees:
 // anyone signed in can browse published course titles; lessons are readable only by members of the
@@ -144,6 +146,7 @@ export type LearnerCourse = {
   summary: string;
   objectives: string[];
   estimatedMinutes: number | null;
+  coverUrl: string | null;
   department: {
     id: string;
     slug: string;
@@ -173,12 +176,17 @@ export const getLearnerCourses = perRequestBatch(
   readLearnerCourses,
 );
 
+function thumbnailFor(provider: string | null, ref: string | null): string | null {
+  const video = storedVideo(provider, ref);
+  return video ? videoThumbnailUrl(video) : null;
+}
+
 async function readLearnerCourses(ids: readonly string[]): Promise<Map<string, LearnerCourse>> {
   const out = new Map<string, LearnerCourse>();
   const supabase = await createSupabaseServerClient();
   const courses = await supabase
     .from("courses")
-    .select("id, department_id, level_id, archived_at")
+    .select("id, department_id, level_id, archived_at, cover_image_path")
     .in("id", ids);
   if (courses.error) {
     throw new Error("Could not load the course", { cause: courses.error.code });
@@ -208,7 +216,7 @@ async function readLearnerCourses(ids: readonly string[]): Promise<Map<string, L
     supabase
       .from("lessons")
       .select(
-        "course_version_id, lesson_key, module_id, title, is_required, estimated_minutes, sort_order",
+        "course_version_id, lesson_key, module_id, title, is_required, estimated_minutes, sort_order, video_provider, video_ref",
       )
       .in("course_version_id", versionIds),
     supabase
@@ -259,6 +267,9 @@ async function readLearnerCourses(ids: readonly string[]): Promise<Map<string, L
       summary: version.summary,
       objectives: version.objectives,
       estimatedMinutes: version.estimated_minutes,
+      coverUrl: course.cover_image_path
+        ? courseCoverUrl(publicEnv().NEXT_PUBLIC_SUPABASE_URL, course.cover_image_path)
+        : null,
       department,
       level: { number: level.number, name: level.name },
       canOpen: courseLessons.length > 0,
@@ -296,6 +307,7 @@ async function readLearnerCourses(ids: readonly string[]): Promise<Map<string, L
               isRequired: row.is_required,
               estimatedMinutes: row.estimated_minutes,
               sortOrder: row.sort_order,
+              thumbnailUrl: thumbnailFor(row.video_provider, row.video_ref),
             })),
         })),
       ),

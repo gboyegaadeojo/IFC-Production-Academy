@@ -1,21 +1,30 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { DepartmentIcon } from "@/components/department-icon";
 import { ActionForm } from "@/components/ui/action-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { buttonClasses } from "@/components/ui/button";
-import { ArrowRightIcon, ChevronLeftIcon, LockIcon } from "@/components/ui/icons";
-import { ProgressBar } from "@/components/ui/progress-bar";
+import {
+  ChevronLeftIcon,
+  ClockIcon,
+  LockIcon,
+  PlayCircleIcon,
+  PlayIcon,
+  QuizIcon,
+  UserCheckIcon,
+} from "@/components/ui/icons";
+import { StatusBadge } from "@/components/ui/status-badge";
 import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyCertificateForCourse } from "@/lib/data/certificates";
 import { getLearnerCourse, canLearnIn } from "@/lib/data/pathway";
 import { getCourseProgress } from "@/lib/data/progress";
 import { getPassedPracticalKeys } from "@/lib/data/practicals";
-import { getPassedQuizKeys } from "@/lib/data/quizzes";
+import { getMyCourseAttempts, getPassedQuizKeys, getVersionQuizzes } from "@/lib/data/quizzes";
+import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
 import {
   courseTotals,
@@ -26,7 +35,9 @@ import {
 } from "@/lib/domain/learning";
 import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
 import { issueCertificateAction, restartCourseAction } from "../actions";
-import { CourseOutline } from "../course-outline";
+import { CourseActions } from "./course-actions";
+import { CourseTabs } from "./course-tabs";
+import { LessonPanel, LessonThumbnail } from "./lesson-panel";
 import { RichText } from "@/components/ui/rich-text";
 import { getCourseTopics } from "@/lib/data/topics";
 
@@ -43,9 +54,10 @@ export default function CoursePage({ params }: PageProps<"/courses/[courseId]">)
 }
 
 /**
- * Course landing (DESIGN §6.4): what the course covers, its real size, and where to start. Shows
- * only facts that exist: no invented instructor, rating, or duration. Anyone signed in can open
- * the lessons of an open department (decision 2026-11-01, open training).
+ * The course page (DESIGN §6.4; Course Page mock, approved 2026-11-05): the cover, title, and main
+ * button first, then About and Quiz results beside the lessons. Shows only facts that exist: no
+ * invented instructor, rating, or duration. Anyone signed in can open the lessons of an open
+ * department (decision 2026-11-01, open training).
  */
 async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, "params">) {
   const user = await requireActiveUser();
@@ -58,15 +70,18 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
     notFound();
   }
   const totals = courseTotals(course.modules);
-  const first = flattenLessons(course.modules)[0];
+  const lessons = flattenLessons(course.modules);
+  const first = lessons[0];
   const member = course.canOpen && (await canLearnIn(user.id, course.department.id));
-  const [lessonProgress, passed, practicalsPassed] = member
+  const [lessonProgress, passed, practicalsPassed, attempts, versionQuizzes] = member
     ? await Promise.all([
         getCourseProgress(user.id, course.id),
         getPassedQuizKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
         getPassedPracticalKeys(user.id, [course.id]).then((byCourse) => byCourse.get(course.id)),
+        getMyCourseAttempts(user.id, course.id),
+        getVersionQuizzes(course.versionId),
       ])
-    : [null, undefined, undefined];
+    : [null, undefined, undefined, [], []];
   const summary = lessonProgress
     ? courseProgress(
         course.modules,
@@ -78,76 +93,133 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
       )
     : null;
   // Starting over keeps a certificate, so it's looked up whatever the progress says.
-  const certificate = summary ? await getMyCertificateForCourse(user.id, course.id) : null;
+  const [certificate, topics] = await Promise.all([
+    summary ? getMyCertificateForCourse(user.id, course.id) : null,
+    getCourseTopics(course.id),
+  ]);
   const minutes = totals.estimatedMinutes ?? course.estimatedMinutes;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
-  const topics = await getCourseTopics(course.id);
-  const facts = course.canOpen
-    ? [
-        lessonCountLabel(totals.lessons),
-        totals.optional > 0 ? `${totals.optional} optional` : null,
-        course.quizzes.length === 1
-          ? "1 quiz"
-          : course.quizzes.length > 1
-            ? `${course.quizzes.length} quizzes`
-            : null,
-        course.practicals.length === 1
-          ? "1 practical assessment"
-          : course.practicals.length > 1
-            ? `${course.practicals.length} practical assessments`
-            : null,
-        minutes ? `About ${formatMinutes(minutes)}` : null,
-        `Version ${course.versionNumber}`,
-      ].filter((fact): fact is string => fact !== null)
-    : [`Version ${course.versionNumber}`];
+  const started = summary !== null && summary.state !== "not_started";
+  const eyebrow = course.department.uses_levels
+    ? `${course.department.name} · Level ${course.level.number}`
+    : course.department.name;
+  const questionCounts = new Map(versionQuizzes.map((quiz) => [quiz.key, quiz.questionCount]));
+  const nextLesson = lessons.find((lesson) => lesson.key === summary?.next?.key);
+  const liveCertificate = certificate && !certificate.revoked ? certificate : null;
+
+  // The card above the lessons: the next step, the first lesson, or nothing while a practical waits.
+  const card =
+    started && summary?.next
+      ? {
+          label: "Continue",
+          title: summary.next.title,
+          href: stepHref(course.id, summary.next),
+          thumbnail: nextLesson?.thumbnailUrl,
+        }
+      : !first
+        ? null
+        : !started
+          ? course.canOpen
+            ? {
+                label: "Start here",
+                title: first.title,
+                href: `/courses/${course.id}/lessons/${first.key}`,
+                thumbnail: first.thumbnailUrl,
+              }
+            : null
+          : summary?.state === "completed"
+            ? {
+                label: "Watch again",
+                title: first.title,
+                href: `/courses/${course.id}/lessons/${first.key}`,
+                thumbnail: first.thumbnailUrl,
+              }
+            : null;
 
   return (
     <div
       style={style}
-      className="page-container flex flex-col gap-6 py-4 sm:gap-10 sm:py-8 lg:py-12"
+      className="page-container flex flex-col gap-4 py-2 sm:gap-5 sm:py-4 xl:pb-12"
     >
-      <Link
-        href={`/departments/${course.department.slug}`}
-        className="-ml-1 flex min-h-touch w-fit items-center gap-1 rounded-button pr-2 pl-1 text-small font-medium text-text-secondary hover:text-text sm:hidden"
-      >
-        <ChevronLeftIcon className="size-4" />
-        {course.department.name}
-      </Link>
-      <div className="hidden sm:block">
-        <Breadcrumbs
-          items={[
-            { label: "Training", href: "/home" },
-            { label: course.department.name, href: `/departments/${course.department.slug}` },
-            { label: course.title },
-          ]}
-        />
-      </div>
-      {/* Phones: title, then the Start or Continue card, then the lessons. Desktop: the card sits
-          beside them. */}
-      <div className="grid gap-6 sm:gap-10 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-x-14">
-        <header className="flex flex-col gap-3 border-l-2 border-[var(--dept)] pl-4 sm:gap-4 sm:pl-5 lg:col-start-1">
-          <p className="eyebrow">
-            {course.department.uses_levels
-              ? `Level ${course.level.number} · ${course.level.name}`
-              : course.department.name}
-          </p>
-          <h1 className="text-title font-semibold text-balance">{course.title}</h1>
-          {course.summary ? (
-            <RichText
-              source={course.summary}
-              className="max-w-[40rem] text-lead text-text-secondary"
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href="/courses"
+          className="-ml-1 flex min-h-touch items-center gap-1 rounded-button pr-2 pl-1 font-medium text-accent-light"
+        >
+          <ChevronLeftIcon className="size-4" />
+          Courses
+        </Link>
+        <CourseActions>
+          {started ? (
+            <StartOver
+              courseId={course.id}
+              title={course.title}
+              hasCertificate={Boolean(certificate)}
             />
           ) : null}
-          <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small text-text-muted">
-            {facts.map((fact) => (
-              <li key={fact}>{fact}</li>
-            ))}
+          <Link href={`/departments/${course.department.slug}`}>
+            Go to {course.department.name}
+          </Link>
+        </CourseActions>
+      </div>
+
+      <section className="grid grid-cols-[6.75rem_minmax(0,1fr)] gap-x-4 gap-y-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-x-8 xl:grid-cols-[15rem_minmax(0,1fr)] xl:gap-x-12 xl:gap-y-5 xl:border-b xl:border-border xl:pb-14">
+        <div className="aspect-[3/4] self-start overflow-hidden rounded-card border border-[color-mix(in_srgb,var(--dept)_35%,var(--border))] xl:row-span-2">
+          {course.coverUrl ? (
+            // Covers are public files with no image service on this plan, so a plain image is right.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={course.coverUrl} alt="" className="size-full object-cover" />
+          ) : (
+            <div className="flex size-full flex-col justify-between bg-[linear-gradient(165deg,color-mix(in_srgb,var(--dept)_30%,var(--surface)),color-mix(in_srgb,var(--dept)_7%,var(--surface)))] p-2.5 xl:p-4.5">
+              <span aria-hidden="true" className="text-[var(--dept)]">
+                <DepartmentIcon icon={course.department.icon} className="size-5 xl:size-6" />
+              </span>
+              <span
+                aria-hidden="true"
+                className="text-[0.9375rem] leading-tight font-bold text-balance break-words xl:text-[1.875rem]"
+              >
+                {course.title}
+              </span>
+            </div>
+          )}
+        </div>
+        <header className="flex min-w-0 flex-col gap-2.5 xl:gap-3.5 xl:self-end">
+          <p className="eyebrow">{eyebrow}</p>
+          <h1 className="max-w-[13em] text-[1.375rem] leading-tight font-bold tracking-tight text-balance xl:text-[2.375rem]">
+            {course.title}
+          </h1>
+          <ul className="flex flex-wrap gap-x-4 gap-y-1.5 font-medium text-text-secondary">
+            {course.canOpen ? (
+              <>
+                <Fact icon={<PlayCircleIcon className="size-4" />}>
+                  {lessonCountLabel(totals.lessons)}
+                </Fact>
+                {totals.optional > 0 ? <li>{totals.optional} optional</li> : null}
+                {minutes ? (
+                  <Fact icon={<ClockIcon className="size-4" />}>
+                    About {formatMinutes(minutes)}
+                  </Fact>
+                ) : null}
+                {course.quizzes.length > 0 ? (
+                  <Fact icon={<QuizIcon className="size-4" />}>
+                    {course.quizzes.length === 1 ? "1 quiz" : `${course.quizzes.length} quizzes`}
+                  </Fact>
+                ) : null}
+                {course.practicals.length > 0 ? (
+                  <Fact icon={<UserCheckIcon className="size-4" />}>
+                    {course.practicals.length === 1
+                      ? "1 practical"
+                      : `${course.practicals.length} practicals`}
+                  </Fact>
+                ) : null}
+              </>
+            ) : null}
             {topics.map((topic) => (
               <li key={topic.id}>
                 <Link
                   href={`/explore?topic=${topic.id}`}
                   prefetch={false}
-                  className="font-medium text-accent-light underline-offset-4 hover:underline"
+                  className="text-accent-light underline-offset-4 hover:underline"
                 >
                   {topic.name}
                 </Link>
@@ -155,80 +227,52 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
             ))}
           </ul>
         </header>
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start">
-          {summary && summary.state !== "not_started" ? (
-            <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
-              <p className="font-medium">
-                {summary.state === "completed"
-                  ? "You've finished this course"
-                  : summary.state === "awaiting_assessment"
-                    ? "Awaiting your practical assessment"
-                    : "Your progress"}
-              </p>
-              <ProgressBar percent={summary.percent} label="Course progress" />
-              <p className="text-small text-text-secondary">
-                {courseProgressLabel(summary, totals.required > 0)}
-              </p>
-              {summary.state === "completed" ? (
-                certificate && !certificate.revoked ? (
-                  <Link
-                    href={`/certificates/${certificate.reference}`}
-                    className={buttonClasses("secondary", "w-full")}
-                  >
-                    View your certificate
-                  </Link>
-                ) : certificate ? null : (
-                  <ActionForm
-                    action={issueCertificateAction}
-                    submitLabel="Get your certificate"
-                    pendingLabel="Checking…"
-                    variant="secondary"
-                    hidden={{ courseId: course.id }}
-                    className="flex flex-col gap-2"
-                  />
-                )
-              ) : null}
-              {summary.next ? (
-                <Link
-                  href={stepHref(course.id, summary.next)}
-                  className={buttonClasses("primary", "w-full")}
-                >
-                  Continue
-                  <span className="sr-only">: {summary.next.title}</span>
-                  <ArrowRightIcon className="size-4" />
-                </Link>
-              ) : null}
-              <StartOver
-                courseId={course.id}
-                title={course.title}
-                hasCertificate={Boolean(certificate)}
-              />
-            </div>
-          ) : course.canOpen && first ? (
-            <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
-              <p className="font-medium">Ready when you are</p>
-              <p className="text-small text-text-secondary">
-                Start with &ldquo;{first.title}&rdquo; and work through in order. You can come back
-                to any lesson.
-              </p>
+        <div className="col-span-2 flex flex-col gap-2 xl:col-span-1 xl:col-start-2 xl:items-start xl:self-start">
+          {started && summary?.next ? (
+            <Link
+              href={stepHref(course.id, summary.next)}
+              className={buttonClasses(
+                "primary",
+                "min-h-touch w-full px-4.5 font-semibold xl:w-auto",
+              )}
+            >
+              <PlayIcon className="size-4" />
+              Continue
+              <span className="sr-only">: {summary.next.title}</span>
+            </Link>
+          ) : summary?.state === "completed" ? (
+            liveCertificate ? (
               <Link
-                href={`/courses/${course.id}/lessons/${first.key}`}
-                className={buttonClasses("primary", "w-full")}
+                href={`/certificates/${liveCertificate.reference}`}
+                className={buttonClasses(
+                  "primary",
+                  "min-h-touch w-full px-4.5 font-semibold xl:w-auto",
+                )}
               >
-                Start the course
-                <ArrowRightIcon className="size-4" />
+                View your certificate
               </Link>
-              {certificate && !certificate.revoked ? (
-                <Link
-                  href={`/certificates/${certificate.reference}`}
-                  className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
-                >
-                  You still have your certificate
-                </Link>
-              ) : null}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-5">
+            ) : certificate ? null : (
+              <ActionForm
+                action={issueCertificateAction}
+                submitLabel="Get your certificate"
+                pendingLabel="Checking…"
+                hidden={{ courseId: course.id }}
+                className="flex flex-col gap-2"
+              />
+            )
+          ) : !started && course.canOpen && first ? (
+            <Link
+              href={`/courses/${course.id}/lessons/${first.key}`}
+              className={buttonClasses(
+                "primary",
+                "min-h-touch w-full px-4.5 font-semibold xl:w-auto",
+              )}
+            >
+              <PlayIcon className="size-4" />
+              Start the course
+            </Link>
+          ) : !course.canOpen ? (
+            <div className="flex flex-col gap-1">
               <p className="flex items-center gap-2 font-medium">
                 <LockIcon className="size-4 text-text-muted" />
                 Not open yet
@@ -236,59 +280,144 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
               <p className="text-small text-text-secondary">
                 This course has no lessons yet, or its department isn&apos;t open. Check back soon.
               </p>
-              <Link
-                href={`/departments/${course.department.slug}`}
-                className={buttonClasses("secondary", "w-full")}
-              >
-                Go to {course.department.name}
-              </Link>
             </div>
-          )}
-          <p className="px-1 text-small text-text-muted">
-            You mark each lesson complete yourself, and quizzes are scored automatically. Finishing
-            a course never approves you to serve on its own: that comes from assessments with a
-            trainer.
-          </p>
-        </aside>
-        <div className="flex flex-col gap-10 lg:col-start-1">
-          {course.objectives.length > 0 ? (
-            <section aria-labelledby="objectives-heading" className="flex flex-col gap-3">
-              <h2 id="objectives-heading" className="text-heading font-semibold">
-                What you&apos;ll learn
-              </h2>
-              <ul className="grid gap-2 sm:grid-cols-2">
-                {course.objectives.map((objective) => (
-                  <li key={objective} className="flex gap-3 text-text-secondary">
-                    <span
-                      aria-hidden="true"
-                      className="mt-2.5 size-1.5 shrink-0 rounded-pill bg-[var(--dept)]"
-                    />
-                    {objective}
-                  </li>
-                ))}
-              </ul>
-            </section>
           ) : null}
+          {liveCertificate && summary?.state !== "completed" ? (
+            <Link
+              href={`/certificates/${liveCertificate.reference}`}
+              className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+            >
+              You still have your certificate
+            </Link>
+          ) : null}
+        </div>
+      </section>
 
-          {course.canOpen ? (
-            <section aria-labelledby="outline-heading" className="flex flex-col gap-4">
-              <h2 id="outline-heading" className="text-heading font-semibold">
-                Lessons
-              </h2>
-              <CourseOutline
-                courseId={course.id}
-                modules={course.modules}
-                quizzes={course.quizzes}
-                practicals={course.practicals}
-                progress={lessonProgress ?? undefined}
-                passedQuizKeys={passed}
-                passedPracticalKeys={practicalsPassed}
-              />
-            </section>
-          ) : null}
+      {/* Phones and smaller windows: the lessons first, then About. Wide: side by side, with the
+          panel rising over the line under the cover. */}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_26.25rem] xl:gap-x-12">
+        {course.canOpen ? (
+          <aside className="relative flex min-w-0 flex-col gap-3 xl:col-start-2 xl:row-start-1 xl:-mt-26">
+            {card ? (
+              <Link
+                href={card.href}
+                className="flex items-center gap-3.5 rounded-card border border-border bg-surface p-2 transition-surface hover:bg-hover"
+              >
+                <LessonThumbnail url={card.thumbnail} className="w-28" />
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-semibold">{card.label}</span>
+                  <span className="text-text-secondary">{card.title}</span>
+                </span>
+              </Link>
+            ) : null}
+            <LessonPanel
+              courseId={course.id}
+              modules={course.modules}
+              quizzes={course.quizzes}
+              practicals={course.practicals}
+              questionCounts={questionCounts}
+              progress={lessonProgress ?? undefined}
+              passedQuizKeys={passed}
+              passedPracticalKeys={practicalsPassed}
+              nextKey={summary?.next?.key ?? (started ? undefined : first?.key)}
+              started={started}
+              status={
+                summary?.state === "completed"
+                  ? "You've finished this course"
+                  : summary?.state === "awaiting_assessment"
+                    ? "Awaiting your practical assessment"
+                    : undefined
+              }
+              percent={summary?.percent}
+              label={summary ? courseProgressLabel(summary, totals.required > 0) : undefined}
+            />
+          </aside>
+        ) : null}
+        <div className="min-w-0 xl:col-start-1 xl:row-start-1">
+          <CourseTabs
+            tabs={[
+              {
+                id: "about",
+                label: "About",
+                panel: (
+                  <div className="flex max-w-[40rem] flex-col gap-3.5">
+                    {course.summary ? (
+                      <RichText source={course.summary} className="text-lead text-text-secondary" />
+                    ) : null}
+                    {course.objectives.length > 0 ? (
+                      <>
+                        <h2 className="mt-3 text-heading font-bold">What you&apos;ll learn</h2>
+                        <ul className="flex list-disc flex-col gap-1.5 pl-4.5 text-text-secondary">
+                          {course.objectives.map((objective) => (
+                            <li key={objective}>{objective}</li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : null}
+                    <p className="mt-2 border-t border-border pt-3.5 text-small text-text-muted">
+                      You mark each lesson complete yourself, and quizzes are scored automatically.
+                      Finishing a course never approves you to serve on its own: that comes from
+                      assessments with a trainer. Version {course.versionNumber}.
+                    </p>
+                  </div>
+                ),
+              },
+              ...(summary
+                ? [
+                    {
+                      id: "results",
+                      label: "Quiz results",
+                      panel: (
+                        <div className="flex max-w-[40rem] flex-col gap-2.5">
+                          {attempts.length === 0 ? (
+                            <p className="text-text-secondary">
+                              You haven&apos;t taken a quiz in this course yet. Your results will
+                              show here.
+                            </p>
+                          ) : (
+                            attempts.map((attempt) => (
+                              <Link
+                                key={attempt.id}
+                                href={`/courses/${course.id}/quizzes/${attempt.quizKey}/attempts/${attempt.id}`}
+                                className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface px-4 py-3.5 transition-surface hover:bg-hover"
+                              >
+                                <span className="flex min-w-0 flex-col">
+                                  <span className="font-semibold">
+                                    {course.quizzes.find((quiz) => quiz.key === attempt.quizKey)
+                                      ?.title ?? "A quiz from an earlier version"}
+                                  </span>
+                                  <span className="text-small text-text-muted">
+                                    {attempt.correctCount ?? 0} of {attempt.questionCount}
+                                    {attempt.submittedAt
+                                      ? ` · ${formatDate(attempt.submittedAt)}`
+                                      : ""}
+                                  </span>
+                                </span>
+                                <StatusBadge tone={attempt.passed ? "success" : "neutral"}>
+                                  {attempt.passed ? "Passed" : "Not yet"}
+                                </StatusBadge>
+                              </Link>
+                            ))
+                          )}
+                        </div>
+                      ),
+                    },
+                  ]
+                : []),
+            ]}
+          />
         </div>
       </div>
     </div>
+  );
+}
+
+function Fact({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <li className="flex items-center gap-1.5">
+      {icon}
+      {children}
+    </li>
   );
 }
 

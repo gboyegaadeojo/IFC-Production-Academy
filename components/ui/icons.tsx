@@ -134,6 +134,12 @@ export const MonitorIcon = (props: IconProps) => (
 
 // Admin sidebar groups and controls: Lucide's shapes (ISC licence), drawn in this family.
 
+export const PlayIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M8 5.5v13l10.5-6.5z" fill="currentColor" />
+  </Icon>
+);
+
 export const PlayCircleIcon = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="12" cy="12" r="9" />

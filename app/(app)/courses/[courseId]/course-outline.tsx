@@ -232,7 +232,7 @@ function CheckList({
   );
 }
 
-function LessonMarker({ state }: { state: LessonProgress["state"] }) {
+export function LessonMarker({ state }: { state: LessonProgress["state"] }) {
   switch (state) {
     case "completed":
       return (
