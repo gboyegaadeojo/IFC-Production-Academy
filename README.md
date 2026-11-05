@@ -115,8 +115,10 @@ Done once by the Platform Admin. Keep every secret out of the repo.
 3. **Authentication → SMTP:** host `smtp.resend.com`, port 465, user `resend`, password = a
    Resend API key, sender on a domain verified in Resend. Do this before step 4: the Free plan
    rejects template changes while it uses Supabase's built-in mailer.
-4. **Authentication → Email templates → Magic link** (and Confirm signup): use
-   [supabase/templates/magic-link.html](supabase/templates/magic-link.html).
+4. **Sign-in emails:** the app sends them through Supabase's Send Email hook. See
+   [the notifications runbook](docs/runbooks/notifications.md#sign-in-emails). Until the hook is
+   on, use [supabase/templates/magic-link.html](supabase/templates/magic-link.html) under
+   Authentication → Email templates → Magic link (and Confirm signup).
 5. **First Platform Admin:** sign in once, then grant the `platform_admin` role to that account
    with SQL (an insert into `public.user_roles` with `department_id` null). Everyone after that is
    granted roles in the app.
