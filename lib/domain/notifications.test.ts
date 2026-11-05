@@ -66,7 +66,34 @@ describe("notificationEmail", () => {
       "https://academy.example.org/",
     );
     expect(email.html).not.toContain("<svg");
-    expect(email.html).toContain('src="https://academy.example.org/icons/icon-192.png"');
+    expect(email.html).toContain('src="https://academy.example.org/brand/icon"');
+  });
+
+  it("shows the details box, escaped, and lists them in the plain text", () => {
+    const email = notificationEmail(
+      {
+        kind: "serving_reminder",
+        title: "Serving soon",
+        body: "Fake",
+        link: "/schedule",
+        details: [
+          { label: "When", value: "Sun Nov 8, 9:00 AM" },
+          { label: "Role", value: "<Camera 2>" },
+        ],
+      },
+      "https://academy.example.org",
+    );
+    expect(email.html).toContain(">When</td>");
+    expect(email.html).toContain("&lt;Camera 2&gt;");
+    expect(email.text).toContain("Role: <Camera 2>");
+  });
+
+  it("leaves the box out when there are no details", () => {
+    const email = notificationEmail(
+      { kind: "mentor_note", title: "New note", body: "Fake", link: "/mentoring", details: [] },
+      "https://academy.example.org",
+    );
+    expect(email.html).not.toContain("border-radius:18px");
   });
 
   it("falls back to a plain button for an unknown kind", () => {

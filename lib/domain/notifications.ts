@@ -237,7 +237,13 @@ export function emailButtonLabel(kind: string): string {
  * emails off.
  */
 export function notificationEmail(
-  notification: { kind?: string; title: string; body: string; link: string | null },
+  notification: {
+    kind?: string;
+    title: string;
+    body: string;
+    link: string | null;
+    details?: readonly { label: string; value: string }[] | null;
+  },
   siteUrl: string,
   appName = "IFC Production Academy",
 ): { subject: string; text: string; html: string } {
@@ -245,10 +251,14 @@ export function notificationEmail(
   const settings = notificationUrl(siteUrl, "/notifications");
   const button = emailButtonLabel(notification.kind ?? "");
   const subject = notification.title.slice(0, 200);
+  const details = (notification.details ?? []).filter(
+    (row) => typeof row?.label === "string" && typeof row?.value === "string",
+  );
   const text = [
     notification.title,
     "",
     notification.body,
+    ...(details.length > 0 ? ["", ...details.map((row) => `${row.label}: ${row.value}`)] : []),
     "",
     `${button}: ${url}`,
     "",
@@ -259,8 +269,9 @@ export function notificationEmail(
     preheader: notification.body,
     title: notification.title,
     paragraphs: notification.body ? [notification.body] : [],
+    details,
     button: { label: button, url },
-    iconUrl: `${siteUrl.replace(/\/+$/, "")}/icons/icon-192.png`,
+    iconUrl: `${siteUrl.replace(/\/+$/, "")}/brand/icon`,
     footer: {
       text: "You can choose which emails you get on your",
       link: { label: "notifications page", url: settings },
@@ -294,7 +305,7 @@ export function onboardingEmail(
     title: email.subject,
     paragraphs,
     button: null,
-    iconUrl: `${siteUrl.replace(/\/+$/, "")}/icons/icon-192.png`,
+    iconUrl: `${siteUrl.replace(/\/+$/, "")}/brand/icon`,
     footer: email.hasAccount
       ? {
           text: "You can choose which emails you get on your",

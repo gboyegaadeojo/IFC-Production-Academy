@@ -129,7 +129,7 @@ export function signInEmail(
       title: copy.title,
       paragraphs: [copy.body],
       button: { label: copy.button, url },
-      iconUrl: `${site}/icons/icon-192.png`,
+      iconUrl: `${site}/brand/icon`,
       footer: { text: footer },
       appName,
     }),

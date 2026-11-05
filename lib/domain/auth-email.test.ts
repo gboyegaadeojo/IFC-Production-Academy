@@ -94,6 +94,7 @@ describe("the sign-in email", () => {
     );
     expect(email.html).toContain(">Sign in</a>");
     expect(email.html).not.toContain("<svg");
+    expect(email.html).toContain('src="https://academy.example.org/brand/icon"');
     expect(email.text).toContain("token_hash=fake-hash");
   });
 
