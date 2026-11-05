@@ -20,7 +20,9 @@
     "bindings": [{ "name": "LIVE_ROOM", "class_name": "LiveRoom" }],
   },
   "migrations": [{ "tag": "live-room-v1", "new_sqlite_classes": ["LiveRoom"] }],
-  "placement": { "mode": "smart" },
+  // Beside the database, because a page makes many calls to it and the visitor's trip is only one
+  // (docs/decisions/2026-11-05-performance.md). Move this if the Supabase project ever moves.
+  "placement": { "region": "aws:us-east-1" },
   "observability": {
     "enabled": true,
   },
