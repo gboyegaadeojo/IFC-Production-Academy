@@ -7,6 +7,7 @@ import {
   NOTIFICATION_KIND_LABELS,
   NOTIFICATION_KINDS,
   relativeTime,
+  emailButtonLabel,
   notificationEmail,
   notificationUrl,
   onboardingEmail,
@@ -35,12 +36,47 @@ describe("notificationEmail", () => {
       { title: "You're scheduled: <Camera 2>", body: "Fake service & more", link: "/schedule" },
       "https://academy.example.org",
     );
-    expect(email.subject).toBe("IFC Production Academy: You're scheduled: <Camera 2>");
+    expect(email.subject).toBe("You're scheduled: <Camera 2>");
     expect(email.html).toContain("&lt;Camera 2&gt;");
     expect(email.html).toContain("Fake service &amp; more");
     expect(email.html).not.toContain("<Camera 2>");
     expect(email.text).toContain("https://academy.example.org/schedule");
     expect(email.text).toContain("https://academy.example.org/notifications");
+  });
+
+  it("has one button that says what it does, and the message as the preview line", () => {
+    const email = notificationEmail(
+      {
+        kind: "join_requested",
+        title: "Riley asked to join",
+        body: "Fake body",
+        link: "/admin/members",
+      },
+      "https://academy.example.org",
+    );
+    expect(email.html).toContain(">Review the request</a>");
+    expect(email.html).toContain('href="https://academy.example.org/admin/members"');
+    expect(email.html).toMatch(/display:none[^>]*>Fake body</);
+    expect(email.text).toContain("Review the request: https://academy.example.org/admin/members");
+  });
+
+  it("uses no SVG, which email programs drop, and shows the app's icon", () => {
+    const email = notificationEmail(
+      { kind: "learning_nudge", title: "Keep going", body: "Fake", link: "/home" },
+      "https://academy.example.org/",
+    );
+    expect(email.html).not.toContain("<svg");
+    expect(email.html).toContain('src="https://academy.example.org/icons/icon-192.png"');
+  });
+
+  it("falls back to a plain button for an unknown kind", () => {
+    expect(emailButtonLabel("something-new")).toBe("Open the Academy");
+  });
+
+  it("labels every kind's button", () => {
+    for (const kind of NOTIFICATION_KINDS) {
+      expect(emailButtonLabel(kind)).not.toBe("Open the Academy");
+    }
   });
 });
 
@@ -57,8 +93,9 @@ describe("onboardingEmail", () => {
       site,
     );
     expect(email.subject).toBe("Hi Riley");
-    expect(email.html).toContain("<p>Welcome &lt;b&gt;Riley&lt;/b&gt;<br>Glad you&#39;re here</p>");
-    expect(email.html).toContain("<p>See you Sunday</p>");
+    expect(email.html).toContain("Welcome &lt;b&gt;Riley&lt;/b&gt;<br>Glad you&#39;re here</p>");
+    expect(email.html).toContain(">See you Sunday</p>");
+    expect(email.html).not.toContain("<b>Riley</b>");
     expect(email.text).toContain("See you Sunday");
   });
 

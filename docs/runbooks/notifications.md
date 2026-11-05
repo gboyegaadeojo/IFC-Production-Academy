@@ -5,6 +5,15 @@ being scheduled, a practical assessment result, a mentoring pairing, or an SOP t
 due for review. Everyone sees theirs in the app under **Notifications** (account menu), and
 chooses which kinds reach their phone and their email.
 
+## What they look like
+
+Every email uses the Calm design in `lib/domain/email-design.ts`: the app's icon, the title as the
+subject, the message as the inbox preview, and one button named for what it does
+(`emailButtonLabel`). The sign-in email is a copy of the same design in
+`supabase/templates/magic-link.html`. **Supabase doesn't read that file in production:** after
+changing it, paste it into Supabase (Authentication → Email templates → Magic link, and Confirm
+signup).
+
 ## Which way each one travels
 
 Set in `private.route_notification()`, and decided in `docs/decisions/2026-11-05-alerts.md`:
