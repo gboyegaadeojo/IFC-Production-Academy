@@ -22,6 +22,10 @@ The main pages' loading blocks live in `loading.tsx`, so they can appear before 
 
 Learner courses, course summaries, passed quizzes and practicals, and progress are read once while a page is built (`perRequestBatch`, `lib/domain/per-request.ts`). This lasts for one page build only, so nothing is held between visits or people. Cloudflare's free plan allows 50 calls per page, so anything Training reads should use this.
 
+### Mark complete changes on the tap
+
+The button shows the new state straight away and goes back, with a message, if the save fails. Closing the tab in the moment after the tap could lose that one tick, and the person can tap again. Tests that leave the page right after the tap should wait for the "Marked complete." message.
+
 ### Left as it is
 
 - **The sign-in key.** The app fetches it close to once per page, and we don't know why. It now takes about 14 ms from beside the database, which doesn't justify changing sign-in.
