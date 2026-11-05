@@ -25,6 +25,7 @@ export type AdminSectionKey =
   | "reports"
   | "mentoring"
   | "people"
+  | "alerts"
   | "departments"
   | "audit"
   | "onboarding"
@@ -143,6 +144,7 @@ const SECTIONS: readonly AdminSection[] = [
   },
   { key: "reports", href: "/admin/reports", label: "Reports", group: "Training Academy" },
   { key: "people", href: "/admin/people", label: "People and roles", group: "People & Teams" },
+  { key: "alerts", href: "/admin/alerts", label: "Phone alerts", group: "People & Teams" },
   {
     key: "onboarding",
     href: "/admin/onboarding",
@@ -241,6 +243,8 @@ export function canOpenAdminSection(
       );
     case "people":
       return hasCapability(grants, "user.manage") || hasCapability(grants, "role.assign");
+    case "alerts":
+      return hasCapabilityAnywhere(grants, "alerts.view");
     case "departments":
       return hasCapability(grants, "department.manage");
     case "audit":

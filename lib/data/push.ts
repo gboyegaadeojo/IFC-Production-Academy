@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/data/database.types";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { publicEnv } from "@/lib/env";
+import { toAlertStatus, type AlertStatus } from "@/lib/domain/alerts";
 import { pushMessageFor, sendPush, type PushMessage, type VapidKeys } from "@/lib/domain/web-push";
 
 /**
@@ -118,6 +119,52 @@ export async function sendTestAlert(endpoint: string): Promise<"sent" | "gone" |
 export type MyDevice = { id: string; label: string; addedAt: string };
 
 /** Your devices with alerts on, newest first (RLS shows only your own). */
+export type TeamAlertRow = {
+  userId: string;
+  displayName: string;
+  departments: string[];
+  status: AlertStatus;
+  devices: string[];
+  lastSentAt: string | null;
+};
+
+/** Who on the teams this person may see has alerts on (alerts.view, checked in the database). */
+export async function getTeamAlertStatus(): Promise<TeamAlertRow[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("team_alert_status");
+  if (error) {
+    throw new Error("Could not load phone alerts", { cause: error.code });
+  }
+  return data.map((row) => ({
+    userId: row.user_id,
+    displayName: row.display_name,
+    departments: row.departments,
+    status: toAlertStatus(row.status),
+    devices: row.devices,
+    lastSentAt: row.last_sent_at,
+  }));
+}
+
+/** Whether to ask this person to set up alerts: on a team, no phone on, no exception. */
+export async function getAlertsSetupNeeded(): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("alerts_setup_needed");
+  return !error && data === true;
+}
+
+/** Whether this person has said their phone can't do alerts. */
+export async function getMyAlertException(): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.from("alert_exceptions").select("user_id").maybeSingle();
+  return !error && data !== null;
+}
+
+export async function setAlertsUnavailable(unavailable: boolean): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_alerts_unavailable", { p_unavailable: unavailable });
+  return !error;
+}
+
 export async function getMyDevices(): Promise<MyDevice[]> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase

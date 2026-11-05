@@ -39,6 +39,7 @@ const ADMIN = [
   "/admin/onboarding/people",
   "/admin/onboarding/follow-ups",
   "/admin/people",
+  "/admin/alerts",
 ];
 const DARK = new Set([
   "/home",

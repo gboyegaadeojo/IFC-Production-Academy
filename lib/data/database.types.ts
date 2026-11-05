@@ -213,6 +213,12 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      alert_exceptions: {
+        Row: { user_id: string; noted_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       course_assignments: {
         Row: {
           id: string;
@@ -1781,6 +1787,19 @@ export type Database = {
       remove_course_assignment: {
         Args: { p_course_id: string; p_user_id: string };
         Returns: undefined;
+      };
+      alerts_setup_needed: { Args: Record<string, never>; Returns: boolean };
+      set_alerts_unavailable: { Args: { p_unavailable: boolean }; Returns: undefined };
+      team_alert_status: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          display_name: string;
+          departments: string[];
+          status: string;
+          devices: string[];
+          last_sent_at: string | null;
+        }[];
       };
       assignable_people: {
         Args: { p_course_id: string };

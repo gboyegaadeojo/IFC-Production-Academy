@@ -93,7 +93,7 @@ export const HELP_PAGES: readonly HelpPage[] = [
     summary: "Membership requests, invitations, roles, and departments.",
     section: "For leaders",
     source: "docs/guides/admin-people.md",
-    adminSections: ["members", "invitations", "people", "departments"],
+    adminSections: ["alerts", "members", "invitations", "people", "departments"],
   },
   {
     slug: "admin-curriculum",

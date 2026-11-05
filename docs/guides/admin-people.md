@@ -19,6 +19,19 @@ Use **Invitations** to bring someone straight into a department. They join when 
 
 To stop a link, choose **Revoke**. It stops working straight away, and people who already joined stay members.
 
+## Phone alerts
+
+**Phone alerts** shows who on your teams has alerts on their phone, with anyone to follow up first. Department Leaders see their own departments. Production Directors and Platform Admins see everyone.
+
+| Shown as | What it means |
+| --- | --- |
+| **On** | Alerts are on for a phone or tablet |
+| **Not on** | No alerts on any device yet |
+| **Computer only** | Alerts are on a computer but not a phone |
+| **Phone can't** | They've said their phone can't do alerts. They get emails instead |
+
+Only each person can turn alerts on, so someone listed as **Not on** may need a hand. On an iPhone, the Academy has to be on the Home Screen first. Someone can also switch alerts off in their phone's settings without the Academy knowing until an alert fails to reach them, so **On** means the last we heard.
+
 ## People and roles
 
 **People and roles** lists everyone who has signed in, 50 to a page. Open a person to:

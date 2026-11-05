@@ -3,9 +3,10 @@ import { Suspense } from "react";
 import { ActionForm } from "@/components/ui/action-form";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { requireActiveUser } from "@/lib/data/auth";
-import { getMyDevices } from "@/lib/data/push";
+import { getAlertsSetupNeeded, getMyAlertException, getMyDevices } from "@/lib/data/push";
 import { formatDate } from "@/lib/domain/dates";
-import { removeDeviceAction } from "./actions";
+import { Button } from "@/components/ui/button";
+import { removeDeviceAction, setAlertsUnavailableAction } from "./actions";
 import { DeviceAlerts } from "./device-alerts";
 import { InstallCard } from "./install-card";
 
@@ -42,6 +43,10 @@ export default function GetTheAppPage() {
         </p>
       </section>
 
+      <Suspense fallback={null}>
+        <CantTurnOn />
+      </Suspense>
+
       <Suspense
         fallback={
           <div aria-busy="true" className="flex flex-col gap-3">
@@ -54,6 +59,45 @@ export default function GetTheAppPage() {
         <Devices />
       </Suspense>
     </div>
+  );
+}
+
+/** For phones that can't do alerts, so the request stops and leaders know (decision 2026-11-05). */
+async function CantTurnOn() {
+  await requireActiveUser();
+  const [needed, excepted] = await Promise.all([getAlertsSetupNeeded(), getMyAlertException()]);
+  if (excepted) {
+    return (
+      <form
+        action={setAlertsUnavailableAction.bind(null, false)}
+        className="flex flex-col items-start gap-2 rounded-card border border-border bg-surface p-4"
+      >
+        <p className="text-small text-text-secondary">
+          You&apos;ve said your phone can&apos;t do alerts, so your leaders know and you&apos;ll get
+          emails instead.
+        </p>
+        <Button type="submit" variant="secondary" size="sm">
+          My phone can do it now
+        </Button>
+      </form>
+    );
+  }
+  if (!needed) {
+    return null;
+  }
+  return (
+    <form
+      action={setAlertsUnavailableAction.bind(null, true)}
+      className="flex flex-col items-start gap-2 rounded-card border border-border bg-surface p-4"
+    >
+      <p className="text-small text-text-secondary">
+        Alerts need iOS 16.4 or later on an iPhone, or a recent Android phone. If yours can&apos;t
+        do it, let us know. Your leaders will see that, and you&apos;ll get emails instead.
+      </p>
+      <Button type="submit" variant="secondary" size="sm">
+        My phone can&apos;t do this
+      </Button>
+    </form>
   );
 }
 
