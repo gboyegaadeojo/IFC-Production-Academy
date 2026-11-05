@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  courseSections,
   courseSteps,
   courseTotals,
   flattenLessons,
@@ -63,6 +64,35 @@ describe("lessonPosition", () => {
 
   it("returns null for a lesson that isn't in this version", () => {
     expect(lessonPosition(modules, "zzz")).toBeNull();
+  });
+});
+
+describe("courseSections", () => {
+  const quiz = (key: string, afterModuleId: string | null) => ({
+    key,
+    title: key,
+    isRequired: true,
+    afterModuleId,
+  });
+  const twoModules: OutlineModule[] = [
+    { id: "second", title: "Second", summary: "", sortOrder: 2, lessons: [] },
+    { id: "first", title: "First", summary: "", sortOrder: 1, lessons: [] },
+  ];
+
+  it("puts modules in teaching order, each with what follows it", () => {
+    const sections = courseSections(twoModules, [quiz("q", "first")], [quiz("p", "second")]);
+    expect(sections.modules.map((s) => [s.module.id, s.checks.map((c) => c.key)])).toEqual([
+      ["first", ["q"]],
+      ["second", ["p"]],
+    ]);
+    expect(sections.modules[0]?.checks[0]?.kind).toBe("quiz");
+    expect(sections.modules[1]?.checks[0]?.kind).toBe("practical");
+    expect(sections.endChecks).toEqual([]);
+  });
+
+  it("closes the course with anything not placed after a module", () => {
+    const sections = courseSections(twoModules, [quiz("gone", "removed")], [quiz("final", null)]);
+    expect(sections.endChecks.map((c) => c.key)).toEqual(["gone", "final"]);
   });
 });
 

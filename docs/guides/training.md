@@ -43,11 +43,13 @@ On Training, each department you belong to has a ring showing how many of its le
 
 ## Taking a course
 
-Open a course and choose **Start the course**, or **Continue** to pick up where you left off.
+Open a course to see its cover, how long it takes, and what it covers. Choose **Start the course**, or **Continue** to pick up where you left off.
+
+On the course page, **About** says what you'll learn and **Quiz results** lists the quizzes you've taken. The **Lessons** panel shows your progress and every lesson in order, with each quiz and practical in its place. On a phone, the lessons come first.
 
 ### Starting over
 
-Open a course you've started and choose **Start over** to begin it again from the first lesson. The app warns you first and asks you to confirm.
+Open a course you've started, choose **Actions**, then **Start over** to begin it again from the first lesson. The app warns you first and asks you to confirm.
 
 It clears your completed lessons, your place in each video, and your quiz results for that course, so you'll retake its quizzes. Your certificate, any practical you've passed, and whether you're approved to serve all stay as they are. Leaders' reports show your new progress. You can't undo it yourself, but your old results are kept on record.
 

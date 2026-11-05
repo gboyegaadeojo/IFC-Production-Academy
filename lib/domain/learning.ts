@@ -11,6 +11,8 @@ export type OutlineLesson = {
   isRequired: boolean;
   estimatedMinutes: number | null;
   sortOrder: number;
+  /** The video's still image, for the course page. Null when there's no video or no still. */
+  thumbnailUrl?: string | null;
 };
 
 export type OutlineModule = {
@@ -117,6 +119,37 @@ export type CourseQuiz = {
 export type CoursePractical = CourseQuiz;
 
 export type StepKind = "lesson" | "quiz" | "practical";
+
+export type CourseCheck = CourseQuiz & { kind: "quiz" | "practical" };
+
+/**
+ * Each module with the quizzes and practicals placed after it, then those that close the course. A
+ * check placed after a module that's no longer in this version closes the course.
+ */
+export function courseSections(
+  modules: readonly OutlineModule[],
+  quizzes: readonly CourseQuiz[],
+  practicals: readonly CoursePractical[],
+): {
+  modules: { module: OutlineModule; checks: CourseCheck[] }[];
+  endChecks: CourseCheck[];
+} {
+  const checks: CourseCheck[] = [
+    ...quizzes.map((quiz) => ({ ...quiz, kind: "quiz" as const })),
+    ...practicals.map((practical) => ({ ...practical, kind: "practical" as const })),
+  ];
+  const ordered = orderedOutline(modules);
+  const moduleIds = new Set(ordered.map((module) => module.id));
+  return {
+    modules: ordered.map((module) => ({
+      module,
+      checks: checks.filter((check) => check.afterModuleId === module.id),
+    })),
+    endChecks: checks.filter(
+      (check) => check.afterModuleId === null || !moduleIds.has(check.afterModuleId),
+    ),
+  };
+}
 
 export type CourseStep = { kind: StepKind; key: string; title: string; isRequired: boolean };
 

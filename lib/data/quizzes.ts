@@ -224,6 +224,30 @@ export type MyAttempt = AttemptSummary & {
   passPercent: number;
 };
 
+/** The learner's finished attempts in one course, newest first, across every version. */
+export async function getMyCourseAttempts(userId: string, courseId: string): Promise<MyAttempt[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("quiz_attempts")
+    .select(ATTEMPT_COLUMNS)
+    .eq("user_id", userId)
+    .eq("course_id", courseId)
+    .not("submitted_at", "is", null)
+    .order("submitted_at", { ascending: false });
+  if (error) {
+    throw new Error("Could not load quiz results", { cause: error.code });
+  }
+  return data.map((row) => ({
+    ...toSummary(row),
+    quizKey: row.quiz_key,
+    courseId: row.course_id,
+    courseVersionId: row.course_version_id,
+    questionCount: row.question_count,
+    correctCount: row.correct_count,
+    passPercent: row.pass_percent,
+  }));
+}
+
 /** One of the learner's own attempts (RLS). Null if it isn't theirs. */
 export async function getMyAttempt(userId: string, attemptId: string): Promise<MyAttempt | null> {
   const supabase = await createSupabaseServerClient();

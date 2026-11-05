@@ -49,7 +49,10 @@ for (const viewport of VIEWPORTS) {
     await capture(page, `course-member-${viewport.name}`);
 
     // Avery may already have opened the lesson (other tests), so either button may show.
-    await page.getByRole("link", { name: /^(Start the course|Continue)/ }).click();
+    await page
+      .getByRole("link", { name: /^(Start the course|Continue)/ })
+      .first()
+      .click();
     await expect(page.getByRole("heading", { level: 1, name: "Sample lesson" })).toBeVisible();
     await expect(page.getByText("Lesson 1 of 1")).toBeVisible();
     await expect(page.getByText("Fake lesson text for local development.")).toBeVisible();
