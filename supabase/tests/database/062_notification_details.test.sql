@@ -41,15 +41,15 @@ select ok(
 
 -- A moved service lists its new time, and a cancelled one says so.
 select private.notify('ac000000-0000-4000-8000-000000000001', 'service_changed', 'Fake moved', 'Fake', '/schedule',
-  'service_changed:' || (select id from public.events where title = 'Fake detail service') || ':moved');
+  'service_changed:' || (select id from public.events where title = 'Fake detail service') || ':test-moved');
 select is(
-  (select details -> 1 ->> 'label' from public.notifications where dedupe_key like 'service_changed:%:moved'),
+  (select details -> 1 ->> 'label' from public.notifications where dedupe_key like 'service_changed:%:test-moved'),
   'New time', 'a moved service shows its new time');
 update public.events set cancelled_at = now() where title = 'Fake detail service';
 select private.notify('ac000000-0000-4000-8000-000000000001', 'service_changed', 'Fake cancelled', 'Fake', '/schedule',
-  'service_changed:' || (select id from public.events where title = 'Fake detail service') || ':cancelled');
+  'service_changed:' || (select id from public.events where title = 'Fake detail service') || ':test-cancelled');
 select is(
-  (select alert_body from public.notifications where dedupe_key like 'service_changed:%:cancelled'),
+  (select alert_body from public.notifications where dedupe_key like 'service_changed:%:test-cancelled'),
   'It''s cancelled.', 'a cancelled service says so on the phone');
 
 -- Anything it can't look up still gets written, without details.
