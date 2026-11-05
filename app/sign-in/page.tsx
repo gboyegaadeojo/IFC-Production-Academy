@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { IfcMark } from "@/components/brand";
 import { buttonClasses } from "@/components/ui/button";
-import { signOutAction } from "@/app/auth/actions";
 import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
 import { pcoSignInEnabled } from "@/lib/data/planning-center-auth";
@@ -158,7 +157,7 @@ async function SignInContent({
       ) : null}
       {user ? (
         // Signed in but suspended or deactivated: let them leave this device cleanly.
-        <form action={signOutAction}>
+        <form action="/auth/sign-out" method="post">
           <button type="submit" className={buttonClasses("secondary", "w-full")}>
             Sign out
           </button>

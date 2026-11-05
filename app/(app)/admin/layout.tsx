@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
-import { signOutAction } from "@/app/auth/actions";
 import { Drawer } from "@/components/ui/drawer";
 import { getCurrentUser, requireActiveUser } from "@/lib/data/auth";
 import { getAdminNavCounts } from "@/lib/data/admin/overview";
@@ -67,7 +66,6 @@ async function Navigation() {
     planningCenter: planningCenter.linked,
     showAdmin: true,
     unread,
-    signOut: signOutAction,
   };
   const collapsed = cookieStore.get(ADMIN_SIDEBAR_COOKIE)?.value === "collapsed";
 

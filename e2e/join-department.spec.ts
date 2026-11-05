@@ -55,6 +55,9 @@ test("signing out ends the session", async ({ page }, testInfo) => {
   await openAccountMenu(page);
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL(/\/sign-in/);
+  // In one go, with no error page on the way (a redirecting server action used to crash here).
+  await expect(page.getByRole("heading", { name: "Something went wrong" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Email me a sign-in link" })).toBeVisible();
 
   await page.goto("/home");
   await expect(page).toHaveURL(/\/sign-in/);

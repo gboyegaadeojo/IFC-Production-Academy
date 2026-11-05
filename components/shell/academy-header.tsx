@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { cache, Suspense } from "react";
-import { signOutAction } from "@/app/auth/actions";
 import { Wordmark } from "@/components/brand";
 import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
@@ -99,7 +98,6 @@ async function Account({ placement }: { placement: "header" | "sidebar" }) {
           planningCenter={planningCenter.linked}
           showAdmin={showAdmin}
           unread={unread}
-          signOut={signOutAction}
           placement={placement}
         />
       </div>
