@@ -20,7 +20,7 @@
     "bindings": [{ "name": "LIVE_ROOM", "class_name": "LiveRoom" }],
   },
   "migrations": [{ "tag": "live-room-v1", "new_sqlite_classes": ["LiveRoom"] }],
-  // Trial: back to Smart Placement, to compare slow starts with running beside the database
+  // Not pinned beside the database: that made about 1 request in 25 take over a second
   // (docs/decisions/2026-11-05-performance.md).
   "placement": { "mode": "smart" },
   "observability": {
