@@ -327,6 +327,23 @@ test("the side bar's links and account never overlap, at any width", async ({ pa
   }
 });
 
+test("the side bar's account menu opens above the page, not behind it", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await signInByEmail(page, "avery.volunteer@example.com");
+  // Course posters lift on hover, so each is its own layer; the menu must still cover them.
+  await page.goto("/courses");
+  await openAccountMenu(page);
+  const mentoring = page.getByRole("link", { name: "Mentoring" });
+  await expect(mentoring).toBeVisible();
+  const box = await mentoring.boundingBox();
+  expect(box).not.toBeNull();
+  const onTop = await page.evaluate(
+    ({ x, y }) => document.elementFromPoint(x, y)?.closest("a")?.textContent ?? "",
+    { x: box!.x + box!.width - 8, y: box!.y + box!.height / 2 },
+  );
+  expect(onTop).toContain("Mentoring");
+});
+
 test("Help and guides, for design review", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/help");
