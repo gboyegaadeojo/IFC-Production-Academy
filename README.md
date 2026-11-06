@@ -1,161 +1,126 @@
 # IFC Production Academy
 
-Training and readiness for the production ministry at Immanuel Fellowship Church, Winnipeg.
-Volunteers join departments, work through three levels, and are approved to serve by a leader.
+**Learn it. Serve it.** A training and serving app for church production teams, built for the
+production ministry at Immanuel Fellowship Church in Winnipeg.
 
-- Requirements: [docs/SPEC.md](docs/SPEC.md)
-- How we build: [CLAUDE.md](CLAUDE.md)
-- Guides for new people: in the app at `/help`, from [docs/guides/](docs/guides/README.md) and [docs/runbooks/](docs/runbooks/)
+Volunteers learn their role through short video lessons, quizzes and hands-on practicals, see when
+they're serving, and work through their position's checklist on Sunday, all in one place. It runs
+in the browser on phones, tablets and computers, and installs like an app without an app store.
 
-> This repository is public. Never commit secrets, real volunteer data, or YouTube links.
-> See "Security rules" in CLAUDE.md.
+![The Training page on a computer](docs/images/training-web.png)
 
-## Stack
+## What it does
 
-Next.js (App Router, TypeScript strict) on Cloudflare Workers via `@opennextjs/cloudflare`;
-Supabase (Postgres with row-level security, Auth, Storage); Resend for email; Tailwind CSS driven
-by design tokens; Vitest, Playwright, and pgTAP for tests.
+**For volunteers**
 
-## Local setup
+- **Training:** courses for each department, in three levels. Each course has video lessons, a
+  quiz, and a practical where a trainer watches you do the job.
+- **Approved to serve:** passing the practical for a role approves you for it, automatically.
+  Watching videos alone never does.
+- **Schedule:** when you're serving, from Planning Center, with reminders to reply, cover requests
+  and days away.
+- **Checklist:** your position's pre-service checklist, ticked together live with the rest of the
+  team.
+- **SOPs:** the team's procedures in one searchable library.
+- **Notifications:** in the app, by email, and as phone alerts, with simple choices for each.
 
-You need **Node.js 24** and **Docker Desktop** (for the local Supabase stack).
+**For leaders**
+
+- Build and publish your own department's courses, with every version kept.
+- See who's learning and who's ready, pair mentors, and welcome new people.
+- Team leaders decide who serves. The app shows whether each person is trained or still learning,
+  and never blocks anyone.
+
+**On the day**
+
+- A Service Dashboard for the producer and the booth's wall TV.
+
+| On a phone                                                                       | The Sunday checklist                                   |
+| -------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| <img src="docs/images/training-phone.png" alt="Training on a phone" width="260"> | ![The Sunday checklist](docs/images/checklist-web.png) |
+
+More screens: [a course](docs/images/course-web.png) and [the schedule](docs/images/schedule-web.png).
+The people and services in these pictures are made up.
+
+## How it works
+
+1. **Join** a department. A leader welcomes you in. Any course is open to try.
+2. **Learn** through lessons and quizzes. Quizzes are scored by the app.
+3. **Show it** in a practical. The trainer ticks a checklist, and the leader's rule decides the
+   result.
+4. **Approved to serve** for that role, as soon as the practical is passed.
+
+Finishing a course, passing a practical and being approved to serve are kept as separate records.
+Departments, levels and courses are set up in the app, so adding one needs no code.
+
+## Built with
+
+[Next.js](https://nextjs.org) and TypeScript, hosted on
+[Cloudflare Workers](https://workers.cloudflare.com); [Supabase](https://supabase.com) for the
+database, sign-in and files; [Resend](https://resend.com) for email; Tailwind CSS; Vitest and
+Playwright for tests. It connects to Planning Center, YouTube, Google Drive, phone alerts and
+calendars, and it's designed to run on free plans.
+
+## Try it on your computer
+
+You need [Node.js 24](https://nodejs.org) and [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
 ```bash
 npm ci
-npm run db:start          # starts Supabase in Docker, applies migrations and fake seed data
+npm run db:start          # starts a local database with made-up people and courses
 cp .env.example .env.local
 npx supabase status -o env
 ```
 
-Copy `API_URL` into `NEXT_PUBLIC_SUPABASE_URL` and `PUBLISHABLE_KEY` (or `ANON_KEY` on older CLI
-versions) into `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in `.env.local`. Then:
+Copy `API_URL` into `NEXT_PUBLIC_SUPABASE_URL`, and `PUBLISHABLE_KEY` (or `ANON_KEY`) into
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, in `.env.local`. Then:
 
 ```bash
-npm run dev               # http://localhost:3000
+npm run dev               # open http://localhost:3000
 ```
 
-### Signing in locally
+**Signing in:** use the email link form. The email never leaves your computer: open Mailpit at
+<http://127.0.0.1:54324> and choose the link. Sign in as one of these made-up people:
 
-Use the email link form. Emails never leave your machine: open **Mailpit** at
-<http://127.0.0.1:54324> and click the link. Use port 3000, because links point at
-`http://localhost:3000`.
+| Email                         | Who                               |
+| ----------------------------- | --------------------------------- |
+| `avery.volunteer@example.com` | Volunteer in Camera Operations    |
+| `blake.volunteer@example.com` | Volunteer who asked to join Audio |
+| `casey.leader@example.com`    | Leader of Camera Operations       |
+| `devon.leader@example.com`    | Leader of Audio Engineering       |
+| `emery.director@example.com`  | Production Director               |
+| `frankie.admin@example.com`   | Administrator                     |
 
-The seed has six obviously fake people you can sign in as:
+Any other address signs you up as a new volunteer.
 
-| Email                         | Role                                   |
-| ----------------------------- | -------------------------------------- |
-| `avery.volunteer@example.com` | Volunteer, member of Camera Operations |
-| `blake.volunteer@example.com` | Volunteer, asked to join Audio         |
-| `casey.leader@example.com`    | Department Leader, Camera Operations   |
-| `devon.leader@example.com`    | Department Leader, Audio Engineering   |
-| `emery.director@example.com`  | Production Director                    |
-| `frankie.admin@example.com`   | Platform Administrator                 |
+### Useful commands
 
-Any other address creates a new volunteer. Sign-in is by email link only (decided 2026-10-30).
+| Command                                 | What it does                        |
+| --------------------------------------- | ----------------------------------- |
+| `npm run dev`                           | Run the app locally                 |
+| `npm test`                              | Unit tests                          |
+| `npm run test:db`                       | Database tests (needs `db:start`)   |
+| `npm run test:e2e`                      | Browser tests on desktop and mobile |
+| `npm run lint` / `typecheck` / `format` | Code checks                         |
+| `npm run db:reset`                      | Rebuild the local database          |
 
-Other local tools: Supabase Studio at <http://127.0.0.1:54323>, and `/dev/tokens` for the design
-token preview (development only).
+## Making it yours
 
-## Scripts
+- **Your departments and courses** are set up in the app's Admin area, not in code.
+- **Your name and logo:** Admin → Branding.
+- **Planning Center, email, phone alerts, a video library and the Service Dashboard** are each
+  optional, and stay off until you set them up.
+- **Putting it online:** follow [docs/deployment.md](docs/deployment.md).
 
-| Command                                 | What it does                                                       |
-| --------------------------------------- | ------------------------------------------------------------------ |
-| `npm run dev`                           | Next.js dev server                                                 |
-| `npm run lint` / `typecheck` / `format` | ESLint, TypeScript, Prettier                                       |
-| `npm test`                              | Unit tests for business rules (`lib/domain`)                       |
-| `npm run test:db`                       | pgTAP tests for row-level security (needs `db:start`)              |
-| `npm run test:e2e`                      | Playwright, desktop and mobile (needs `db:start` and `.env.local`) |
-| `npm run db:reset`                      | Rebuild the local database from migrations and seed                |
-| `npm run db:types`                      | Regenerate `lib/data/database.types.ts` from the local schema      |
-| `npm run preview`                       | Build for Cloudflare and run it locally in Workers                 |
-| `npm run deploy`                        | Build and deploy to Cloudflare                                     |
+If you'd like to use the Academy at your church, open an issue and say hello. There's no licence
+yet, so please ask before reusing the code.
 
-If port 3000 is busy, `E2E_PORT=3100 npm run test:e2e` runs the signed-out tests; the sign-in
-tests need port 3000 and skip themselves when the local stack isn't running.
+## Documentation
 
-## Project layout
+- [Guides for each part of the app](docs/guides/README.md), also readable in the app at `/help`
+- [Setup runbooks](docs/runbooks/) for each optional part
+- [Requirements](docs/SPEC.md) and [design requirements](docs/DESIGN-REQUIREMENTS.md)
+- [Decisions](docs/decisions/)
+- [How we build it](CLAUDE.md), for contributors
 
-```
-app/              routes and UI (server components by default)
-components/       shared UI components
-lib/domain/       business rules: pure TypeScript, unit tested, no Supabase
-lib/data/         Supabase queries; the only place the app talks to the database
-supabase/
-  migrations/     schema changes (never edit production by hand)
-  seed.sql        fake local data
-  tests/database/ pgTAP tests for RLS
-  templates/      auth email templates
-e2e/              Playwright tests
-.github/          CI and scheduled jobs
-```
-
-## Database rules in brief
-
-- Every table has RLS on, and nothing is allowed without a policy. `anon` has no table access.
-- Permissions are named capabilities (`member.approve`, `department.manage`…) granted by roles,
-  optionally per department. Policies call `private.has_capability(key, department_id)`.
-- Departments, roles, and capabilities are data. Lighting Operations goes live by changing its
-  `status` to `active`.
-- Membership requests and decisions go through `request_membership()` and `decide_membership()`.
-  Every change is kept in `department_membership_events`.
-- Sensitive changes write to `audit_events`, which cannot be updated or deleted.
-- New migrations must enable RLS and grant `authenticated` exactly what their policies need.
-
-## Production setup
-
-Done once by the Platform Admin. Keep every secret out of the repo.
-
-### Supabase (hosted, Free plan)
-
-1. Create the project, then link and push the schema: `npx supabase link` and
-   `npx supabase db push`. This creates the organization, departments, roles, and capabilities.
-   Never run `seed.sql` against production.
-2. **Authentication → URL configuration:** set Site URL to the app's address and add
-   `https://<app>/auth/callback` and `https://<app>/auth/confirm` as redirect URLs.
-3. **Authentication → SMTP:** host `smtp.resend.com`, port 465, user `resend`, password = a
-   Resend API key, sender on a domain verified in Resend. Do this before step 4: the Free plan
-   rejects template changes while it uses Supabase's built-in mailer.
-4. **Sign-in emails:** the app sends them through Supabase's Send Email hook. See
-   [the notifications runbook](docs/runbooks/notifications.md#sign-in-emails). Until the hook is
-   on, use [supabase/templates/magic-link.html](supabase/templates/magic-link.html) under
-   Authentication → Email templates → Magic link (and Confirm signup).
-5. **First Platform Admin:** sign in once, then grant the `platform_admin` role to that account
-   with SQL (an insert into `public.user_roles` with `department_id` null). Everyone after that is
-   granted roles in the app.
-
-### Cloudflare
-
-`deploy.yml` builds and deploys on every push to `main` (or run it by hand). `NEXT_PUBLIC_*`
-values are inlined at build time; the workflow takes them from the secrets and the `SITE_URL`
-variable below. The app never uses the service-role key.
-
-Keep `cacheComponents` off in `next.config.ts`: with it on, the Worker hangs on every request.
-CI runs the built Worker in local workerd to catch this.
-
-Create the API token in the Cloudflare dashboard: **My Profile → API Tokens → Create Token →
-"Edit Cloudflare Workers" template**, limited to the IFC account.
-
-The church video library (videos on the UniFi NAS) is optional and off until three Worker secrets
-are set: `MEDIA_ORIGIN_URL`, `MEDIA_ACCESS_CLIENT_ID`, and `MEDIA_ACCESS_CLIENT_SECRET`. Setup is
-in [docs/runbooks/nas-media.md](docs/runbooks/nas-media.md).
-
-### GitHub Actions secrets and variables
-
-| Secret                     | Used by            | Notes                                        |
-| -------------------------- | ------------------ | -------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`     | deploy             | "Edit Cloudflare Workers" token, IFC account |
-| `CLOUDFLARE_ACCOUNT_ID`    | deploy             | Cloudflare account that owns the Worker      |
-| `SUPABASE_URL`             | keep-alive, deploy | Hosted project API URL                       |
-| `SUPABASE_PUBLISHABLE_KEY` | keep-alive, deploy | Publishable key; RLS protects data           |
-| `RESEND_API_KEY`           | failure alerts     | Sending-only key                             |
-| `ALERT_EMAILS`             | failure alerts     | Comma-separated: G and the Platform Admin    |
-| `ALERT_FROM`               | failure alerts     | Sender on the verified Resend domain         |
-
-Variable (not secret): `SITE_URL`, the app's public address, for example
-`https://ifc-production-academy.<subdomain>.workers.dev`.
-
-Optional variables `SENTRY_DSN`, `POSTHOG_KEY`, and `POSTHOG_HOST` turn on error reports and usage
-counts. See [docs/runbooks/monitoring.md](docs/runbooks/monitoring.md).
-
-The backup job (`backup.yml`) is a skeleton until the Google service account and the
-"IFC Academy Backups" Shared Drive exist; its planned secrets are listed in the workflow file.
+Please don't commit secrets, real people's details, or private video links: the repository is public.
