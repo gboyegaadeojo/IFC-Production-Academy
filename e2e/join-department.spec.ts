@@ -17,7 +17,9 @@ test("a new volunteer signs in, sees the departments, and requests to join", asy
   await signInByEmail(page, email);
 
   // A new email sign-up has no real name yet, so the greeting leaves it out and asks for one.
-  await expect(page.getByRole("heading", { level: 1, name: "Welcome" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: /^Good (morning|afternoon|evening)$/ }),
+  ).toBeVisible();
   await expect(page.getByRole("link", { name: "Add your name" })).toBeVisible();
 
   const cards = page.locator("#departments").getByRole("article");
