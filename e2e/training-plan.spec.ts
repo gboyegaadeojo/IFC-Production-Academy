@@ -5,7 +5,7 @@ test.beforeEach(async () => {
   test.skip(!(await mailpitAvailable()), "Local Supabase is not running");
 });
 
-// Home Page mock, Design D, approved 2026-11-05: a plan to work down, with departments beside it.
+// Mock 5, approved 2026-11-06: a greeting, then a plan to work down.
 test("someone new gets a plan that moves on as they go", async ({ page }, testInfo) => {
   test.setTimeout(90_000);
   await signInByEmail(page, `e2e-plan-${testInfo.project.name}-${Date.now()}@example.com`);
@@ -27,14 +27,16 @@ test("someone new gets a plan that moves on as they go", async ({ page }, testIn
     .click();
   await expect(plan.getByText("1 of 4 done")).toBeVisible();
   await expect(plan.getByText("Request sent. Waiting for a leader.")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1, name: /Welcome back/ })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Pick up where you left off" })).toHaveCount(0);
 });
 
 test("a member's plan leads with the next thing to do", async ({ page }) => {
   // Avery is a fake seed member of Camera Operations.
   await signInByEmail(page, "avery.volunteer@example.com");
-  await expect(page.getByRole("heading", { level: 1, name: /^Welcome back/ })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Coming up" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: /^Good (morning|afternoon|evening)/ }),
+  ).toBeVisible();
+  await expect(page.getByRole("region", { name: "Pick up where you left off" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Your departments" })).toBeVisible();
   // Serving stays explained, and lessons alone never read as approval.
   await expect(page.getByText("How serving works")).toBeVisible();

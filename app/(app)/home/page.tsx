@@ -5,8 +5,18 @@ import { Suspense } from "react";
 import { InstallApp } from "@/components/pwa/install-app";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { CheckIcon, ChevronDownIcon, ChevronRightIcon, PlayIcon } from "@/components/ui/icons";
+import {
+  CalendarRangeIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FileTextIcon,
+  ListChecksIcon,
+  PlayIcon,
+  UsersIcon,
+} from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyAchievements } from "@/lib/data/achievements";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -15,7 +25,8 @@ import { listDepartmentCards, type DepartmentCard as CardData } from "@/lib/data
 import { getDepartmentLearning } from "@/lib/data/learning";
 import { getCourseLibrary, getStartHereCourses } from "@/lib/data/library";
 import { getMyOnboarding, getOpenDepartments } from "@/lib/data/onboarding";
-import { getContinueLearning } from "@/lib/data/progress";
+import { getMyNotifications } from "@/lib/data/notifications";
+import { getContinueLearning, getRecentlyWatched } from "@/lib/data/progress";
 import { getMyUpcomingAssignments } from "@/lib/data/schedule";
 import {
   comingUp,
@@ -24,13 +35,19 @@ import {
   type PlanItem,
   type PlanNext,
 } from "@/lib/domain/coming-up";
-import { departmentHueVar } from "@/lib/domain/departments";
 import { homeState } from "@/lib/domain/home";
-import { courseFacts } from "@/lib/domain/library";
 import { volunteerPathways } from "@/lib/domain/onboarding";
 import { greetingName } from "@/lib/domain/people";
+import { READINESS_LABELS } from "@/lib/domain/schedule";
+import {
+  servingSpotlight,
+  timeOfDayGreeting,
+  type RecentLesson,
+  type ServingSpotlight,
+} from "@/lib/domain/training-home";
 import { LessonThumbnail } from "@/app/(app)/courses/[courseId]/(summary)/lesson-panel";
-import { ExploreRow, MemberDepartmentCard } from "./department-card";
+import { CoursePoster } from "@/components/course-poster";
+import { DepartmentTile, ExploreRow } from "./department-card";
 import Loading from "./loading";
 import { NextSteps } from "./next-steps";
 
@@ -45,9 +62,10 @@ export default function TrainingPage() {
 }
 
 /**
- * Training, the learner home (DESIGN §6.1; Home Page mock, Design D, approved 2026-11-05). A plan to
- * work down, with departments and a few courses to try beside it. Someone returning sees Coming up,
- * and someone new sees Getting started.
+ * Training, the learner home (DESIGN §6.1; mock 5, approved 2026-11-06). A greeting, then the
+ * service you're on next, the one thing to pick up, shortcuts, your departments in a row that
+ * scrolls sideways, and what you watched recently. Wide screens add this month's services and the
+ * latest notifications beside it. Someone new sees Getting started instead of the plan.
  */
 async function TrainingContent() {
   const user = await requireActiveUser();
@@ -87,6 +105,7 @@ async function TrainingContent() {
   const onboarding = volunteerPathways(onboardingRows).filter((p) => !p.finished);
   const learningFor = new Map(learning.map((entry) => [entry.departmentId, entry]));
   const name = greetingName(user.displayName, user.email);
+  const now = new Date();
 
   const planContinuing = continuing.flatMap((item) =>
     item.progress.next
@@ -102,35 +121,59 @@ async function TrainingContent() {
         ]
       : [],
   );
+  const spotlight = servingSpotlight(
+    assignments.map((assignment) => ({
+      id: assignment.id,
+      status: assignment.status,
+      readiness: assignment.readiness,
+      startsAt: assignment.event.startsAt,
+      endsAt: assignment.event.endsAt,
+      roleName: assignment.roleName,
+      eventTitle: assignment.event.title,
+    })),
+    now,
+  );
   const plan = comingUp({
     continuing: planContinuing,
     assigned,
     startHere,
-    servings: assignments.map((assignment) => ({
-      id: assignment.id,
-      status: assignment.status,
-      startsAt: assignment.event.startsAt,
-      endsAt: assignment.event.endsAt,
-      roleName: assignment.roleName,
-    })),
-    now: new Date(),
+    // The card at the top already shows the next service.
+    servings: assignments
+      .filter((assignment) => assignment.id !== spotlight?.id)
+      .map((assignment) => ({
+        id: assignment.id,
+        status: assignment.status,
+        startsAt: assignment.event.startsAt,
+        endsAt: assignment.event.endsAt,
+        roleName: assignment.roleName,
+      })),
+    now,
   });
   const newcomer =
     state !== "member" &&
     planContinuing.length === 0 &&
     assigned.length === 0 &&
-    plan.thisWeek.length === 0;
+    plan.thisWeek.length === 0 &&
+    spotlight === null;
   const inPlan = new Set([
     ...planContinuing.map((item) => item.courseId),
     ...assigned.map((course) => course.id),
     ...startHere.map((course) => course.id),
   ]);
+  const thisMonth = assignments
+    .filter(
+      (assignment) =>
+        assignment.status !== "declined" &&
+        new Date(assignment.event.startsAt).getTime() - now.getTime() < MONTH_MS,
+    )
+    .slice(0, 4);
+  const alsoComingUp = [...plan.thisWeek, ...plan.whenReady];
 
   return (
-    <div className="page-container flex flex-col gap-5 py-5 sm:py-8 lg:pb-12">
+    <div className="page-container flex flex-col gap-6 py-5 sm:py-8 lg:pb-12">
       <div className="flex flex-col gap-1">
-        <h1 className="text-[1.375rem] leading-tight font-bold tracking-tight text-balance sm:text-[1.75rem]">
-          {state === "member" ? "Welcome back" : "Welcome"}
+        <h1 className="text-[1.625rem] leading-tight font-bold tracking-tight text-balance sm:text-[2rem]">
+          {timeOfDayGreeting(now)}
           {name ? `, ${name}` : ""}
         </h1>
         {!name && !newcomer ? (
@@ -146,11 +189,12 @@ async function TrainingContent() {
         ) : null}
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
-        <div className="flex min-w-0 flex-col gap-5">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-7">
           {onboarding.map((pathway) => (
             <NextSteps key={pathway.entryId} pathway={pathway} departments={openDepartments} />
           ))}
+          {spotlight ? <ServingCard spotlight={spotlight} /> : null}
           {newcomer ? (
             <GettingStarted
               hasName={name !== null}
@@ -158,60 +202,43 @@ async function TrainingContent() {
               startHere={startHere}
             />
           ) : (
-            <section
-              aria-labelledby="coming-up-heading"
-              className="flex flex-col gap-3.5 rounded-card border border-border bg-surface p-3.5 sm:p-5"
-            >
-              <PlanHeading
-                id="coming-up-heading"
-                title="Coming up"
-                count={countLabel(
-                  (plan.next ? 1 : 0) + plan.thisWeek.length + plan.whenReady.length,
-                )}
-              />
-              {plan.next ? (
-                <PlanGroup label="Next">
+            <>
+              <Section id="pick-up-heading" title="Pick up where you left off">
+                {plan.next ? (
                   <NextBlock next={plan.next} />
-                </PlanGroup>
-              ) : (
-                <p className="text-text-secondary">
-                  You&apos;re all caught up. Find something new in{" "}
-                  <Link
-                    href="/courses"
-                    className="font-medium text-accent-light underline-offset-4 hover:underline"
-                  >
-                    Courses
-                  </Link>
-                  .
-                </p>
-              )}
-              {plan.thisWeek.length > 0 ? (
-                <PlanGroup label="This week">
-                  {plan.thisWeek.map((item) => (
-                    <PlanRow key={item.key} item={item} />
-                  ))}
-                </PlanGroup>
+                ) : (
+                  <p className="text-text-secondary">
+                    You&apos;re all caught up. Find something new in{" "}
+                    <Link
+                      href="/courses"
+                      className="font-medium text-accent-light underline-offset-4 hover:underline"
+                    >
+                      Courses
+                    </Link>
+                    .
+                  </p>
+                )}
+              </Section>
+              {alsoComingUp.length > 0 ? (
+                <Section id="coming-up-heading" title="Coming up">
+                  <ul className="flex flex-col">
+                    {alsoComingUp.map((item) => (
+                      <li key={item.key}>
+                        <PlanRow item={item} />
+                      </li>
+                    ))}
+                  </ul>
+                </Section>
               ) : null}
-              {plan.whenReady.length > 0 ? (
-                <PlanGroup label="When you're ready">
-                  {plan.whenReady.map((item) => (
-                    <PlanRow key={item.key} item={item} />
-                  ))}
-                </PlanGroup>
-              ) : null}
-            </section>
+            </>
           )}
-          {newcomer ? null : <InstallApp variant="banner" />}
-          <HowTrainingWorks />
-        </div>
-
-        <div className="flex min-w-0 flex-col gap-4">
-          <div id="departments" className="flex scroll-mt-20 flex-col gap-4">
-            {memberOf.length > 0 ? (
-              <DepartmentList id="my-departments-heading" title="Your departments">
+          <Shortcuts />
+          {memberOf.length > 0 ? (
+            <Section id="my-departments-heading" title="Your departments">
+              <Rail>
                 {memberOf.map((department) => (
                   <li key={department.id}>
-                    <MemberDepartmentCard
+                    <DepartmentTile
                       department={department}
                       learning={learningFor.get(department.id)}
                       approvedRoles={(achievements?.approvedRoles ?? [])
@@ -220,38 +247,350 @@ async function TrainingContent() {
                     />
                   </li>
                 ))}
-              </DepartmentList>
-            ) : null}
-            {departments.length === 0 ? (
-              <EmptyState title="No departments are open yet">
-                The production team is setting up its training. Check back soon, or ask a leader
-                when your department opens.
-              </EmptyState>
-            ) : others.length > 0 ? (
-              <DepartmentList
-                id="departments-heading"
-                title={memberOf.length > 0 ? "Other departments" : "Choose a department"}
-              >
+              </Rail>
+            </Section>
+          ) : null}
+          <Suspense fallback={null}>
+            <RecentlyWatched userId={user.id} />
+          </Suspense>
+          {departments.length === 0 ? (
+            <EmptyState title="No departments are open yet">
+              The production team is setting up its training. Check back soon, or ask a leader when
+              your department opens.
+            </EmptyState>
+          ) : others.length > 0 ? (
+            <section
+              id="departments"
+              aria-labelledby="departments-heading"
+              className="flex scroll-mt-20 flex-col gap-1 rounded-card border border-border bg-surface p-4"
+            >
+              <h2 id="departments-heading" className="mb-1 text-subheading font-bold">
+                {memberOf.length > 0 ? "Other departments" : "Choose a department"}
+              </h2>
+              <ul className="grid gap-x-6 sm:grid-cols-2">
                 {others.map((department) => (
                   <li key={department.id}>
                     <ExploreRow department={department} />
                   </li>
                 ))}
-              </DepartmentList>
-            ) : null}
-          </div>
+              </ul>
+            </section>
+          ) : null}
           {/* These load after the rest, so the next step never waits for them. */}
           <Suspense fallback={<Skeleton className="h-56" />}>
             <KeepExploring userId={user.id} categories={categories} inPlan={inPlan} />
           </Suspense>
+          {newcomer ? null : <InstallApp variant="banner" />}
+          <HowTrainingWorks />
         </div>
+
+        <aside
+          aria-label="This month and notifications"
+          className="hidden min-w-0 flex-col gap-7 lg:flex"
+        >
+          <section aria-labelledby="this-month-heading" className="flex flex-col">
+            <h2 id="this-month-heading" className="mb-1 text-subheading font-bold">
+              This month
+            </h2>
+            {thisMonth.length === 0 ? (
+              <p className="py-2 text-small text-text-muted">
+                You&apos;re not on the schedule this month.
+              </p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-border">
+                {thisMonth.map((assignment) => (
+                  <li key={assignment.id}>
+                    <ServiceRow
+                      startsAt={assignment.event.startsAt}
+                      role={assignment.roleName}
+                      event={assignment.event.title}
+                      label={
+                        assignment.status === "pending"
+                          ? "Please reply"
+                          : READINESS_LABELS[assignment.readiness]
+                      }
+                      trained={
+                        assignment.status !== "pending" && assignment.readiness === "approved"
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link
+              href="/schedule"
+              className="flex min-h-touch items-center text-small font-medium text-accent-light underline-offset-4 hover:underline"
+            >
+              Your schedule
+            </Link>
+          </section>
+          <Suspense fallback={<Skeleton className="h-40" />}>
+            <LatestNotifications userId={user.id} />
+          </Suspense>
+        </aside>
       </div>
     </div>
   );
 }
 
-function countLabel(count: number): string {
-  return count === 1 ? "1 thing" : `${count} things`;
+const MONTH_MS = 31 * 24 * 60 * 60 * 1000;
+const WINNIPEG = "America/Winnipeg";
+const WEEKDAY = new Intl.DateTimeFormat("en-CA", { timeZone: WINNIPEG, weekday: "short" });
+const DAY_OF_MONTH = new Intl.DateTimeFormat("en-CA", { timeZone: WINNIPEG, day: "numeric" });
+const TIME = new Intl.DateTimeFormat("en-CA", {
+  timeZone: WINNIPEG,
+  hour: "numeric",
+  minute: "2-digit",
+});
+
+function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
+  return (
+    <section aria-labelledby={id} className="flex min-w-0 flex-col gap-3">
+      <h2 id={id} className="text-subheading font-bold tracking-tight">
+        {title}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+/** A row that scrolls sideways, so more departments or courses never crowd the page (G). */
+function Rail({ children }: { children: ReactNode }) {
+  return (
+    <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:scroll-px-0 md:px-0 [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:snap-start">
+      {children}
+    </ul>
+  );
+}
+
+/**
+ * The service you're on next, as a bold card (mock 5). It shows only when you're scheduled.
+ * Training is shown beside it, never a gate.
+ */
+function ServingCard({ spotlight }: { spotlight: ServingSpotlight }) {
+  return (
+    <section
+      aria-labelledby="serving-heading"
+      className="flex flex-col gap-4 rounded-[1.25rem] bg-text p-5 text-bg sm:flex-row sm:items-center"
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <p className="text-small font-bold tracking-wide uppercase opacity-60">
+          {spotlight.eyebrow}
+        </p>
+        <h2 id="serving-heading" className="text-[1.375rem] leading-tight font-bold tracking-tight">
+          {spotlight.title}
+        </h2>
+        <p className="text-small opacity-70">{spotlight.detail}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {spotlight.needsReply ? (
+          <Link
+            href="/schedule"
+            className="inline-flex min-h-button items-center rounded-pill bg-bg px-4 font-semibold text-text"
+          >
+            Reply on Schedule
+          </Link>
+        ) : (
+          <Link
+            href="/serve"
+            className="inline-flex min-h-button items-center rounded-pill bg-bg px-4 font-semibold text-text"
+          >
+            Open checklist
+          </Link>
+        )}
+        <Link
+          href="/sops"
+          className="inline-flex min-h-button items-center rounded-pill px-4 font-semibold ring-1 ring-bg/40 ring-inset"
+        >
+          SOPs
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+const SHORTCUTS = [
+  { href: "/serve", label: "Checklist", icon: ListChecksIcon },
+  { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
+  { href: "/sops", label: "SOPs", icon: FileTextIcon },
+  { href: "/mentoring", label: "Mentoring", icon: UsersIcon },
+];
+
+/** Four big targets on a phone (mock 5). The side bar has them on wider screens. */
+function Shortcuts() {
+  return (
+    <nav aria-label="Shortcuts" className="md:hidden">
+      <ul className="grid grid-cols-4 gap-2.5">
+        {SHORTCUTS.map(({ href, label, icon: Icon }) => (
+          <li key={href}>
+            <Link
+              href={href}
+              className="flex h-20 flex-col items-center justify-center gap-2 rounded-card bg-card text-small font-semibold transition-surface hover:bg-hover"
+            >
+              <Icon className="size-5" />
+              {label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+/** What you opened lately: how far you got as a hint, and a tick once you marked it complete. */
+async function RecentlyWatched({ userId }: { userId: string }) {
+  const lessons = await getRecentlyWatched(userId);
+  if (lessons.length === 0) {
+    return null;
+  }
+  return (
+    <Section id="recent-heading" title="Recently watched">
+      <ul className="flex flex-col">
+        {lessons.map((lesson) => (
+          <li key={lesson.key}>
+            <RecentRow lesson={lesson} />
+          </li>
+        ))}
+      </ul>
+    </Section>
+  );
+}
+
+function RecentRow({ lesson }: { lesson: RecentLesson }) {
+  return (
+    <Link
+      href={lesson.href}
+      prefetch={false}
+      style={{ "--dept": "var(--accent)" } as CSSProperties}
+      className="flex items-center gap-3 rounded-button py-2 transition-surface hover:bg-hover sm:px-2"
+    >
+      <span className="relative shrink-0">
+        <LessonThumbnail url={lesson.thumbnailUrl} minutes={lesson.minutes} className="w-24" />
+        {lesson.completed ? (
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 flex items-center justify-center rounded-button bg-[color-mix(in_srgb,var(--photo-bg)_55%,transparent)] text-success"
+          >
+            <CheckIcon className="size-6" />
+          </span>
+        ) : null}
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate font-semibold">{lesson.title}</span>
+        <span className="truncate text-small text-text-muted">{lesson.courseTitle}</span>
+        <span className="text-small text-text-muted">{lesson.status}</span>
+      </span>
+      {lesson.completed ? (
+        <span
+          aria-hidden="true"
+          className="flex size-7 shrink-0 items-center justify-center rounded-pill border-2 border-success text-success"
+        >
+          <CheckIcon className="size-4" />
+        </span>
+      ) : lesson.percent !== null ? (
+        <WatchRing percent={lesson.percent} />
+      ) : null}
+    </Link>
+  );
+}
+
+/** A small ring of how far into the video you got. Decorative: the words say the same. */
+function WatchRing({ percent }: { percent: number }) {
+  const radius = 11;
+  const circumference = 2 * Math.PI * radius;
+  return (
+    <svg viewBox="0 0 28 28" aria-hidden="true" className="size-7 shrink-0 -rotate-90">
+      <circle cx="14" cy="14" r={radius} fill="none" strokeWidth="2.6" stroke="var(--border)" />
+      {percent > 0 ? (
+        <circle
+          cx="14"
+          cy="14"
+          r={radius}
+          fill="none"
+          strokeWidth="2.6"
+          strokeLinecap="round"
+          stroke="var(--accent)"
+          strokeDasharray={`${(percent / 100) * circumference} ${circumference}`}
+        />
+      ) : null}
+    </svg>
+  );
+}
+
+function ServiceRow({
+  startsAt,
+  role,
+  event,
+  label,
+  trained,
+}: {
+  startsAt: string;
+  role: string;
+  event: string;
+  label: string;
+  trained: boolean;
+}) {
+  const start = new Date(startsAt);
+  return (
+    <div className="flex items-center gap-3 py-3">
+      <span className="flex w-11 shrink-0 flex-col items-center rounded-button bg-card py-1">
+        <span className="text-[0.6875rem] font-bold text-error uppercase">
+          {WEEKDAY.format(start)}
+        </span>
+        <span className="tabular text-subheading leading-tight font-bold">
+          {DAY_OF_MONTH.format(start)}
+        </span>
+      </span>
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="truncate font-semibold">{role}</span>
+        <span className="truncate text-small text-text-muted">
+          {event} · {TIME.format(start)}
+        </span>
+      </span>
+      <StatusBadge tone={trained ? "success" : "pending"}>{label}</StatusBadge>
+    </div>
+  );
+}
+
+/** The three newest notifications, with the full list a click away. */
+async function LatestNotifications({ userId }: { userId: string }) {
+  const latest = (await getMyNotifications(userId)).slice(0, 3);
+  return (
+    <section aria-labelledby="latest-notifications-heading" className="flex flex-col">
+      <h2 id="latest-notifications-heading" className="mb-1 text-subheading font-bold">
+        Notifications
+      </h2>
+      {latest.length === 0 ? (
+        <p className="py-2 text-small text-text-muted">Nothing new.</p>
+      ) : (
+        <ul className="flex flex-col divide-y divide-border">
+          {latest.map((note) => (
+            <li key={note.id} className="flex flex-col gap-0.5 py-3">
+              <span className="flex items-start gap-2 font-semibold">
+                {note.read ? null : (
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 size-1.5 shrink-0 rounded-pill bg-accent"
+                  />
+                )}
+                <span className="min-w-0">
+                  {note.title}
+                  {note.read ? null : <span className="sr-only"> (unread)</span>}
+                </span>
+              </span>
+              <span className="line-clamp-2 text-small text-text-muted">{note.body}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Link
+        href="/notifications"
+        className="flex min-h-touch items-center text-small font-medium text-accent-light underline-offset-4 hover:underline"
+      >
+        See all notifications
+      </Link>
+    </section>
+  );
 }
 
 function PlanHeading({ id, title, count }: { id: string; title: string; count: string }) {
@@ -274,24 +613,26 @@ function PlanGroup({ label, children }: { label: string; children: ReactNode }) 
   );
 }
 
-/** The one thing to do now, opened out with its picture and button. */
+/** The one thing to do now, as one card with its picture and a small button (mock 5). */
 function NextBlock({ next }: { next: PlanNext }) {
   return (
     <div
       style={{ "--dept": "var(--accent)" } as CSSProperties}
-      className="flex flex-col gap-4 rounded-card bg-hover p-3 sm:flex-row"
+      className="flex items-center gap-3.5 rounded-card bg-card p-3"
     >
       {next.showThumbnail ? (
-        <LessonThumbnail url={next.thumbnailUrl} className="w-full sm:w-60" />
+        <LessonThumbnail url={next.thumbnailUrl} className="w-28 sm:w-44" />
       ) : null}
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
-        <h3 className="text-subheading leading-tight font-bold">{next.title}</h3>
-        <p className="text-text-secondary">{next.note}</p>
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <h3 className="leading-tight font-semibold sm:text-subheading">{next.title}</h3>
+          <p className="text-small text-text-muted">{next.note}</p>
+        </div>
         <Link
           href={next.href}
-          className={buttonClasses("primary", "mt-1.5 min-h-touch px-4.5 font-semibold sm:w-fit")}
+          className={buttonClasses("primary", "rounded-pill px-4 font-semibold sm:w-fit", "md")}
         >
-          <PlayIcon className="size-4" />
+          <PlayIcon className="size-3.5" />
           {next.button}
           <span className="sr-only">: {next.title}</span>
         </Link>
@@ -402,29 +743,7 @@ function GettingStarted(props: Parameters<typeof gettingStarted>[0]) {
   );
 }
 
-function DepartmentList({
-  id,
-  title,
-  children,
-}: {
-  id: string;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <section
-      aria-labelledby={id}
-      className="flex flex-col gap-1 rounded-card border border-border bg-surface p-4"
-    >
-      <h2 id={id} className="mb-1 text-subheading font-bold">
-        {title}
-      </h2>
-      <ul className="flex flex-col">{children}</ul>
-    </section>
-  );
-}
-
-/** A few courses to try, with the Library a click away (Design D). */
+/** A few courses to try, as posters in a row that scrolls sideways, with the Library a click away. */
 async function KeepExploring({
   userId,
   categories,
@@ -435,62 +754,37 @@ async function KeepExploring({
   inPlan: ReadonlySet<string>;
 }) {
   const courses = courseSuggestions(await getCourseLibrary(userId, categories), inPlan);
+  if (courses.length === 0) {
+    return null;
+  }
   return (
-    <section
-      aria-labelledby="explore-heading"
-      className="flex flex-col gap-1 rounded-card border border-border bg-surface p-4"
-    >
-      <h2 id="explore-heading" className="mb-1 text-subheading font-bold">
-        Keep exploring
-      </h2>
-      <ul className="flex flex-col">
-        {courses.map((course) => {
-          const style = { "--dept": departmentHueVar(course.category.hue) } as CSSProperties;
-          return (
-            <li key={course.id}>
-              <Link
-                href={course.href}
-                prefetch={false}
-                className="flex min-h-13 items-center gap-2.5"
-              >
-                <span
-                  style={style}
-                  className="aspect-[3/4] w-8 shrink-0 overflow-hidden rounded-button bg-[color-mix(in_srgb,var(--dept)_35%,var(--surface))]"
-                >
-                  {course.coverUrl ? (
-                    // Covers are public files with no image service on this plan, so a plain image is right.
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={course.coverUrl}
-                      alt=""
-                      loading="lazy"
-                      className="size-full object-cover"
-                    />
-                  ) : null}
-                </span>
-                <span className="flex min-w-0 flex-col">
-                  <span className="font-semibold">{course.title}</span>
-                  <span className="text-small text-text-muted">{courseFacts(course)}</span>
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-      <div className="flex flex-wrap gap-x-4">
-        <Link
-          href="/courses"
-          className="flex min-h-touch items-center font-medium text-accent-light underline-offset-4 hover:underline"
-        >
-          All courses
-        </Link>
-        <Link
-          href="/explore"
-          className="flex min-h-touch items-center font-medium text-accent-light underline-offset-4 hover:underline"
-        >
-          Explore
-        </Link>
+    <section aria-labelledby="explore-heading" className="flex min-w-0 flex-col gap-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="explore-heading" className="text-subheading font-bold tracking-tight">
+          Keep exploring
+        </h2>
+        <span className="flex gap-x-4">
+          <Link
+            href="/courses"
+            className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+          >
+            All courses
+          </Link>
+          <Link
+            href="/explore"
+            className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
+          >
+            Explore
+          </Link>
+        </span>
       </div>
+      <Rail>
+        {courses.map((course) => (
+          <li key={course.id} className="w-36 sm:w-40">
+            <CoursePoster course={course} showCategory />
+          </li>
+        ))}
+      </Rail>
     </section>
   );
 }

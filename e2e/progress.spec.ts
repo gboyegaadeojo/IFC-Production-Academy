@@ -44,10 +44,11 @@ test("a leader assigns a course, the volunteer sees it on Training, and it can b
   const blake = await blakeContext.newPage();
   await signInByEmail(blake, "blake.volunteer@example.com");
   await blake.goto("/home");
-  const comingUp = blake.getByRole("region", { name: "Coming up" });
-  await expect(comingUp).toBeVisible();
-  // Next if nothing's under way, otherwise listed under This week.
-  const assigned = comingUp.getByText(/Assigned by a leader|A leader asked you to take this/);
+  // Picked up first if nothing's under way, otherwise listed under Coming up.
+  const assigned = blake
+    .getByRole("main")
+    // Not the notification's "A leader asked you to take this course" in the side column.
+    .getByText(/Assigned by a leader|A leader asked you to take this\./);
   await expect(assigned).toBeVisible();
 
   await page.getByRole("button", { name: /Blake Example/ }).click();

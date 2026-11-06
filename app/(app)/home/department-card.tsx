@@ -1,7 +1,8 @@
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button";
-import { ArrowRightIcon, CheckIcon } from "@/components/ui/icons";
+import { ArrowRightIcon } from "@/components/ui/icons";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { DepartmentCard as DepartmentCardData } from "@/lib/data/departments";
 import { formatDateTime } from "@/lib/domain/admin";
@@ -15,11 +16,12 @@ import {
 import { RequestMembershipButton } from "./request-membership-button";
 
 /**
- * A department you belong to (Home Page mock, Design D, approved 2026-11-05): its name, what's there,
- * and a ring of lessons complete. The whole row opens the department. Approval comes from its own
- * record and is never inferred from lessons (SPEC §3, SRS-PROG-007).
+ * A department you belong to, as a tile in a row that scrolls sideways (mock 5, approved
+ * 2026-11-06): its colour and name, then a bar of lessons complete with the same count in words.
+ * The whole tile opens the department. Approval comes from its own record and is never inferred
+ * from lessons (SPEC §3, SRS-PROG-007).
  */
-export function MemberDepartmentCard({
+export function DepartmentTile({
   department,
   learning,
   approvedRoles,
@@ -37,68 +39,35 @@ export function MemberDepartmentCard({
     <article
       aria-labelledby={headingId}
       style={style}
-      className="group relative flex min-h-14 items-center gap-2.5 py-1.5"
+      className="group relative flex w-60 shrink-0 snap-start flex-col gap-2"
     >
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <h3 id={headingId} className="font-semibold">
+      <div className="flex h-32 flex-col justify-between rounded-card bg-[color-mix(in_srgb,var(--dept)_55%,var(--photo-bg))] p-3.5 text-on-accent transition-[translate] duration-[var(--duration-base)] ease-standard group-hover:-translate-y-0.5 motion-reduce:translate-y-0!">
+        <span className="text-small font-medium opacity-85">
+          {published > 0 ? courseCountLabel(published) : "Courses coming soon"}
+        </span>
+        <h3 id={headingId} className="text-subheading leading-tight font-bold">
           <Link
             href={`/departments/${department.slug}`}
-            className="rounded-button transition-surface group-hover:text-accent-light after:absolute after:inset-0 after:rounded-card focus-visible:outline-none"
+            className="rounded-button after:absolute after:inset-0 after:rounded-card focus-visible:outline-none"
           >
             {department.name}
           </Link>
         </h3>
-        <p className="text-small text-text-muted">
-          {departmentProgressLabel(published, done, total)}
-        </p>
-        {approvedRoles.length > 0 ? (
-          <StatusBadge tone="success">
-            Approved: {approvedRoles[0]}
-            {approvedRoles.length > 1 ? ` +${approvedRoles.length - 1}` : ""}
-          </StatusBadge>
-        ) : null}
       </div>
-      {total > 0 ? <ProgressRing done={done} total={total} percent={percent} /> : null}
+      {total > 0 ? (
+        <ProgressBar percent={percent} label={`${department.name}: lessons complete`} />
+      ) : null}
+      <p className="text-small text-text-muted">
+        {total > 0 ? `${percent}% · ` : ""}
+        {departmentProgressLabel(published, done, total)}
+      </p>
+      {approvedRoles.length > 0 ? (
+        <StatusBadge tone="success">
+          Approved: {approvedRoles[0]}
+          {approvedRoles.length > 1 ? ` +${approvedRoles.length - 1}` : ""}
+        </StatusBadge>
+      ) : null}
     </article>
-  );
-}
-
-/** Lessons marked complete, never approval to serve. The words beside it give the same count. */
-function ProgressRing({ done, total, percent }: { done: number; total: number; percent: number }) {
-  const radius = 19;
-  const circumference = 2 * Math.PI * radius;
-  return (
-    <span
-      role="img"
-      aria-label={`${percent}% of lessons complete`}
-      className="relative size-[2.875rem] shrink-0"
-    >
-      <svg viewBox="0 0 46 46" aria-hidden="true" className="size-full -rotate-90">
-        <circle cx="23" cy="23" r={radius} fill="none" strokeWidth="4.5" stroke="var(--border)" />
-        {done > 0 ? (
-          <circle
-            cx="23"
-            cy="23"
-            r={radius}
-            fill="none"
-            strokeWidth="4.5"
-            strokeLinecap="round"
-            stroke="var(--dept)"
-            strokeDasharray={`${(percent / 100) * circumference} ${circumference}`}
-          />
-        ) : null}
-      </svg>
-      <span
-        aria-hidden="true"
-        className="tabular absolute inset-0 flex items-center justify-center text-small font-semibold"
-      >
-        {done === total ? (
-          <CheckIcon className="size-[1.125rem] text-[var(--dept)]" />
-        ) : (
-          `${percent}%`
-        )}
-      </span>
-    </span>
   );
 }
 

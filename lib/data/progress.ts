@@ -13,6 +13,7 @@ import {
   type LessonProgress,
   type ProgressRow,
 } from "@/lib/domain/progress";
+import { recentlyWatched, type RecentLesson, type WatchedLesson } from "@/lib/domain/training-home";
 
 // Lesson progress (SRS-PROG-001..005). Reads are the learner's own rows (RLS). Writes go through
 // idempotent database functions that check membership and that the lesson is live.
@@ -296,4 +297,46 @@ export async function getCourseProgressById(
     );
   }
   return out;
+}
+
+/**
+ * The lessons opened most recently, for Recently watched on Training (mock 5). One read of the
+ * learner's progress, shared with the rest of the page, then the courses those lessons are in.
+ */
+export async function getRecentlyWatched(userId: string, limit = 4): Promise<RecentLesson[]> {
+  const rows = await readAllProgress(userId);
+  // Enough of the newest rows to find `limit` different lessons, even after several versions.
+  const recent = rows.slice(0, limit * 6);
+  const courseIds = [...new Set(recent.map((row) => row.course_id))];
+  if (courseIds.length === 0) {
+    return [];
+  }
+  const courses = await getLearnerCourses(courseIds);
+  const lessons = new Map<string, WatchedLesson>();
+  for (const course of courses.values()) {
+    if (!course.canOpen) {
+      continue;
+    }
+    for (const lesson of flattenLessons(course.modules)) {
+      lessons.set(`${course.id}:${lesson.key}`, {
+        title: lesson.title,
+        courseTitle: course.title,
+        href: stepHref(course.id, { kind: "lesson", key: lesson.key }),
+        minutes: lesson.estimatedMinutes,
+        thumbnailUrl: lesson.thumbnailUrl ?? null,
+      });
+    }
+  }
+  return recentlyWatched(
+    recent.map((row) => ({
+      courseId: row.course_id,
+      lessonKey: row.lesson_key,
+      status: row.status,
+      positionSeconds: row.position_seconds,
+      lastViewedAt: row.last_viewed_at,
+      completedAt: row.completed_at,
+    })),
+    lessons,
+    limit,
+  );
 }
