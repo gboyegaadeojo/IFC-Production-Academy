@@ -10,7 +10,10 @@ test("anyone can read the guides, signed in or not", async ({ page }) => {
   await expect(page).toHaveURL(/\/help$/);
   // Signed out, there's no app navigation that would only lead back to sign-in, just Sign in.
   await expect(page.getByRole("navigation", { name: "Academy" })).toHaveCount(0);
-  await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/sign-in");
+  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveAttribute(
+    "href",
+    "/sign-in",
+  );
 
   await page.getByLabel("Search the guides").fill("practical");
   await expect(page.getByRole("main").getByRole("link", { name: /^Training/ })).toBeVisible();
