@@ -2310,7 +2310,8 @@ export type Database = {
         | "certificate_ready"
         | "new_course"
         | "sop_updated"
-        | "mentor_note";
+        | "mentor_note"
+        | "role_granted";
       onboarding_step_kind:
         | "trigger_form"
         | "trigger_manual"

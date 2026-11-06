@@ -27,7 +27,8 @@ export type NotificationKind =
   | "certificate_ready"
   | "new_course"
   | "sop_updated"
-  | "mentor_note";
+  | "mentor_note"
+  | "role_granted";
 
 /** These stay in the app, so there's nothing to choose (decision 2026-11-05). */
 export const APP_ONLY_KINDS: readonly NotificationKind[] = [
@@ -56,6 +57,7 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "cover_open",
   "approved_to_serve",
   "mentor_note",
+  "role_granted",
   ...APP_ONLY_KINDS,
 ];
 
@@ -79,6 +81,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   cover_open: "When a spot still needs cover close to the service",
   approved_to_serve: "When I'm approved to serve in a role",
   mentor_note: "When my mentor or mentee shares a note",
+  role_granted: "When a leader gives me a role, such as Department Leader",
   certificate_ready: "When a certificate is ready",
   new_course: "When my department has a new course",
   sop_updated: "When an SOP in my department is updated",
@@ -130,6 +133,7 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
     id: "leading",
     title: "Leading",
     kinds: [
+      "role_granted",
       "assessment_requested",
       "join_requested",
       "cover_open",
@@ -144,7 +148,8 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
 export const NOTIFICATION_GROUP_HINTS: Record<NotificationGroup["id"], string> = {
   serving: "Being scheduled, reminders, cover requests, and schedule changes",
   training: "Joining, courses a leader asks you to take, nudges, results, approvals, and mentoring",
-  leading: "Join requests, people ready for an assessment, SOP reviews, and onboarding follow-ups",
+  leading:
+    "Roles a leader gives you, join requests, people ready for an assessment, SOP reviews, and onboarding follow-ups",
 };
 
 export type GroupChoice = "on" | "off" | "some";
@@ -250,6 +255,7 @@ const BUTTON_LABELS: Record<NotificationKind, string> = {
   new_course: "See the course",
   sop_updated: "Read the update",
   mentor_note: "Read the note",
+  role_granted: "See what you can do",
 };
 
 export function emailButtonLabel(kind: string): string {
