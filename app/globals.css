@@ -91,13 +91,8 @@
   --paper-muted: #575a66;
   --paper-rule: #d8d5cd;
 
-  /*
-   * Photography (sign-in hero): the same in every theme, since the photo is. Amber for the
-   * caption's kicker only; warm white for text over the photo.
-   */
+  /* Behind photos and covers: the same in every theme, since a picture is. */
   --photo-bg: #0b0a09;
-  --photo-accent: #d4a76a;
-  --photo-text: #e7e5e4;
 
   /* Motion (DESIGN §5): explains change, never decorates. Zeroed for reduced motion below. */
   --duration-fast: 150ms;
@@ -171,28 +166,18 @@
   }
 }
 
-/* Sign-in entrance (DESIGN §5): a short rise for the text, a gentle settle for the photo. */
+/* Sign-in entrance (DESIGN §5): a short rise for each part of the page. */
 @keyframes auth-rise {
   from {
     opacity: 0;
     transform: translateY(12px);
   }
 }
-@keyframes auth-settle {
-  from {
-    opacity: 0;
-    transform: scale(1.025);
-  }
-}
 .auth-rise {
   animation: auth-rise 450ms var(--ease-standard) both;
 }
-.auth-settle {
-  animation: auth-settle 1100ms var(--ease-standard) both;
-}
 @media (prefers-reduced-motion: reduce) {
-  .auth-rise,
-  .auth-settle {
+  .auth-rise {
     animation: none;
   }
 }

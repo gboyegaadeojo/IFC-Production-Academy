@@ -1,7 +1,7 @@
 # Sign in with Planning Center
 
 The production team signs in with their Planning Center account (checklist app US-01). Planning
-Center governs sign-in; the email link stays under "Use an email link instead" for people who only
+Center governs sign-in; the email link stays behind "Sign in with an email link" for people who only
 want training. A sign-in without Planning Center that has people choose their departments is
 planned as the very last piece of work.
 

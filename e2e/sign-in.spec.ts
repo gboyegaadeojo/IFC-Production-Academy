@@ -6,7 +6,7 @@ import { pressUntil } from "./support/admin-nav";
 test("a signed-out visitor is sent to sign-in", async ({ page }) => {
   await page.goto("/home");
   await expect(page).toHaveURL(/\/sign-in/);
-  await expect(page.getByRole("heading", { name: /Built to serve/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Learn it. Serve it." })).toBeVisible();
 });
 
 test("the sign-in page offers an email link only", async ({ page }) => {

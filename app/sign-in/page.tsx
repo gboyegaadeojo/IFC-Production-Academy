@@ -9,110 +9,86 @@ import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
 import { pcoSignInEnabled } from "@/lib/data/planning-center-auth";
 import { safeNextPath, signInErrorMessage } from "@/lib/domain/auth";
+import { EmailOption } from "./email-option";
 import { PlanningCenterButton } from "./planning-center-button";
 import { SignInForm } from "./sign-in-form";
 
 export const metadata: Metadata = { title: "Sign in" };
 
+/** The department hues, as a quiet row above the headline. Decorative. */
+const HUES = ["--dept-blue", "--dept-teal", "--dept-coral", "--dept-violet", "--dept-amber"];
+
 /**
- * Sign-in (redesigned 2026-11-01 from G's approved mock): the brand, an editorial welcome and
- * Planning Center sign-in on the left, a cinematic production photo on the right. On phones the
- * photo becomes a short banner above. The photo is a licensed stock image for now (docs/assets.md);
- * replacing public/sign-in/hero-*.webp swaps in IFC's own shoot. Sign-in itself is unchanged.
+ * Sign-in, option A "Focus" (approved 2026-11-06, replacing the photo layout of 2026-11-01): the
+ * brand and light or dark at the top, a large headline, then one Planning Center button with the
+ * email link as a second, quieter button. Centred on wide screens; on a phone the buttons sit low,
+ * within reach of a thumb. Sign-in itself is unchanged.
  */
 export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
   const planningCenter = pcoSignInEnabled();
   return (
-    <main id="main" className="grid min-h-dvh flex-1 bg-bg lg:grid-cols-[42fr_58fr]">
-      <Hero />
-      <div className="flex flex-col justify-between gap-12 px-5 pt-8 pb-8 sm:px-10 lg:min-h-dvh lg:px-[clamp(2.5rem,5vw,4.5rem)] lg:py-11">
-        <p className="auth-rise hidden items-center gap-3 text-small font-semibold tracking-[0.16em] text-text lg:flex">
+    <main
+      id="main"
+      className="flex min-h-dvh flex-1 flex-col bg-bg px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-12 sm:py-8"
+    >
+      <div className="auth-rise flex items-center justify-between gap-4">
+        <p className="flex items-center gap-3 text-small font-bold tracking-[0.14em] text-text">
           <IfcMark className="mark-on-theme" height={18} />
           IFC PRODUCTION ACADEMY
         </p>
+        <Suspense fallback={null}>
+          <SignInAppearance />
+        </Suspense>
+      </div>
 
-        <div className="flex w-full max-w-[27.5rem] flex-col gap-5">
-          <h1 className="auth-rise text-[clamp(2.25rem,4vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.035em] text-balance [animation-delay:70ms]">
-            Built to serve.
-            <br />
-            Trained to excel.
-          </h1>
-          <p className="auth-rise max-w-[40ch] text-body leading-relaxed text-text-secondary [animation-delay:140ms]">
-            Develop your skills, grow your confidence, and serve with excellence. Your production
-            journey starts here.
-          </p>
-          <div className="auth-rise mt-3 [animation-delay:220ms]">
-            {/* A non-interactive placeholder, so nobody types into a form that is about to be replaced. */}
-            <Suspense fallback={<SignInSkeleton />}>
-              <SignInContent searchParams={searchParams} planningCenter={planningCenter} />
-            </Suspense>
+      <div className="mx-auto flex w-full max-w-[28rem] flex-1 flex-col justify-end gap-10 py-10 sm:justify-center sm:text-center">
+        <div className="flex flex-col gap-5 sm:items-center">
+          <div aria-hidden="true" className="auth-rise flex gap-1.5 [animation-delay:40ms]">
+            {HUES.map((hue) => (
+              <span
+                key={hue}
+                className="h-1.5 w-7 rounded-pill sm:w-8"
+                style={{ background: `var(${hue})` }}
+              />
+            ))}
           </div>
+          <h1 className="auth-rise text-[clamp(2.75rem,8vw,3.75rem)] leading-[1.02] font-extrabold tracking-[-0.04em] text-balance [animation-delay:80ms]">
+            Learn it. Serve it.
+          </h1>
+          <p className="auth-rise text-body leading-relaxed text-text-secondary [animation-delay:140ms] sm:text-lead">
+            Training for the IFC production team. Your lessons, your Sunday checklist, and your
+            schedule, in one place.
+          </p>
+        </div>
+        <div className="auth-rise text-left [animation-delay:220ms]">
+          {/* A non-interactive placeholder, so nobody types into a form that is about to be replaced. */}
+          <Suspense fallback={<SignInSkeleton />}>
+            <SignInContent searchParams={searchParams} planningCenter={planningCenter} />
+          </Suspense>
+        </div>
+      </div>
+
+      <div className="auth-rise flex flex-col gap-2 border-t border-border pt-4 text-small text-text-secondary [animation-delay:300ms] sm:flex-row sm:items-center sm:justify-between sm:border-t-0 sm:pt-0">
+        <p className="hidden text-text-muted sm:block">
+          Immanuel Fellowship Church · Production Ministry
+        </p>
+        <p className="flex flex-wrap items-center gap-x-5 gap-y-1">
           {/* For people who aren't on the team yet. The form needs no account. */}
-          <p className="auth-rise text-small text-text-secondary [animation-delay:260ms]">
-            Want to serve with us?{" "}
+          <span>
+            New here?{" "}
             <Link
               href="/serve-with-us"
               className="font-medium text-accent-light underline underline-offset-4"
             >
               Join the production team
             </Link>
-          </p>
-        </div>
-
-        <div className="auth-rise flex flex-wrap items-end justify-between gap-4 [animation-delay:300ms]">
-          <div>
-            <p className="text-small tracking-[0.04em] text-text-secondary">
-              Learn. Practice. Grow.
-            </p>
-            <p className="mt-1.5 text-small text-text-muted">
-              Immanuel Fellowship Church · Production Ministry
-            </p>
-            <Link href="/help" className="text-small underline">
-              Help and guides
-            </Link>
-          </div>
-          <Suspense fallback={null}>
-            <SignInAppearance />
-          </Suspense>
-        </div>
+          </span>
+          <Link href="/help" className="underline underline-offset-4">
+            Help and guides
+          </Link>
+        </p>
       </div>
     </main>
-  );
-}
-
-/** The photo: a full-height panel from 1024px, a short banner above the form on phones. */
-function Hero() {
-  return (
-    <div className="relative h-56 overflow-hidden bg-[var(--photo-bg)] sm:h-64 lg:order-last lg:h-auto lg:min-h-dvh">
-      <picture>
-        <source media="(min-width: 1024px)" srcSet="/sign-in/hero-1600.webp" type="image/webp" />
-        {/* Decorative: the page says everything the photo does. */}
-        <img
-          src="/sign-in/hero-900.webp"
-          alt=""
-          width={1600}
-          height={1020}
-          fetchPriority="high"
-          className="auth-settle absolute inset-0 size-full object-cover object-[30%_50%]"
-        />
-      </picture>
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 bg-[radial-gradient(120%_90%_at_60%_40%,transparent_50%,rgb(0_0_0/0.55)_100%),linear-gradient(to_top,rgb(0_0_0/0.65),transparent_45%)]"
-      />
-      <p className="text-white absolute top-4 left-4 flex items-center gap-2.5 text-small font-semibold tracking-[0.16em] lg:hidden">
-        <IfcMark height={14} />
-        IFC PRODUCTION ACADEMY
-      </p>
-      <div className="absolute bottom-[clamp(1.5rem,4vw,3.25rem)] left-[clamp(1.5rem,4vw,3.5rem)] hidden max-w-[32ch] lg:block">
-        <p className="mb-2 text-small font-semibold tracking-[0.2em] text-[var(--photo-accent)]">
-          EVERY ROLE MATTERS.
-        </p>
-        <p className="text-body leading-relaxed text-[var(--photo-text)]">
-          Behind every great production is a team committed to excellence.
-        </p>
-      </div>
-    </div>
   );
 }
 
@@ -126,7 +102,7 @@ function SignInSkeleton() {
       <p role="status" className="sr-only">
         Loading sign-in…
       </p>
-      <div className="h-[54px] rounded-button bg-hover motion-safe:animate-pulse" />
+      <div className="h-[54px] rounded-pill bg-hover motion-safe:animate-pulse" />
     </div>
   );
 }
@@ -164,16 +140,12 @@ async function SignInContent({
         </form>
       ) : planningCenter ? (
         // Planning Center governs sign-in (G, 2026-11-01); an email link stays for training only.
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-3">
           <PlanningCenterButton href={`/auth/planning-center?next=${encodeURIComponent(next)}`} />
-          <details open={error !== null} className="group">
-            <summary className="flex min-h-control w-fit cursor-pointer items-center text-small text-text-secondary underline decoration-border-strong underline-offset-4 hover:text-text">
-              Not on a production team? Use an email link instead
-            </summary>
-            <div className="mt-4">
-              <SignInForm />
-            </div>
-          </details>
+          <EmailOption initiallyOpen={error !== null} />
+          <p className="text-center text-small text-text-muted">
+            Use Planning Center if you&apos;re on a production team.
+          </p>
         </div>
       ) : (
         <SignInForm />

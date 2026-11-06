@@ -78,7 +78,7 @@ test("after signing out, Back does not show a signed-in page", async ({ page }, 
 
   await page.goBack();
   await expect(page).toHaveURL(/\/sign-in/);
-  await expect(page.getByRole("heading", { name: /Built to serve/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Learn it. Serve it." })).toBeVisible();
   await expect(page.getByRole("button", { name: /account menu$/ })).toHaveCount(0);
 });
 
