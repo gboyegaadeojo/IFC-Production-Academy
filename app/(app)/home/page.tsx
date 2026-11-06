@@ -35,6 +35,7 @@ import {
   type PlanItem,
   type PlanNext,
 } from "@/lib/domain/coming-up";
+import { serviceChecklistHref } from "@/lib/domain/checklists";
 import { homeState } from "@/lib/domain/home";
 import { volunteerPathways } from "@/lib/domain/onboarding";
 import { greetingName } from "@/lib/domain/people";
@@ -262,6 +263,11 @@ async function TrainingContent() {
               {thisMonth.map((assignment) => (
                 <li key={assignment.id}>
                   <ServiceRow
+                    href={
+                      assignment.status === "pending"
+                        ? "/schedule"
+                        : serviceChecklistHref(assignment.event.id, assignment.roleId)
+                    }
                     startsAt={assignment.event.startsAt}
                     role={assignment.roleName}
                     event={assignment.event.title}
@@ -515,13 +521,20 @@ function WatchRing({ percent }: { percent: number }) {
   );
 }
 
+/**
+ * A service this month, as a link to what to do next: reply on Schedule, or open that service's
+ * checklist on your position. Names wrap rather than cut off, so you can always read them (G,
+ * 2026-11-06).
+ */
 function ServiceRow({
+  href,
   startsAt,
   role,
   event,
   label,
   trained,
 }: {
+  href: string;
   startsAt: string;
   role: string;
   event: string;
@@ -530,7 +543,10 @@ function ServiceRow({
 }) {
   const start = new Date(startsAt);
   return (
-    <div className="flex items-center gap-3 py-3">
+    <Link
+      href={href}
+      className="-mx-2 flex items-start gap-3 rounded-button px-2 py-3 transition-surface hover:bg-hover"
+    >
       <span className="flex w-11 shrink-0 flex-col items-center rounded-button bg-card py-1">
         <span className="text-[0.6875rem] font-bold text-error uppercase">
           {WEEKDAY.format(start)}
@@ -539,14 +555,15 @@ function ServiceRow({
           {DAY_OF_MONTH.format(start)}
         </span>
       </span>
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate font-semibold">{role}</span>
-        <span className="truncate text-small text-text-muted">
+      <span className="flex min-w-0 flex-1 flex-col items-start gap-1">
+        <span className="leading-snug font-semibold break-words">{role}</span>
+        <span className="text-small leading-snug break-words text-text-muted">
           {event} · {TIME.format(start)}
         </span>
+        <StatusBadge tone={trained ? "success" : "pending"}>{label}</StatusBadge>
       </span>
-      <StatusBadge tone={trained ? "success" : "pending"}>{label}</StatusBadge>
-    </div>
+      <ChevronRightIcon className="mt-1 size-4 shrink-0 text-text-muted" />
+    </Link>
   );
 }
 

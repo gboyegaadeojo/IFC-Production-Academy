@@ -12,7 +12,7 @@
 
 In a row that scrolls sideways, the next card peeks in at the edge, and the dots underneath show where you are. On a tablet or computer, use the arrow buttons beside the heading.
 
-On a wide screen, **This month** (your services) sits beside your next service. Your notifications are under the bell.
+On a wide screen, **This month** (your services) sits beside your next service. Choose one to do what's next: if it says **Please reply**, it opens Schedule; otherwise it opens that service's checklist on your position. Your notifications are under the bell.
 
 **Getting started** shows instead of the plan when you're new: add your name, start your first course, join a department, and get the app.
 
