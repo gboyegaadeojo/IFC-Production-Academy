@@ -44,7 +44,8 @@ test("a course poster opens the summary, not the first lesson", async ({ page })
   await signInByEmail(page, "avery.volunteer@example.com");
   await page.goto("/courses");
   const course = "cccccccc-0000-4000-8000-000000000001";
-  await page.locator(`a[href="/courses/${course}"]`).first().click();
+  // Phones show rows and wider screens a grid, so click the one that's showing.
+  await page.locator(`a[href="/courses/${course}"]`).filter({ visible: true }).first().click();
   await page.waitForURL(`**/courses/${course}`);
   await expect(page.getByRole("link", { name: /Start the course|Continue/ }).first()).toBeVisible();
 });
