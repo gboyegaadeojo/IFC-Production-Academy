@@ -5,7 +5,8 @@ import { useState } from "react";
 /**
  * "Continue with Planning Center": a plain link to the existing sign-in route, with a busy state
  * after the first press so it can't be pressed twice while Planning Center loads. The look was
- * approved in the sign-in mock (G, 2026-11-01): the inverse of the page, not the purple action.
+ * approved in the sign-in mock (G, 2026-11-01; a pill since option A, 2026-11-06): the inverse of
+ * the page, not the purple action.
  */
 export function PlanningCenterButton({ href }: { href: string }) {
   const [busy, setBusy] = useState(false);
@@ -21,7 +22,7 @@ export function PlanningCenterButton({ href }: { href: string }) {
         }
         setBusy(true);
       }}
-      className="inline-flex h-[54px] w-full items-center justify-center gap-2.5 rounded-button bg-text px-5 text-body font-semibold text-bg transition-[opacity,transform] duration-[var(--duration-base)] ease-standard hover:opacity-90 active:translate-y-px aria-busy:cursor-progress aria-busy:opacity-80"
+      className="inline-flex h-[54px] w-full items-center justify-center gap-2.5 rounded-pill bg-text px-5 text-body font-semibold text-bg transition-[opacity,transform] duration-[var(--duration-base)] ease-standard hover:opacity-90 active:translate-y-px aria-busy:cursor-progress aria-busy:opacity-80"
     >
       {busy ? (
         <span

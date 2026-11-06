@@ -38,7 +38,7 @@ async function expectAccessible(page: Page, name: string) {
 
 test("signed-out pages are accessible", async ({ page }) => {
   await page.goto("/sign-in");
-  await expect(page.getByRole("heading", { name: /Built to serve/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Learn it. Serve it." })).toBeVisible();
   await expectAccessible(page, "sign-in");
   const themeSwitch = page.getByRole("switch", { name: "Dark mode" });
   await themeSwitch.click();
