@@ -99,7 +99,7 @@ async function Account({ placement }: { placement: "header" | "rail" }) {
       }
     >
       <ThemeToggle initial={appearance} />
-      <NotificationsBell unread={unread} />
+      <NotificationsBell unread={unread} placement={placement} />
       <AccountMenu
         displayName={user.displayName}
         initials={initials(user.displayName)}

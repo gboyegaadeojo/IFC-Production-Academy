@@ -15,6 +15,7 @@ const LEARNER = [
   "/serve",
   "/schedule",
   "/notifications",
+  "/notifications/settings",
   "/profile",
   "/get-the-app",
   "/mentoring",

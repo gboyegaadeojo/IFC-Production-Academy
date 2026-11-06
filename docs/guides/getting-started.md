@@ -44,7 +44,19 @@ Open your name, then choose your name at the top of the menu. Your profile shows
 
 ## Notifications
 
-Until the Academy launches, notifications stay in the app. Choose the bell beside your name. A dot on it means something is unread. Everything shows here, such as being scheduled or an assessment result. Below that, you choose which kinds reach your phone and which come by email. New courses, certificates, and SOP updates stay in the app. Once your phone has alerts on, you only get an email if a service is moved or cancelled, or for anything you've turned off for your phone.
+Until the Academy launches, notifications stay in the app. Choose the bell beside your name. A dot on it means something is unread. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it slides up from the bottom. Choose the bell again, or anywhere outside the panel, to close it.
+
+- **Mark all read** clears the dot.
+- **See all notifications** opens the full list.
+- The settings button (the sliders) opens **Notification settings**.
+
+### Notification settings
+
+Here you turn on alerts for the device you're using, and choose what also reaches your phone or your email. There's one choice for each group: **Serving**, **Training**, and, for leaders, **Leading**. Each has a **Phone** button and an **Email** button. A tick means it's on. A dash means only some kinds in that group are on.
+
+To choose kinds one by one, open **Fine-tune each alert**. Most people never need it.
+
+New courses, certificates, and SOP updates stay in the app. Once your phone has alerts on, you only get an email if a service is moved or cancelled, or for anything you've turned off for your phone. Every email has a link back to these settings.
 
 ## Put it on your phone
 

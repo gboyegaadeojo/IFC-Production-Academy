@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   APP_ONLY_KINDS,
   emailChoiceGroups,
+  groupChoice,
+  isNotificationGroupId,
   isQuietHours,
   NOTIFICATION_GROUPS,
   NOTIFICATION_KIND_LABELS,
@@ -41,7 +43,7 @@ describe("notificationEmail", () => {
     expect(email.html).toContain("Fake service &amp; more");
     expect(email.html).not.toContain("<Camera 2>");
     expect(email.text).toContain("https://academy.example.org/schedule");
-    expect(email.text).toContain("https://academy.example.org/notifications");
+    expect(email.text).toContain("https://academy.example.org/notifications/settings");
   });
 
   it("has one button that says what it does, and the message as the preview line", () => {
@@ -128,7 +130,7 @@ describe("onboardingEmail", () => {
 
   it("sends people with an account to their settings, and asks others to reply", () => {
     const member = onboardingEmail({ subject: "Hi", body: "Welcome", hasAccount: true }, site);
-    expect(member.text).toContain("https://academy.example.org/notifications");
+    expect(member.text).toContain("https://academy.example.org/notifications/settings");
     const newcomer = onboardingEmail({ subject: "Hi", body: "Welcome", hasAccount: false }, site);
     expect(newcomer.text).not.toContain("/notifications");
     expect(newcomer.text).toContain("reply and let us know");
@@ -157,6 +159,29 @@ describe("notification kinds", () => {
     const grouped = NOTIFICATION_GROUPS.flatMap((group) => group.kinds);
     const offered = NOTIFICATION_KINDS.filter((kind) => !APP_ONLY_KINDS.includes(kind));
     expect(grouped.toSorted()).toEqual(offered.sort());
+  });
+});
+
+describe("groupChoice", () => {
+  const all = (on: boolean) =>
+    Object.fromEntries(NOTIFICATION_KINDS.map((kind) => [kind, on])) as Record<
+      (typeof NOTIFICATION_KINDS)[number],
+      boolean
+    >;
+  const serving = NOTIFICATION_GROUPS[0]!.kinds;
+
+  it("is on or off when every kind in the group agrees", () => {
+    expect(groupChoice(serving, all(true))).toBe("on");
+    expect(groupChoice(serving, all(false))).toBe("off");
+  });
+
+  it("is some when kinds were fine-tuned one by one", () => {
+    expect(groupChoice(serving, { ...all(true), [serving[0]!]: false })).toBe("some");
+  });
+
+  it("knows the group ids", () => {
+    expect(isNotificationGroupId("serving")).toBe(true);
+    expect(isNotificationGroupId("everything")).toBe(false);
   });
 });
 
