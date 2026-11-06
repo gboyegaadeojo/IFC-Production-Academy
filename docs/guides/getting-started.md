@@ -8,6 +8,8 @@ The Academy is where the production team at Immanuel Fellowship Church learns, g
 - **If you're not,** choose **Sign in with an email link**, type your email, and open the link we send you. It works once. There's no password to remember.
 - **If you'd like to join the team,** choose **Join the production team** on the sign-in page and fill in the form. You don't need an account for it.
 
+You can read these guides without signing in: choose **Help and guides** on the sign-in page. Choose **Sign in** at the top to go back.
+
 ## Your profile
 
 Open your name, then choose your name at the top of the menu, to see the quizzes you've passed, how many lessons you've completed, and your best score on each quiz. Open a quiz to see each try. Only you and your leaders can see these. They don't decide whether you serve.

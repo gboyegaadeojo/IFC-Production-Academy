@@ -8,6 +8,9 @@ test("anyone can read the guides, signed in or not", async ({ page }) => {
   await page.goto("/help");
   await expect(page.getByRole("heading", { level: 1, name: "Help and guides" })).toBeVisible();
   await expect(page).toHaveURL(/\/help$/);
+  // Signed out, there's no app navigation that would only lead back to sign-in, just Sign in.
+  await expect(page.getByRole("navigation", { name: "Academy" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/sign-in");
 
   await page.getByLabel("Search the guides").fill("practical");
   await expect(page.getByRole("main").getByRole("link", { name: /^Training/ })).toBeVisible();
@@ -39,4 +42,6 @@ test("Help in the menu opens the guide for the page you're on", async ({ page, i
   await page.getByRole("link", { name: "Help" }).click();
   await expect(page).toHaveURL(/\/help\/schedule$/);
   await expect(page.getByRole("heading", { level: 1, name: "Schedule" })).toBeVisible();
+  // Signed in, help keeps the app's navigation.
+  await expect(page.getByRole("navigation", { name: "Academy" }).first()).toBeAttached();
 });
