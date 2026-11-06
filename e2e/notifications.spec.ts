@@ -24,6 +24,7 @@ test("the bell opens a panel, and tapping it again closes it", async ({ page }, 
   await expect(panel.getByRole("link", { name: "See all notifications" })).toBeVisible();
   // Mark all read is always there, so people can find it, even with nothing unread.
   await expect(panel.getByRole("button", { name: "Mark all read" })).toBeVisible();
+  await expect(panel.getByRole("button", { name: "Clear all" })).toBeVisible();
 
   await bell(page).click();
   await expect(panel).toHaveCount(0);

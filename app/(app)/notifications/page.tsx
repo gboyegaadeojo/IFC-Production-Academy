@@ -1,23 +1,14 @@
-import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ActionForm } from "@/components/ui/action-form";
-import {
-  CalendarRangeIcon,
-  CheckIcon,
-  ClockIcon,
-  FileTextIcon,
-  GraduationCapIcon,
-  SettingsIcon,
-  UserCheckIcon,
-  UsersIcon,
-} from "@/components/ui/icons";
+import { NotificationIcon } from "@/components/notification-icon";
+import { ChevronRightIcon, SettingsIcon } from "@/components/ui/icons";
 import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
 import { getMyNotifications, type AppNotification } from "@/lib/data/notifications";
 import { formatDateTime } from "@/lib/domain/admin";
-import { relativeTime, type NotificationKind } from "@/lib/domain/notifications";
+import { emailButtonLabel, relativeTime } from "@/lib/domain/notifications";
 import { markAllReadAction } from "./actions";
 
 export const metadata: Metadata = { title: "Notifications" };
@@ -91,46 +82,13 @@ async function NotificationsContent() {
   );
 }
 
-const KIND_ICON: Record<
-  NotificationKind,
-  { icon: (p: { className?: string }) => ReactNode; tone: string }
-> = {
-  assignment_scheduled: { icon: CalendarRangeIcon, tone: "text-warning" },
-  serving_reminder: { icon: CalendarRangeIcon, tone: "text-warning" },
-  cover_requested: { icon: UsersIcon, tone: "text-warning" },
-  schedule_update: { icon: CalendarRangeIcon, tone: "text-warning" },
-  assessment_recorded: { icon: CheckIcon, tone: "text-success" },
-  competency_expiring: { icon: ClockIcon, tone: "text-warning" },
-  membership_approved: { icon: GraduationCapIcon, tone: "text-accent-light" },
-  course_assigned: { icon: GraduationCapIcon, tone: "text-accent-light" },
-  learning_nudge: { icon: GraduationCapIcon, tone: "text-accent-light" },
-  mentoring_paired: { icon: UsersIcon, tone: "text-accent-light" },
-  assessment_requested: { icon: UserCheckIcon, tone: "text-accent-light" },
-  sop_review_due: { icon: FileTextIcon, tone: "text-text-secondary" },
-  onboarding_task: { icon: UserCheckIcon, tone: "text-warning" },
-  onboarding_update: { icon: UsersIcon, tone: "text-accent-light" },
-  service_changed: { icon: CalendarRangeIcon, tone: "text-warning" },
-  join_requested: { icon: UsersIcon, tone: "text-accent-light" },
-  cover_open: { icon: UsersIcon, tone: "text-warning" },
-  approved_to_serve: { icon: CheckIcon, tone: "text-success" },
-  certificate_ready: { icon: CheckIcon, tone: "text-success" },
-  new_course: { icon: GraduationCapIcon, tone: "text-accent-light" },
-  sop_updated: { icon: FileTextIcon, tone: "text-text-secondary" },
-  mentor_note: { icon: UsersIcon, tone: "text-accent-light" },
-};
-
 function FeedItem({ notification, now }: { notification: AppNotification; now: Date }) {
-  const { icon: Icon, tone } = KIND_ICON[notification.kind];
   return (
     <Link
       href={notification.link ?? "/notifications"}
       className="grid min-h-touch grid-cols-[2.25rem_minmax(0,1fr)_auto] items-start gap-3 px-5 py-3.5 transition-surface hover:bg-card"
     >
-      <span
-        className={`flex size-9 items-center justify-center rounded-pill border border-border bg-card ${tone}`}
-      >
-        <Icon className="size-4" />
-      </span>
+      <NotificationIcon kind={notification.kind} />
       <span className="flex min-w-0 flex-col gap-0.5">
         <span className="flex items-center gap-2">
           {notification.read ? null : (
@@ -144,6 +102,10 @@ function FeedItem({ notification, now }: { notification: AppNotification; now: D
         {notification.body ? (
           <span className="text-small text-text-secondary">{notification.body}</span>
         ) : null}
+        <span className="mt-0.5 flex items-center gap-1 text-small font-semibold text-accent-light">
+          {emailButtonLabel(notification.kind)}
+          <ChevronRightIcon className="size-3.5" />
+        </span>
       </span>
       <time
         dateTime={notification.createdAt}

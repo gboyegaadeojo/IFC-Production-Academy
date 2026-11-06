@@ -62,6 +62,29 @@ select pg_temp.act_as('92000000-0000-4000-8000-000000000001');
 select is((select count(*)::int from public.notifications), 2, 'the volunteer reads their own');
 select public.mark_notifications_read();
 select is((select count(*)::int from public.notifications where read_at is null), 0, 'and marks them read');
+
+-- Clearing hides one, or all, of your own; nobody clears someone else's.
+reset role;
+select pg_temp.act_as('92000000-0000-4000-8000-000000000002');
+select public.clear_notifications();
+reset role;
+select is(
+  (select count(*)::int from public.notifications
+    where user_id = '92000000-0000-4000-8000-000000000001' and cleared_at is not null),
+  0, 'clearing never touches someone else''s notifications'
+);
+select pg_temp.act_as('92000000-0000-4000-8000-000000000001');
+select public.clear_notifications(array[(
+  select id from public.notifications where kind = 'membership_approved'
+)]);
+select is((select count(*)::int from public.notifications where cleared_at is null), 1, 'a volunteer clears one');
+select public.clear_notifications();
+select is((select count(*)::int from public.notifications where cleared_at is null), 0, 'and then the rest');
+select is((select count(*)::int from public.notifications), 2, 'cleared notifications are kept, not deleted');
+select throws_ok(
+  $$ update public.notifications set cleared_at = null $$,
+  '42501', null, 'clearing happens only through clear_notifications'
+);
 select throws_ok($$ update public.notifications set title = 'x' $$, '42501', null, 'notifications are not edited directly');
 select lives_ok($$ select public.set_notification_email('assessment_recorded', false) $$, 'a volunteer turns off one kind of email');
 select throws_ok(

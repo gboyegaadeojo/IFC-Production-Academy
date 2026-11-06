@@ -1393,6 +1393,7 @@ export type Database = {
           email_attempts: number;
           emailed_at: string | null;
           push_status: "pending" | "sent" | "none";
+          cleared_at: string | null;
         };
         Insert: never;
         Update: never;
@@ -2201,6 +2202,7 @@ export type Database = {
       };
       end_mentoring: { Args: { p_relationship_id: string; p_reason?: string }; Returns: undefined };
       mark_notifications_read: { Args: { p_ids?: string[] | null }; Returns: undefined };
+      clear_notifications: { Args: { p_ids?: string[] | null }; Returns: undefined };
       set_notification_email: {
         Args: {
           p_kind: Database["public"]["Enums"]["notification_kind"];

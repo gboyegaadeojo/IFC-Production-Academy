@@ -21,6 +21,7 @@ export async function getMyNotifications(userId: string): Promise<AppNotificatio
     .from("notifications")
     .select("id, kind, title, body, link, created_at, read_at")
     .eq("user_id", userId)
+    .is("cleared_at", null)
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) {
@@ -49,13 +50,21 @@ export async function getUnreadCount(userId: string): Promise<number> {
     .from("notifications")
     .select("id", { count: "exact", head: true })
     .eq("user_id", userId)
-    .is("read_at", null);
+    .is("read_at", null)
+    .is("cleared_at", null);
   return error ? 0 : (count ?? 0);
 }
 
 export async function markAllRead(): Promise<boolean> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("mark_notifications_read", { p_ids: null });
+  return !error;
+}
+
+/** Hides the given notifications, or every one, from the bell and the list (G, 2026-11-06). */
+export async function clearNotifications(ids: readonly string[] | null): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("clear_notifications", { p_ids: ids ? [...ids] : null });
   return !error;
 }
 
