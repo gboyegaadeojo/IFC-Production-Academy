@@ -14,7 +14,7 @@ On a wide screen, **This month** (your services) and your latest **Notifications
 
 **Getting started** shows instead of the plan when you're new: add your name, start your first course, join a department, and get the app.
 
- The **Library** in the side bar has **Courses** and **Explore**. On a phone, choose **Courses** on the bottom bar, then switch between **Courses** and **Explore** at the top.
+ The side bar has **Courses** and **Explore**. On a phone, choose **Courses** on the bottom bar, then switch between **Courses** and **Explore** at the top.
 
 ## Anyone can learn anything
 

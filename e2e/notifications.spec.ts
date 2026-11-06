@@ -12,7 +12,8 @@ test.beforeEach(async () => {
 test("a volunteer turns an email off and it stays off", async ({ page }, testInfo) => {
   const email = `e2e-notify-${testInfo.project.name}-${Date.now()}@example.com`;
   await signInByEmail(page, email);
-  await page.goto("/notifications");
+  // The bell beside the account button opens them, on a phone and in the side bar.
+  await page.getByRole("link", { name: /^Notifications/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Notifications" })).toBeVisible();
 
   // Device alerts live on Get the app (docs/runbooks/push-alerts.md), reached from here and from

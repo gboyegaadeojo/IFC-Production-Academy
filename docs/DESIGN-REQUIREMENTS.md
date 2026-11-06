@@ -75,9 +75,9 @@ You are the principal product designer, senior frontend engineer, and accessibil
 ### 3.1 Learner navigation
 Primary: **Home**, **Explore**, **My Learning**, **Resources** (only when implemented/available). Secondary: notifications, profile, account, and admin workspace (permission-gated). Do not expose dead destinations. For the initial product, hide or disable future navigation until real routes and content exist.
 
-**Desktop:** a persistent learner side bar from 768px, with the wordmark, the links, and the account (G, 2026-11-04, replacing the top bar). Keep main content generous, not confined to the existing `max-w-6xl` for all screens. Search appears only when functional.
+**Desktop and tablet:** a persistent learner side bar from 768px, 96px wide (mock 5, G, 2026-11-06): the mark, then each link as an icon with its name under it (the current one in a tinted pill), then the light or dark button, the bell, and your initials and first name, which open the account menu sideways. Admin lives in that menu. Keep main content generous, not confined to the existing `max-w-6xl` for all screens. Search appears only when functional.
 
-**Mobile:** 44px minimum interactive targets; compact top header, accessible menu/drawer; bottom navigation for five learner destinations (Training, Courses, Schedule, Checklist, SOPs; G, 2026-11-04), with Explore a switch at the top of Courses. Never use a desktop sidebar squeezed into a mobile viewport.
+**Mobile:** 44px minimum interactive targets; compact top header with the wordmark, then the light or dark button (one tap, not a slider), the bell, and your initials (mock 5, 2026-11-06); the account menu's top row is your name and opens your profile; bottom navigation for five learner destinations (Training, Courses, Schedule, Checklist, SOPs; G, 2026-11-04), with Explore a switch at the top of Courses. Never use a desktop sidebar squeezed into a mobile viewport.
 
 ### 3.2 Admin navigation
 A dedicated admin shell (revised 2026-11-01). In Admin, the sidebar replaces the Academy's top header.

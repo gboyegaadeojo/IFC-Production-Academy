@@ -13,7 +13,7 @@ test("a volunteer changes the name leaders see", async ({ page }, testInfo) => {
   await signInByEmail(page, email);
 
   await openAccountMenu(page);
-  await page.getByRole("link", { name: "Your profile" }).click();
+  await page.getByRole("link", { name: /View your profile/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Your profile" })).toBeVisible();
   await expect(page.getByText(email)).toBeVisible();
   await expect(page.getByText("Volunteer", { exact: true })).toBeVisible();

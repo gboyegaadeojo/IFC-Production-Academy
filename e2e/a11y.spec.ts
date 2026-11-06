@@ -62,7 +62,7 @@ test("learner pages are accessible and keyboard friendly", async ({ page }) => {
   await account.focus();
   await page.keyboard.press("Enter");
   await expect(account).toHaveAttribute("aria-expanded", "true");
-  await expect(page.getByRole("link", { name: "Your profile" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /View your profile/ })).toBeVisible();
   await expectAccessible(page, "account menu open");
   await page.keyboard.press("Escape");
   await expect(account).toHaveAttribute("aria-expanded", "false");
@@ -108,7 +108,7 @@ test("learner pages are accessible and keyboard friendly", async ({ page }) => {
   await expectAccessible(page, "SOP library");
 
   await openAccountMenu(page);
-  await page.getByRole("link", { name: "Your profile" }).click();
+  await page.getByRole("link", { name: /View your profile/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Your profile" })).toBeVisible();
   await expectAccessible(page, "profile");
 });

@@ -1,3 +1,4 @@
+import { MonitorIcon } from "@/components/ui/icons";
 import { getCurrentUser } from "@/lib/data/auth";
 import { canViewServiceDashboard } from "@/lib/data/service-dashboard";
 import { AcademyNavLink } from "./academy-nav";
@@ -13,7 +14,7 @@ export async function ServiceDashboardNavLink() {
   }
   return (
     <li className="only-on-computer">
-      <AcademyNavLink href="/service-dashboard" label="Service Dashboard" />
+      <AcademyNavLink href="/service-dashboard" label="Service Dashboard" icon={MonitorIcon} />
     </li>
   );
 }

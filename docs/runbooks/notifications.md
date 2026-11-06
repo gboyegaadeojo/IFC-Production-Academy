@@ -2,7 +2,7 @@
 
 The Academy writes a notification when something happens for a person: joining a department,
 being scheduled, a practical assessment result, a mentoring pairing, or an SOP they own coming
-due for review. Everyone sees theirs in the app under **Notifications** (account menu), and
+due for review. Everyone sees theirs in the app under **Notifications** (the bell beside their name), and
 chooses which kinds reach their phone and their email.
 
 ## What they look like

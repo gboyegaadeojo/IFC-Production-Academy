@@ -9,7 +9,7 @@ import {
   type Appearance,
 } from "@/lib/domain/appearance";
 
-/** Tells every toggle on the page, such as the sidebar's two copies. */
+/** Tells every toggle on the page, such as the phone bar's and the side bar's copies. */
 const THEME_EVENT = "theme-change";
 
 function subscribe(onChange: () => void) {
@@ -30,8 +30,8 @@ function apply(appearance: Appearance) {
 }
 
 /**
- * Light or dark, as a sliding switch beside the person's name and on the sign-in page (G,
- * 2026-11-03). On a touch screen the area you can tap is 44px, around the smaller switch.
+ * Light or dark in one tap: a round button showing the moon in dark and the sun in light (G,
+ * 2026-11-06, replacing the sliding switch). Still a switch to assistive technology.
  */
 export function ThemeToggle({ initial }: { initial: Appearance }) {
   const dark = useSyncExternalStore(
@@ -48,18 +48,9 @@ export function ThemeToggle({ initial }: { initial: Appearance }) {
       aria-label="Dark mode"
       title={dark ? "Switch to light" : "Switch to dark"}
       onClick={() => apply(dark ? "light" : "dark")}
-      className="relative inline-flex h-7 w-[3.125rem] shrink-0 items-center rounded-pill border border-border-strong bg-card text-text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-light pointer-coarse:after:absolute pointer-coarse:after:-inset-2"
+      className="relative flex size-10 shrink-0 items-center justify-center rounded-pill bg-card text-text transition-surface hover:bg-hover pointer-coarse:after:absolute pointer-coarse:after:-inset-0.5"
     >
-      <SunIcon className="absolute left-1 size-3.5" />
-      <MoonIcon className="absolute right-1 size-3.5" />
-      <span
-        aria-hidden="true"
-        className={`absolute top-0.5 left-0.5 flex size-[1.375rem] items-center justify-center rounded-pill bg-accent text-on-accent transition-transform duration-[var(--duration-base)] ease-standard motion-reduce:transition-none ${
-          dark ? "translate-x-[1.375rem]" : ""
-        }`}
-      >
-        <Icon className="size-3.5" />
-      </span>
+      <Icon className="size-5" />
     </button>
   );
 }
