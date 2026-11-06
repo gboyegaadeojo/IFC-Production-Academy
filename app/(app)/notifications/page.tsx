@@ -69,6 +69,8 @@ async function NotificationsContent() {
               variant="secondary"
               className="flex"
             />
+          ) : notifications.length > 0 ? (
+            <p className="text-small text-text-muted">Everything is read</p>
           ) : null}
         </div>
         {notifications.length === 0 ? (

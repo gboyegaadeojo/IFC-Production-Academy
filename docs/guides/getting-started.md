@@ -46,7 +46,7 @@ Open your name, then choose your name at the top of the menu. Your profile shows
 
 Until the Academy launches, notifications stay in the app. Choose the bell beside your name. A dot on it means something is unread. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it slides up from the bottom. Choose the bell again, or anywhere outside the panel, to close it.
 
-- **Mark all read** clears the dot.
+- **Mark all read** clears the dot. It's greyed out when everything is already read.
 - **See all notifications** opens the full list.
 - The settings button (the sliders) opens **Notification settings**.
 

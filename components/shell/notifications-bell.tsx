@@ -157,16 +157,16 @@ export function NotificationsBell({
                     Notifications
                   </h2>
                   <div className="flex items-center gap-1">
-                    {anyUnread ? (
-                      <button
-                        type="button"
-                        onClick={markAllRead}
-                        disabled={pending}
-                        className="flex min-h-touch items-center rounded-pill px-3 text-small font-semibold text-accent-light transition-surface hover:bg-hover disabled:opacity-60"
-                      >
-                        Mark all read
-                      </button>
-                    ) : null}
+                    {/* Always there, so people know where it is; greyed out with nothing unread. */}
+                    <button
+                      type="button"
+                      onClick={markAllRead}
+                      disabled={pending || !anyUnread}
+                      title={anyUnread ? undefined : "Everything is read"}
+                      className="flex min-h-touch items-center rounded-pill px-3 text-small font-semibold text-accent-light transition-surface hover:bg-hover disabled:cursor-default disabled:text-text-muted disabled:hover:bg-transparent"
+                    >
+                      Mark all read
+                    </button>
                     <Link
                       href="/notifications/settings"
                       aria-label="Notification settings"
