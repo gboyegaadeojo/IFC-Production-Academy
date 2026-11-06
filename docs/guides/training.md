@@ -54,7 +54,7 @@ On the course page, **About** says what you'll learn and **Quiz results** lists 
 
 ### Starting over
 
-Open a course you've started, choose **Actions**, then **Start over** to begin it again from the first lesson. The app warns you first and asks you to confirm.
+Open a course you've started, choose the round **…** button (Actions) at the top right, then **Start over** to begin it again from the first lesson. The app warns you first and asks you to confirm.
 
 It clears your completed lessons, your place in each video, and your quiz results for that course, so you'll retake its quizzes. Your certificate, any practical you've passed, and whether you're approved to serve all stay as they are. Leaders' reports show your new progress. You can't undo it yourself, but your old results are kept on record.
 

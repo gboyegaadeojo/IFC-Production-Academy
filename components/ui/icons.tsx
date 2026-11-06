@@ -23,6 +23,14 @@ function Icon({ children, className = "size-5" }: { children: ReactNode; classNa
 
 type IconProps = { className?: string };
 
+export const MoreHorizontalIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="5" cy="12" r="1" />
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="19" cy="12" r="1" />
+  </Icon>
+);
+
 export const MenuIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M4 7h16M4 12h16M4 17h16" />

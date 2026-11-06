@@ -231,12 +231,9 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           {started && summary?.next ? (
             <Link
               href={stepHref(course.id, summary.next)}
-              className={buttonClasses(
-                "primary",
-                "min-h-touch w-full px-4.5 font-semibold xl:w-auto",
-              )}
+              className={buttonClasses("primary", "w-fit rounded-pill px-5 font-semibold")}
             >
-              <PlayIcon className="size-4" />
+              <PlayIcon className="size-3.5" />
               Continue
               <span className="sr-only">: {summary.next.title}</span>
             </Link>
@@ -244,10 +241,7 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
             liveCertificate ? (
               <Link
                 href={`/certificates/${liveCertificate.reference}`}
-                className={buttonClasses(
-                  "primary",
-                  "min-h-touch w-full px-4.5 font-semibold xl:w-auto",
-                )}
+                className={buttonClasses("primary", "w-fit rounded-pill px-5 font-semibold")}
               >
                 View your certificate
               </Link>
@@ -263,12 +257,9 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           ) : !started && course.canOpen && first ? (
             <Link
               href={`/courses/${course.id}/lessons/${first.key}`}
-              className={buttonClasses(
-                "primary",
-                "min-h-touch w-full px-4.5 font-semibold xl:w-auto",
-              )}
+              className={buttonClasses("primary", "w-fit rounded-pill px-5 font-semibold")}
             >
-              <PlayIcon className="size-4" />
+              <PlayIcon className="size-3.5" />
               Start the course
             </Link>
           ) : !course.canOpen ? (
