@@ -28,7 +28,16 @@ export type NotificationKind =
   | "new_course"
   | "sop_updated"
   | "mentor_note"
-  | "role_granted";
+  | "role_granted"
+  | "role_removed"
+  | "membership_declined"
+  | "membership_removed"
+  | "skill_suspended"
+  | "certificate_withdrawn"
+  | "quiz_attempt_granted"
+  | "assignment_cancelled"
+  | "mentoring_ended"
+  | "course_unassigned";
 
 /** These stay in the app, so there's nothing to choose (decision 2026-11-05). */
 export const APP_ONLY_KINDS: readonly NotificationKind[] = [
@@ -58,6 +67,15 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "approved_to_serve",
   "mentor_note",
   "role_granted",
+  "role_removed",
+  "membership_declined",
+  "membership_removed",
+  "skill_suspended",
+  "certificate_withdrawn",
+  "quiz_attempt_granted",
+  "assignment_cancelled",
+  "mentoring_ended",
+  "course_unassigned",
   ...APP_ONLY_KINDS,
 ];
 
@@ -82,6 +100,15 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   approved_to_serve: "When I'm approved to serve in a role",
   mentor_note: "When my mentor or mentee shares a note",
   role_granted: "When a leader gives me a role, such as Department Leader",
+  role_removed: "When a role I have is removed",
+  membership_declined: "When a request to join a department isn't accepted",
+  membership_removed: "When I'm removed from a department",
+  skill_suspended: "When a leader pauses one of my skills",
+  certificate_withdrawn: "When a certificate of mine is withdrawn",
+  quiz_attempt_granted: "When I'm given another try at a quiz",
+  assignment_cancelled: "When I'm taken off a service",
+  mentoring_ended: "When my mentoring ends",
+  course_unassigned: "When a course is no longer assigned to me",
   certificate_ready: "When a certificate is ready",
   new_course: "When my department has a new course",
   sop_updated: "When an SOP in my department is updated",
@@ -113,6 +140,7 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "service_changed",
       "cover_requested",
       "schedule_update",
+      "assignment_cancelled",
     ],
   },
   {
@@ -127,6 +155,13 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "competency_expiring",
       "mentoring_paired",
       "mentor_note",
+      "membership_declined",
+      "membership_removed",
+      "skill_suspended",
+      "certificate_withdrawn",
+      "quiz_attempt_granted",
+      "mentoring_ended",
+      "course_unassigned",
     ],
   },
   {
@@ -140,16 +175,19 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "sop_review_due",
       "onboarding_task",
       "onboarding_update",
+      "role_removed",
     ],
   },
 ];
 
 /** What each group covers, in a line, on the settings page (refinements mock, 2026-11-06). */
 export const NOTIFICATION_GROUP_HINTS: Record<NotificationGroup["id"], string> = {
-  serving: "Being scheduled, reminders, cover requests, and schedule changes",
-  training: "Joining, courses a leader asks you to take, nudges, results, approvals, and mentoring",
+  serving:
+    "Being scheduled or taken off a service, reminders, cover requests, and schedule changes",
+  training:
+    "Joining, courses, nudges, results, approvals, certificates, mentoring, and changes a leader makes",
   leading:
-    "Roles a leader gives you, join requests, people ready for an assessment, SOP reviews, and onboarding follow-ups",
+    "Roles a leader gives or removes, join requests, people ready for an assessment, SOP reviews, and onboarding follow-ups",
 };
 
 export type GroupChoice = "on" | "off" | "some";
@@ -256,6 +294,15 @@ const BUTTON_LABELS: Record<NotificationKind, string> = {
   sop_updated: "Read the update",
   mentor_note: "Read the note",
   role_granted: "See what you can do",
+  role_removed: "See your profile",
+  membership_declined: "See departments",
+  membership_removed: "See your profile",
+  skill_suspended: "See your profile",
+  certificate_withdrawn: "See your profile",
+  quiz_attempt_granted: "Try the quiz again",
+  assignment_cancelled: "See your schedule",
+  mentoring_ended: "Open mentoring",
+  course_unassigned: "See the course",
 };
 
 export function emailButtonLabel(kind: string): string {

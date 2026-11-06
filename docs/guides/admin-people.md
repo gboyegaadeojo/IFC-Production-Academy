@@ -2,11 +2,11 @@
 
 ## Membership requests
 
-**Membership requests** lists people asking to join your department, oldest first. Choose **Approve**. To add a note or decline, choose **More**. A note or a reason for declining is optional, and it's kept in the history.
+**Membership requests** lists people asking to join your department, oldest first. Choose **Approve**. To add a note or decline, choose **More**. A note or a reason for declining is optional, and it's kept in the history. Either way, they get a notification. Your reason stays with leaders and is never sent to them.
 
 Approving makes someone part of the department's team. It doesn't approve them to serve. Courses are already open to anyone.
 
-The **Members** view lists who's in each department. To take someone out, choose **Remove**. Their progress and history are kept.
+The **Members** view lists who's in each department. To take someone out, choose **Remove**. Their progress and history are kept. They get a notification.
 
 ## Invitations
 
@@ -37,7 +37,7 @@ Only each person can turn alerts on, so someone listed as **Not on** may need a 
 **People and roles** lists everyone who has signed in, 50 to a page. Open a person to:
 
 - **Grant a role,** choosing a department if the role needs one. Pick a role to see what it lets someone do. They get a notification saying which role, where, and who gave it.
-- **Remove a role,** with a reason. Past roles stay listed.
+- **Remove a role,** with a reason. Past roles stay listed. They're told the role was removed.
 - **Change their account:** Suspend, Deactivate, or Reactivate. Training history is kept whatever the status. On the People list, only accounts that aren't active have a label beside the name.
 
 You can't change your own account status or remove your own roles, so one person can't lock everyone out by accident. Every change goes in the audit log.

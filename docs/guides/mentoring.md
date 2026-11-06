@@ -12,6 +12,6 @@ A department leader can pair you with a mentor: a trainer or leader who helps yo
 
 Add a goal with an optional follow-up date. Add shared notes for anything you'd like to keep together, such as feedback after a service.
 
-When a pairing ends, it stays here, marked as ended, for reference.
+When a pairing ends, it stays here, marked as ended, for reference. You both get a notification when it ends.
 
 Leaders set up pairings under [Admin, Mentoring](admin-reports-mentoring-audit.md).

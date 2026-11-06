@@ -99,7 +99,7 @@ A pass grants the competency. If that was the last one a role needs, you're **Ap
 
 ## Certificates
 
-When you finish a course, its certificate appears on the course and on your profile, ready to download. Each one has a reference and a QR code, so anyone can check it's real. If a certificate was issued by mistake, a leader can withdraw it. It then says so, and the record is kept.
+When you finish a course, its certificate appears on the course and on your profile, ready to download. Each one has a reference and a QR code, so anyone can check it's real. If a certificate was issued by mistake, a leader can withdraw it. It then says so, and the record is kept. You get a notification if one of yours is withdrawn.
 
 ## Your next steps
 
