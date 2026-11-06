@@ -67,6 +67,34 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   await expect(joined).toBeVisible();
   await expect(joined.getByText(/^Approved:/)).toHaveCount(0);
 
+  // The bell says what happened and what to do next; clearing asks first, and × clears one.
+  await volunteer
+    .getByRole("button", { name: /^Notifications/ })
+    .filter({ visible: true })
+    .click();
+  const panel = volunteer.getByRole("dialog", { name: "Notifications" });
+  const rows = panel.getByRole("listitem");
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText("Start learning");
+  await panel.getByRole("button", { name: "Clear all" }).click();
+  await expect(panel.getByText("Clear all notifications?")).toBeVisible();
+  await panel.getByRole("button", { name: "Cancel" }).click();
+  await expect(rows).toHaveCount(1);
+  await rows
+    .first()
+    .getByRole("button", { name: /^Clear: / })
+    .click();
+  await expect(rows).toHaveCount(0);
+  await expect(panel.getByRole("button", { name: "Clear all" })).toBeDisabled();
+  await volunteer.reload();
+  await volunteer
+    .getByRole("button", { name: /^Notifications/ })
+    .filter({ visible: true })
+    .click();
+  await expect(
+    volunteer.getByRole("dialog", { name: "Notifications" }).getByRole("listitem"),
+  ).toHaveCount(0);
+
   await volunteerContext.close();
   await leaderContext.close();
 });

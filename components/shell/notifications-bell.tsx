@@ -4,8 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { BellIcon, SettingsIcon } from "@/components/ui/icons";
+import { NotificationIcon } from "@/components/notification-icon";
 import {
+  BellIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  CloseIcon,
+  SettingsIcon,
+} from "@/components/ui/icons";
+import {
+  clearNotificationsAction,
   latestNotificationsAction,
   markAllReadAction,
   type PanelNotification,
@@ -17,8 +25,10 @@ type Items = PanelNotification[] | "loading" | "error";
  * The bell beside the account button (mock 5; refinements, approved 2026-11-06). It opens a panel
  * of the newest notifications instead of a page: a sheet from the bottom on a phone, a panel beside
  * the side bar from 768px. Tapping the bell again, Escape, or tapping outside closes it, and so does
- * moving to another page. Mark all read clears the dot. The dot shows there's something unread, and
- * the count is in the bell's name, so colour is never the only signal.
+ * moving to another page. Mark all read clears the dot and keeps them; Clear all (after asking)
+ * and each one's × take them out of the list, kept on record (G, 2026-11-06). Each says what kind
+ * it is and what following it does. The dot shows there's something unread, and the count is in
+ * the bell's name, so colour is never the only signal.
  */
 export function NotificationsBell({
   unread,
@@ -33,6 +43,8 @@ export function NotificationsBell({
   const open = openedOn === pathname;
   const [items, setItems] = useState<Items>("loading");
   const [allRead, setAllRead] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [message, setMessage] = useState("");
   const [pending, startTransition] = useTransition();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -55,6 +67,8 @@ export function NotificationsBell({
     }
     setOpenedOn(pathname);
     setAllRead(false);
+    setConfirming(false);
+    setMessage("");
     setItems("loading");
     startTransition(async () => {
       const result = await latestNotificationsAction();
@@ -94,6 +108,28 @@ export function NotificationsBell({
         setItems((current) =>
           Array.isArray(current) ? current.map((item) => ({ ...item, read: true })) : current,
         );
+      }
+    });
+  }
+
+  /** Takes them out of the list straight away, and puts them back if the save fails. */
+  function clear(ids: string[] | null) {
+    const before = items;
+    setConfirming(false);
+    setItems((current) =>
+      Array.isArray(current)
+        ? ids
+          ? current.filter((item) => !ids.includes(item.id))
+          : []
+        : current,
+    );
+    startTransition(async () => {
+      const result = await clearNotificationsAction(ids);
+      if (result.ok) {
+        setMessage(ids ? "Cleared." : "All cleared.");
+      } else {
+        setItems(before);
+        setMessage("That didn't clear. Check your connection and try again.");
       }
     });
   }
@@ -152,32 +188,67 @@ export function NotificationsBell({
                     className="mx-auto mt-2 h-1.5 w-10 shrink-0 rounded-pill bg-border-strong/40"
                   />
                 ) : null}
-                <div className="flex shrink-0 items-center justify-between gap-2 py-2 pr-2 pl-4">
+                <div className="flex shrink-0 items-center justify-between gap-2 pt-2 pr-2 pl-4">
                   <h2 id={headingId} className="text-body font-bold">
                     Notifications
                   </h2>
-                  <div className="flex items-center gap-1">
-                    {/* Always there, so people know where it is; greyed out with nothing unread. */}
-                    <button
-                      type="button"
-                      onClick={markAllRead}
-                      disabled={pending || !anyUnread}
-                      title={anyUnread ? undefined : "Everything is read"}
-                      className="flex min-h-touch items-center rounded-pill px-3 text-small font-semibold text-accent-light transition-surface hover:bg-hover disabled:cursor-default disabled:text-text-muted disabled:hover:bg-transparent"
-                    >
-                      Mark all read
-                    </button>
-                    <Link
-                      href="/notifications/settings"
-                      aria-label="Notification settings"
-                      title="Notification settings"
-                      onClick={close}
-                      className="flex size-10 items-center justify-center rounded-pill text-text-secondary transition-surface hover:bg-hover hover:text-text"
-                    >
-                      <SettingsIcon className="size-[1.125rem]" />
-                    </Link>
-                  </div>
+                  <Link
+                    href="/notifications/settings"
+                    aria-label="Notification settings"
+                    title="Notification settings"
+                    onClick={close}
+                    className="flex size-10 items-center justify-center rounded-pill text-text-secondary transition-surface hover:bg-hover hover:text-text"
+                  >
+                    <SettingsIcon className="size-[1.125rem]" />
+                  </Link>
                 </div>
+                {/* Two quiet pills: Mark all read keeps them; Clear all asks first, then empties it. */}
+                <div className="flex min-h-11 shrink-0 items-center gap-2 px-4 pb-2.5">
+                  {confirming ? (
+                    <>
+                      <span className="mr-auto text-small font-medium">
+                        Clear all notifications?
+                      </span>
+                      <button type="button" onClick={() => setConfirming(false)} className={PILL}>
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => clear(null)}
+                        className={`${PILL} border-text bg-text text-bg hover:bg-text hover:opacity-90`}
+                      >
+                        Clear all
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {/* Always there, so people know where it is; greyed out with nothing unread. */}
+                      <button
+                        type="button"
+                        onClick={markAllRead}
+                        disabled={pending || !anyUnread}
+                        title={anyUnread ? undefined : "Everything is read"}
+                        className={PILL}
+                      >
+                        <CheckIcon className="size-3.5" />
+                        Mark all read
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setConfirming(true)}
+                        disabled={pending || shown.length === 0}
+                        title={shown.length === 0 ? "Nothing to clear" : undefined}
+                        className={PILL}
+                      >
+                        <CloseIcon className="size-3.5" />
+                        Clear all
+                      </button>
+                    </>
+                  )}
+                </div>
+                <p role="status" className="sr-only">
+                  {message}
+                </p>
                 <div className="min-h-0 flex-1 overflow-y-auto border-t border-border">
                   {items === "loading" ? (
                     <p role="status" className="px-4 py-6 text-small text-text-muted">
@@ -189,18 +260,19 @@ export function NotificationsBell({
                     </p>
                   ) : items.length === 0 ? (
                     <p className="px-4 py-6 text-small text-text-secondary">
-                      Nothing yet. You&apos;ll see updates here, like being scheduled or an
-                      assessment result.
+                      You&apos;re all caught up. New updates, like being scheduled or an assessment
+                      result, show here.
                     </p>
                   ) : (
                     <ul className="divide-y divide-border">
                       {items.map((item) => (
-                        <li key={item.id}>
+                        <li key={item.id} className="relative">
                           <Link
                             href={item.href}
                             onClick={close}
-                            className="grid min-h-touch grid-cols-[minmax(0,1fr)_auto] items-start gap-3 px-4 py-3 transition-surface hover:bg-card"
+                            className="grid min-h-touch grid-cols-[2rem_minmax(0,1fr)] items-start gap-3 py-3 pr-12 pl-4 transition-surface hover:bg-card"
                           >
+                            <NotificationIcon kind={item.kind} small />
                             <span className="flex min-w-0 flex-col gap-0.5">
                               <span className="flex items-center gap-2">
                                 {item.read ? null : (
@@ -219,16 +291,30 @@ export function NotificationsBell({
                                   {item.body}
                                 </span>
                               ) : null}
+                              {/* Where it goes, in words, so it's clear what to do next. */}
+                              <span className="mt-0.5 flex items-center gap-1 text-small font-semibold text-accent-light">
+                                {item.action}
+                                <ChevronRightIcon className="size-3.5" />
+                                <time
+                                  dateTime={item.createdAt}
+                                  title={item.at}
+                                  className="ml-auto font-normal whitespace-nowrap text-text-muted"
+                                >
+                                  <span aria-hidden="true">{item.when}</span>
+                                  <span className="sr-only">{item.at}</span>
+                                </time>
+                              </span>
                             </span>
-                            <time
-                              dateTime={item.createdAt}
-                              title={item.at}
-                              className="text-small whitespace-nowrap text-text-muted"
-                            >
-                              <span aria-hidden="true">{item.when}</span>
-                              <span className="sr-only">{item.at}</span>
-                            </time>
                           </Link>
+                          <button
+                            type="button"
+                            onClick={() => clear([item.id])}
+                            aria-label={`Clear: ${item.title}`}
+                            title="Clear"
+                            className="absolute top-2 right-2 flex size-8 items-center justify-center rounded-pill text-text-muted transition-surface hover:bg-hover hover:text-text"
+                          >
+                            <CloseIcon className="size-4" />
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -249,3 +335,6 @@ export function NotificationsBell({
     </>
   );
 }
+
+const PILL =
+  "inline-flex min-h-8 items-center gap-1.5 rounded-pill border border-border bg-surface px-3 text-[0.75rem] font-semibold text-text transition-surface hover:bg-hover disabled:cursor-default disabled:text-text-muted disabled:hover:bg-surface";

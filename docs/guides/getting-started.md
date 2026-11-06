@@ -48,7 +48,10 @@ Open your name, then choose your name at the top of the menu. Your profile shows
 
 Until the Academy launches, notifications stay in the app. Choose the bell beside your name. A dot on it means something is unread. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it slides up from the bottom. Choose the bell again, or anywhere outside the panel, to close it.
 
-- **Mark all read** clears the dot. It's greyed out when everything is already read.
+Each notification has an icon for what it's about (serving, training, or leading) and a line in purple saying what tapping it does, such as **Confirm or decline**.
+
+- **Mark all read** clears the dot and keeps your notifications. It's greyed out when everything is already read.
+- **Clear all** takes every notification out of the list, after asking you first. To clear just one, choose the **×** beside it. Cleared notifications don't come back, and new ones still arrive as usual.
 - **See all notifications** opens the full list.
 - The settings button (the sliders) opens **Notification settings**.
 
