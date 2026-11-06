@@ -37,6 +37,15 @@ const KIND_ICON: Record<
   sop_updated: { icon: FileTextIcon, tone: "text-text-secondary" },
   mentor_note: { icon: UsersIcon, tone: "text-accent-light" },
   role_granted: { icon: UserCheckIcon, tone: "text-success" },
+  role_removed: { icon: UsersIcon, tone: "text-text-secondary" },
+  membership_declined: { icon: UsersIcon, tone: "text-warning" },
+  membership_removed: { icon: UsersIcon, tone: "text-warning" },
+  skill_suspended: { icon: ClockIcon, tone: "text-warning" },
+  certificate_withdrawn: { icon: FileTextIcon, tone: "text-warning" },
+  quiz_attempt_granted: { icon: GraduationCapIcon, tone: "text-accent-light" },
+  assignment_cancelled: { icon: CalendarRangeIcon, tone: "text-warning" },
+  mentoring_ended: { icon: UsersIcon, tone: "text-text-secondary" },
+  course_unassigned: { icon: GraduationCapIcon, tone: "text-text-secondary" },
 };
 
 /** A round icon for what kind of notification it is: serving, training, leading. Decorative. */

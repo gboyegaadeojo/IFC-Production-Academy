@@ -27,7 +27,7 @@ The Academy works out the result from the leader's pass rule. You don't pick the
 
 **Serving roles:** add the roles people serve in, such as "Camera 2 operator", then choose what each one needs.
 
-**People:** competencies appear here when someone passes a practical. If there's a reason to stop relying on one, choose **Suspend**, with a reason. You can restore it later.
+**People:** competencies appear here when someone passes a practical. If there's a reason to stop relying on one, choose **Suspend**, with a reason. You can restore it later. They're told the skill is paused, but not your reason.
 
 ## Serving teams
 

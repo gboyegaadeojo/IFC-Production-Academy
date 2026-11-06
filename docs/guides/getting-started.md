@@ -50,6 +50,8 @@ Until the Academy launches, notifications stay in the app. Choose the bell besid
 
 Each notification has an icon for what it's about (serving, training, or leading) and a line in purple saying what tapping it does, such as **Confirm or decline**.
 
+You're also told when a leader changes something for you: a role given or removed, a request to join turned down, being removed from a department, a skill paused, a certificate withdrawn, another try at a quiz, being taken off a service, mentoring ending, or a course no longer assigned.
+
 - **Mark all read** clears the dot and keeps your notifications. It's greyed out when everything is already read.
 - **Clear all** takes every notification out of the list, after asking you first. To clear just one, choose the **×** beside it. Cleared notifications don't come back, and new ones still arrive as usual.
 - **See all notifications** opens the full list.

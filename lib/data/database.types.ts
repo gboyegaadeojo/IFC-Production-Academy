@@ -2311,7 +2311,16 @@ export type Database = {
         | "new_course"
         | "sop_updated"
         | "mentor_note"
-        | "role_granted";
+        | "role_granted"
+        | "role_removed"
+        | "membership_declined"
+        | "membership_removed"
+        | "skill_suspended"
+        | "certificate_withdrawn"
+        | "quiz_attempt_granted"
+        | "assignment_cancelled"
+        | "mentoring_ended"
+        | "course_unassigned";
       onboarding_step_kind:
         | "trigger_form"
         | "trigger_manual"

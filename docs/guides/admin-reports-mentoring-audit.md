@@ -20,7 +20,7 @@ On **Course progress**, choose **Assign to someone**, search for the person, cho
 
 It's a request and nothing more. It doesn't stop them doing anything else, add them to a team, or count towards being approved to serve. Anyone can still take any course without being assigned it.
 
-To undo one, choose the person, then **Remove assignment**. Anything they've already done stays. Assigning and removing both go in the audit log.
+To undo one, choose the person, then **Remove assignment**. Anything they've already done stays. Assigning and removing both go in the audit log. They're told either way.
 
 **Download CSV** gives you the same data as a file. Downloads go in the audit log. They include names and training records only, and never mentoring's private notes.
 
@@ -30,7 +30,7 @@ To undo one, choose the person, then **Remove assignment**. Anything they've alr
 
 They share goals and notes. You can read the shared ones. **A mentor's private notes stay private, even from you.**
 
-To finish, choose **End this pairing**, with an optional reason. It stays on record for both of them. See [Mentoring](mentoring.md) for what they see.
+To finish, choose **End this pairing**, with an optional reason. It stays on record for both of them. Both of them are told it has ended. See [Mentoring](mentoring.md) for what they see.
 
 ## Audit log
 

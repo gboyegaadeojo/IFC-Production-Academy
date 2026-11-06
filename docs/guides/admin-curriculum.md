@@ -68,7 +68,7 @@ Set where the quiz sits, and its rules: the pass mark (80% to start with), how m
 
 Add questions with **Add question**. A quiz without questions can't be published. A question has a type, its answers, which one is correct, and an optional explanation shown with the correct answers when the quiz allows.
 
-The app scores every attempt. Nobody marks them by hand. If someone runs out of attempts, open **Results** and choose **Give another attempt**, with a note such as "Went through camera presets together".
+The app scores every attempt. Nobody marks them by hand. If someone runs out of attempts, open **Results** and choose **Give another attempt**, with a note such as "Went through camera presets together". They get a notification that they can try again.
 
 ## Practical assessments
 
