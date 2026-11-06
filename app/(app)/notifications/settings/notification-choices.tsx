@@ -196,19 +196,20 @@ function ChoiceButton({
       type="button"
       aria-pressed={pressed}
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-pill border font-semibold transition-surface ${
-        small ? "min-h-9 px-3 text-small" : "min-h-10 px-4 text-small"
+      className={`inline-flex items-center gap-1 rounded-pill border font-semibold transition-surface ${
+        // Two sizes smaller than first built (G, 2026-11-06); still at least 24px to tap.
+        small ? "min-h-7 px-2.5 text-[0.6875rem]" : "min-h-8 px-3 text-[0.75rem]"
       } ${
         on
           ? "border-text bg-text text-bg"
           : "border-border bg-surface text-text-secondary hover:bg-hover hover:text-text"
       }`}
     >
-      <span aria-hidden="true" className="flex w-3.5 justify-center">
+      <span aria-hidden="true" className="flex w-3 justify-center">
         {pressed === "true" ? (
-          <CheckIcon className="size-3.5" />
+          <CheckIcon className="size-3" />
         ) : pressed === "mixed" ? (
-          <span className="h-0.5 w-2.5 rounded-pill bg-current" />
+          <span className="h-0.5 w-2 rounded-pill bg-current" />
         ) : null}
       </span>
       {children}
