@@ -1,6 +1,7 @@
 -- Tells someone when a leader gives them a role, such as Department Leader or Production Director
 -- (G, 2026-11-06). Before this, they only found new options the next time they opened the app.
--- Granting yourself a role (the first administrator) sends nothing.
+-- Granting yourself a role (the first administrator), and the Volunteer role every new account
+-- gets, send nothing.
 
 create function private.notify_role_granted()
 returns trigger
@@ -18,6 +19,10 @@ begin
     return null;
   end if;
   select r.key, r.name into v_key, v_role from public.roles r where r.id = new.role_id;
+  -- Every new account gets Volunteer on its own; nobody gave it to them.
+  if v_key = 'volunteer' then
+    return null;
+  end if;
   select d.name into v_department from public.departments d where d.id = new.department_id;
   select p.display_name into v_by from public.profiles p where p.id = new.granted_by;
   perform private.notify(new.user_id, 'role_granted',
