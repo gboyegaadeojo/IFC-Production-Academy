@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  continuingCourses,
   courseFacts,
   coverImageType,
   filterLibrary,
@@ -51,6 +52,18 @@ describe("libraryRows", () => {
   });
   it("has no row for a category with no courses", () => {
     expect(libraryRows([])).toEqual([]);
+  });
+});
+
+describe("continuingCourses", () => {
+  it("keeps the courses you've started, in library order", () => {
+    const started = [
+      { ...course("Framing", camera, 2), state: "in_progress" as const },
+      { ...course("Basics", camera, 1), state: "completed" as const },
+      { ...course("Guide to Serving", general, null), state: "awaiting_assessment" as const },
+      course("Lenses", camera, 1),
+    ];
+    expect(continuingCourses(started).map((c) => c.id)).toEqual(["Guide to Serving", "Framing"]);
   });
 });
 

@@ -78,6 +78,26 @@ test("on a phone, Courses is on the bottom bar, with Explore a switch inside", a
   expect(crowded).toBe(0);
 });
 
+test("on a phone, Courses shows a row per category that scrolls sideways", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(!isMobile, "Phones only");
+  await signInByEmail(page, "avery.volunteer@example.com");
+  await page.goto("/courses");
+  const seeAll = page.getByRole("button", { name: /^See all \d+ in / }).first();
+  await expect(seeAll).toBeVisible();
+  const row = page.getByRole("region").filter({ has: seeAll });
+  await expect(row.getByRole("listitem").first()).toBeVisible();
+  const scrolls = await row.getByRole("list").evaluate((list) => getComputedStyle(list).overflowX);
+  expect(scrolls).toBe("auto");
+
+  // See all shows that category alone, as a grid, with the filter set.
+  await seeAll.click();
+  await expect(page.getByRole("button", { name: "Clear filters" })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^See all \d+ in / })).toHaveCount(0);
+});
+
 test("a volunteer finds courses by search and category", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   await page.goto("/courses");
