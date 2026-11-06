@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { ChevronDownIcon } from "@/components/ui/icons";
-import { buttonClasses } from "@/components/ui/button";
+import { MoreHorizontalIcon } from "@/components/ui/icons";
 
 /**
  * The Actions menu at the top of a course page (Course Page mock, approved 2026-11-05). A
@@ -47,10 +46,11 @@ export function CourseActions({ children }: { children: ReactNode }) {
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        className={buttonClasses("secondary", "gap-1.5 rounded-pill", "sm")}
+        aria-label="Actions"
+        title="Actions"
+        className="flex size-9 items-center justify-center rounded-pill bg-card text-text transition-surface hover:bg-hover pointer-coarse:size-11"
       >
-        Actions
-        <ChevronDownIcon className="size-3.5" />
+        <MoreHorizontalIcon className="size-5" />
       </button>
       <div
         id={panelId}
