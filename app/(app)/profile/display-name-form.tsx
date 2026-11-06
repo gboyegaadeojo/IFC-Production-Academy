@@ -13,9 +13,12 @@ const idle: ProfileFormState = { status: "idle" };
 export function DisplayNameForm({
   displayName,
   planningCenterName,
+  centered = false,
 }: {
   displayName: string;
   planningCenterName: string | null;
+  /** Under the name at the top of the profile: a small button, with the hint beneath (mock 5). */
+  centered?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState(
@@ -48,12 +51,18 @@ export function DisplayNameForm({
 
   if (!editing) {
     return (
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className={`flex flex-col gap-2 ${centered ? "items-center" : ""}`}>
+        <div
+          className={`flex flex-wrap items-center gap-3 ${
+            centered ? "flex-col-reverse justify-center gap-1.5" : "justify-between"
+          }`}
+        >
           <p className="text-small text-text-secondary">Leaders and trainers see this name.</p>
           <Button
             ref={editButtonRef}
             variant="secondary"
+            size={centered ? "sm" : "md"}
+            className={centered ? "rounded-pill px-3.5" : undefined}
             onClick={() => {
               setEditing(true);
               requestAnimationFrame(() => inputRef.current?.focus());

@@ -41,6 +41,7 @@ async function AllCourses({ searchParams }: Pick<PageProps<"/courses">, "searchP
           name: c.name,
           kind: c.kind,
           sortOrder: c.sortOrder,
+          hue: c.hue,
         }))}
       />
     </div>

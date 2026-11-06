@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { CoursePoster } from "@/components/course-poster";
 import { TopicFilter } from "@/components/topic-filter";
 import { compactFieldClasses } from "@/components/ui/action-form";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { departmentHueVar } from "@/lib/domain/departments";
+import { courseCountLabel } from "@/lib/domain/home";
 import { filterLibrary, type LibraryCourse } from "@/lib/domain/library";
 
-type Category = { id: string; name: string; kind: string; sortOrder: number };
+type Category = { id: string; name: string; kind: string; sortOrder: number; hue: string };
 
 /** Search and filters run in the browser, since every course the person can see is already here. */
 export function LibraryBrowser({
@@ -44,8 +46,47 @@ export function LibraryBrowser({
         </option>
       ));
 
+  const teams = withCourses
+    .filter((category) => category.kind === "team")
+    .toSorted((a, b) => a.sortOrder - b.sortOrder);
+
   return (
     <>
+      {teams.length > 0 ? (
+        <section
+          aria-labelledby="browse-departments-heading"
+          className="flex min-w-0 flex-col gap-3"
+        >
+          <h2 id="browse-departments-heading" className="text-subheading font-bold tracking-tight">
+            Browse by department
+          </h2>
+          {/* A row that scrolls sideways, so more departments never crowd the page (G, 2026-11-06). */}
+          <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-2.5 overflow-x-auto px-4 pb-1 md:mx-0 md:scroll-px-0 md:px-0 [&::-webkit-scrollbar]:hidden">
+            {teams.map((team) => {
+              const chosen = categoryId === team.id;
+              const count = courses.filter((course) => course.category.id === team.id).length;
+              return (
+                <li key={team.id} className="shrink-0 snap-start">
+                  <button
+                    type="button"
+                    aria-pressed={chosen}
+                    onClick={() => setCategoryId(chosen ? "" : team.id)}
+                    style={{ "--dept": departmentHueVar(team.hue) } as CSSProperties}
+                    className={`flex h-24 w-40 flex-col justify-between rounded-card bg-[color-mix(in_srgb,var(--dept)_55%,var(--photo-bg))] p-3 text-left text-on-accent transition-surface hover:brightness-110 ${
+                      chosen ? "ring-2 ring-accent-light ring-offset-2 ring-offset-bg" : ""
+                    }`}
+                  >
+                    <span className="text-small font-medium opacity-85">
+                      {courseCountLabel(count)}
+                    </span>
+                    <span className="leading-tight font-bold">{team.name}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
       <div className="flex flex-wrap items-center gap-2">
         <input
           type="search"

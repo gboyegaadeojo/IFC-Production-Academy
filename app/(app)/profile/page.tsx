@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { DepartmentIcon } from "@/components/department-icon";
 import { AwardIcon, ChevronRightIcon } from "@/components/ui/icons";
 import Loading from "./loading";
 import { StatusBadge, type StatusTone } from "@/components/ui/status-badge";
@@ -20,7 +19,7 @@ import {
 import { stillLearningPositions } from "@/lib/domain/teams";
 import { formatDate } from "@/lib/domain/dates";
 import { departmentHueVar, type MembershipStatus } from "@/lib/domain/departments";
-import { levelProgressLabel, type DepartmentLearning } from "@/lib/domain/home";
+import { departmentProgress, levelProgressLabel, type DepartmentLearning } from "@/lib/domain/home";
 import { initials } from "@/lib/domain/people";
 import { membershipLabel } from "@/lib/domain/profile";
 import { DisplayNameForm } from "./display-name-form";
@@ -46,9 +45,9 @@ const MEMBERSHIP_TONES: Record<MembershipStatus, StatusTone> = {
 };
 
 /**
- * Your profile (SRS-AUTH-006; approved mock, 2026-11-01): who you are and how you sign in, your
- * departments with Approved to Serve per role, and your certificates. Membership, completion and
- * approval to serve stay separate records (SPEC §3).
+ * Your profile (SRS-AUTH-006; mock 5, approved 2026-11-06): your initials, name and Edit name,
+ * three totals, the roles you're approved to serve, your departments, your quizzes, certificates,
+ * and how you sign in. Membership, completion and approval to serve stay separate records (SPEC §3).
  */
 async function ProfileContent() {
   const user = await requireActiveUser();
@@ -73,58 +72,91 @@ async function ProfileContent() {
     positionTeams,
     new Set(achievements.approvedRoles.map((role) => role.roleId)),
   );
+  const departmentName = new Map(
+    profile.memberships.map((m) => [m.departmentId, m.departmentName]),
+  );
+  const quizzesPassed = results.quizzes.filter((quiz) => quiz.passed).length;
 
   return (
-    <div className="page-container flex flex-col gap-8 py-8 lg:py-12">
-      <header className="flex flex-wrap items-center gap-3.5 rounded-card border border-border bg-[linear-gradient(120deg,var(--accent-soft),var(--surface)_62%)] p-4.5">
-        <span
-          aria-hidden="true"
-          className="flex size-14 shrink-0 items-center justify-center rounded-pill bg-accent text-heading font-semibold text-on-accent"
-        >
-          {initials(profile.displayName)}
-        </span>
-        <div className="flex min-w-0 flex-col gap-0.5">
-          <h1 className="text-title font-semibold">
+    <div className="page-container py-8 lg:py-12">
+      <div className="mx-auto flex max-w-4xl flex-col gap-8">
+        <header className="flex flex-col items-center gap-1 text-center">
+          <span
+            aria-hidden="true"
+            className="flex size-22 items-center justify-center rounded-pill bg-accent text-[1.75rem] font-semibold text-on-accent"
+          >
+            {initials(profile.displayName)}
+          </span>
+          <h1 className="mt-2.5 text-title font-bold tracking-tight">
             <span className="sr-only">Your profile: </span>
             {profile.displayName}
           </h1>
-          <p className="text-text-secondary">
-            {profile.memberships
-              .filter((m) => m.status === "active")
-              .map((m) => m.departmentName)
-              .join(" · ") || "Member since " + formatDate(profile.joinedAt)}
+          <p className="text-small text-text-muted">
+            Member since {formatDate(profile.joinedAt)} ·{" "}
+            {planningCenter.linked ? "Planning Center" : "Email link"}
           </p>
-        </div>
-      </header>
-
-      <QuizResults quizzes={results.quizzes} lessonsComplete={results.lessonsComplete} />
-
-      <div className="grid items-start gap-6 lg:grid-cols-[21.25rem_minmax(0,1fr)]">
-        <section
-          aria-labelledby="identity-heading"
-          className="flex flex-col gap-5 rounded-card border border-border bg-surface p-6"
-        >
-          <div className="flex items-center gap-4">
-            <span
-              aria-hidden="true"
-              className="flex size-16 shrink-0 items-center justify-center rounded-pill border border-border-strong bg-[linear-gradient(135deg,color-mix(in_srgb,var(--accent)_22%,var(--card)),var(--card))] text-[1.375rem] font-semibold"
-            >
-              {initials(profile.displayName)}
-            </span>
-            <div className="flex min-w-0 flex-col">
-              <h2 id="identity-heading" className="truncate text-heading font-semibold">
-                {profile.displayName}
-              </h2>
-              <span className="text-small text-text-muted">
-                Member since {formatDate(profile.joinedAt)}
-              </span>
-            </div>
+          <div className="mt-2 w-full max-w-sm">
+            <DisplayNameForm
+              displayName={profile.displayName}
+              planningCenterName={planningCenter.name}
+              centered
+            />
           </div>
-          <DisplayNameForm
-            displayName={profile.displayName}
-            planningCenterName={planningCenter.name}
-          />
-          <dl className="flex flex-col gap-3 border-t border-border pt-4 text-small">
+        </header>
+
+        <dl className="grid grid-cols-3 gap-2.5">
+          <Total term="Lessons done" value={results.lessonsComplete} />
+          <Total term="Quizzes passed" value={quizzesPassed} />
+          <Total term="Approved" value={achievements.approvedRoles.length} />
+        </dl>
+
+        <section aria-labelledby="approved-heading" className="flex flex-col gap-3">
+          <h2 id="approved-heading" className="text-subheading font-bold tracking-tight">
+            Approved to serve
+          </h2>
+          {achievements.approvedRoles.length === 0 && learningPositions.length === 0 ? (
+            <p className="rounded-card bg-card px-4 py-3.5 text-small text-text-secondary">
+              Not yet. Passing a role&apos;s practical approves you, and it shows here.
+            </p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-border rounded-card bg-card">
+              {achievements.approvedRoles.map((role) => (
+                <RoleRow
+                  key={role.roleId}
+                  role={role.roleName}
+                  department={departmentName.get(role.departmentId)}
+                  tone="success"
+                  label="Approved"
+                />
+              ))}
+              {learningPositions.map((role) => (
+                <RoleRow
+                  key={role.roleId}
+                  role={role.roleName}
+                  department={departmentName.get(role.departmentId)}
+                  tone="pending"
+                  label="Still learning"
+                />
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <Departments memberships={profile.memberships} learningFor={learningFor} />
+
+        <QuizResults
+          quizzes={results.quizzes}
+          lessonsComplete={results.lessonsComplete}
+          showTotals={false}
+        />
+
+        <Certificates certificates={certificates} />
+
+        <section aria-labelledby="details-heading" className="flex flex-col gap-3">
+          <h2 id="details-heading" className="text-subheading font-bold tracking-tight">
+            How you sign in
+          </h2>
+          <dl className="flex flex-col gap-3 rounded-card bg-card px-4 py-4 text-small">
             <Detail term="Signs in with">
               {planningCenter.linked ? "Planning Center" : "Email link"}
             </Detail>
@@ -161,18 +193,39 @@ async function ProfileContent() {
             </Detail>
           </dl>
         </section>
-
-        <div className="flex min-w-0 flex-col gap-5">
-          <Departments
-            memberships={profile.memberships}
-            learningFor={learningFor}
-            approved={achievements.approvedRoles}
-            learning={learningPositions}
-          />
-          <Certificates certificates={certificates} />
-        </div>
       </div>
     </div>
+  );
+}
+
+function Total({ term, value }: { term: string; value: number }) {
+  return (
+    <div className="flex flex-col gap-1 rounded-card bg-card px-3.5 py-3">
+      <dt className="text-small text-text-muted">{term}</dt>
+      <dd className="tabular text-title font-bold">{value}</dd>
+    </div>
+  );
+}
+
+function RoleRow({
+  role,
+  department,
+  tone,
+  label,
+}: {
+  role: string;
+  department: string | undefined;
+  tone: StatusTone;
+  label: string;
+}) {
+  return (
+    <li className="flex items-center gap-3 px-4 py-3">
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="font-semibold">{role}</span>
+        {department ? <span className="text-small text-text-muted">{department}</span> : null}
+      </span>
+      <StatusBadge tone={tone}>{label}</StatusBadge>
+    </li>
   );
 }
 
@@ -187,8 +240,8 @@ function Detail({ term, children }: { term: string; children: ReactNode }) {
 
 function PanelHeading({ id, title, aside }: { id: string; title: string; aside?: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
-      <h2 id={id} className="font-semibold">
+    <div className="flex items-baseline justify-between gap-3">
+      <h2 id={id} className="text-subheading font-bold tracking-tight">
         {title}
       </h2>
       {aside ? <span className="text-small text-text-muted">{aside}</span> : null}
@@ -199,28 +252,20 @@ function PanelHeading({ id, title, aside }: { id: string; title: string; aside?:
 function Departments({
   memberships,
   learningFor,
-  approved,
-  learning,
 }: {
   memberships: MyProfile["memberships"];
   learningFor: Map<string, DepartmentLearning>;
-  approved: { departmentId: string; roleId: string; roleName: string }[];
-  /** Positions whose team you're on but aren't approved in yet. */
-  learning: { departmentId: string; roleId: string; roleName: string }[];
 }) {
   const active = memberships.filter((m) => m.status === "active").length;
   return (
-    <section
-      aria-labelledby="departments-heading"
-      className="rounded-card border border-border bg-surface"
-    >
+    <section aria-labelledby="departments-heading" className="flex flex-col gap-3">
       <PanelHeading
         id="departments-heading"
-        title="Departments and roles"
+        title="Departments"
         aside={active > 0 ? `${active} ${active === 1 ? "department" : "departments"}` : undefined}
       />
       {memberships.length === 0 ? (
-        <p className="px-5 py-5 text-small text-text-secondary">
+        <p className="rounded-card bg-card px-4 py-3.5 text-small text-text-secondary">
           You haven&apos;t asked to join a department yet. Pick one on your{" "}
           <Link href="/home" className="text-accent-light underline underline-offset-4">
             Training page
@@ -228,47 +273,43 @@ function Departments({
           .
         </p>
       ) : (
-        <ul className="divide-y divide-border">
+        <ul className="flex flex-col divide-y divide-border rounded-card bg-card">
           {memberships.map((membership) => {
-            const roles = approved.filter((r) => r.departmentId === membership.departmentId);
+            const learning = learningFor.get(membership.departmentId);
+            const { total, percent } = departmentProgress(learning?.levels ?? []);
             return (
               <li
                 key={membership.id}
                 style={{ "--dept": departmentHueVar(membership.departmentHue) } as CSSProperties}
-                className="grid grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2 px-5 py-3.5 sm:grid-cols-[2.5rem_minmax(0,1fr)_auto]"
+                className="flex items-center gap-3 px-4 py-3"
               >
-                <span className="flex size-10 items-center justify-center rounded-button border border-border bg-card text-[var(--dept)]">
-                  <DepartmentIcon icon={membership.departmentIcon} className="size-[18px]" />
-                </span>
-                <div className="flex min-w-0 flex-col">
-                  <span className="font-medium">{membership.departmentName}</span>
-                  <span className="text-small text-text-secondary">
-                    {membershipLine(membership, learningFor.get(membership.departmentId))}
+                <span
+                  aria-hidden="true"
+                  className="size-2.5 shrink-0 rounded-pill bg-[var(--dept)]"
+                />
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="font-semibold">{membership.departmentName}</span>
+                  <span className="text-small text-text-muted">
+                    {membershipLine(membership, learning)}
                   </span>
-                </div>
-                <div className="col-start-2 flex flex-wrap gap-1.5 sm:col-start-3 sm:justify-end">
+                </span>
+                {membership.status === "active" ? (
+                  total > 0 ? (
+                    <span className="tabular shrink-0 text-small text-text-secondary">
+                      {percent}%<span className="sr-only"> of lessons complete</span>
+                    </span>
+                  ) : null
+                ) : (
                   <StatusBadge tone={MEMBERSHIP_TONES[membership.status]}>
                     {membershipLabel(membership.status)}
                   </StatusBadge>
-                  {roles.map((role) => (
-                    <StatusBadge key={role.roleId} tone="success">
-                      Approved: {role.roleName}
-                    </StatusBadge>
-                  ))}
-                  {learning
-                    .filter((r) => r.departmentId === membership.departmentId)
-                    .map((role) => (
-                      <StatusBadge key={role.roleId} tone="pending">
-                        Still learning: {role.roleName}
-                      </StatusBadge>
-                    ))}
-                </div>
+                )}
               </li>
             );
           })}
         </ul>
       )}
-      <p className="border-t border-border px-5 py-3.5 text-small text-text-muted">
+      <p className="text-small text-text-muted">
         Membership puts you on a department&apos;s team. Approval to serve a role comes separately,
         after its practical assessment.
       </p>
@@ -299,25 +340,22 @@ function Certificates({
   certificates: Awaited<ReturnType<typeof getMyCertificates>>;
 }) {
   return (
-    <section
-      aria-labelledby="certificates-heading"
-      className="rounded-card border border-border bg-surface"
-    >
+    <section aria-labelledby="certificates-heading" className="flex flex-col gap-3">
       <PanelHeading id="certificates-heading" title="Certificates" />
       {certificates.length === 0 ? (
-        <div className="flex items-center gap-3.5 px-5 py-5 text-small text-text-secondary">
+        <div className="flex items-center gap-3.5 rounded-card bg-card px-4 py-4 text-small text-text-secondary">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-button border border-border bg-card text-text-muted">
             <AwardIcon className="size-[18px]" />
           </span>
           None yet. Finish a course and its certificate appears here, ready to download.
         </div>
       ) : (
-        <ul className="divide-y divide-border">
+        <ul className="divide-y divide-border overflow-hidden rounded-card bg-card">
           {certificates.map((certificate) => (
             <li key={certificate.reference}>
               <Link
                 href={`/certificates/${certificate.reference}`}
-                className="group flex min-h-touch items-center gap-3.5 px-5 py-3.5 transition-surface hover:bg-card"
+                className="group flex min-h-touch items-center gap-3.5 px-4 py-3.5 transition-surface hover:bg-hover"
               >
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-button border border-border bg-card text-accent-light">
                   <AwardIcon className="size-[18px]" />
