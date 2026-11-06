@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/icons";
 import { ProgressBar } from "@/components/ui/progress-bar";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ScrollRail } from "@/components/ui/scroll-rail";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyAchievements } from "@/lib/data/achievements";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -25,7 +26,6 @@ import { listDepartmentCards, type DepartmentCard as CardData } from "@/lib/data
 import { getDepartmentLearning } from "@/lib/data/learning";
 import { getCourseLibrary, getStartHereCourses } from "@/lib/data/library";
 import { getMyOnboarding, getOpenDepartments } from "@/lib/data/onboarding";
-import { getMyNotifications } from "@/lib/data/notifications";
 import { getContinueLearning, getRecentlyWatched } from "@/lib/data/progress";
 import { getMyUpcomingAssignments } from "@/lib/data/schedule";
 import {
@@ -62,10 +62,11 @@ export default function TrainingPage() {
 }
 
 /**
- * Training, the learner home (DESIGN §6.1; mock 5, approved 2026-11-06). A greeting, then the
- * service you're on next, the one thing to pick up, shortcuts, your departments in a row that
- * scrolls sideways, and what you watched recently. Wide screens add this month's services and the
- * latest notifications beside it. Someone new sees Getting started instead of the plan.
+ * Training, the learner home (DESIGN §6.1; mock 5 and its refinements, approved 2026-11-06). A
+ * greeting, then the service you're on next and the one thing to pick up, with this month's
+ * services beside them on wide screens. Below, at full width: shortcuts, your departments in a row
+ * that scrolls sideways, what you watched recently, and courses to try. Notifications live under
+ * the bell. Someone new sees Getting started instead of the plan.
  */
 async function TrainingContent() {
   const user = await requireActiveUser();
@@ -189,7 +190,8 @@ async function TrainingContent() {
         ) : null}
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+      {/* What's next sits beside this month's services; everything below uses the full width. */}
+      <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="flex min-w-0 flex-col gap-7">
           {onboarding.map((pathway) => (
             <NextSteps key={pathway.entryId} pathway={pathway} departments={openDepartments} />
@@ -232,103 +234,101 @@ async function TrainingContent() {
               ) : null}
             </>
           )}
-          <Shortcuts />
-          {memberOf.length > 0 ? (
-            <Section id="my-departments-heading" title="Your departments">
-              <Rail>
-                {memberOf.map((department) => (
-                  <li key={department.id}>
-                    <DepartmentTile
-                      department={department}
-                      learning={learningFor.get(department.id)}
-                      approvedRoles={(achievements?.approvedRoles ?? [])
-                        .filter((role) => role.departmentId === department.id)
-                        .map((role) => role.roleName)}
-                    />
-                  </li>
-                ))}
-              </Rail>
-            </Section>
-          ) : null}
-          <Suspense fallback={null}>
-            <RecentlyWatched userId={user.id} />
-          </Suspense>
-          {departments.length === 0 ? (
-            <EmptyState title="No departments are open yet">
-              The production team is setting up its training. Check back soon, or ask a leader when
-              your department opens.
-            </EmptyState>
-          ) : others.length > 0 ? (
-            <section
-              id="departments"
-              aria-labelledby="departments-heading"
-              className="flex scroll-mt-20 flex-col gap-1 rounded-card border border-border bg-surface p-4"
-            >
-              <h2 id="departments-heading" className="mb-1 text-subheading font-bold">
-                {memberOf.length > 0 ? "Other departments" : "Choose a department"}
-              </h2>
-              <ul className="grid gap-x-6 sm:grid-cols-2">
-                {others.map((department) => (
-                  <li key={department.id}>
-                    <ExploreRow department={department} />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-          {/* These load after the rest, so the next step never waits for them. */}
-          <Suspense fallback={<Skeleton className="h-56" />}>
-            <KeepExploring userId={user.id} categories={categories} inPlan={inPlan} />
-          </Suspense>
-          {newcomer ? null : <InstallApp variant="banner" />}
-          <HowTrainingWorks />
         </div>
 
-        <aside
-          aria-label="This month and notifications"
-          className="hidden min-w-0 flex-col gap-7 lg:flex"
+        <section
+          aria-labelledby="this-month-heading"
+          className="hidden min-w-0 flex-col rounded-[1.25rem] border border-border bg-surface px-4 pt-4 pb-1 lg:flex"
         >
-          <section aria-labelledby="this-month-heading" className="flex flex-col">
-            <h2 id="this-month-heading" className="mb-1 text-subheading font-bold">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="this-month-heading" className="text-body font-bold">
               This month
             </h2>
-            {thisMonth.length === 0 ? (
-              <p className="py-2 text-small text-text-muted">
-                You&apos;re not on the schedule this month.
-              </p>
-            ) : (
-              <ul className="flex flex-col divide-y divide-border">
-                {thisMonth.map((assignment) => (
-                  <li key={assignment.id}>
-                    <ServiceRow
-                      startsAt={assignment.event.startsAt}
-                      role={assignment.roleName}
-                      event={assignment.event.title}
-                      label={
-                        assignment.status === "pending"
-                          ? "Please reply"
-                          : READINESS_LABELS[assignment.readiness]
-                      }
-                      trained={
-                        assignment.status !== "pending" && assignment.readiness === "approved"
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
             <Link
               href="/schedule"
-              className="flex min-h-touch items-center text-small font-medium text-accent-light underline-offset-4 hover:underline"
+              className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
             >
               Your schedule
             </Link>
-          </section>
-          <Suspense fallback={<Skeleton className="h-40" />}>
-            <LatestNotifications userId={user.id} />
-          </Suspense>
-        </aside>
+          </div>
+          {thisMonth.length === 0 ? (
+            <p className="py-2 text-small text-text-muted">
+              You&apos;re not on the schedule this month.
+            </p>
+          ) : (
+            <ul className="flex flex-col divide-y divide-border">
+              {thisMonth.map((assignment) => (
+                <li key={assignment.id}>
+                  <ServiceRow
+                    startsAt={assignment.event.startsAt}
+                    role={assignment.roleName}
+                    event={assignment.event.title}
+                    label={
+                      assignment.status === "pending"
+                        ? "Please reply"
+                        : READINESS_LABELS[assignment.readiness]
+                    }
+                    trained={assignment.status !== "pending" && assignment.readiness === "approved"}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
+
+      <Shortcuts />
+      {memberOf.length > 0 ? (
+        <ScrollRail
+          id="my-departments-heading"
+          title="Your departments"
+          aside={<span className="text-small text-text-muted">{memberOf.length}</span>}
+        >
+          {memberOf.map((department) => (
+            <li key={department.id}>
+              <DepartmentTile
+                department={department}
+                learning={learningFor.get(department.id)}
+                approvedRoles={(achievements?.approvedRoles ?? [])
+                  .filter((role) => role.departmentId === department.id)
+                  .map((role) => role.roleName)}
+              />
+            </li>
+          ))}
+        </ScrollRail>
+      ) : null}
+      <Suspense fallback={null}>
+        <RecentlyWatched userId={user.id} />
+      </Suspense>
+      {departments.length === 0 ? (
+        <EmptyState title="No departments are open yet">
+          The production team is setting up its training. Check back soon, or ask a leader when your
+          department opens.
+        </EmptyState>
+      ) : others.length > 0 ? (
+        <section
+          id="departments"
+          aria-labelledby="departments-heading"
+          className="flex scroll-mt-20 flex-col gap-1 rounded-card border border-border bg-surface p-4"
+        >
+          <h2 id="departments-heading" className="mb-1 text-subheading font-bold">
+            {memberOf.length > 0 ? "Other departments" : "Choose a department"}
+          </h2>
+          <ul className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
+            {others.map((department) => (
+              <li key={department.id}>
+                <ExploreRow department={department} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      {/* These load after the rest, so the next step never waits for them. */}
+      <Suspense fallback={<Skeleton className="h-56" />}>
+        <KeepExploring userId={user.id} categories={categories} inPlan={inPlan} />
+      </Suspense>
+      {newcomer ? null : <InstallApp variant="banner" />}
+      <HowTrainingWorks />
     </div>
   );
 }
@@ -354,18 +354,10 @@ function Section({ id, title, children }: { id: string; title: string; children:
   );
 }
 
-/** A row that scrolls sideways, so more departments or courses never crowd the page (G). */
-function Rail({ children }: { children: ReactNode }) {
-  return (
-    <ul className="-mx-4 flex snap-x snap-mandatory scroll-px-4 [scrollbar-width:none] gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:scroll-px-0 md:px-0 [&::-webkit-scrollbar]:hidden [&>li]:shrink-0 [&>li]:snap-start">
-      {children}
-    </ul>
-  );
-}
-
 /**
  * The service you're on next, as a bold card (mock 5). It shows only when you're scheduled.
- * Training is shown beside it, never a gate.
+ * Training is shown beside it, never a gate. The second button is the checklist or the schedule,
+ * since those are used far more than SOPs (G, 2026-11-06).
  */
 function ServingCard({ spotlight }: { spotlight: ServingSpotlight }) {
   return (
@@ -384,30 +376,34 @@ function ServingCard({ spotlight }: { spotlight: ServingSpotlight }) {
       </div>
       <div className="flex flex-wrap gap-2">
         {spotlight.needsReply ? (
-          <Link
-            href="/schedule"
-            className="inline-flex min-h-button items-center rounded-pill bg-bg px-4 font-semibold text-text"
-          >
-            Reply on Schedule
-          </Link>
+          <>
+            <Link href="/schedule" className={SERVING_PRIMARY}>
+              Reply on Schedule
+            </Link>
+            <Link href="/serve" className={SERVING_SECONDARY}>
+              Checklist
+            </Link>
+          </>
         ) : (
-          <Link
-            href="/serve"
-            className="inline-flex min-h-button items-center rounded-pill bg-bg px-4 font-semibold text-text"
-          >
-            Open checklist
-          </Link>
+          <>
+            <Link href="/serve" className={SERVING_PRIMARY}>
+              <ListChecksIcon className="size-4" />
+              Open checklist
+            </Link>
+            <Link href="/schedule" className={SERVING_SECONDARY}>
+              Schedule
+            </Link>
+          </>
         )}
-        <Link
-          href="/sops"
-          className="inline-flex min-h-button items-center rounded-pill px-4 font-semibold ring-1 ring-bg/40 ring-inset"
-        >
-          SOPs
-        </Link>
       </div>
     </section>
   );
 }
+
+const SERVING_PRIMARY =
+  "inline-flex min-h-button items-center gap-1.5 rounded-pill bg-bg px-4 font-semibold text-text";
+const SERVING_SECONDARY =
+  "inline-flex min-h-button items-center rounded-pill px-4 font-semibold ring-1 ring-bg/40 ring-inset";
 
 const SHORTCUTS = [
   { href: "/serve", label: "Checklist", icon: ListChecksIcon },
@@ -445,7 +441,7 @@ async function RecentlyWatched({ userId }: { userId: string }) {
   }
   return (
     <Section id="recent-heading" title="Recently watched">
-      <ul className="flex flex-col">
+      <ul className="grid gap-x-6 lg:grid-cols-2">
         {lessons.map((lesson) => (
           <li key={lesson.key}>
             <RecentRow lesson={lesson} />
@@ -549,47 +545,6 @@ function ServiceRow({
       </span>
       <StatusBadge tone={trained ? "success" : "pending"}>{label}</StatusBadge>
     </div>
-  );
-}
-
-/** The three newest notifications, with the full list a click away. */
-async function LatestNotifications({ userId }: { userId: string }) {
-  const latest = (await getMyNotifications(userId)).slice(0, 3);
-  return (
-    <section aria-labelledby="latest-notifications-heading" className="flex flex-col">
-      <h2 id="latest-notifications-heading" className="mb-1 text-subheading font-bold">
-        Notifications
-      </h2>
-      {latest.length === 0 ? (
-        <p className="py-2 text-small text-text-muted">Nothing new.</p>
-      ) : (
-        <ul className="flex flex-col divide-y divide-border">
-          {latest.map((note) => (
-            <li key={note.id} className="flex flex-col gap-0.5 py-3">
-              <span className="flex items-start gap-2 font-semibold">
-                {note.read ? null : (
-                  <span
-                    aria-hidden="true"
-                    className="mt-2 size-1.5 shrink-0 rounded-pill bg-accent"
-                  />
-                )}
-                <span className="min-w-0">
-                  {note.title}
-                  {note.read ? null : <span className="sr-only"> (unread)</span>}
-                </span>
-              </span>
-              <span className="line-clamp-2 text-small text-text-muted">{note.body}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      <Link
-        href="/notifications"
-        className="flex min-h-touch items-center text-small font-medium text-accent-light underline-offset-4 hover:underline"
-      >
-        See all notifications
-      </Link>
-    </section>
   );
 }
 
@@ -743,7 +698,10 @@ function GettingStarted(props: Parameters<typeof gettingStarted>[0]) {
   );
 }
 
-/** A few courses to try, as posters in a row that scrolls sideways, with the Library a click away. */
+/**
+ * Courses to try, as posters across the full width in a row that scrolls sideways, with the
+ * Library a click away.
+ */
 async function KeepExploring({
   userId,
   categories,
@@ -753,39 +711,29 @@ async function KeepExploring({
   categories: CardData[];
   inPlan: ReadonlySet<string>;
 }) {
-  const courses = courseSuggestions(await getCourseLibrary(userId, categories), inPlan);
+  const courses = courseSuggestions(await getCourseLibrary(userId, categories), inPlan, 8);
   if (courses.length === 0) {
     return null;
   }
   return (
-    <section aria-labelledby="explore-heading" className="flex min-w-0 flex-col gap-3">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="explore-heading" className="text-subheading font-bold tracking-tight">
-          Keep exploring
-        </h2>
-        <span className="flex gap-x-4">
-          <Link
-            href="/courses"
-            className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
-          >
-            All courses
-          </Link>
-          <Link
-            href="/explore"
-            className="text-small font-medium text-accent-light underline-offset-4 hover:underline"
-          >
-            Explore
-          </Link>
-        </span>
-      </div>
-      <Rail>
-        {courses.map((course) => (
-          <li key={course.id} className="w-36 sm:w-40">
-            <CoursePoster course={course} showCategory />
-          </li>
-        ))}
-      </Rail>
-    </section>
+    <ScrollRail
+      id="explore-heading"
+      title="Keep exploring"
+      aside={
+        <Link
+          href="/courses"
+          className="text-small font-medium whitespace-nowrap text-accent-light underline-offset-4 hover:underline"
+        >
+          All courses
+        </Link>
+      }
+    >
+      {courses.map((course) => (
+        <li key={course.id} className="w-36 sm:w-40">
+          <CoursePoster course={course} showCategory />
+        </li>
+      ))}
+    </ScrollRail>
   );
 }
 
