@@ -90,4 +90,15 @@ test("a volunteer finds courses by search and category", async ({ page }) => {
   await page.getByRole("button", { name: "Clear filters" }).click();
   await expect(search).toHaveValue("");
   await expect(page.getByText("No courses match")).toHaveCount(0);
+
+  // Departments scroll sideways; one tap shows just that department's courses, another tap all.
+  const department = page
+    .getByRole("region", { name: "Browse by department" })
+    .getByRole("button")
+    .first();
+  await department.click();
+  await expect(department).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Clear filters" })).toBeVisible();
+  await department.click();
+  await expect(department).toHaveAttribute("aria-pressed", "false");
 });

@@ -16,26 +16,31 @@ import { triesLabel } from "@/lib/domain/quiz-results";
 export function QuizResults({
   quizzes,
   lessonsComplete,
+  showTotals = true,
 }: {
   quizzes: MyQuiz[];
   lessonsComplete: number;
+  /** The profile shows its own totals above (mock 5), so it leaves these out. */
+  showTotals?: boolean;
 }) {
   const passed = quizzes.filter((quiz) => quiz.passed).length;
   const next = quizzes.find((quiz) => !quiz.passed);
   return (
     <section aria-label="Your results" className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-2.5">
-        <div className="flex flex-col gap-0.5 rounded-card border border-border bg-surface px-4 py-3.5">
-          <span className="text-small text-text-muted">Quizzes passed</span>
-          <span className="tabular text-title font-bold">
-            {passed} of {quizzes.length}
-          </span>
+      {showTotals ? (
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="flex flex-col gap-0.5 rounded-card border border-border bg-surface px-4 py-3.5">
+            <span className="text-small text-text-muted">Quizzes passed</span>
+            <span className="tabular text-title font-bold">
+              {passed} of {quizzes.length}
+            </span>
+          </div>
+          <div className="flex flex-col gap-0.5 rounded-card border border-border bg-surface px-4 py-3.5">
+            <span className="text-small text-text-muted">Lessons complete</span>
+            <span className="tabular text-title font-bold">{lessonsComplete}</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-0.5 rounded-card border border-border bg-surface px-4 py-3.5">
-          <span className="text-small text-text-muted">Lessons complete</span>
-          <span className="tabular text-title font-bold">{lessonsComplete}</span>
-        </div>
-      </div>
+      ) : null}
       {next ? (
         <div className="flex flex-wrap items-center gap-x-3.5 gap-y-2.5 rounded-card border border-warning-line bg-warning-soft px-3.5 py-3">
           <div className="flex min-w-52 flex-1 flex-col gap-0.5">

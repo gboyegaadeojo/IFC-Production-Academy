@@ -335,9 +335,10 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
   await volunteer.goto("/profile");
   await expect(
     volunteer
-      .getByRole("region", { name: "Departments and roles" })
-      .getByText("Approved: Sample role (seed data)"),
-  ).toBeVisible();
+      .getByRole("region", { name: "Approved to serve" })
+      .getByRole("listitem")
+      .filter({ hasText: "Sample role (seed data)" }),
+  ).toContainText("Approved");
 
   // Workflow D (SPEC §3): now that they're approved, a leader schedules them and they confirm. The
   // candidate list shows the competency check before anyone is scheduled.
