@@ -48,11 +48,12 @@ function isCurrent(pathname: string, href: string): boolean {
 export function AcademyNavLink({
   href,
   label,
-  icon: Icon = DashboardIcon,
+  icon = <DashboardIcon className="size-5" />,
 }: {
   href: string;
   label: string;
-  icon?: (props: { className?: string }) => ReactNode;
+  /** Rendered already, so a server component can pass one in. */
+  icon?: ReactNode;
 }) {
   const current = isCurrent(usePathname(), href);
   return (
@@ -68,7 +69,7 @@ export function AcademyNavLink({
           current ? "bg-accent-soft text-accent-light" : "group-hover:bg-card"
         }`}
       >
-        <Icon className="size-5" />
+        {icon}
       </span>
       {label}
     </Link>
@@ -85,7 +86,11 @@ export function AcademyNav({ extra }: { extra?: ReactNode }) {
       <ul className="flex flex-col items-center gap-1">
         {NAV_LINKS.map((link) => (
           <li key={link.href}>
-            <AcademyNavLink href={link.href} label={link.label} icon={link.icon} />
+            <AcademyNavLink
+              href={link.href}
+              label={link.label}
+              icon={<link.icon className="size-5" />}
+            />
           </li>
         ))}
         {extra}

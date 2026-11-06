@@ -14,7 +14,11 @@ export async function ServiceDashboardNavLink() {
   }
   return (
     <li className="only-on-computer">
-      <AcademyNavLink href="/service-dashboard" label="Service Dashboard" icon={MonitorIcon} />
+      <AcademyNavLink
+        href="/service-dashboard"
+        label="Service Dashboard"
+        icon={<MonitorIcon className="size-5" />}
+      />
     </li>
   );
 }
