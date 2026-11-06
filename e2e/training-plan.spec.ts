@@ -38,6 +38,8 @@ test("a member's plan leads with the next thing to do", async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByRole("region", { name: "Pick up where you left off" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Your departments" })).toBeVisible();
+  // Notifications live under the bell now, not on the page (refinements, 2026-11-06).
+  await expect(page.getByRole("heading", { name: "Notifications" })).toHaveCount(0);
   // Serving stays explained, and lessons alone never read as approval.
   await expect(page.getByText("How serving works")).toBeVisible();
 });

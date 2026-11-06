@@ -42,8 +42,8 @@ function isCurrent(pathname: string, href: string): boolean {
 }
 
 /**
- * One link in the side bar: the icon, with its name underneath (mock 5). The tinted pill and the
- * weight mark the current page, not colour alone.
+ * One link in the side bar: the icon, with its name underneath in 10px type (mock 5; smaller at
+ * G's request, 2026-11-06). The tinted pill and the weight mark the current page, not colour alone.
  */
 export function AcademyNavLink({
   href,
@@ -60,12 +60,12 @@ export function AcademyNavLink({
     <Link
       href={href}
       aria-current={current ? "page" : undefined}
-      className={`group flex w-20 flex-col items-center gap-1 rounded-button py-1.5 text-center text-[0.6875rem] leading-tight transition-surface ${
+      className={`group flex w-20 flex-col items-center gap-1 rounded-button py-1.5 text-center text-[0.625rem] leading-tight transition-surface [&_svg]:size-[1.125rem] ${
         current ? "font-semibold text-text" : "font-medium text-text-muted hover:text-text"
       }`}
     >
       <span
-        className={`flex h-8 w-14 items-center justify-center rounded-pill transition-surface ${
+        className={`flex h-7 w-12 items-center justify-center rounded-pill transition-surface ${
           current ? "bg-accent-soft text-accent-light" : "group-hover:bg-card"
         }`}
       >

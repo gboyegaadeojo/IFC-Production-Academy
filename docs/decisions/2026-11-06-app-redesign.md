@@ -29,3 +29,22 @@ The product rules don't change. Watch time is only a hint and "Completed" is the
 ## How it's built
 
 In small pull requests: the shell first, then Training, Courses, and the profile.
+
+## Refinements (approved the same day)
+
+After using it, G asked for changes and approved a second mock:
+
+- **Training.** This month is a card beside the serving card, not a column down the whole page.
+  Everything below it, including Keep exploring, uses the full width. The latest notifications
+  leave the page, because the bell shows them.
+- **Rows that scroll sideways** show there's more: the next card peeks in, the far edge fades, dots
+  show where you are, and wider screens get arrow buttons.
+- **The serving card** offers the checklist and the schedule instead of SOPs, because the team uses
+  the checklist far more.
+- **The side bar's** labels are 10px.
+- **The bell** opens a panel instead of a page, closes when you tap it again, and has Mark all read.
+  The settings move to their own page, with one choice per group (Serving, Training, Leading) for
+  phone and for email, instead of a switch for every kind of notification.
+- **Courses on a phone** show each department as its own row of courses that scrolls sideways.
+- **Sign-in** becomes option A, "Focus": a plain page, a large headline, and one Planning Center
+  button, with the email link as a second button.

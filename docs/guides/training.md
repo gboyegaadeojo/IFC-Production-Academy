@@ -2,7 +2,7 @@
 
 **Training** is your home in the Academy. From the top:
 
-- **A greeting**, then, if you're on the schedule, a bold card for your next service: when, your position, and buttons for the **Checklist** and **SOPs**. If you haven't replied yet, it asks you to reply on **Schedule** instead.
+- **A greeting**, then, if you're on the schedule, a bold card for your next service: when, your position, and buttons for **Open checklist** and **Schedule**. If you haven't replied yet, it asks you to **Reply on Schedule**, with the **Checklist** beside it.
 - **Pick up where you left off:** the one thing to do next, with a button to carry on.
 - **Coming up:** anything else, such as courses a leader assigned, other services this week, practicals, and other courses you've started.
 - **Shortcuts** on a phone: Checklist, Schedule, SOPs, and Mentoring.
@@ -10,7 +10,9 @@
 - **Recently watched:** the lessons you opened lately. It shows roughly how much of a video you watched, as a reminder only, and a tick once you've marked a lesson **Completed**.
 - **Keep exploring:** a few courses to try, in a row you can scroll sideways.
 
-On a wide screen, **This month** (your services) and your latest **Notifications** sit on the right.
+In a row that scrolls sideways, the next card peeks in at the edge, and the dots underneath show where you are. On a tablet or computer, use the arrow buttons beside the heading.
+
+On a wide screen, **This month** (your services) sits beside your next service. Your notifications are under the bell.
 
 **Getting started** shows instead of the plan when you're new: add your name, start your first course, join a department, and get the app.
 
