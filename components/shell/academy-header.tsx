@@ -35,7 +35,9 @@ export function AcademyHeader() {
  */
 export function AcademySidebar() {
   return (
-    <aside className="sticky top-0 hidden h-dvh w-24 shrink-0 flex-col items-center gap-3 border-r border-border bg-surface py-4 md:flex print:hidden">
+    // Sticky makes the side bar its own layer, so it needs a z-index of its own: without one, the
+    // page content painted after it (course posters, cards) covered the account menu opening out.
+    <aside className="sticky top-0 z-30 hidden h-dvh w-24 shrink-0 flex-col items-center gap-3 border-r border-border bg-surface py-4 md:flex print:hidden">
       <Link
         href="/home"
         title="Training"
