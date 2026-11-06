@@ -22,6 +22,8 @@ describe("timeOfDayGreeting", () => {
 
 const serving = (over: Partial<ServingInput> = {}): ServingInput => ({
   id: "a1",
+  eventId: "e1",
+  roleId: "r1",
   status: "confirmed",
   readiness: "approved",
   // Sunday, Nov 8, 9:00 am in Winnipeg.
@@ -40,6 +42,8 @@ describe("servingSpotlight", () => {
       eyebrow: "You're serving Sunday",
       detail: "Sunday Service · Trained",
       needsReply: false,
+      // Straight to that service's checklist, on this position's own.
+      checklistHref: "/serve/e1?position=r1",
     });
     // 9:00 with Manitoba's permanent daylight time; older time zone data still says 8:00.
     expect(spot?.title).toMatch(/^Camera 2 · [89]:00 a\.m\.$/);

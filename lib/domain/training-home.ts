@@ -3,6 +3,7 @@
  * Recently watched. Watch time is an informal hint and never proof of viewing; a lesson is
  * "Completed" only when the learner marks it so (SRS-LESSON-006).
  */
+import { serviceChecklistHref } from "./checklists";
 import { formatMinutes } from "./learning";
 import { READINESS_LABELS, type AssignmentReadiness } from "./schedule";
 
@@ -46,6 +47,9 @@ export function timeOfDayGreeting(now: Date): string {
 
 export type ServingInput = {
   id: string;
+  eventId: string;
+  /** The position, so the card opens its own checklist. */
+  roleId: string;
   status: string;
   readiness: AssignmentReadiness;
   startsAt: string;
@@ -62,6 +66,8 @@ export type ServingSpotlight = {
   detail: string;
   /** Waiting for a reply, so the card asks for one first. */
   needsReply: boolean;
+  /** That service's checklist, opened on this position's own (G, 2026-11-06). */
+  checklistHref: string;
 };
 
 function dayWords(startsAt: string, now: Date): string {
@@ -98,6 +104,7 @@ export function servingSpotlight(
       .filter(Boolean)
       .join(" · "),
     needsReply,
+    checklistHref: serviceChecklistHref(next.eventId, next.roleId),
   };
 }
 

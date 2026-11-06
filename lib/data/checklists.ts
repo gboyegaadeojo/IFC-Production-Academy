@@ -607,6 +607,43 @@ export type ServiceChecklistState = {
   myPositions: string[];
 };
 
+/**
+ * The checklists a position uses: those linked to it, or, when none are, its department's
+ * checklists that aren't linked to any position (as event_checklists decides "yours").
+ */
+export async function getPositionChecklistIds(roleId: string): Promise<string[]> {
+  const supabase = await createSupabaseServerClient();
+  const linked = await supabase
+    .from("checklist_positions")
+    .select("checklist_id")
+    .eq("role_id", roleId);
+  if (linked.error) {
+    return [];
+  }
+  if (linked.data.length > 0) {
+    return linked.data.map((row) => row.checklist_id);
+  }
+  const role = await supabase
+    .from("serving_roles")
+    .select("department_id")
+    .eq("id", roleId)
+    .maybeSingle();
+  if (role.error || !role.data) {
+    return [];
+  }
+  const inDepartment = await supabase
+    .from("checklists")
+    .select("id, checklist_positions(role_id)")
+    .eq("department_id", role.data.department_id)
+    .is("archived_at", null);
+  if (inDepartment.error) {
+    return [];
+  }
+  return inDepartment.data
+    .filter((checklist) => checklist.checklist_positions.length === 0)
+    .map((checklist) => checklist.id);
+}
+
 /** A service's checklists and what this person may do, or null if they can't see them. */
 export async function getServiceChecklists(
   eventId: string,

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { refreshAction } from "@/app/(app)/admin/planning-center/actions";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import { serviceChecklistHref } from "@/lib/domain/checklists";
 import { buttonClasses } from "@/components/ui/button";
 import { CalendarRangeIcon, CheckIcon, PlaneIcon } from "@/components/ui/icons";
 import Loading from "./loading";
@@ -626,7 +627,7 @@ async function DayPanel({
               ) : null}
               {assignment.status !== "declined" ? (
                 <Link
-                  href={`/serve/${assignment.event.id}`}
+                  href={serviceChecklistHref(assignment.event.id, assignment.roleId)}
                   className={buttonClasses(asked ? "secondary" : "primary")}
                 >
                   Open checklist<span className="sr-only"> for {assignment.event.title}</span>

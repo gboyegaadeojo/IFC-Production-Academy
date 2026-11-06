@@ -125,6 +125,8 @@ async function TrainingContent() {
   const spotlight = servingSpotlight(
     assignments.map((assignment) => ({
       id: assignment.id,
+      eventId: assignment.event.id,
+      roleId: assignment.roleId,
       status: assignment.status,
       readiness: assignment.readiness,
       startsAt: assignment.event.startsAt,
@@ -380,13 +382,13 @@ function ServingCard({ spotlight }: { spotlight: ServingSpotlight }) {
             <Link href="/schedule" className={SERVING_PRIMARY}>
               Reply on Schedule
             </Link>
-            <Link href="/serve" className={SERVING_SECONDARY}>
+            <Link href={spotlight.checklistHref} className={SERVING_SECONDARY}>
               Checklist
             </Link>
           </>
         ) : (
           <>
-            <Link href="/serve" className={SERVING_PRIMARY}>
+            <Link href={spotlight.checklistHref} className={SERVING_PRIMARY}>
               <ListChecksIcon className="size-4" />
               Open checklist
             </Link>

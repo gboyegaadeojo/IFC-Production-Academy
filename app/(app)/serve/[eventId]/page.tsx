@@ -12,10 +12,15 @@ import { InfoIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
-import { getServiceChecklists, getServiceHeader } from "@/lib/data/checklists";
+import {
+  getPositionChecklistIds,
+  getServiceChecklists,
+  getServiceHeader,
+} from "@/lib/data/checklists";
 import {
   boardOrder,
   NOT_PUBLISHED_NOTE,
+  openingChecklistId,
   percentDone,
   servingLabel,
   teamProgress,
@@ -30,10 +35,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Props = PageProps<"/serve/[eventId]">;
 
-export default function ServePage({ params }: Props) {
+export default function ServePage({ params, searchParams }: Props) {
   return (
     <Suspense fallback={<ServeSkeleton />}>
-      <ServeContent params={params} />
+      <ServeContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
@@ -44,15 +49,19 @@ export default function ServePage({ params }: Props) {
  * on the media team can help, scheduled or not. Whoever leads the service (such as the Technical
  * Director) can reset and undo. The team's progress is for everyone.
  */
-async function ServeContent({ params }: Pick<Props, "params">) {
+async function ServeContent({ params, searchParams }: Pick<Props, "params" | "searchParams">) {
   await requireActiveUser();
   const { eventId } = await params;
   if (!UUID.test(eventId)) {
     notFound();
   }
-  const [service, data] = await Promise.all([
+  // From Training or Schedule: open on the checklist for the position you're serving in.
+  const { position } = await searchParams;
+  const roleId = typeof position === "string" && UUID.test(position) ? position : null;
+  const [service, data, positionChecklists] = await Promise.all([
     getServiceHeader(eventId),
     getServiceChecklists(eventId),
+    roleId ? getPositionChecklistIds(roleId) : Promise.resolve([]),
   ]);
   if (!service) {
     notFound();
@@ -118,6 +127,7 @@ async function ServeContent({ params }: Pick<Props, "params">) {
 
           <ServiceBoard
             checklists={boardOrder(data.checklists).map(toBoard)}
+            initialId={openingChecklistId(data.checklists, positionChecklists)}
             eventId={service.id}
             canTick={canTick}
             action={setItemAction}
