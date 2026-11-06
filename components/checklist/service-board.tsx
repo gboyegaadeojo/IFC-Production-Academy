@@ -41,12 +41,15 @@ export type BoardChecklist = {
  */
 export function ServiceBoard({
   checklists,
+  initialId,
   eventId,
   canTick,
   action,
 }: {
   /** In board order: your own first. */
   checklists: readonly BoardChecklist[];
+  /** The checklist to open on, such as the position you're serving in; the first otherwise. */
+  initialId?: string | null;
   eventId: string;
   canTick: boolean;
   action: (input: {
@@ -56,7 +59,7 @@ export function ServiceBoard({
     tabId?: string;
   }) => Promise<TickResult>;
 }) {
-  const [currentId, setCurrentId] = useState(checklists[0]?.id ?? "");
+  const [currentId, setCurrentId] = useState(initialId ?? checklists[0]?.id ?? "");
   const [filter, setFilter] = useState<BoardFilter>("all");
   const current = checklists.find((c) => c.id === currentId) ?? checklists[0];
   if (!current) {

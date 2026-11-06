@@ -31,6 +31,8 @@ export type MyAssignment = {
   status: AssignmentStatus;
   readiness: AssignmentReadiness;
   event: { id: string; title: string; startsAt: string; endsAt: string; location: string };
+  /** The position (serving role), so links can open its own checklist. */
+  roleId: string;
   roleName: string;
   departmentName: string;
 };
@@ -92,6 +94,7 @@ export async function getMyUpcomingAssignments(userId: string): Promise<MyAssign
                 endsAt: event.ends_at,
                 location: event.location,
               },
+              roleId: a.role_id,
               roleName: roles.data.find((r) => r.id === a.role_id)?.name ?? "A serving role",
               departmentName: departments.data.find((d) => d.id === a.department_id)?.name ?? "",
             },
@@ -495,6 +498,7 @@ export async function getMyAssignmentsBetween(
                 endsAt: event.ends_at,
                 location: event.location,
               },
+              roleId: a.role_id,
               roleName: roles.data.find((r) => r.id === a.role_id)?.name ?? "A serving role",
               departmentName: departments.data.find((d) => d.id === a.department_id)?.name ?? "",
             },

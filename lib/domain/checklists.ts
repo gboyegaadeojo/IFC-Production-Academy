@@ -130,6 +130,32 @@ export function boardOrder<T extends { isMine: boolean }>(checklists: readonly T
   return [...checklists.filter((c) => c.isMine), ...checklists.filter((c) => !c.isMine)];
 }
 
+/**
+ * The link to a service's checklist, opened on the position you're serving in (G, 2026-11-06).
+ * Without a position, the board opens on your own checklist as usual.
+ */
+export function serviceChecklistHref(eventId: string, roleId?: string | null): string {
+  return roleId ? `/serve/${eventId}?position=${roleId}` : `/serve/${eventId}`;
+}
+
+/**
+ * Which checklist the board opens on: the one for the position in the link, then your own, then
+ * the first. `positionChecklistIds` are the checklists that position uses.
+ */
+export function openingChecklistId(
+  checklists: readonly { id: string; isMine: boolean }[],
+  positionChecklistIds: readonly string[],
+): string | null {
+  const forPosition = new Set(positionChecklistIds);
+  return (
+    checklists.find((c) => forPosition.has(c.id) && c.isMine)?.id ??
+    checklists.find((c) => forPosition.has(c.id))?.id ??
+    checklists.find((c) => c.isMine)?.id ??
+    checklists[0]?.id ??
+    null
+  );
+}
+
 /** Ticks across every department, for the team's progress ring. */
 export function teamProgress(checklists: readonly { done: number; total: number }[]): {
   done: number;

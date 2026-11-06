@@ -4,6 +4,8 @@ import {
   activityChange,
   activityOutcomeLabel,
   boardOrder,
+  openingChecklistId,
+  serviceChecklistHref,
   boardSections,
   canSwitchCurrentService,
   servingLabel,
@@ -276,5 +278,34 @@ describe("settings", () => {
     expect(nextServiceDay("2026-11-01", 6)).toBe("2026-11-07");
     expect(nextServiceDay("2026-12-30", 3)).toBe("2026-12-30");
     expect(nextServiceDay("2026-12-31", 0)).toBe("2027-01-03");
+  });
+});
+
+describe("serviceChecklistHref", () => {
+  it("opens the service on the position you're serving in", () => {
+    expect(serviceChecklistHref("e1", "r1")).toBe("/serve/e1?position=r1");
+    expect(serviceChecklistHref("e1")).toBe("/serve/e1");
+  });
+});
+
+describe("openingChecklistId", () => {
+  const board = [
+    { id: "camera", isMine: true },
+    { id: "audio", isMine: true },
+    { id: "lighting", isMine: false },
+  ];
+
+  it("opens on the position's own checklist when you serve in two", () => {
+    expect(openingChecklistId(board, ["audio"])).toBe("audio");
+  });
+
+  it("prefers your own when a position shares checklists", () => {
+    expect(openingChecklistId(board, ["lighting", "audio"])).toBe("audio");
+  });
+
+  it("falls back to your own, then the first", () => {
+    expect(openingChecklistId(board, [])).toBe("camera");
+    expect(openingChecklistId([{ id: "lighting", isMine: false }], ["gone"])).toBe("lighting");
+    expect(openingChecklistId([], [])).toBeNull();
   });
 });
