@@ -40,7 +40,7 @@ Watching videos alone never approves you to serve. And being approved doesn't pu
 
 ## Your profile
 
-Open your name, then choose your name at the top of the menu. Your profile shows the name leaders see, your departments and roles, and your certificates. If you signed in with Planning Center and your name differs there, you can use that one.
+Open your name, then choose your name at the top of the menu. Your profile shows the name leaders see, with **Edit name** under it, then three totals (lessons done, quizzes passed, and roles you're approved in), **Approved to serve** for each role, your departments and how far you've got, your quizzes, your certificates, and how you sign in. If you signed in with Planning Center and your name differs there, you can use that one.
 
 ## Notifications
 
