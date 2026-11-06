@@ -36,7 +36,7 @@ Only each person can turn alerts on, so someone listed as **Not on** may need a 
 
 **People and roles** lists everyone who has signed in, 50 to a page. Open a person to:
 
-- **Grant a role,** choosing a department if the role needs one. Pick a role to see what it lets someone do.
+- **Grant a role,** choosing a department if the role needs one. Pick a role to see what it lets someone do. They get a notification saying which role, where, and who gave it.
 - **Remove a role,** with a reason. Past roles stay listed.
 - **Change their account:** Suspend, Deactivate, or Reactivate. Training history is kept whatever the status. On the People list, only accounts that aren't active have a label beside the name.
 

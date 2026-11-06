@@ -131,5 +131,32 @@ select is(
   1, 'an overdue SOP reminds its owner once'
 );
 
+-- A leader giving someone a role tells them; granting yourself one (the first administrator) doesn't.
+reset role;
+select set_config('request.jwt.claims', '', true);
+insert into public.user_roles (user_id, role_id, department_id, granted_by) values
+  ('92000000-0000-4000-8000-000000000002', '297464be-2cae-430d-94bf-6038bd745384',
+   'b7ba9dae-cab5-43e0-a996-8ae9d2436855', '92000000-0000-4000-8000-000000000004');
+select is(
+  (select count(*)::int from public.notifications
+    where user_id = '92000000-0000-4000-8000-000000000002' and kind = 'role_granted'),
+  1, 'being given a role notifies the person'
+);
+select ok(
+  (select title like 'You''re now % for Camera Operations' and body like 'Test Camera Leader gave you this role.%'
+     and link = '/admin'
+     from public.notifications
+    where user_id = '92000000-0000-4000-8000-000000000002' and kind = 'role_granted'),
+  'it says which role, where, and who gave it'
+);
+insert into public.user_roles (user_id, role_id, department_id, granted_by) values
+  ('92000000-0000-4000-8000-000000000001', '297464be-2cae-430d-94bf-6038bd745384',
+   'b7ba9dae-cab5-43e0-a996-8ae9d2436855', '92000000-0000-4000-8000-000000000001');
+select is(
+  (select count(*)::int from public.notifications
+    where user_id = '92000000-0000-4000-8000-000000000001' and kind = 'role_granted'),
+  0, 'granting yourself a role sends nothing'
+);
+
 select * from finish();
 rollback;

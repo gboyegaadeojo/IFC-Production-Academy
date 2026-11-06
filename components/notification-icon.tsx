@@ -36,6 +36,7 @@ const KIND_ICON: Record<
   new_course: { icon: GraduationCapIcon, tone: "text-accent-light" },
   sop_updated: { icon: FileTextIcon, tone: "text-text-secondary" },
   mentor_note: { icon: UsersIcon, tone: "text-accent-light" },
+  role_granted: { icon: UserCheckIcon, tone: "text-success" },
 };
 
 /** A round icon for what kind of notification it is: serving, training, leading. Decorative. */
