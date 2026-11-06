@@ -112,8 +112,11 @@ Any other address signs you up as a new volunteer.
   optional, and stay off until you set them up.
 - **Putting it online:** follow [docs/deployment.md](docs/deployment.md).
 
-If you'd like to use the Academy at your church, open an issue and say hello. There's no licence
-yet, so please ask before reusing the code.
+You're welcome to use the Academy at your church. If you do, open an issue and say hello.
+
+## Licence
+
+[MIT](LICENSE): free to use, change and share, as long as the copyright notice comes with it.
 
 ## Documentation
 
