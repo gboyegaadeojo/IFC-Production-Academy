@@ -26,7 +26,7 @@ Every open department's courses are open to you. You don't need anyone's permiss
 
 ## The Library
 
-- **Courses** lists every course, with search and filters for category, level, and topic. At the top, **Browse by department** is a row you can scroll sideways: tap a department to see only its courses, and tap it again to see them all.
+- **Courses** lists every course, with search and filters for category, level, and topic. At the top, **Browse by department** is a row you can scroll sideways: tap a department to see only its courses, and tap it again to see them all. On a phone, courses come in rows you scroll sideways: **Continue** for the ones you've started, then a row for each category. **See all** shows one category's courses on their own. Searching or choosing a filter shows the matching courses together.
 - **Explore** finds courses and single videos, whichever department they're in. It opens on its search and filters for level, category, and topic. Once you search or choose one, matching courses come first, with single videos below them. Opening a video takes you to that lesson in its course, and it counts there like any other lesson.
 
 ## General categories

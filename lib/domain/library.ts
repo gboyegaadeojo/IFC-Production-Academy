@@ -49,6 +49,13 @@ export function sortLibrary(courses: readonly LibraryCourse[]): LibraryCourse[] 
 
 export type LibraryRow = { category: LibraryCourse["category"]; courses: LibraryCourse[] };
 
+/** Courses you've started and not finished, for the Continue row on a phone (G, 2026-11-06). */
+export function continuingCourses(courses: readonly LibraryCourse[]): LibraryCourse[] {
+  return sortLibrary(courses).filter(
+    (course) => course.state === "in_progress" || course.state === "awaiting_assessment",
+  );
+}
+
 /** One row per category with published courses. An empty category has no row. */
 export function libraryRows(courses: readonly LibraryCourse[]): LibraryRow[] {
   const rows = new Map<string, LibraryRow>();

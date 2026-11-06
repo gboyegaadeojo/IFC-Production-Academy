@@ -6,9 +6,15 @@ import { TopicFilter } from "@/components/topic-filter";
 import { compactFieldClasses } from "@/components/ui/action-form";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ScrollRail } from "@/components/ui/scroll-rail";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { courseCountLabel } from "@/lib/domain/home";
-import { filterLibrary, type LibraryCourse } from "@/lib/domain/library";
+import {
+  continuingCourses,
+  filterLibrary,
+  libraryRows,
+  type LibraryCourse,
+} from "@/lib/domain/library";
 
 type Category = { id: string; name: string; kind: string; sortOrder: number; hue: string };
 
@@ -145,14 +151,72 @@ export function LibraryBrowser({
             : "Courses appear here when they're published."}
         </EmptyState>
       ) : (
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-          {shown.map((course) => (
-            <li key={course.id}>
+        <>
+          {filtered ? null : <PhoneRows courses={courses} onSeeAll={(id) => setCategoryId(id)} />}
+          <ul
+            className={`grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 ${
+              filtered ? "grid" : "hidden md:grid"
+            }`}
+          >
+            {shown.map((course) => (
+              <li key={course.id}>
+                <CoursePoster course={course} showCategory />
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  );
+}
+
+/**
+ * On a phone, before any search or filter: what you've started, then a row per category that
+ * scrolls sideways (refinements mock, approved 2026-11-06). See all shows that category alone,
+ * as a grid. Wider screens keep the grid.
+ */
+function PhoneRows({
+  courses,
+  onSeeAll,
+}: {
+  courses: LibraryCourse[];
+  onSeeAll: (categoryId: string) => void;
+}) {
+  const continuing = continuingCourses(courses);
+  return (
+    <div className="flex flex-col gap-7 md:hidden">
+      {continuing.length > 0 ? (
+        <ScrollRail id="continue-heading" title="Continue">
+          {continuing.map((course) => (
+            <li key={course.id} className="w-36">
               <CoursePoster course={course} showCategory />
             </li>
           ))}
-        </ul>
-      )}
-    </>
+        </ScrollRail>
+      ) : null}
+      {libraryRows(courses).map(({ category, courses: inCategory }) => (
+        <ScrollRail
+          key={category.id}
+          id={`row-${category.id}`}
+          title={category.name}
+          aside={
+            <button
+              type="button"
+              onClick={() => onSeeAll(category.id)}
+              className="min-h-touch shrink-0 text-small font-medium whitespace-nowrap text-accent-light underline-offset-4 hover:underline"
+            >
+              See all {inCategory.length}
+              <span className="sr-only"> in {category.name}</span>
+            </button>
+          }
+        >
+          {inCategory.map((course) => (
+            <li key={course.id} className="w-36">
+              <CoursePoster course={course} />
+            </li>
+          ))}
+        </ScrollRail>
+      ))}
+    </div>
   );
 }
