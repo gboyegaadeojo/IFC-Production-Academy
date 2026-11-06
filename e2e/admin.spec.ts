@@ -78,6 +78,13 @@ test("a department leader approves a volunteer's request", async ({ browser }) =
   await expect(rows.first()).toContainText("Start learning");
   await panel.getByRole("button", { name: "Clear all" }).click();
   await expect(panel.getByText("Clear all notifications?")).toBeVisible();
+  // The confirm button's words must show against its fill (it was once white on white).
+  const confirm = panel.getByRole("button", { name: "Clear all" });
+  const colours = await confirm.evaluate((button) => {
+    const style = getComputedStyle(button);
+    return [style.color, style.backgroundColor];
+  });
+  expect(colours[0]).not.toBe(colours[1]);
   await panel.getByRole("button", { name: "Cancel" }).click();
   await expect(rows).toHaveCount(1);
   await rows

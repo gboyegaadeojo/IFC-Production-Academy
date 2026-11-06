@@ -212,11 +212,7 @@ export function NotificationsBell({
                       <button type="button" onClick={() => setConfirming(false)} className={PILL}>
                         Cancel
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => clear(null)}
-                        className={`${PILL} border-text bg-text text-bg hover:bg-text hover:opacity-90`}
-                      >
+                      <button type="button" onClick={() => clear(null)} className={PILL_STRONG}>
                         Clear all
                       </button>
                     </>
@@ -336,5 +332,10 @@ export function NotificationsBell({
   );
 }
 
-const PILL =
-  "inline-flex min-h-8 items-center gap-1.5 rounded-pill border border-border bg-surface px-3 text-[0.75rem] font-semibold text-text transition-surface hover:bg-hover disabled:cursor-default disabled:text-text-muted disabled:hover:bg-surface";
+// Shape only; each kind adds its own colours, so no two colour classes ever compete (a clash left
+// the confirm button white on white in dark mode).
+const PILL_SHAPE =
+  "inline-flex min-h-8 items-center gap-1.5 rounded-pill border px-3 text-[0.75rem] font-semibold transition-surface";
+const PILL = `${PILL_SHAPE} border-border bg-surface text-text hover:bg-hover disabled:cursor-default disabled:text-text-muted disabled:hover:bg-surface`;
+/** The one that does it, after asking: filled, the inverse of the page. */
+const PILL_STRONG = `${PILL_SHAPE} border-text bg-text text-bg hover:opacity-90`;
