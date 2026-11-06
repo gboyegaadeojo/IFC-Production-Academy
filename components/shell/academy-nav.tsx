@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -19,31 +19,19 @@ type NavLink = {
   icon: (props: { className?: string }) => ReactNode;
 };
 
-/** The learner destinations (DESIGN §3.1). The side bar has them all, in these groups. */
-const NAV_GROUPS: { heading: string | null; links: NavLink[] }[] = [
-  { heading: null, links: [{ href: "/home", label: "Training", icon: GraduationCapIcon }] },
-  {
-    heading: "Library",
-    links: [
-      { href: "/courses", label: "Courses", icon: BookOpenIcon },
-      { href: "/explore", label: "Explore", icon: PlayCircleIcon },
-    ],
-  },
-  {
-    heading: "Serving",
-    links: [
-      { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
-      { href: "/serve", label: "Checklist", icon: ListChecksIcon },
-      { href: "/sops", label: "SOPs", icon: FileTextIcon },
-    ],
-  },
+/** The learner destinations (DESIGN §3.1), in the side bar's order. */
+const NAV_LINKS: NavLink[] = [
+  { href: "/home", label: "Training", icon: GraduationCapIcon },
+  { href: "/courses", label: "Courses", icon: BookOpenIcon },
+  { href: "/explore", label: "Explore", icon: PlayCircleIcon },
+  { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
+  { href: "/serve", label: "Checklist", icon: ListChecksIcon },
+  { href: "/sops", label: "SOPs", icon: FileTextIcon },
 ];
 
 /** Phones have five tabs (G, 2026-11-04). Explore is a switch at the top of Courses there. */
 const TAB_HREFS = new Set(["/home", "/courses", "/schedule", "/serve", "/sops"]);
-const TAB_LINKS = NAV_GROUPS.flatMap((group) => group.links).filter((link) =>
-  TAB_HREFS.has(link.href),
-);
+const TAB_LINKS = NAV_LINKS.filter((link) => TAB_HREFS.has(link.href));
 
 function isCurrent(pathname: string, href: string): boolean {
   // A course's own page isn't the Courses list: someone may have come from Training.
@@ -53,28 +41,36 @@ function isCurrent(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** One link in the side bar. Its fill and weight mark the current page, not colour alone. */
+/**
+ * One link in the side bar: the icon, with its name underneath (mock 5). The tinted pill and the
+ * weight mark the current page, not colour alone.
+ */
 export function AcademyNavLink({
   href,
   label,
-  icon: Icon = DashboardIcon,
+  icon = <DashboardIcon className="size-5" />,
 }: {
   href: string;
   label: string;
-  icon?: (props: { className?: string }) => ReactNode;
+  /** Rendered already, so a server component can pass one in. */
+  icon?: ReactNode;
 }) {
   const current = isCurrent(usePathname(), href);
   return (
     <Link
       href={href}
       aria-current={current ? "page" : undefined}
-      className={`flex min-h-touch items-center gap-2 rounded-button px-2 text-body font-medium transition-surface ${
-        current
-          ? "bg-accent-soft font-semibold text-accent-light"
-          : "text-text-secondary hover:bg-hover hover:text-text"
+      className={`group flex w-20 flex-col items-center gap-1 rounded-button py-1.5 text-center text-[0.6875rem] leading-tight transition-surface ${
+        current ? "font-semibold text-text" : "font-medium text-text-muted hover:text-text"
       }`}
     >
-      <Icon className="size-4 shrink-0" />
+      <span
+        className={`flex h-8 w-14 items-center justify-center rounded-pill transition-surface ${
+          current ? "bg-accent-soft text-accent-light" : "group-hover:bg-card"
+        }`}
+      >
+        {icon}
+      </span>
       {label}
     </Link>
   );
@@ -87,23 +83,15 @@ export function AcademyNavLink({
 export function AcademyNav({ extra }: { extra?: ReactNode }) {
   return (
     <nav aria-label="Academy">
-      <ul className="flex flex-col gap-1">
-        {NAV_GROUPS.map((group) => (
-          <Fragment key={group.heading ?? "main"}>
-            {group.heading ? (
-              <li
-                aria-hidden="true"
-                className="mt-3 px-2 pb-0.5 text-small font-medium text-text-muted"
-              >
-                {group.heading}
-              </li>
-            ) : null}
-            {group.links.map((link) => (
-              <li key={link.href}>
-                <AcademyNavLink href={link.href} label={link.label} icon={link.icon} />
-              </li>
-            ))}
-          </Fragment>
+      <ul className="flex flex-col items-center gap-1">
+        {NAV_LINKS.map((link) => (
+          <li key={link.href}>
+            <AcademyNavLink
+              href={link.href}
+              label={link.label}
+              icon={<link.icon className="size-5" />}
+            />
+          </li>
         ))}
         {extra}
       </ul>
@@ -156,11 +144,17 @@ function TabList({ pathname }: { pathname: string }) {
             <Link
               href={link.href}
               aria-current={current ? "page" : undefined}
-              className={`flex min-h-14 flex-col items-center justify-center gap-1 text-small transition-surface ${
-                current ? "font-medium text-text" : "text-text-muted hover:text-text"
+              className={`flex min-h-14 flex-col items-center justify-center gap-1 text-[0.6875rem] transition-surface ${
+                current ? "font-semibold text-text" : "font-medium text-text-muted hover:text-text"
               }`}
             >
-              <Icon className={`size-5 ${current ? "text-accent-light" : ""}`} />
+              <span
+                className={`flex h-7 w-13 items-center justify-center rounded-pill ${
+                  current ? "bg-accent-soft text-accent-light" : ""
+                }`}
+              >
+                <Icon className="size-5" />
+              </span>
               {link.label}
             </Link>
           </li>

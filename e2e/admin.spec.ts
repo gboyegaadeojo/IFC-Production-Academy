@@ -525,7 +525,8 @@ test("the admin sidebar opens one section at a time, and collapses", async ({ pa
 test("a volunteer can't open the admin area", async ({ page }) => {
   await signInByEmail(page, `e2e-noadmin-${Date.now()}@example.com`);
   await openAccountMenu(page);
-  await expect(page.getByRole("link", { name: "Admin" })).toHaveCount(0);
+  // Exact: the menu's top row is their name, which here contains "admin".
+  await expect(page.getByRole("link", { name: "Admin", exact: true })).toHaveCount(0);
   await page.keyboard.press("Escape");
   for (const path of [
     "/admin",

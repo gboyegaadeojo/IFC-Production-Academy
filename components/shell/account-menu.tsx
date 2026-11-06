@@ -7,26 +7,24 @@ import { HELP_ADMIN_PATHS } from "@/lib/domain/admin";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   BellIcon,
-  ChevronDownIcon,
+  ChevronRightIcon,
   LogOutIcon,
   ShieldIcon,
   SmartphoneIcon,
-  UserIcon,
   InfoIcon,
   UsersIcon,
 } from "@/components/ui/icons";
 
 /**
- * Account menu (DESIGN §3.2; approved mock, 2026-11-01): who you are and how you sign in, then
- * Profile, Notifications, Mentoring, the Academy/Admin workspace switch when permitted, Appearance
- * (checklist app US-08a), and Sign out. A disclosure, not an ARIA menu: Tab moves through the
- * links, Escape closes and returns focus to the button, and a click outside closes it.
+ * Account menu (DESIGN §3.2; mock 5, approved 2026-11-06): your name at the top opens your profile,
+ * then Mentoring, Admin when permitted, Get the app, Help, and Sign out. The bell beside the button
+ * has notifications, except in Admin, which has no bell, so the menu lists them there. A disclosure,
+ * not an ARIA menu: Tab moves through the links, Escape closes and returns focus to the button, and
+ * a click outside closes it.
  */
 export function AccountMenu({
   displayName,
   initials,
-  email = null,
-  planningCenter = false,
   showAdmin,
   unread = 0,
   placement = "header",
@@ -34,19 +32,19 @@ export function AccountMenu({
 }: {
   displayName: string;
   initials: string;
-  /** The sign-in email, shown under the name. */
-  email?: string | null;
-  /** Whether this account signs in with Planning Center. */
-  planningCenter?: boolean;
   showAdmin: boolean;
-  /** Unread notifications, shown on the button and the Notifications link. */
+  /** Unread notifications. Only Admin passes it, since it has no bell. */
   unread?: number;
-  /** In the admin sidebar's footer the menu opens upwards, or sideways when it's icons only. */
-  placement?: "header" | "sidebar";
-  /** Icons-only sidebar: just the avatar. */
+  /**
+   * The phone bar (initials only), the learner side bar (initials over the first name, opening
+   * sideways), or the admin sidebar's footer (opening upwards, or sideways when it's icons only).
+   */
+  placement?: "header" | "rail" | "sidebar";
+  /** Icons-only admin sidebar: just the avatar. */
   compact?: boolean;
 }) {
   const inSidebar = placement === "sidebar";
+  const inRail = placement === "rail";
   const pathname = usePathname();
   // Open only on the page where it was opened, so navigating anywhere closes it.
   const [openedOn, setOpenedOn] = useState<string | null>(null);
@@ -82,8 +80,9 @@ export function AccountMenu({
 
   const item =
     "flex min-h-touch items-center gap-3 rounded-button px-2.5 text-body text-text-secondary transition-surface hover:bg-card hover:text-text";
-  const avatar =
-    "flex size-8 shrink-0 items-center justify-center rounded-pill border border-border-strong bg-[linear-gradient(135deg,color-mix(in_srgb,var(--accent)_22%,var(--card)),var(--card))] text-small font-medium text-text";
+  const avatarBase =
+    "flex shrink-0 items-center justify-center rounded-pill border border-border-strong bg-[linear-gradient(135deg,color-mix(in_srgb,var(--accent)_22%,var(--card)),var(--card))] font-medium text-text";
+  const avatar = `${avatarBase} size-8 text-small`;
 
   return (
     <div ref={rootRef} className="relative">
@@ -93,26 +92,34 @@ export function AccountMenu({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
-        title={inSidebar ? displayName : undefined}
+        title={inSidebar || inRail ? displayName : undefined}
         className={
           inSidebar
             ? `flex min-h-11 items-center gap-2 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
                 compact ? "relative w-11 justify-center" : "w-full px-2"
               }`
-            : "flex min-h-touch items-center gap-2 rounded-button px-1.5 text-text-secondary transition-surface hover:bg-hover hover:text-text sm:px-2"
+            : inRail
+              ? "flex w-20 flex-col items-center gap-1 rounded-card py-1.5 text-text transition-surface hover:bg-card"
+              : "flex min-h-touch items-center rounded-pill text-text"
         }
       >
-        <span aria-hidden="true" className={avatar}>
+        <span aria-hidden="true" className={inSidebar ? avatar : `${avatarBase} size-10 text-body`}>
           {initials}
         </span>
-        {/* Visible from 1024px, so the bar never overlaps; always part of the button's name. */}
+        {/* The first name shows under the initials in the side bar; the whole name is always in the label. */}
+        {inRail ? (
+          <span
+            aria-hidden="true"
+            className="max-w-full truncate px-1 text-[0.6875rem] font-semibold"
+          >
+            {displayName.split(" ")[0]}
+          </span>
+        ) : null}
         <span
           className={
-            inSidebar
-              ? compact
-                ? "sr-only"
-                : "min-w-0 flex-1 truncate text-small font-medium text-text"
-              : "sr-only text-small lg:not-sr-only lg:max-w-40 lg:truncate"
+            inSidebar && !compact
+              ? "min-w-0 flex-1 truncate text-small font-medium text-text"
+              : "sr-only"
           }
         >
           {displayName}
@@ -139,7 +146,6 @@ export function AccountMenu({
             : ""}
           , account menu
         </span>
-        {inSidebar ? null : <ChevronDownIcon className="hidden size-4 lg:block" />}
       </button>
       {open ? (
         <div
@@ -149,44 +155,39 @@ export function AccountMenu({
               ? compact
                 ? "bottom-0 left-full ml-3"
                 : "bottom-full left-0 mb-2"
-              : "right-0 mt-2"
+              : inRail
+                ? "bottom-0 left-full ml-3"
+                : "right-0 mt-2"
           }`}
         >
-          <div className="flex items-center gap-3 border-b border-border p-4">
-            <span aria-hidden="true" className={avatar}>
+          <Link
+            href="/profile"
+            className="flex items-center gap-3 border-b border-border p-4 transition-surface hover:bg-card"
+          >
+            <span aria-hidden="true" className={`${avatarBase} size-11 text-body`}>
               {initials}
             </span>
-            <div className="flex min-w-0 flex-col">
-              <span className="sr-only">Signed in as </span>
-              <span className="truncate font-medium text-text">{displayName}</span>
-              {email ? <span className="truncate text-small text-text-muted">{email}</span> : null}
-              {planningCenter ? (
-                <span className="mt-1.5 inline-flex w-fit items-center gap-1.5 rounded-pill border border-border px-2 py-0.5 text-small text-text-secondary">
-                  <span aria-hidden="true" className="size-1.5 rounded-pill bg-success" />
-                  Signed in with Planning Center
-                </span>
-              ) : null}
-            </div>
-          </div>
+            <span className="flex min-w-0 flex-1 flex-col">
+              <span className="truncate font-semibold text-text">{displayName}</span>
+              <span className="text-small text-text-muted">View your profile</span>
+            </span>
+            <ChevronRightIcon className="size-4 shrink-0 text-text-muted" />
+          </Link>
           <ul className="flex flex-col p-1.5">
-            <li>
-              <Link href="/profile" className={item}>
-                <UserIcon className="size-[18px] shrink-0" />
-                Your profile
-              </Link>
-            </li>
-            <li>
-              <Link href="/notifications" className={item}>
-                <BellIcon className="size-[18px] shrink-0" />
-                Notifications
-                {unread > 0 ? (
-                  <span className="tabular ml-auto rounded-pill bg-accent px-2 text-small text-on-accent">
-                    {unread > 99 ? "99+" : unread}
-                    <span className="sr-only"> unread</span>
-                  </span>
-                ) : null}
-              </Link>
-            </li>
+            {inAdmin ? (
+              <li>
+                <Link href="/notifications" className={item}>
+                  <BellIcon className="size-[18px] shrink-0" />
+                  Notifications
+                  {unread > 0 ? (
+                    <span className="tabular ml-auto rounded-pill bg-accent px-2 text-small text-on-accent">
+                      {unread > 99 ? "99+" : unread}
+                      <span className="sr-only"> unread</span>
+                    </span>
+                  ) : null}
+                </Link>
+              </li>
+            ) : null}
             <li>
               <Link href="/get-the-app" className={item}>
                 <SmartphoneIcon className="size-[18px] shrink-0" />

@@ -10,11 +10,11 @@ The Academy is where the production team at Immanuel Fellowship Church learns, g
 
 ## Your profile
 
-Open your account menu and choose **Your profile** to see the quizzes you've passed, how many lessons you've completed, and your best score on each quiz. Open a quiz to see each try. Only you and your leaders can see these. They don't decide whether you serve.
+Open your name, then choose your name at the top of the menu, to see the quizzes you've passed, how many lessons you've completed, and your best score on each quiz. Open a quiz to see each try. Only you and your leaders can see these. They don't decide whether you serve.
 
 ## Finding your way around
 
-The side bar has these places. On a phone, five of them are along the bottom, and **Explore** is at the top of **Courses**.
+The side bar on the left has these places, each an icon with its name. On a phone, five of them are along the bottom, and **Explore** is at the top of **Courses**.
 
 | Place | What it's for | Guide |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ The side bar has these places. On a phone, five of them are along the bottom, an
 
 If you're on a production team and using a computer, you also get the [Service Dashboard](service-dashboard.md).
 
-Your name, at the top right, opens a menu with the rest: your profile, notifications, getting the app, mentoring, help, and signing out. Leaders also see **Admin** there.
+Beside your name are the sun or moon (light or dark) and the bell (notifications). On a phone they're at the top right; on a tablet or computer they're at the bottom of the side bar. Your name opens a menu with the rest: choose your name at the top of it for your profile, then mentoring, getting the app, help, and signing out. Leaders also see **Admin** there.
 
 ## Three things that are kept separate
 
@@ -40,11 +40,11 @@ Watching videos alone never approves you to serve. And being approved doesn't pu
 
 ## Your profile
 
-Open your name, then **Your profile**. It shows the name leaders see, your departments and roles, and your certificates. If you signed in with Planning Center and your name differs there, you can use that one.
+Open your name, then choose your name at the top of the menu. Your profile shows the name leaders see, with **Edit name** under it, then three totals (lessons done, quizzes passed, and roles you're approved in), **Approved to serve** for each role, your departments and how far you've got, your quizzes, your certificates, and how you sign in. If you signed in with Planning Center and your name differs there, you can use that one.
 
 ## Notifications
 
-Until the Academy launches, notifications stay in the app. Open your name, then **Notifications**. Everything shows here, such as being scheduled or an assessment result. Below that, you choose which kinds reach your phone and which come by email. New courses, certificates, and SOP updates stay in the app. Once your phone has alerts on, you only get an email if a service is moved or cancelled, or for anything you've turned off for your phone.
+Until the Academy launches, notifications stay in the app. Choose the bell beside your name. A dot on it means something is unread. Everything shows here, such as being scheduled or an assessment result. Below that, you choose which kinds reach your phone and which come by email. New courses, certificates, and SOP updates stay in the app. Once your phone has alerts on, you only get an email if a service is moved or cancelled, or for anything you've turned off for your phone.
 
 ## Put it on your phone
 
@@ -60,7 +60,7 @@ On the same page, choose **Turn on alerts** to get updates that drop down like a
 
 ## Dark or light
 
-Use the sun and moon switch beside your name to change between light and dark. It's remembered on each device.
+Tap the sun or moon beside your name to change between light and dark: one tap switches. It's remembered on each device.
 
 ## Want to join the team?
 
