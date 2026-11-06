@@ -9,26 +9,16 @@ import {
   ClockIcon,
   FileTextIcon,
   GraduationCapIcon,
+  SettingsIcon,
   UserCheckIcon,
   UsersIcon,
 } from "@/components/ui/icons";
 import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
-import {
-  getMyNotificationChoices,
-  getMyNotifications,
-  offersLeadingChoices,
-  type AppNotification,
-} from "@/lib/data/notifications";
+import { getMyNotifications, type AppNotification } from "@/lib/data/notifications";
 import { formatDateTime } from "@/lib/domain/admin";
-import {
-  emailChoiceGroups,
-  NOTIFICATION_KINDS,
-  relativeTime,
-  type NotificationKind,
-} from "@/lib/domain/notifications";
+import { relativeTime, type NotificationKind } from "@/lib/domain/notifications";
 import { markAllReadAction } from "./actions";
-import { NotificationSwitches } from "./email-choices";
 
 export const metadata: Metadata = { title: "Notifications" };
 
@@ -41,103 +31,60 @@ export default function NotificationsPage() {
 }
 
 /**
- * What's happened for you, beside which kinds also come by email (SRS-NOTIF-001, -002; approved
- * mock, 2026-11-01).
+ * Everything that's happened for you (SRS-NOTIF-001). The bell's panel shows the newest; this is
+ * the full list. Phone and email choices are on their own page (refinements, 2026-11-06).
  */
 async function NotificationsContent() {
   const user = await requireActiveUser();
-  const [notifications, preferences, leads] = await Promise.all([
-    getMyNotifications(user.id),
-    getMyNotificationChoices(user.id),
-    offersLeadingChoices(user.id),
-  ]);
+  const notifications = await getMyNotifications(user.id);
   const unread = notifications.filter((n) => !n.read).length;
-  // A kind with no saved choice is on.
-  const choicesFrom = (saved: ReadonlyMap<NotificationKind, boolean>) =>
-    Object.fromEntries(NOTIFICATION_KINDS.map((kind) => [kind, saved.get(kind) ?? true])) as Record<
-      NotificationKind,
-      boolean
-    >;
   const now = new Date();
 
   return (
-    <div className="page-container flex flex-col gap-8 py-8 lg:py-12">
-      <header className="flex flex-col gap-2">
-        <p className="eyebrow">Account</p>
+    <div className="page-container flex max-w-[44rem] flex-col gap-6 py-6 lg:py-10">
+      <header className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-title font-semibold">Notifications</h1>
-        <p className="max-w-[40rem] text-lead text-text-secondary">
-          Updates about your training and serving. Everything shows here; choose what also comes by
-          email, and turn on alerts for your phone.
-        </p>
+        <Link
+          href="/notifications/settings"
+          className="flex min-h-touch items-center gap-2 rounded-pill px-3 text-small font-semibold text-text-secondary transition-surface hover:bg-hover hover:text-text"
+        >
+          <SettingsIcon className="size-4" />
+          Notification settings
+        </Link>
       </header>
 
-      <div className="grid items-start gap-6 lg:grid-cols-2">
-        <section
-          aria-labelledby="recent-heading"
-          className="rounded-card border border-border bg-surface"
-        >
-          <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
-            <h2 id="recent-heading" className="font-semibold">
-              Recent
-            </h2>
-            {unread > 0 ? (
-              <ActionForm
-                action={markAllReadAction}
-                submitLabel="Mark all read"
-                pendingLabel="Saving…"
-                variant="secondary"
-                className="flex"
-              />
-            ) : null}
-          </div>
-          {notifications.length === 0 ? (
-            <p className="px-5 py-6 text-small text-text-secondary">
-              Nothing yet. You&apos;ll see updates here, like being scheduled or an assessment
-              result.
-            </p>
-          ) : (
-            <ul className="divide-y divide-border">
-              {notifications.map((notification) => (
-                <li key={notification.id}>
-                  <FeedItem notification={notification} now={now} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <div className="flex flex-col gap-6">
-          <section
-            aria-labelledby="phone-alerts-heading"
-            className="flex flex-col gap-2 rounded-card border border-border bg-surface p-5"
-          >
-            <h2 id="phone-alerts-heading" className="font-semibold">
-              Alerts on your phone
-            </h2>
-            <p className="text-small text-text-secondary">
-              Install the Academy and turn on alerts, so updates drop down like any other app.
-            </p>
-            <Link
-              href="/get-the-app"
-              className="w-fit text-small font-medium text-accent-light underline-offset-4 hover:underline"
-            >
-              Get the app
-            </Link>
-          </section>
-          <NotificationSwitches
-            channel="phone"
-            note="What reaches your phone, on devices with alerts on. New courses, certificates, and SOP updates stay here in the app."
-            groups={emailChoiceGroups(leads)}
-            initial={choicesFrom(preferences.phone)}
-          />
-          <NotificationSwitches
-            channel="email"
-            note="With alerts on a phone, you only get an email if a service is moved or cancelled, or for anything you've turned off for your phone."
-            groups={emailChoiceGroups(leads)}
-            initial={choicesFrom(preferences.email)}
-          />
+      <section
+        aria-labelledby="recent-heading"
+        className="rounded-card border border-border bg-surface"
+      >
+        <div className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+          <h2 id="recent-heading" className="font-semibold">
+            Recent
+          </h2>
+          {unread > 0 ? (
+            <ActionForm
+              action={markAllReadAction}
+              submitLabel="Mark all read"
+              pendingLabel="Saving…"
+              variant="secondary"
+              className="flex"
+            />
+          ) : null}
         </div>
-      </div>
+        {notifications.length === 0 ? (
+          <p className="px-5 py-6 text-small text-text-secondary">
+            Nothing yet. You&apos;ll see updates here, like being scheduled or an assessment result.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {notifications.map((notification) => (
+              <li key={notification.id}>
+                <FeedItem notification={notification} now={now} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

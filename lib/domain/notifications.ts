@@ -140,6 +140,31 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
   },
 ];
 
+/** What each group covers, in a line, on the settings page (refinements mock, 2026-11-06). */
+export const NOTIFICATION_GROUP_HINTS: Record<NotificationGroup["id"], string> = {
+  serving: "Being scheduled, reminders, cover requests, and schedule changes",
+  training: "Joining, courses a leader asks you to take, nudges, results, approvals, and mentoring",
+  leading: "Join requests, people ready for an assessment, SOP reviews, and onboarding follow-ups",
+};
+
+export type GroupChoice = "on" | "off" | "some";
+
+/**
+ * One switch per group stands for every kind in it (G, 2026-11-06: fewer toggles). It reads "some"
+ * when someone fine-tuned the kinds one by one.
+ */
+export function groupChoice(
+  kinds: readonly NotificationKind[],
+  choices: Readonly<Record<NotificationKind, boolean>>,
+): GroupChoice {
+  const on = kinds.filter((kind) => choices[kind]).length;
+  return on === kinds.length ? "on" : on === 0 ? "off" : "some";
+}
+
+export function isNotificationGroupId(value: string): value is NotificationGroup["id"] {
+  return NOTIFICATION_GROUPS.some((group) => group.id === value);
+}
+
 /**
  * The groups to offer. Leading choices are only for people who lead or assess, or own an SOP, so
  * volunteers aren't asked about emails they can never get.
@@ -248,7 +273,7 @@ export function notificationEmail(
   appName = "IFC Production Academy",
 ): { subject: string; text: string; html: string } {
   const url = notificationUrl(siteUrl, notification.link);
-  const settings = notificationUrl(siteUrl, "/notifications");
+  const settings = notificationUrl(siteUrl, "/notifications/settings");
   const button = emailButtonLabel(notification.kind ?? "");
   const subject = notification.title.slice(0, 200);
   const details = (notification.details ?? []).filter(
@@ -291,7 +316,7 @@ export function onboardingEmail(
   siteUrl: string,
   appName = "IFC Production Academy",
 ): { subject: string; text: string; html: string } {
-  const settings = notificationUrl(siteUrl, "/notifications");
+  const settings = notificationUrl(siteUrl, "/notifications/settings");
   const footer = email.hasAccount
     ? `You can choose which emails you get at ${settings}`
     : "If you'd rather not get these emails, reply and let us know.";

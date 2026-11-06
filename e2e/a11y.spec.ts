@@ -99,6 +99,12 @@ test("learner pages are accessible and keyboard friendly", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1, name: "Notifications" })).toBeVisible();
   await expectAccessible(page, "notifications");
 
+  await page.goto("/notifications/settings");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Notification settings" }),
+  ).toBeVisible();
+  await expectAccessible(page, "notification settings");
+
   await page.goto("/schedule");
   await expect(page.getByRole("heading", { level: 1, name: "Schedule" })).toBeVisible();
   await expectAccessible(page, "schedule");
