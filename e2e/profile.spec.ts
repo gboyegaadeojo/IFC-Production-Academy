@@ -38,5 +38,7 @@ test("a volunteer changes the name leaders see", async ({ page }, testInfo) => {
 
   // Training greets them by first name.
   await page.goto("/home");
-  await expect(page.getByRole("heading", { level: 1, name: "Welcome, Sam" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: /^Good (morning|afternoon|evening), Sam$/ }),
+  ).toBeVisible();
 });

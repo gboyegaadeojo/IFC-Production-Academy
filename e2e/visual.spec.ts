@@ -57,11 +57,11 @@ for (const viewport of VIEWPORTS) {
     await expect(
       camera
         .getByText(
-          /^\d+ courses? · (\d+ lessons? to start|\d+ of \d+ lessons?|.*lessons? complete)$/,
+          /^(\d+% · )?\d+ courses? · (\d+ lessons? to start|\d+ of \d+ lessons?|.*lessons? complete)$/,
         )
         .first(),
     ).toBeVisible();
-    await expect(camera.getByRole("img", { name: /% of lessons complete$/ })).toBeVisible();
+    await expect(camera.getByRole("progressbar", { name: /lessons complete$/ })).toBeVisible();
     // Membership is never shown as approval to serve.
     await expect(page.getByText("Approved to serve", { exact: true })).toHaveCount(1);
     await capture(page, `home-member-${viewport.name}`);
