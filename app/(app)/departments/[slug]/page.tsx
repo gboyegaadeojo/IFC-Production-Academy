@@ -124,6 +124,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
   return (
     <div style={style} className="flex flex-col pb-10 lg:pb-12">
       <Cover
+        covers={courses.flatMap((course) => (course.coverUrl ? [course.coverUrl] : [])).slice(0, 3)}
         name={department.name}
         summary={department.summary}
         icon={department.icon}
@@ -249,12 +250,15 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
 
 /** The department's colour as a cover: its icon, name, what it's for, and its size. */
 function Cover({
+  covers,
   name,
   summary,
   icon,
   isTopic,
   facts,
 }: {
+  /** Up to three of the department's course covers, in path order. */
+  covers: string[];
   name: string;
   summary: string;
   icon: string;
@@ -264,13 +268,18 @@ function Cover({
   return (
     <section
       aria-labelledby="department-heading"
-      className="relative overflow-hidden bg-[color-mix(in_srgb,var(--dept)_72%,var(--photo-bg))] text-on-accent"
+      className="relative overflow-hidden bg-[var(--cover-bg)] text-on-accent [--cover-bg:color-mix(in_srgb,var(--dept)_72%,var(--photo-bg))]"
     >
       <span
         aria-hidden="true"
         className="absolute -top-24 right-[12%] size-80 rounded-pill bg-on-accent/10"
       />
-      <div className="relative page-container flex flex-col gap-6 pt-3 pb-20 sm:pt-5 lg:pb-12">
+      {covers.length > 0 ? <CoverCollage covers={covers} /> : null}
+      <div
+        className={`relative page-container flex flex-col gap-6 pt-3 pb-20 sm:pt-5 lg:pb-12 ${
+          covers.length > 0 ? "max-sm:pt-44" : ""
+        }`}
+      >
         <nav aria-label="Breadcrumb" className="text-small">
           <Link
             href="/home"
@@ -291,7 +300,13 @@ function Cover({
             <li aria-current="page">{name}</li>
           </ol>
         </nav>
-        <div className="flex max-w-[44rem] flex-col gap-3 sm:flex-row sm:items-end sm:gap-5">
+        <div
+          className={`flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-5 ${
+            covers.length > 0
+              ? "sm:max-w-[calc(100%-18rem)] lg:max-w-[calc(100%-23rem)]"
+              : "max-w-[44rem]"
+          }`}
+        >
           <span
             aria-hidden="true"
             className="flex size-13 shrink-0 items-center justify-center rounded-card bg-on-accent/20 sm:size-16"
@@ -316,6 +331,35 @@ function Cover({
         </div>
       </div>
     </section>
+  );
+}
+
+const COLLAGE_SLOTS = [
+  "right-[9rem] top-5 -rotate-12 sm:right-[9rem] lg:right-[15rem]",
+  "right-[4.5rem] top-3 -rotate-2 sm:right-[5rem] lg:right-[9rem]",
+  "right-0 top-6 rotate-[9deg] sm:right-[1rem] lg:right-[3rem]",
+];
+
+/**
+ * The department's own course covers, fanned out on its colour (cover idea 2, approved
+ * 2026-11-07). Above the name on a phone, along the right edge on wider screens (the Up next card
+ * overlaps their foot there), faded into the colour so the words stay readable. Decorative: the courses are listed below.
+ */
+function CoverCollage({ covers }: { covers: string[] }) {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+      {covers.map((cover, index) => (
+        // Covers are public files with no image service on this plan, so a plain image is right.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={cover}
+          src={cover}
+          alt=""
+          className={`absolute aspect-[3/4] w-28 rounded-card border-[3px] border-on-accent/90 object-cover shadow-[0_18px_40px_rgb(0_0_0/0.35)] sm:top-12 sm:w-32 lg:top-8 lg:w-36 ${COLLAGE_SLOTS[index]}`}
+        />
+      ))}
+      <span className="absolute inset-0 bg-linear-to-t from-[var(--cover-bg)] from-35% to-transparent to-75% sm:bg-linear-to-r sm:from-[var(--cover-bg)] sm:from-45% sm:to-transparent sm:to-80%" />
+    </div>
   );
 }
 
