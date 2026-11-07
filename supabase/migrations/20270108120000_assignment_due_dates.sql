@@ -62,7 +62,9 @@ begin
         then 'A leader took the due date off this course. Go at your own pace.'
         else 'A leader asked you to finish this course by ' || v_due || '.' end,
       '/courses/' || p_course_id,
-      'assignment_due:' || v_assignment || ':' || extract(epoch from now())::bigint);
+      -- Each change is its own notice. A retry never gets here, as the date already matches.
+      'assignment_due:' || v_assignment || ':' || coalesce(p_due_on::text, 'none') || ':'
+        || extract(epoch from clock_timestamp()));
     return 'updated';
   end if;
 
