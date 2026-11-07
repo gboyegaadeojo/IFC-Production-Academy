@@ -48,3 +48,16 @@ After using it, G asked for changes and approved a second mock:
 - **Courses on a phone** show each department as its own row of courses that scrolls sideways.
 - **Sign-in** becomes option A, "Focus": a plain page, a large headline, and one Planning Center
   button, with the email link as a second button.
+
+## Department page: option D (2026-11-07)
+
+G compared four mocks for a department's page (A Cover, B Path, C Overview, D Cover and Path) and
+chose D:
+
+- **A's cover:** the department's colour, icon, name, what it's for, and its size.
+- **An Up next card** over the cover, with a ring of lessons done and one Continue button. On a
+  phone, a slim Up next bar appears above the tabs once the card scrolls away.
+- **B's path:** the levels as cards with rings, joined by a line, opening to show their courses.
+  The level you're working on opens first.
+- **What each role still needs:** each serving role as a checklist of membership and its
+  practical skills. Courses never appear on it (SPEC §3).

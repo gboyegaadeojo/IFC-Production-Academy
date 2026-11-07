@@ -34,7 +34,14 @@ for (const viewport of VIEWPORTS) {
     await expect(page.getByRole("heading", { level: 1, name: "Camera Operations" })).toBeVisible();
     await expect(page.getByRole("article", { name: "Foundations" })).toBeVisible();
     // Readiness stays separate from courses (SPEC §3).
-    await expect(page.getByRole("heading", { name: "Practical skills and serving" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "What each role still needs" })).toBeVisible();
+    // The level with what you're doing opens first, and closes and opens again on a tap.
+    const level = page.getByRole("article", { name: "Foundations" }).getByRole("button");
+    await expect(level).toHaveAttribute("aria-expanded", "true");
+    await level.click();
+    await expect(level).toHaveAttribute("aria-expanded", "false");
+    await level.click();
+    await expect(level).toHaveAttribute("aria-expanded", "true");
     await capture(page, `department-member-${viewport.name}`);
 
     await page
@@ -317,7 +324,7 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
 
   // Approved to Serve is its own record, shown with the department (SRS-COMP-004).
   await volunteer.goto("/departments/camera-operations");
-  const readiness = volunteer.getByRole("region", { name: "Practical skills and serving" });
+  const readiness = volunteer.getByRole("region", { name: "What each role still needs" });
   await expect(
     readiness.getByRole("listitem").filter({ hasText: "Sample role (seed data)" }),
   ).toContainText("Approved to serve");
