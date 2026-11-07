@@ -436,7 +436,7 @@ test("a leader sets up competencies and a serving role, and a member sees what t
   const member = await memberContext.newPage();
   await signInByEmail(member, "avery.volunteer@example.com");
   await member.goto("/departments/camera-operations");
-  const readiness = member.getByRole("region", { name: "Practical skills and serving" });
+  const readiness = member.getByRole("region", { name: "What each role still needs" });
   await expect(readiness.getByText(competency).first()).toBeVisible();
   const roleRow = readiness.getByRole("listitem").filter({ hasText: role });
   await expect(roleRow.getByText("Not yet")).toBeVisible();
