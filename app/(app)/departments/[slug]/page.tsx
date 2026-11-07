@@ -104,6 +104,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
           id: course.id,
           title: course.title,
           href: `/courses/${course.id}`,
+          coverUrl: course.coverUrl,
           percent: p?.percent ?? 0,
           meta: [
             p
@@ -152,7 +153,17 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
           {target && continueHref ? (
             <>
               <div className="flex items-center gap-3">
-                <Ring percent={tally.percent} size="lg" />
+                {/* The course's own cover, so it's recognised at a glance; the ring without one. */}
+                {target.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- covers are already sized; next/image needs a loader on Workers
+                  <img
+                    src={target.coverUrl}
+                    alt=""
+                    className="aspect-[3/4] w-14 shrink-0 rounded-button bg-card object-cover shadow-sm"
+                  />
+                ) : (
+                  <Ring percent={tally.percent} size="lg" />
+                )}
                 <div className="flex min-w-0 flex-col">
                   <span className="eyebrow">Up next</span>
                   <span className="font-semibold">{target.title}</span>

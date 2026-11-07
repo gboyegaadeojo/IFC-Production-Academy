@@ -47,9 +47,9 @@ Choosing a course anywhere opens its summary, with a button to start or continue
 
 Each department has three levels, one step at a time. Each level has courses, and each course has lessons, and usually a quiz and a practical assessment.
 
-A department's page opens with its colour, name and what it's for. Beside or below that, **Up next** shows the course to carry on with, how much of the department you've done, and a **Continue** button. On a phone, once you scroll past it, a slim **Up next** bar above the tabs keeps Continue in reach.
+A department's page opens with its colour, name and what it's for. Beside or below that, **Up next** shows the cover of the course to carry on with, how much of the department you've done, and a **Continue** button. On a phone, once you scroll past it, a slim **Up next** bar above the tabs keeps Continue in reach.
 
-**Your path** shows the levels in order, each with a ring of the lessons you've done. The level you're working on opens first. Choose any level to open or close it and see its courses.
+**Your path** shows the levels in order, each with a ring of the lessons you've done. The level you're working on opens first. Choose any level to open or close it and see its courses, each with its own cover.
 
 **What each role still needs** lists each serving role in the department as a short checklist: being a member, then each practical skill the role needs, ticked once you've passed it. Courses aren't on it, because finishing them never approves you to serve on its own.
 
