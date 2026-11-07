@@ -14,12 +14,17 @@ import {
   PlayCircleIcon,
   PlayIcon,
   QuizIcon,
+  RotateCcwIcon,
   UserCheckIcon,
 } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/status-badge";
 import Loading from "./loading";
 import { requireActiveUser } from "@/lib/data/auth";
+import { getMyCapabilities } from "@/lib/data/capabilities";
 import { getMyCertificateForCourse } from "@/lib/data/certificates";
+import { getCourseAssignees } from "@/lib/data/course-assignments";
+import { hasCapability } from "@/lib/domain/capabilities";
+import { winnipegToday } from "@/lib/domain/course-assignments";
 import { getLearnerCourse, canLearnIn } from "@/lib/data/pathway";
 import { getCourseProgress } from "@/lib/data/progress";
 import { getPassedPracticalKeys } from "@/lib/data/practicals";
@@ -35,7 +40,7 @@ import {
 } from "@/lib/domain/learning";
 import { courseProgress, courseProgressLabel } from "@/lib/domain/progress";
 import { issueCertificateAction, restartCourseAction } from "../actions";
-import { CourseActions } from "./course-actions";
+import { CourseActions, MenuTile } from "./course-actions";
 import { CourseTabs } from "./course-tabs";
 import { LessonPanel, LessonThumbnail } from "./lesson-panel";
 import { RichText } from "@/components/ui/rich-text";
@@ -93,10 +98,19 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
       )
     : null;
   // Starting over keeps a certificate, so it's looked up whatever the progress says.
-  const [certificate, topics] = await Promise.all([
+  const [certificate, topics, grants] = await Promise.all([
     summary ? getMyCertificateForCourse(user.id, course.id) : null,
     getCourseTopics(course.id),
+    getMyCapabilities(),
   ]);
+  // Leaders can assign a published course from here (ADD-REPORT-03).
+  const assignees =
+    course.canOpen && hasCapability(grants, "course.assign", course.department.id)
+      ? await getCourseAssignees(
+          course.id,
+          lessons.map((lesson) => lesson.key),
+        )
+      : null;
   const minutes = totals.estimatedMinutes ?? course.estimatedMinutes;
   const style = { "--dept": departmentHueVar(course.department.hue) } as CSSProperties;
   const started = summary !== null && summary.state !== "not_started";
@@ -149,7 +163,19 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
           <ChevronLeftIcon className="size-4" />
           Courses
         </Link>
-        <CourseActions>
+        <CourseActions
+          assign={
+            assignees
+              ? {
+                  courseId: course.id,
+                  departmentId: course.department.id,
+                  courseTitle: course.title,
+                  people: assignees,
+                  today: winnipegToday(),
+                }
+              : null
+          }
+        >
           {started ? (
             <StartOver
               courseId={course.id}
@@ -158,6 +184,9 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
             />
           ) : null}
           <Link href={`/departments/${course.department.slug}`}>
+            <MenuTile className="bg-[color-mix(in_srgb,var(--dept)_18%,transparent)] text-[var(--dept)]">
+              <DepartmentIcon icon={course.department.icon} className="size-4" />
+            </MenuTile>
             Go to {course.department.name}
           </Link>
         </CourseActions>
@@ -428,6 +457,11 @@ function StartOver({
   return (
     <ConfirmDialog
       triggerLabel="Start over"
+      triggerIcon={
+        <MenuTile className="bg-tile-orange text-tile-orange-ink">
+          <RotateCcwIcon className="size-4" />
+        </MenuTile>
+      }
       srLabel={title}
       title={`Start ${title} over?`}
       message={

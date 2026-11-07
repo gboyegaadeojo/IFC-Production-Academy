@@ -229,6 +229,7 @@ export type Database = {
           assigned_at: string;
           removed_by: string | null;
           removed_at: string | null;
+          due_on: string | null;
         };
         Insert: never;
         Update: never;
@@ -1785,7 +1786,10 @@ export type Database = {
       rename_topic: { Args: { p_topic_id: string; p_name: string }; Returns: undefined };
       remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
       restart_course: { Args: { p_course_id: string }; Returns: undefined };
-      assign_course: { Args: { p_course_id: string; p_user_id: string }; Returns: undefined };
+      assign_course: {
+        Args: { p_course_id: string; p_user_id: string; p_due_on?: string | null };
+        Returns: string;
+      };
       remove_course_assignment: {
         Args: { p_course_id: string; p_user_id: string };
         Returns: undefined;

@@ -61,12 +61,12 @@ export function lessonPercent(done: number, total: number): number {
 export type AssignablePerson = { userId: string; name: string };
 
 /** People to offer when assigning: not already assigned, matching the search, a handful at a time. */
-export function assignableMatches(
-  people: readonly AssignablePerson[],
+export function assignableMatches<Person extends AssignablePerson>(
+  people: readonly Person[],
   assignedIds: readonly string[],
   query: string,
   limit = 8,
-): { matches: AssignablePerson[]; more: boolean } {
+): { matches: Person[]; more: boolean } {
   const search = query.trim().toLocaleLowerCase();
   const found = people.filter(
     (person) =>

@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { getPublishedCourseCards, type StartHereCourse } from "@/lib/data/library";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { assigneeNote, type Assignee, type AssignOutcome } from "@/lib/domain/course-assignments";
 import type { AssignablePerson } from "@/lib/domain/course-progress";
 
 // Assigning a course (ADD-REPORT-03). The database checks course.assign, and writes the audit event.
@@ -16,13 +17,69 @@ export async function getAssignablePeople(courseId: string): Promise<AssignableP
   return data.map((row) => ({ userId: row.user_id, name: row.display_name }));
 }
 
-export async function assignCourse(courseId: string, userId: string): Promise<boolean> {
+/**
+ * People to offer on a course page's Assign panel, each with a line saying whether they're already
+ * assigned or how far through they are. Row-level security shows those details to report viewers.
+ */
+export async function getCourseAssignees(
+  courseId: string,
+  lessonKeys: readonly string[],
+): Promise<Assignee[]> {
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("assign_course", {
+  const [people, assignments, lessons] = await Promise.all([
+    getAssignablePeople(courseId),
+    supabase
+      .from("course_assignments")
+      .select("user_id, due_on")
+      .eq("course_id", courseId)
+      .is("removed_at", null),
+    supabase
+      .from("lesson_progress")
+      .select("user_id, lesson_key")
+      .eq("course_id", courseId)
+      .eq("status", "completed"),
+  ]);
+  const failed = assignments.error ?? lessons.error;
+  if (failed) {
+    throw new Error("Could not load people", { cause: failed.code });
+  }
+  const done = new Map<string, number>();
+  for (const row of lessons.data ?? []) {
+    if (lessonKeys.includes(row.lesson_key)) {
+      done.set(row.user_id, (done.get(row.user_id) ?? 0) + 1);
+    }
+  }
+  return people.map((person) => {
+    const assignment = (assignments.data ?? []).find((a) => a.user_id === person.userId);
+    const dueOn = assignment?.due_on ?? null;
+    return {
+      ...person,
+      dueOn,
+      note: assigneeNote({
+        assigned: Boolean(assignment),
+        dueOn,
+        lessonsDone: done.get(person.userId) ?? 0,
+        totalLessons: lessonKeys.length,
+      }),
+    };
+  });
+}
+
+const OUTCOMES: readonly AssignOutcome[] = ["assigned", "updated", "unchanged"];
+
+/** Null when the database refused, such as a due date in the past. */
+export async function assignCourse(
+  courseId: string,
+  userId: string,
+  dueOn: string | null = null,
+): Promise<AssignOutcome | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("assign_course", {
     p_course_id: courseId,
     p_user_id: userId,
+    p_due_on: dueOn,
   });
-  return !error;
+  return error ? null : (OUTCOMES.find((outcome) => outcome === data) ?? null);
 }
 
 export async function removeCourseAssignment(courseId: string, userId: string): Promise<boolean> {
