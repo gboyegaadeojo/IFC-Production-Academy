@@ -245,6 +245,20 @@ export const PlaneIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const UserPlusIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="9" cy="7" r="4" />
+    <path d="M3 21v-2a4 4 0 0 1 4-4h4M19 8v6M22 11h-6" />
+  </Icon>
+);
+
+export const RotateCcwIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+    <path d="M3 3v5h5" />
+  </Icon>
+);
+
 export const UserIcon = (props: IconProps) => (
   <Icon {...props}>
     <circle cx="12" cy="8" r="4" />

@@ -37,6 +37,8 @@ Every open department's courses are open to you. You don't need anyone's permiss
 
 If a leader asks you to take a course, it shows on Training until you finish it, marked **Assigned by a leader**. Go at your own pace. It doesn't stop you doing anything else, and it doesn't put you on a team.
 
+A leader can give it a due date. The notification says when, and you're told if the date changes or is taken off. A due date is a date to aim for: missing it never stops you doing anything.
+
 ## Start here
 
 Some courses, such as A Guide to Serving, are marked **Start here**. The ones you haven't finished show in your plan on Training, and they're listed under **Before you start** on each department's page. They're a good place to begin, but nothing is locked until you've done them.
@@ -71,7 +73,7 @@ On the course page, **About** says what you'll learn and **Quiz results** lists 
 
 ### Starting over
 
-Open a course you've started, choose the round **…** button (Actions) at the top right, then **Start over** to begin it again from the first lesson. The app warns you first and asks you to confirm.
+Open a course you've started, choose **Actions** at the top right, then **Start over** to begin it again from the first lesson. The app warns you first and asks you to confirm.
 
 It clears your completed lessons, your place in each video, and your quiz results for that course, so you'll retake its quizzes. Your certificate, any practical you've passed, and whether you're approved to serve all stay as they are. Leaders' reports show your new progress. You can't undo it yourself, but your old results are kept on record.
 

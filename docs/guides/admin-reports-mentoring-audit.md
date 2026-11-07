@@ -18,6 +18,8 @@ Reports include the department's members, anyone else who has started training t
 
 On **Course progress**, choose **Assign to someone**, search for the person, choose them, then **Assign**. The course shows under **Assigned to you** on their Training page until they finish it.
 
+You can also assign from the course itself: open it, choose **Actions** at the top right, then **Assign to someone**. Each name shows whether they're already assigned or how many lessons they've done. Pick a due date if you want one (**This Sunday**, **In 2 weeks**, or **Pick a date**), then **Assign**. Choosing someone who's already assigned changes their due date instead, and they're told. Only leaders see **Assign to someone**.
+
 It's a request and nothing more. It doesn't stop them doing anything else, add them to a team, or count towards being approved to serve. Anyone can still take any course without being assigned it.
 
 To undo one, choose the person, then **Remove assignment**. Anything they've already done stays. Assigning and removing both go in the audit log. They're told either way.

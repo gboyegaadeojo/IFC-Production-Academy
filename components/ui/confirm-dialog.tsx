@@ -15,8 +15,11 @@ export function ConfirmDialog({
   message,
   children,
   variant = "tertiary",
+  triggerIcon,
 }: {
   triggerLabel: string;
+  /** Shown before the label, such as a coloured tile in a menu. */
+  triggerIcon?: ReactNode;
   /** Extra words for screen readers, such as which item. */
   srLabel?: string;
   title: string;
@@ -34,6 +37,7 @@ export function ConfirmDialog({
         aria-haspopup="dialog"
         onClick={() => dialogRef.current?.showModal()}
       >
+        {triggerIcon}
         {triggerLabel}
         {srLabel ? <span className="sr-only"> {srLabel}</span> : null}
       </Button>
