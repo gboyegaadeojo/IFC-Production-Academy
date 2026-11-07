@@ -10,6 +10,8 @@ export type PathCourse = {
   href: string;
   percent: number;
   meta: string;
+  /** The course's cover art; null shows the department's colour instead. */
+  coverUrl: string | null;
 };
 
 export type PathLevel = {
@@ -135,10 +137,13 @@ function LevelCard({
   );
 }
 
-/** Rows with a small cover on a phone; posters in a grid from 768px. */
+/**
+ * Rows with a small cover on a phone; posters in a grid from 768px. Each course shows its own cover
+ * art, as on Courses (G, 2026-11-07); one without a cover shows the department's colour.
+ */
 function CourseGrid({ courses, canOpen }: { courses: PathCourse[]; canOpen: boolean }) {
   return (
-    <ul className="grid gap-3 md:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))]">
+    <ul className="grid gap-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] md:gap-4">
       {courses.map((course) => (
         <li key={course.id}>
           {canOpen ? (
@@ -146,10 +151,21 @@ function CourseGrid({ courses, canOpen }: { courses: PathCourse[]; canOpen: bool
               href={course.href}
               className="group flex items-center gap-3 rounded-button md:flex-col md:items-stretch md:gap-2"
             >
-              <span
-                aria-hidden="true"
-                className="h-12 w-16 shrink-0 rounded-button bg-[color-mix(in_srgb,var(--dept)_70%,var(--photo-bg))] transition-[filter] group-hover:brightness-110 md:h-28 md:w-full md:rounded-card"
-              />
+              {course.coverUrl ? (
+                // Decorative: the title is right beside it.
+                // eslint-disable-next-line @next/next/no-img-element -- covers are already sized; next/image needs a loader on Workers
+                <img
+                  src={course.coverUrl}
+                  alt=""
+                  loading="lazy"
+                  className="aspect-[3/4] w-12 shrink-0 rounded-button bg-card object-cover shadow-sm transition-[filter] group-hover:brightness-105 md:w-full md:rounded-card"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="aspect-[3/4] w-12 shrink-0 rounded-button bg-[color-mix(in_srgb,var(--dept)_70%,var(--photo-bg))] transition-[filter] group-hover:brightness-110 md:w-full md:rounded-card"
+                />
+              )}
               <span className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <span className="flex items-center gap-2 font-semibold group-hover:text-accent-light">
                   <span className="min-w-0 flex-1">{course.title}</span>

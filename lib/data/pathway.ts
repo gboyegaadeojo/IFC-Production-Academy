@@ -27,6 +27,8 @@ export type PathwayCourse = {
   /** Known only when the person may open the course. */
   lessonCount: number | null;
   estimatedMinutes: number | null;
+  /** The course's own cover art, the same as on Courses; null until one is uploaded. */
+  coverUrl: string | null;
 };
 
 export type PathwayLevel = {
@@ -77,7 +79,7 @@ export async function getDepartmentPathway(
       .order("number"),
     supabase
       .from("courses")
-      .select("id, level_id, sort_order")
+      .select("id, level_id, sort_order, cover_image_path")
       .eq("department_id", department.id)
       .is("archived_at", null)
       .order("sort_order"),
@@ -131,6 +133,9 @@ export async function getDepartmentPathway(
                 ? lessons.data.filter((row) => row.course_version_id === version.id).length
                 : null,
               estimatedMinutes: version.estimated_minutes,
+              coverUrl: course.cover_image_path
+                ? courseCoverUrl(publicEnv().NEXT_PUBLIC_SUPABASE_URL, course.cover_image_path)
+                : null,
             },
           ];
         }),
