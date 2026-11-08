@@ -1,8 +1,8 @@
 # Decision: team messaging with photos (2026-11-08)
 
-**Status:** approved by G, 2026-11-08, with the answers under [G's answers](#gs-answers-2026-11-08),
-which change the plan where they differ. The look and the place in the navigation are chosen from
-mocks before any messaging screen is built. Until it's switched on, nobody sees messaging.
+**Status:** approved by G, 2026-11-08, with the answers under [G's answers](#gs-answers-2026-11-08)
+and the look and navigation under [G's choice of design](#gs-choice-of-design-2026-11-08), which
+change the plan where they differ. Until it's switched on, nobody sees messaging.
 
 ## Ask
 
@@ -46,6 +46,7 @@ G wants teams to message each other in the Academy, with photos, while staying o
 | Chat | Members | Who can delete |
 | --- | --- | --- |
 | Department chat, one per active department, made automatically | People with an active membership of the department, people on its position teams, and people holding `message.moderate` there (Department Leaders, Production Director, Platform Admin) | Anyone their own message; `message.moderate` holders any message in that department's chat |
+| Group chat, made by a leader (added with [G's choice](#gs-choice-of-design-2026-11-08)) | Chosen people, or everyone active in the Academy, kept up to date | Anyone their own message; the person who made it, the Production Director and Platform Admins any message |
 | Direct message | Exactly two people, both active | Each person their own message. The Production Director and Platform Admins can read them for safety (`message.review`, audited each time), but not delete them |
 
 - **Department chats follow membership.** Joining a department, or being removed, changes who can see
@@ -197,6 +198,25 @@ Small pull requests, each with lint, typecheck and tests passing:
    members of the department, the people on its position teams (from Planning Center), and its
    leaders. Planning Center decides who serves, so the people serving together are all in the chat,
    even if they haven't joined the department in the Academy.
+
+## G's choice of design (2026-11-08)
+
+G compared the three mocks in [docs/mocks/messaging/](../mocks/messaging/index.html) and chose:
+
+- **Look: option C, the Academy blend.** The app's B+ look, with its tokens, side bar, tinted pills,
+  department colours on avatars, and calmer buttons.
+- **Phone: Messages in the middle of the bottom bar.** Checklist and SOPs merge into one **Serve**
+  tab, so the bar is Training, Courses, Messages, Schedule, Serve. Serve opens the checklist for
+  your position, with the SOPs beside it.
+- **Computer: Messages in the side bar,** with the main items, after Schedule.
+- **Group chats, added by G:** "I should also be able to add everybody in the academy to a chat."
+  - People with `message.group_create` (Department Leaders, Production Director, Platform Admins)
+    make a group chat with a name.
+  - Its members are either people they choose, or **Everyone in the Academy**, which keeps itself up
+    to date as people join or leave, like department chats do.
+  - The person who made it, the Production Director and Platform Admins can delete messages in it
+    and rename it. Making, renaming and deleting are audited.
+  - Shown as screen 9 in the mocks, and recorded as ADD-MSG-07.
 
 ## Questions for G (answered above)
 
