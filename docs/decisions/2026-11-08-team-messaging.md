@@ -217,6 +217,8 @@ G compared the three mocks in [docs/mocks/messaging/](../mocks/messaging/index.h
   - The person who made it, the Production Director and Platform Admins can delete messages in it
     and rename it. Making, renaming and deleting are audited.
   - Shown as screen 9 in the mocks, and recorded as ADD-MSG-07.
+  - G confirmed (2026-11-08): Department Leaders, the Production Director and Platform Admins make
+    group chats, and everyone in an Everyone chat can post in it.
 
 ## Questions for G (answered above)
 

@@ -50,3 +50,14 @@ Someone can hold different roles in different departments, such as leading Audio
 | **People & Teams** | Onboarding pathways, People in pathways, Follow-ups | [Onboarding](admin-onboarding.md) |
 | **System & Settings** | Audit log | [Reports, mentoring, and the audit log](admin-reports-mentoring-audit.md) |
 | **System & Settings** | App name and logo | [Service Dashboard](service-dashboard.md) |
+| **System & Settings** | Features | This guide, under Features below |
+
+## Features
+
+**Admin → Features** switches parts of the app on or off for everyone. Only Platform Administrators see it.
+
+While a feature is off, nobody sees it, and the app refuses to let anyone use it, even someone who knows the address. Switching one on or off takes effect straight away and goes in the audit log, with who did it.
+
+| Feature | What it adds |
+| --- | --- |
+| **Messages** | Department chats, group chats, and direct messages with photos. Off until it's ready and you switch it on |

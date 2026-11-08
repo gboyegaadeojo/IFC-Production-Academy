@@ -4,6 +4,7 @@
  * The database still decides every write (SRS-RBAC-001).
  */
 import { hasCapability, hasCapabilityAnywhere, type CapabilityGrant } from "./capabilities";
+import { FEATURES } from "./features";
 
 export type AdminSectionKey =
   | "overview"
@@ -32,7 +33,8 @@ export type AdminSectionKey =
   | "onboarding-people"
   | "onboarding-follow-ups"
   | "service-dashboard"
-  | "branding";
+  | "branding"
+  | "features";
 
 /**
  * Sidebar groups (DESIGN §3.2), one per part of the ministry's tools, so an admin knows where a
@@ -171,6 +173,7 @@ const SECTIONS: readonly AdminSection[] = [
     label: "App name and logo",
     group: "System & Settings",
   },
+  { key: "features", href: "/admin/features", label: "Features", group: "System & Settings" },
 ];
 
 /** Visible sections grouped for the sidebar, in order, skipping empty groups. */
@@ -255,6 +258,8 @@ export function canOpenAdminSection(
       return hasCapabilityAnywhere(grants, "onboarding.manage");
     case "branding":
       return hasCapability(grants, "branding.manage");
+    case "features":
+      return hasCapability(grants, "feature.manage");
     case "service-dashboard":
       return hasCapability(grants, "dashboard.edit") || hasCapability(grants, "dashboard.manage");
   }
@@ -449,6 +454,14 @@ function changedFields(metadata: unknown): string[] {
     : [];
 }
 
+function featureName(metadata: unknown): string | null {
+  if (typeof metadata !== "object" || metadata === null) {
+    return null;
+  }
+  const key = (metadata as { key?: unknown }).key;
+  return FEATURES.find((feature) => feature.key === key)?.name ?? null;
+}
+
 function versionNumber(metadata: unknown): number | null {
   if (typeof metadata !== "object" || metadata === null) {
     return null;
@@ -502,6 +515,12 @@ export function describeAuditEvent(event: AuditEventSummary): string {
   switch (event.action) {
     case "service_dashboard.layout_saved":
       return "Saved the Service Dashboard layout";
+    case "feature_flag.switched_on":
+    case "feature_flag.switched_off": {
+      const name = featureName(event.metadata);
+      const way = event.action.endsWith("_on") ? "on" : "off";
+      return name ? `Switched ${name} ${way}` : `Switched a feature ${way}`;
+    }
     case "department_membership.created":
       return "Joined or asked to join a department";
     case "department_membership.updated":

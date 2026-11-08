@@ -28,6 +28,24 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: New migrations are dated after the newest on main
+        # Migrations already applied to production are dated in the future and are never renamed,
+        # so a new one must come after all of them (CLAUDE.md, "Migrations").
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" = "pull_request" ]; then
+            git fetch --no-tags --depth=1 origin "$BASE_REF"
+          elif [ -n "$BEFORE" ] && [ "$BEFORE" != "0000000000000000000000000000000000000000" ]; then
+            git fetch --no-tags --depth=1 origin "$BEFORE"
+          else
+            echo "No earlier commit to compare with."
+            exit 0
+          fi
+          node scripts/check-migration-order.ts FETCH_HEAD
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run format:check

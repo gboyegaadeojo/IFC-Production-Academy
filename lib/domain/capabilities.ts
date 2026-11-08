@@ -28,6 +28,7 @@ export const CAPABILITIES = [
   "dashboard.edit",
   "dashboard.manage",
   "branding.manage",
+  "feature.manage",
   "topic.create",
   "topic.manage",
 ] as const;

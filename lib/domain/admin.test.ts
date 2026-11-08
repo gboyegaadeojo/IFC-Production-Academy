@@ -190,6 +190,15 @@ describe("describeAuditEvent", () => {
     ).toBe("Removed a member");
   });
 
+  it("says which feature was switched, and which way", () => {
+    expect(
+      describeAuditEvent({ action: "feature_flag.switched_on", metadata: { key: "messaging" } }),
+    ).toBe("Switched Messages on");
+    expect(
+      describeAuditEvent({ action: "feature_flag.switched_off", metadata: { key: "unknown" } }),
+    ).toBe("Switched a feature off");
+  });
+
   it("describes role grants and removals", () => {
     expect(describeAuditEvent({ action: "user_role.created", metadata: {} })).toBe(
       "Granted a role",
