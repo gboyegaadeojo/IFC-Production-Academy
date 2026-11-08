@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Messaging mock C: Academy blend</title>
+<link rel="stylesheet" href="mock.css">
+<style>
+/* Option C, Academy blend: the app's B+ look (tokens from app/globals.css), with A's softness and
+   B's clear hierarchy. Purple is the one action colour; department hues only on avatars. */
+.frame[data-theme="light"] {
+  --bg: #f6f5fa; --surface: #ffffff; --card: #faf9fd; --hover: #f1eff8; --line: #e6e3ef; --line-strong: #cfcbdc;
+  --text: #16141f; --text-2: #4f4b63; --muted: #67637b;
+  --accent: #6d3fe0; --accent-ink: #ffffff; --accent-text: #5b2fd0; --accent-soft: #efe9fd;
+  --danger: #b42318; --danger-soft: #fdecea; --warn-soft: #fff4e0; --warn-ink: #8f5b00;
+  --shadow: 0 18px 40px rgba(22,20,31,.14);
+}
+.frame[data-theme="dark"] {
+  --bg: #000000; --surface: #0a0a0a; --card: #141414; --hover: #1c1c1c; --line: #2a2a2a; --line-strong: #3a3a3a;
+  --text: #f5f5f5; --text-2: #b4b4b4; --muted: #929292;
+  --accent: #7c3aed; --accent-ink: #ffffff; --accent-text: #b69bff; --accent-soft: #241d3d;
+  --danger: #ff8a7a; --danger-soft: #2e1512; --warn-soft: #2b2110; --warn-ink: #ffc23d;
+  --shadow: 0 18px 40px rgba(0,0,0,.6);
+}
+.frame { --font: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 14px; }
+
+/* Chrome */
+.app-top, .tabs { background: var(--surface); }
+.app-top { border-bottom: 1px solid var(--line); }
+.tabs { border-top: 1px solid var(--line); }
+.tab { color: var(--muted); border-radius: 999px; }
+.tab.current { color: var(--accent-text); }
+.tab.current svg { background: var(--accent-soft); border-radius: 999px; padding: 4px 14px; width: 52px; height: 28px; }
+.brand-mark { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 800; }
+.dot { background: var(--accent); color: var(--accent-ink); }
+.icon-btn { color: var(--text-2); }
+.icon-btn:hover { background: var(--hover); }
+.icon-btn.accent { background: var(--accent-soft); color: var(--accent-text); }
+.msg-btn.on { background: var(--accent-soft); color: var(--accent-text); }
+.me { background: var(--text); color: var(--bg); }
+.rail { background: var(--surface); border-right: 1px solid var(--line); }
+.rail-item { color: var(--muted); }
+.rail-item svg { padding: 4px 14px; width: 50px; height: 30px; border-radius: 999px; }
+.rail-item.current { color: var(--accent-text); font-weight: 600; }
+.rail-item.current svg { background: var(--accent-soft); }
+.listpane { background: var(--surface); border-right: 1px solid var(--line); }
+
+/* Avatars: department tiles in the department's colour, people with a ring in their department's */
+.avatar.dept { border-radius: 12px; background: color-mix(in srgb, var(--hue) 16%, var(--surface)); color: var(--hue); }
+.avatar.person { border-radius: 999px; background: var(--card); color: var(--text); box-shadow: inset 0 0 0 2px var(--hue); }
+
+/* List */
+.list-title { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+.page-title { font-size: 26px; font-weight: 700; }
+.search { background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: var(--muted); }
+.search input { color: var(--text); }
+.section-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.chat-row { border-radius: 12px; transition: background .15s; }
+.chat-row:hover { background: var(--hover); }
+.chat-row.active { background: var(--accent-soft); }
+.chat-name { font-weight: 600; }
+.chat-preview { font-size: 13px; color: var(--muted); }
+.chat-row.unread .chat-preview { color: var(--text-2); }
+.chat-time { font-size: 11px; color: var(--muted); }
+.chat-row.unread .chat-time { color: var(--accent-text); font-weight: 600; }
+.badge { background: var(--accent); color: var(--accent-ink); }
+.role { background: var(--accent-soft); color: var(--accent-text); }
+
+/* Thread */
+.thread-head { background: var(--surface); border-bottom: 1px solid var(--line); }
+.messages { background: var(--bg); }
+.msg-author { color: var(--text-2); font-weight: 600; }
+.bubble { background: var(--surface); border: 1px solid var(--line); border-radius: 16px 16px 16px 6px; }
+.msg.mine .bubble { background: var(--accent-soft); border-color: transparent; border-radius: 16px 16px 6px 16px; }
+.bubble.deleted { background: transparent; border: 1px dashed var(--line-strong); color: var(--muted); }
+.reply-quote { border-left: 3px solid var(--dept-blue); background: var(--card); border-radius: 6px; color: var(--text-2); }
+.photo { border-radius: 10px; }
+.photos.n3 .photo:first-child { border-radius: 12px 12px 6px 6px; }
+.msg-more:hover { background: var(--hover); color: var(--text); }
+.menu { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+.menu button { border-radius: 10px; }
+.menu button:hover { background: var(--hover); }
+.menu .danger { color: var(--danger); }
+
+/* Composer */
+.composer-wrap { background: var(--surface); border-top: 1px solid var(--line); }
+.composer-input { background: var(--card); border: 1px solid var(--line); border-radius: 999px; color: var(--text); }
+.send { background: var(--accent); color: var(--accent-ink); border-radius: 999px; }
+.upload { background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.upload-thumb { border-radius: 8px; }
+.bar { background: var(--line); border-radius: 9px; }
+.bar span { background: var(--accent); border-radius: 9px; }
+
+/* Dialog, states */
+.dialog { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+.btn { border-radius: 999px; border: 1px solid var(--line-strong); }
+.btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+.frame[data-theme="dark"] .btn.danger { color: #1a0a08; }
+.offline { background: var(--warn-soft); color: var(--warn-ink); border-radius: 12px; }
+.offline b { color: var(--text); }
+.safety { background: var(--accent-soft); color: var(--accent-text); border-radius: 12px; }
+.empty-art { border-radius: 20px; background: var(--accent-soft); color: var(--accent-text); }
+
+/* Settings */
+.setting { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.setting.is-new { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+.new { background: var(--accent-soft); color: var(--accent-text); }
+.seg { background: var(--card); border: 1px solid var(--line); border-radius: 999px; }
+.seg button { border-radius: 999px; color: var(--text-2); }
+.seg button[aria-checked="true"] { background: var(--accent-soft); color: var(--accent-text); }
+.push { background: var(--card); border: 1px solid var(--line); border-radius: 14px; }
+.push svg { color: var(--accent-text); }
+.switch { background: var(--line-strong); }
+.switch span { background: #fff; }
+.mute-row[aria-checked="true"] .switch { background: var(--accent); }
+
+/* Navigation options */
+.nav-card { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; }
+.nav-card.picked { border-color: var(--accent); }
+.mini { border-radius: 14px; border: 1px solid var(--line); background: var(--bg); }
+.bell-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+.bell-tabs span { border-radius: 999px; color: var(--muted); }
+.bell-tabs .on { background: var(--accent-soft); color: var(--accent-text); }
+</style>
+</head>
+<body>
+<div id="mock"></div>
+<script>window.MOCK_OPTION = { id: "C", name: "Academy blend" };</script>
+<script src="mock.js"></script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Messaging mocks</title>
+<style>
+  :root { --bg: #f6f5fa; --card: #fff; --line: #e6e3ef; --text: #16141f; --muted: #67637b; --accent: #6d3fe0; --accent-soft: #efe9fd; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #000; --card: #0f0f10; --line: #2a2a2a; --text: #f5f5f5; --muted: #a0a0a0; --accent: #b69bff; --accent-soft: #241d3d; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 30px; margin: 0 0 6px; letter-spacing: -.01em; }
+  p { margin: 0 0 12px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 28px 0; }
+  a.card { display: flex; flex-direction: column; gap: 8px; padding: 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); color: inherit; text-decoration: none; }
+  a.card:hover { border-color: var(--accent); }
+  a.card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .tag { align-self: flex-start; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+  .card b { font-size: 18px; }
+  ul { margin: 0; padding-left: 18px; color: var(--muted); }
+  h2 { font-size: 18px; margin: 28px 0 8px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Team messaging: three looks to compare</h1>
+  <p>Clickable mocks for the <a href="../../decisions/2026-11-08-team-messaging.md">team messaging decision</a>. Each works on a phone and a computer, in light and dark. Use the bar at the top of each mock to change screen, device and theme.</p>
+  <p>Everyone and everything in them is made up. The Apple and Uber options borrow only their feel: no logos, icons or screens.</p>
+
+  <div class="grid">
+    <a class="card" href="option-a-apple.html">
+      <span class="tag">Option A</span><b>Apple-inspired</b>
+      <span>Soft round bubbles, frosted headers, generous spacing, the system font, and gentle motion.</span>
+    </a>
+    <a class="card" href="option-b-uber.html">
+      <span class="tag">Option B</span><b>Uber-inspired</b>
+      <span>Bold black and white, large headings, flat surfaces, one strong accent, and big tap targets.</span>
+    </a>
+    <a class="card" href="option-c-academy.html">
+      <span class="tag">Option C</span><b>Academy blend</b>
+      <span>The app's own B+ look: side bar, tinted pills, department colours, and calmer buttons, with A's softness and B's clear hierarchy.</span>
+    </a>
+  </div>
+
+  <h2>In each option</h2>
+  <ul>
+    <li>Chat list with department chats, direct messages, unread counts and search</li>
+    <li>The Camera Operations chat with photos, a leader's reply, and times</li>
+    <li>Writing a message: a photo shrinking from 4.2 MB to 268 KB, then uploading</li>
+    <li>The full-screen photo viewer</li>
+    <li>Starting a direct message, with the safety line</li>
+    <li>A leader deleting a message, and how it looks afterwards</li>
+    <li>No messages yet, and offline</li>
+    <li>The new Messages group in notification settings</li>
+    <li>Where Messages could live: three phone options and two computer options</li>
+  </ul>
+
+  <h2>Choosing</h2>
+  <p>Pick a look (A, B or C), a phone place (1, 2 or 3), and a computer place (A or B), plus any changes you'd like. They'll be recorded in the decision before any screen is built.</p>
+</main>
+</body>
+</html>
