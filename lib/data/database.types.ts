@@ -235,6 +235,19 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      feature_flags: {
+        Row: {
+          id: string;
+          organization_id: string;
+          key: string;
+          enabled: boolean;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       course_restarts: {
         Row: {
           id: string;
@@ -1786,6 +1799,7 @@ export type Database = {
       rename_topic: { Args: { p_topic_id: string; p_name: string }; Returns: undefined };
       remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
       restart_course: { Args: { p_course_id: string }; Returns: undefined };
+      set_feature_flag: { Args: { p_key: string; p_enabled: boolean }; Returns: undefined };
       assign_course: {
         Args: { p_course_id: string; p_user_id: string; p_due_on?: string | null };
         Returns: string;

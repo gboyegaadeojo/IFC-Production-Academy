@@ -39,6 +39,7 @@ Native iOS and Android apps are Phase 5 (React Native and Expo on the same API).
 - Permissions are **named capabilities** (`course.publish`, `competency.approve`, `member.approve`…) granted through roles, scoped per department. Check capabilities, not role names.
 - Layers: `app/` (routes and UI) → `lib/domain/` (business rules, pure TypeScript, unit tested) → `lib/data/` (Supabase queries). UI never talks to Supabase directly except through `lib/data`.
 - All schema changes go through Supabase CLI migrations in `supabase/migrations/`. Never edit the production schema by hand.
+- **Migration timestamps:** 72 existing migrations are dated in the future and are already applied to production, so never rename them. A new migration's timestamp must be later than the newest existing file, not today's date (for example, the next one after `20270109120000_feature_flags.sql`). CI fails a change that breaks this (`scripts/check-migration-order.ts`).
 - Writes that can be retried (progress, quiz submit) are idempotent (SRS-PROG-004).
 - Store timestamps in UTC (`timestamptz`) and display them in America/Winnipeg.
 - Use stable UUIDs, never display names, as keys.
