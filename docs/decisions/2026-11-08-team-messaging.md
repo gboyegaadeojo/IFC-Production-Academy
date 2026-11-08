@@ -1,8 +1,8 @@
 # Decision: team messaging with photos (2026-11-08)
 
-**Status:** proposed by G, 2026-11-08. The plan below is waiting for G's approval, and the look and
-the place in the navigation are chosen from mocks before any messaging screen is built. Until it's
-switched on, nobody sees messaging.
+**Status:** approved by G, 2026-11-08, with the answers under [G's answers](#gs-answers-2026-11-08),
+which change the plan where they differ. The look and the place in the navigation are chosen from
+mocks before any messaging screen is built. Until it's switched on, nobody sees messaging.
 
 ## Ask
 
@@ -45,8 +45,8 @@ G wants teams to message each other in the Academy, with photos, while staying o
 
 | Chat | Members | Who can delete |
 | --- | --- | --- |
-| Department chat, one per active department, made automatically | People with an active membership of the department, and people holding `message.moderate` there (Department Leaders, Production Director, Platform Admin) | Anyone their own message; `message.moderate` holders any message in that department's chat |
-| Direct message | Exactly two people, both active | Each person their own message. Nobody else reads or deletes them |
+| Department chat, one per active department, made automatically | People with an active membership of the department, people on its position teams, and people holding `message.moderate` there (Department Leaders, Production Director, Platform Admin) | Anyone their own message; `message.moderate` holders any message in that department's chat |
+| Direct message | Exactly two people, both active | Each person their own message. The Production Director and Platform Admins can read them for safety (`message.review`, audited each time), but not delete them |
 
 - **Department chats follow membership.** Joining a department, or being removed, changes who can see
   its chat straight away, with no copying of member lists. Someone removed loses access to the
@@ -96,7 +96,8 @@ G wants teams to message each other in the Academy, with photos, while staying o
   files. The chat shows thumbnails, and the full photo loads only when someone taps it, to save the 5
   GB of free monthly egress.
 - **Cleanup:** a scheduled job deletes chat photos older than 90 days and marks them "Photo no longer
-  available". Admins change the number of days on Admin → Settings → Features (30 to 365).
+  available". Admins change the number of days on Admin → Settings → Features (30 to 365). The same
+  job deletes message text older than 3 years (G's answer 4).
 - **Backups leave chat photos out.** The weekly backup skips the `chat-photos` bucket, so the Shared
   Drive copies don't grow with them. Message text is in the database and is backed up as usual. A
   restore brings back the messages, but not photos.
@@ -178,7 +179,26 @@ Small pull requests, each with lint, typecheck and tests passing:
 8. The cleanup job and the backup change, with the backups runbook.
 9. Polish, the guide, and help.
 
-## Questions for G
+## G's answers (2026-11-08)
+
+1. **Start now.** Messaging is built alongside the pilot and stays switched off until G turns it on.
+2. **Anyone active can message anyone active** directly.
+3. **Direct messages can be read for safety.** The Production Director and Platform Admins can open
+   any direct message (capability `message.review`, not Department Leaders). Every time they open
+   one, an audit event records who opened which conversation, and the two people see a line at the
+   top of every direct message: "The Production Director and Platform Admins can read direct
+   messages to keep everyone safe."
+4. **Keep within the free plan for 2 to 3 years.** Measured on 2026-11-08, the database is 21 MB of
+   500 MB and stored files are 5 MB of 1 GB. A busy team of 50 sending 200 messages a day adds about
+   45 MB of text a year, so three years of text fits. To make sure, message text is kept for 3
+   years, then deleted by the same cleanup job (admins can change it). Photos go after 90 days. The
+   weekly summary email shows database and storage use against the free limits, and warns at 70%.
+5. **Department chats include the people who serve** (recommended by Claude, taken by G): active
+   members of the department, the people on its position teams (from Planning Center), and its
+   leaders. Planning Center decides who serves, so the people serving together are all in the chat,
+   even if they haven't joined the department in the Academy.
+
+## Questions for G (answered above)
 
 1. **Start now, or after the pilot?** Building now means messaging work runs alongside the 17 Nov
    pilot. It stays switched off either way.
