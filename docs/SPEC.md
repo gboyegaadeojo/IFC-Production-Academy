@@ -283,6 +283,7 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ADD-MSG-03 | Unread counts per chat and in the navigation, and new messages appear live in the open chat through Supabase Realtime, subscribed only while it's open. Sending is safe to retry | M |
 | ADD-MSG-04 | Photos are resized in the browser to at most 1,600 px, WebP at about 80%, with a small thumbnail. They're kept in a private bucket opened with one-minute signed links. Chats show thumbnails and load the full photo on tap | M |
 | ADD-MSG-05 | Chat photos are deleted after 90 days, and message text after 3 years, by a scheduled job, and admins can change both. Photos are left out of the weekly backup. The weekly summary shows database and storage use against the free limits and warns at 70% | S |
+| ADD-MSG-07 | Group chats: Department Leaders, the Production Director and Platform Admins (`message.group_create`) make a named chat for people they choose, or for everyone in the Academy, which keeps itself up to date. Its maker, the Production Director and Platform Admins delete messages in it. Audited (G, 2026-11-08) | S |
 | ADD-MSG-06 | A Messages group in notification settings for phone and email, and mute per chat. Notices are batched per chat ("3 new messages in Camera team"), never one per message, with at most one message email per person every 4 hours, and quiet hours apply. ADD-NOTIF-02 holds them until launch | M |
 
 ## 3. Progression, business rules and workflows
@@ -476,7 +477,7 @@ Buttons (primary, secondary, tertiary, destructive), inputs, navigation and brea
 
 Only areas a user is authorized for are shown.
 
-Messages (approved 2026-11-08) needs a place: the five phone tabs are full. Three options are mocked for G to choose from: a button beside the bell, merging Checklist and SOPs into one tab, or a second tab in the bell panel ([team messaging decision](decisions/2026-11-08-team-messaging.md)).
+Messages (G, 2026-11-08): when messaging is switched on, the phone's bottom bar becomes Training, Courses, Messages (in the middle), Schedule, Serve. Serve joins Checklist and SOPs. On a computer, Messages is in the side bar after Schedule. Until then the bar stays as it is ([team messaging decision](decisions/2026-11-08-team-messaging.md)).
 
 ### Key screens
 

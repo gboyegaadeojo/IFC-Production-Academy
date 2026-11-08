@@ -32,6 +32,7 @@
   };
 
   const CHATS = [
+    { id: "everyone", kind: "group", title: "Everyone in the Academy", members: 48, everyone: true, unread: 0, time: "Mon", last: "Jordan: Team night is Friday at 7. Bring a friend." },
     { id: "camera", kind: "dept", dept: "camera", unread: 3, time: "9:33", last: "Jordan: Thanks Taylor. The spare plate is in the grey case." },
     { id: "directing", kind: "dept", dept: "directing", unread: 1, time: "8:50", last: "Morgan: Run of service is updated for Sunday." },
     { id: "audio", kind: "dept", dept: "audio", unread: 0, time: "Yesterday", last: "Priya: Channel 12 is the pastor's lapel mic now." },
@@ -110,6 +111,8 @@
     plus: '<path d="M12 5v14M5 12h14"/>',
     phone: '<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>',
     mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+    users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1a5 5 0 0 1 5-5h3a5 5 0 0 1 5 5v1"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5 5 0 0 1 3.5 5v1"/>',
+    tick: '<path d="m5 12 5 5 9-10"/>',
   };
   function icon(name, cls) {
     return '<svg class="ico ' + (cls || "") + '" viewBox="0 0 24 24" aria-hidden="true">' + ICON[name] + "</svg>";
@@ -126,8 +129,14 @@
     { id: "leader", label: "6 · Leader deletes" },
     { id: "states", label: "7 · Empty and offline" },
     { id: "settings", label: "8 · Notification settings" },
+    { id: "group", label: "9 · New group chat (leaders)" },
     { id: "nav", label: "Where Messages lives" },
   ];
+
+  // G's choice, 2026-11-08: Messages in the centre of the phone tabs, with Checklist and SOPs merged
+  // into Serve; on a computer, in the side bar.
+  const NAV_PHONE = 2;
+  const NAV_COMPUTER = 1;
 
   const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
   const isNarrow = window.innerWidth < 900;
@@ -147,9 +156,10 @@
     statesView: "empty",
     notify: { serving: "phone", training: "phone", leading: "email", messages: "phone" },
     muted: { audio: true },
-    navPhone: 1,
-    navComputer: 1,
+    navPhone: NAV_PHONE,
+    navComputer: NAV_COMPUTER,
     sent: [],
+    group: { name: "", everyone: true, picked: {}, created: false },
   };
 
   // Each screen opens on the right chat and situation, so every screen can be reached directly.
@@ -162,6 +172,7 @@
     if (id === "compose") state.compose = { stage: "picked", progress: 0, text: "New framing for camera 3" };
     if (id === "leader") state.menuFor = "m6";
     if (id === "dm") { state.dmPicked = null; state.dmQuery = ""; }
+    if (id === "group") state.group = { name: "Sunday volunteers", everyone: true, picked: {}, created: false };
     render();
     if (id === "compose") startUpload();
   }
@@ -195,6 +206,7 @@
   }
 
   function avatarFor(chat) {
+    if (chat.kind === "group") return '<span class="avatar group">' + icon("users") + "</span>";
     if (chat.kind === "dept") {
       const d = DEPTS[chat.dept];
       return '<span class="avatar dept" data-hue="' + d.hue + '">' + icon(d.icon) + "</span>";
@@ -204,6 +216,7 @@
   }
 
   function chatTitle(chat) {
+    if (chat.kind === "group") return chat.title;
     return chat.kind === "dept" ? DEPTS[chat.dept].name : PEOPLE[chat.person].name;
   }
 
@@ -223,6 +236,7 @@
   function chatList() {
     const q = state.query.trim().toLowerCase();
     const match = function (c) { return !q || chatTitle(c).toLowerCase().includes(q) || c.last.toLowerCase().includes(q); };
+    const groups = CHATS.filter(function (c) { return c.kind === "group" && match(c); });
     const depts = CHATS.filter(function (c) { return c.kind === "dept" && match(c); });
     const dms = CHATS.filter(function (c) { return c.kind === "dm" && match(c); });
     return (
@@ -230,9 +244,10 @@
       '<div class="list-head"><h1 class="list-title">Messages</h1>' +
       '<button class="icon-btn accent" data-act="screen" data-id="dm" aria-label="New message">' + icon("compose") + "</button></div>" +
       '<label class="search">' + icon("search") + '<input data-input="query" placeholder="Search chats and people" value="' + esc(state.query) + '" aria-label="Search chats and people"></label>' +
+      (groups.length ? '<h2 class="section-label">Group chats</h2>' + groups.map(chatRow).join("") : "") +
       (depts.length ? '<h2 class="section-label">Department chats</h2>' + depts.map(chatRow).join("") : "") +
       (dms.length ? '<h2 class="section-label">Direct messages</h2>' + dms.map(chatRow).join("") : "") +
-      (!depts.length && !dms.length ? '<p class="muted pad">Nothing matches "' + esc(state.query) + '".</p>' : "") +
+      (!groups.length && !depts.length && !dms.length ? '<p class="muted pad">Nothing matches "' + esc(state.query) + '".</p>' : "") +
       "</div>"
     );
   }
@@ -317,7 +332,12 @@
   }
 
   function threadHead(chat) {
-    const sub = chat.kind === "dept" ? DEPTS[chat.dept].members + " people · members, position team and leaders" : DEPTS[PEOPLE[chat.person].dept].name;
+    const sub =
+      chat.kind === "group"
+        ? chat.members + " people" + (chat.everyone ? " · everyone in the Academy, kept up to date" : "")
+        : chat.kind === "dept"
+          ? DEPTS[chat.dept].members + " people · members, position team and leaders"
+          : DEPTS[PEOPLE[chat.person].dept].name;
     return (
       '<header class="thread-head">' +
       (state.device === "phone" ? '<button class="icon-btn" data-act="back" aria-label="Back to chats">' + icon("back") + "</button>" : "") +
@@ -347,7 +367,8 @@
     } else {
       msgs =
         '<div class="day"><span>Today</span></div>' +
-        messageHtml({ id: "x1", from: chat.kind === "dm" ? chat.person : "morgan", time: chat.time, text: chat.last.replace(/^[^:]+: /, "") }, null);
+        (chat.created ? '<div class="day"><span>You made this group for ' + (chat.everyone ? "everyone in the Academy" : chat.members + " people") + "</span></div>" : "") +
+        (chat.created ? "" : messageHtml({ id: "x1", from: chat.kind === "dm" ? chat.person : chat.kind === "group" ? "jordan" : "morgan", time: chat.time, text: chat.last.replace(/^[^:]+: /, "") }, null));
     }
     return (
       '<section class="thread">' + threadHead(chat) +
@@ -376,6 +397,7 @@
       (state.device === "phone" ? '<button class="icon-btn" data-act="screen" data-id="list" aria-label="Back to chats">' + icon("back") + "</button>" : "") +
       '<h1 class="list-title">New message</h1></div>' +
       '<label class="search">' + icon("search") + '<input data-input="dmQuery" placeholder="Find a person" value="' + esc(state.dmQuery) + '" aria-label="Find a person"></label>' +
+      '<button class="chat-row" data-act="screen" data-id="group"><span class="avatar group">' + icon("users") + '</span><span class="chat-main"><span class="chat-name">New group chat</span><span class="chat-preview">Leaders: chosen people, or everyone in the Academy</span></span></button>' +
       '<h2 class="section-label">People in the Academy</h2>' +
       people
         .map(function (k) {
@@ -389,6 +411,45 @@
         })
         .join("") +
       (people.length ? "" : '<p class="muted pad">Nobody matches that.</p>') +
+      "</div>"
+    );
+  }
+
+  // Leaders make group chats: chosen people, or everyone in the Academy (kept up to date).
+  function groupPicker() {
+    const g = state.group;
+    const chosen = Object.keys(g.picked).filter(function (k) { return g.picked[k]; });
+    const count = g.everyone ? 48 : chosen.length + 1;
+    return (
+      '<div class="list picker">' +
+      '<div class="list-head">' +
+      (state.device === "phone" ? '<button class="icon-btn" data-act="screen" data-id="list" aria-label="Back to chats">' + icon("back") + "</button>" : "") +
+      '<h1 class="list-title">New group chat</h1></div>' +
+      '<label class="field-label" for="group-name">Name</label>' +
+      '<input id="group-name" class="field" data-input="groupName" value="' + esc(g.name) + '" placeholder="For example, Sunday volunteers">' +
+      '<button class="mute-row everyone-row" role="switch" aria-checked="' + g.everyone + '" data-act="group-everyone">' +
+      '<span class="avatar group">' + icon("users") + "</span>" +
+      "<span><b>Everyone in the Academy</b><br><small class=\"muted\">48 people now. New people join it automatically, and anyone who leaves the Academy leaves it.</small></span>" +
+      '<span class="switch"><span></span></span></button>' +
+      (g.everyone
+        ? ""
+        : '<h2 class="section-label">Or choose people</h2>' +
+          Object.keys(PEOPLE)
+            .filter(function (k) { return k !== "me"; })
+            .map(function (k) {
+              const p = PEOPLE[k];
+              const on = Boolean(g.picked[k]);
+              return (
+                '<button class="chat-row person-row' + (on ? " active" : "") + '" role="checkbox" aria-checked="' + on + '" data-act="group-pick" data-id="' + k + '">' +
+                '<span class="avatar person" data-hue="' + DEPTS[p.dept].hue + '">' + p.initials + "</span>" +
+                '<span class="chat-main"><span class="chat-name">' + esc(p.name) + "</span>" +
+                '<span class="chat-preview">' + esc(DEPTS[p.dept].name) + "</span></span>" +
+                '<span class="tickbox">' + (on ? icon("tick") : "") + "</span></button>"
+              );
+            })
+            .join("")) +
+      '<p class="muted small pad">Only leaders can make group chats. You and the Production Director and Platform Admins can delete messages in it.</p>' +
+      '<button class="btn primary wide" data-act="group-create"' + (!g.name.trim() || (!g.everyone && chosen.length === 0) ? " disabled" : "") + ">Make the group (" + count + " people)</button>" +
       "</div>"
     );
   }
@@ -492,7 +553,8 @@
   function phoneTabs(navOpt) {
     let tabs = TABS.slice();
     if (navOpt === 2) {
-      tabs = [TABS[0], TABS[1], TABS[2], { id: "serve", label: "Serve", icon: "serve" }, { id: "messages", label: "Messages", icon: "chat", current: true, count: UNREAD }];
+      // Messages in the centre; Checklist and SOPs become Serve.
+      tabs = [TABS[0], TABS[1], { id: "messages", label: "Messages", icon: "chat", current: true, count: UNREAD }, TABS[2], { id: "serve", label: "Serve", icon: "serve" }];
     }
     return (
       '<nav class="tabs" aria-label="Main">' +
@@ -537,12 +599,13 @@
     if (s === "list") body = chatList();
     else if (s === "dm") { body = state.dmPicked ? dmThread(state.dmPicked) : dmPicker(); chrome = !state.dmPicked; }
     else if (s === "settings") body = settingsPage();
+    else if (s === "group") { body = groupPicker(); chrome = false; }
     else { body = threadPane(); chrome = false; }
     return (
       '<div class="app phone">' +
-      (chrome ? phoneTop(1) : "") +
+      (chrome ? phoneTop(NAV_PHONE) : "") +
       '<main class="phone-body">' + body + "</main>" +
-      (chrome ? phoneTabs(1) : "") +
+      (chrome ? phoneTabs(NAV_PHONE) : "") +
       viewer() +
       "</div>"
     );
@@ -554,23 +617,25 @@
     if (s === "settings") main = '<div class="page">' + settingsPage() + "</div>";
     else
       main =
-        '<aside class="listpane">' + (s === "dm" ? dmPicker() : chatList()) + "</aside>" +
+        '<aside class="listpane">' + (s === "dm" ? dmPicker() : s === "group" ? groupPicker() : chatList()) + "</aside>" +
         '<div class="threadpane">' +
         (s === "dm" && !state.dmPicked
           ? '<div class="empty"><span class="empty-art">' + icon("compose") + "</span><h2>Choose someone to message</h2><p>Anyone in the Academy. Direct messages can be read by the Production Director and Platform Admins to keep everyone safe.</p></div>"
-          : threadPane()) +
+          : s === "group"
+            ? '<div class="empty"><span class="empty-art">' + icon("users") + "</span><h2>A chat for a group</h2><p>Name it, then choose people or turn on Everyone in the Academy.</p></div>"
+            : threadPane()) +
         "</div>";
-    return '<div class="app computer">' + rail(1) + main + viewer() + "</div>";
+    return '<div class="app computer">' + rail(NAV_COMPUTER) + main + viewer() + "</div>";
   }
 
   function navScreen() {
     const phones = [
       { n: 1, title: "1 · Beside the bell", text: "A Messages button with the unread count in the top bar. The five tabs stay as they are." },
-      { n: 2, title: "2 · Serve tab", text: "Checklist and SOPs become one Serve tab, and Messages takes the fifth tab." },
+      { n: 2, title: "2 · Centre tab (chosen)", text: "Checklist and SOPs become one Serve tab, and Messages sits in the middle of the bar." },
       { n: 3, title: "3 · In the bell panel", text: "The bell opens a panel with two tabs, Alerts and Messages. Fewest changes, but messages are one tap deeper." },
     ];
     const computers = [
-      { n: 1, title: "A · In the side bar", text: "Messages sits with the main items, after Schedule." },
+      { n: 1, title: "A · In the side bar (chosen)", text: "Messages sits with the main items, after Schedule." },
       { n: 2, title: "B · Beside the bell", text: "Messages sits at the bottom of the side bar with the bell and your initials." },
     ];
     return (
@@ -641,6 +706,7 @@
       leader: "You're a leader here. Use a message's menu to delete it, then confirm.",
       states: "Switch between a chat with no messages and being offline.",
       settings: "The new Messages group, with a choice of phone, email or the app only, and mute per chat.",
+      group: "Leaders only. Name the group, then turn on Everyone in the Academy, or turn it off and choose people.",
       nav: "Pick one phone and one computer option.",
     }[state.screen];
   }
@@ -702,6 +768,19 @@
       case "pick-person": state.dmPicked = id; break;
       case "notify": state.notify[id] = t.getAttribute("data-v"); break;
       case "mute": state.muted[id] = !state.muted[id]; break;
+      case "group-everyone": state.group.everyone = !state.group.everyone; break;
+      case "group-pick": state.group.picked[id] = !state.group.picked[id]; break;
+      case "group-create": {
+        const g = state.group;
+        const n = g.everyone ? 48 : Object.keys(g.picked).filter(function (k) { return g.picked[k]; }).length + 1;
+        const chat = { id: "new-group", kind: "group", title: g.name.trim(), members: n, everyone: g.everyone, unread: 0, time: "Now", last: "You made this group", created: true };
+        const at = CHATS.findIndex(function (c) { return c.id === "new-group"; });
+        if (at >= 0) CHATS.splice(at, 1);
+        CHATS.unshift(chat);
+        state.chat = "new-group";
+        state.screen = "thread";
+        break;
+      }
       case "nav-phone": state.navPhone = Number(id); break;
       case "nav-computer": state.navComputer = Number(id); break;
       default: return;
@@ -714,6 +793,7 @@
     if (key === "query") { state.query = e.target.value; render(); }
     if (key === "dmQuery") { state.dmQuery = e.target.value; render(); }
     if (key === "draft") state.compose.text = e.target.value;
+    if (key === "groupName") { state.group.name = e.target.value; render(); }
   });
 
   root.addEventListener("change", function (e) {
