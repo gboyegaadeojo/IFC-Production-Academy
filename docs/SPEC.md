@@ -97,7 +97,7 @@ Level names, required lessons, prerequisites, quiz rules, rubrics, and approval 
 
 **Later phase:** recurring rotations and auto-balancing; shift swaps; native iOS and Android apps; calendar integrations; advanced analytics; wider offline access; automated recertification; Planning Center or other church-system integration; further ministry departments.
 
-**Out of scope unless approved:** uploading or transcoding video on the platform, replacing YouTube (the church video library on IFC's own NAS was approved as a second source on 2026-10-30, see SRS-LESSON-002), public social features or open messaging, payroll or finance, full church management, authorization from video watching alone, offline YouTube playback.
+**Out of scope unless approved:** uploading or transcoding video on the platform, replacing YouTube (the church video library on IFC's own NAS was approved as a second source on 2026-10-30, see SRS-LESSON-002), public social features or open messaging (closed team messaging, seen only by a chat's members and switched on with a feature flag, is proposed in [the team messaging decision](decisions/2026-11-08-team-messaging.md), awaiting approval), payroll or finance, full church management, authorization from video watching alone, offline YouTube playback.
 
 ## 2. Functional requirements
 
@@ -273,6 +273,18 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ADD-DASH-10 | After the service: planned against actual by item, from Services LIVE. It builds itself and says what wasn't recorded | S |
 | ADD-DASH-03 | One layout for everyone, changed by up to 3 editors with drag, resize, and keyboard. Every save writes an audit event | S |
 
+**Team messaging** (proposed 2026-11-08, awaiting approval; [decision](decisions/2026-11-08-team-messaging.md)). Nothing here is built until G approves it, and the screens wait for G's choice of mock.
+
+| ID | Addition | Level |
+| --- | --- | --- |
+| ADD-FLAG-01 | Feature flags per organisation, from a fixed list of keys. Platform Admins switch them (capability `feature.manage`), every change is audited, and a module that's off is hidden and refused by the database, not only by the screens | M |
+| ADD-MSG-01 | A chat for each active department, seen by its active members and the people who lead it, and direct messages between two active people, seen only by those two. Membership changes apply straight away | M |
+| ADD-MSG-02 | Text and photos. People delete their own messages, and `message.moderate` holders delete any in their department's chats. A deleted message shows as deleted, its text and photos are removed, and an audit event records who and when, never the content | M |
+| ADD-MSG-03 | Unread counts per chat and in the navigation, and new messages appear live in the open chat through Supabase Realtime, subscribed only while it's open. Sending is safe to retry | M |
+| ADD-MSG-04 | Photos are resized in the browser to at most 1,600 px, WebP at about 80%, with a small thumbnail. They're kept in a private bucket opened with one-minute signed links. Chats show thumbnails and load the full photo on tap | M |
+| ADD-MSG-05 | Chat photos are deleted after 90 days by a scheduled job, and admins can change the number of days. They're left out of the weekly backup | S |
+| ADD-MSG-06 | A Messages group in notification settings for phone and email, and mute per chat. Notices are batched per chat ("3 new messages in Camera team"), never one per message, with at most one message email per person every 4 hours, and quiet hours apply. ADD-NOTIF-02 holds them until launch | M |
+
 ## 3. Progression, business rules and workflows
 
 ```mermaid
@@ -360,7 +372,8 @@ Everything a volunteer sees is configuration, so Lighting Operations goes live b
 | Knowledge | SOP, SOPVersion | Owner and review date |
 | Scheduling | Event, ProductionRole, EventAssignment (with competency check result and supervisor), Availability |  |
 | Mentoring | MentorRelationship, MentoringSession, MentoringNote (private or shared) | Restricted access |
-| Platform | Notification, AuditEvent, **added:** FeatureFlag | Flags switch modules on per organization |
+| Platform | Notification, AuditEvent, **added:** FeatureFlag | Flags switch modules on per organization. Messaging is the first (ADD-FLAG-01) |
+| Messaging (**proposed** 2026-11-08) | Conversation, ConversationMember, Message, MessageAttachment | Department chats follow department membership; direct messages have two members. Deletions blank the content and are audited (ADD-MSG-01–06) |
 
 **Integrity:** stable IDs, consistent timestamps shown in local time (America/Winnipeg), history linked to versions, no duplicate active memberships or assignments, database constraints plus server validation, retention rules for personal data.
 
@@ -369,7 +382,7 @@ Everything a volunteer sees is configuration, so Lighting Operations goes live b
 - **New department:** create it, set hue and icon, add levels and courses, assign a leader. No code.
 - **New lesson type** (for example an interactive console walkthrough): add one renderer and a type value.
 - **New video host:** add a VideoSource provider.
-- **New modules** (advanced rotations, Planning Center sync, team messaging): built against the same API and turned on with feature flags.
+- **New modules** (advanced rotations, Planning Center sync, team messaging): built against the same API and turned on with feature flags. Team messaging is designed in [its decision](decisions/2026-11-08-team-messaging.md), awaiting approval.
 - **Native apps:** call the same documented API as the PWA (your section 18).
 - **Webhooks** (MAY): events such as `competency.approved` for other church tools.
 
@@ -462,6 +475,8 @@ Buttons (primary, secondary, tertiary, destructive), inputs, navigation and brea
 | Administrator | Platform Overview, Users and Roles, Department Configuration, Curriculum Governance, Notifications and Integrations, Audit Logs, System Settings | Desktop side navigation |
 
 Only areas a user is authorized for are shown.
+
+Messages, if approved, needs a place: the five phone tabs are full. Three options are mocked for G to choose from: a button beside the bell, merging Checklist and SOPs into one tab, or a second tab in the bell panel ([team messaging decision](decisions/2026-11-08-team-messaging.md)).
 
 ### Key screens
 
@@ -561,7 +576,7 @@ Supabase Free has no automatic backups. Every Sunday (weekly since 2026-11-01) a
 | Part | Design |
 | --- | --- |
 | Schedule | GitHub Actions cron, Sundays at 3:00 America/Winnipeg (08:00 UTC) |
-| What is copied | Full Postgres dump with `pg_dump` (custom format, schema and data, including auth users), with the `pg_dump` version matched to Supabase's Postgres version; plus every file in Supabase Storage as a zip |
+| What is copied | Full Postgres dump with `pg_dump` (custom format, schema and data, including auth users), with the `pg_dump` version matched to Supabase's Postgres version; plus every file in Supabase Storage as a zip. If team messaging is approved, chat photos are left out (they're deleted after 90 days anyway) |
 | Encryption | Encrypted with `age` before leaving the runner. The private key is held offline by the Production Director and the Platform Admin, never in Drive or GitHub |
 | Destination | A **Shared Drive** named "IFC Academy Backups" in IFC's Google Workspace. A Google Cloud **service account** uploads through the Drive API and is a Content manager of that Shared Drive, because service accounts cannot upload into a personal My Drive |
 | Access | Shared Drive limited to the Production Director and Platform Admin, because backups hold personal data and mentoring notes |
