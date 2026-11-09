@@ -1034,6 +1034,19 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      scheduling_preferences: {
+        Row: {
+          user_id: string;
+          max_per_month: number | null;
+          household_member_id: string | null;
+          household_mode: string | null;
+          updated_at: string;
+        };
+        // Changed only through set_my_scheduling_preferences.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       event_times: {
         Row: {
           id: string;
@@ -1790,6 +1803,25 @@ export type Database = {
         Returns: string;
       };
       save_event_times: { Args: { p_event_id: string; p_times: Json }; Returns: number };
+      household_options: { Args: never; Returns: { user_id: string; display_name: string }[] };
+      set_my_scheduling_preferences: {
+        Args: {
+          p_max_per_month: number | null;
+          p_household_member_id: string | null;
+          p_household_mode: string | null;
+        };
+        Returns: undefined;
+      };
+      propose_schedule: {
+        Args: { p_event_ids: string[] };
+        Returns: {
+          position_id: string;
+          user_id: string | null;
+          display_name: string | null;
+          reason: string;
+        }[];
+      };
+      apply_schedule_proposal: { Args: { p_items: Json }; Returns: number };
       add_blockout: {
         Args: {
           p_starts_on: string;

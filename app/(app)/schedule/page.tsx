@@ -28,6 +28,8 @@ import {
   getMyUpcomingAssignments,
   type MyAssignment,
 } from "@/lib/data/schedule";
+import { getHouseholdOptions, getMyPreferences } from "@/lib/data/auto-schedule";
+import { HOUSEHOLD_MODE_LABELS, HOUSEHOLD_MODES } from "@/lib/domain/auto-schedule";
 import { blockoutLabel, blocksDate } from "@/lib/domain/blockouts";
 import {
   addDays,
@@ -53,6 +55,7 @@ import {
   signUpAction,
   takeCoverAction,
   withdrawCoverAction,
+  savePreferencesAction,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Your schedule" };
@@ -108,6 +111,9 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
   ]);
 
   const pco = source === "planning_center";
+  const [preferences, householdOptions] = pco
+    ? [null, []]
+    : await Promise.all([getMyPreferences(user.id), getHouseholdOptions()]);
   const canRefresh = pco && pcoRefreshEnabled() && canOpenAdminSection(grants, "planning-center");
   const marks = new Map<string, DayMark[]>();
   for (const assignment of inMonth) {
@@ -442,6 +448,80 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
           </div>
         </section>
       )}
+
+      {preferences ? (
+        <section aria-labelledby="preferences-heading" className="flex flex-col gap-3">
+          <h2 id="preferences-heading" className="text-heading font-semibold">
+            How I like to serve
+          </h2>
+          <p className="max-w-3xl text-small text-text-secondary">
+            Auto-schedule follows these. A scheduler can still ask you for more.
+          </p>
+          <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
+            <ActionForm
+              action={savePreferencesAction}
+              submitLabel="Save preferences"
+              pendingLabel="Saving…"
+              variant="secondary"
+              className="flex flex-col gap-3"
+            >
+              <Field id="pref-max" label="At most, a month">
+                <select
+                  id="pref-max"
+                  name="maxPerMonth"
+                  defaultValue={preferences.maxPerMonth ?? ""}
+                  className={fieldClasses}
+                >
+                  <option value="">No limit</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((times) => (
+                    <option key={times} value={times}>
+                      {times === 1 ? "Once" : `${times} times`}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              {householdOptions.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field id="pref-household" label="Someone in my household (optional)">
+                    <select
+                      id="pref-household"
+                      name="householdMemberId"
+                      defaultValue={preferences.householdMemberId ?? ""}
+                      className={fieldClasses}
+                    >
+                      <option value="">Nobody</option>
+                      {householdOptions.map((person) => (
+                        <option key={person.id} value={person.id}>
+                          {person.name}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field id="pref-mode" label="Schedule us">
+                    <select
+                      id="pref-mode"
+                      name="householdMode"
+                      defaultValue={preferences.householdMode ?? "together"}
+                      className={fieldClasses}
+                    >
+                      {HOUSEHOLD_MODES.map((mode) => (
+                        <option key={mode} value={mode}>
+                          {HOUSEHOLD_MODE_LABELS[mode]}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                </div>
+              ) : (
+                <input type="hidden" name="householdMemberId" value="" />
+              )}
+              {householdOptions.length === 0 ? (
+                <input type="hidden" name="householdMode" value="together" />
+              ) : null}
+            </ActionForm>
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

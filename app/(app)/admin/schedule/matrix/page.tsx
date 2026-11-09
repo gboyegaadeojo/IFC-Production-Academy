@@ -1,16 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { ActionForm } from "@/components/ui/action-form";
+import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { getAdminAccess } from "@/lib/data/admin/access";
+import { proposeSchedule } from "@/lib/data/auto-schedule";
+import { getSchedulingSource } from "@/lib/data/planning-center";
 import { getMatrixServices, listServiceTypes } from "@/lib/data/service-types";
 import { formatDate } from "@/lib/domain/dates";
+import { proposalItems, proposalSummary } from "@/lib/domain/auto-schedule";
 import { buildMatrix } from "@/lib/domain/service-types";
 import { ASSIGNMENT_STATUS_LABELS } from "@/lib/domain/schedule";
 import { AccessDenied } from "../../access-denied";
 import { PageSkeleton } from "../../page-skeleton";
 import { ScheduleTabs } from "../schedule-tabs";
+import { keepProposalAction } from "./actions";
 
 export const metadata: Metadata = { title: "Schedule matrix" };
 
@@ -38,6 +44,15 @@ async function MatrixContent({
   const selected = serviceTypes.find((t) => t.id === params.type) ?? serviceTypes[0];
   const services = selected ? await getMatrixServices(selected.id) : [];
   const rows = buildMatrix(services);
+  // Auto-schedule (plan "Academy scheduling", PR 8): suggestions shown in place, kept or discarded.
+  const academy = (await getSchedulingSource()) === "academy";
+  const proposing = academy && params.propose === "1" && selected !== undefined;
+  const proposals = proposing ? await proposeSchedule(services.map((service) => service.id)) : [];
+  const suggested = new Map(proposals.map((proposal) => [proposal.positionId, proposal]));
+  const kept = typeof params.kept === "string" ? Number.parseInt(params.kept, 10) : Number.NaN;
+  const matrixHref = selected
+    ? `/admin/schedule/matrix?type=${selected.id}`
+    : "/admin/schedule/matrix";
 
   return (
     <div className="flex flex-col gap-6">
@@ -63,6 +78,53 @@ async function MatrixContent({
             </Link>
           ))}
         </nav>
+      ) : null}
+
+      {Number.isFinite(kept) && !proposing ? (
+        <p role="status" className="max-w-3xl text-small text-text-secondary">
+          {kept === 1 ? "1 person added" : `${kept} people added`} as Not sent yet. Open each
+          service to send requests.
+        </p>
+      ) : null}
+
+      {academy && selected && services.length > 0 ? (
+        proposing ? (
+          <section
+            aria-label="Auto-schedule suggestions"
+            className="flex max-w-3xl flex-col gap-3 rounded-card border border-accent bg-surface p-4"
+          >
+            <p>
+              <span className="font-medium">{proposalSummary(proposals)}</span>{" "}
+              <span className="text-text-secondary">
+                Nobody is added or asked until you keep them, and nobody is emailed until you send
+                requests.
+              </span>
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              {proposalItems(proposals).length > 0 ? (
+                <ActionForm
+                  action={keepProposalAction}
+                  submitLabel="Keep these"
+                  pendingLabel="Adding…"
+                  hidden={{
+                    typeId: selected.id,
+                    items: JSON.stringify(proposalItems(proposals)),
+                  }}
+                  className="flex"
+                />
+              ) : null}
+              <Link href={matrixHref} className={buttonClasses("secondary")}>
+                Discard
+              </Link>
+            </div>
+          </section>
+        ) : (
+          <div>
+            <Link href={`${matrixHref}&propose=1`} className={buttonClasses("primary")}>
+              Auto-schedule open spots
+            </Link>
+          </div>
+        )
       ) : null}
 
       {!selected ? (
@@ -138,6 +200,21 @@ async function MatrixContent({
                                 }
                               >
                                 {ASSIGNMENT_STATUS_LABELS[cell.person.status]}
+                              </span>
+                            </>
+                          ) : suggested.get(cell.id)?.name ? (
+                            <>
+                              <span className="text-text">{suggested.get(cell.id)!.name}</span>
+                              <span className="font-medium text-accent-light">Suggested</span>
+                              <span className="text-text-muted">
+                                {suggested.get(cell.id)!.reason}
+                              </span>
+                            </>
+                          ) : suggested.has(cell.id) ? (
+                            <>
+                              <span className="font-medium text-accent-light">Open</span>
+                              <span className="text-text-muted">
+                                {suggested.get(cell.id)!.reason}
                               </span>
                             </>
                           ) : (

@@ -45,7 +45,7 @@ If **Who schedules** is set to the Academy, you also get **Matrix** and **Servic
 
 1. **Service types:** set up each kind of service once, with its time, positions, and **Reminder email** (how many days before, 2 unless you change it).
 2. **Make services:** create the next weeks in one step, repeating every 1 to 4 weeks. Dates that already have this service are skipped.
-3. **Matrix:** the next services side by side. Open a cell to schedule someone.
+3. **Matrix:** the next services side by side. Open a cell to schedule someone. **Auto-schedule open spots** suggests someone for each open place, with the reason beside each name: only the position's team, never anyone blocked out, serving that day, or who declined that place, within how often each person asked to serve, with or apart from their household as they asked, trained first, then whoever served least recently. Nobody is added until you choose **Keep these**, and nobody is emailed until you send requests. **Discard** clears the suggestions.
 4. **Edit details:** on a service's page, change its name, day, times, location, or notes. If the day or start time changes, everyone on it gets a short email.
 
 **New service** on Schedule makes one service: choose the day, the **Service type** (such as Sunday Service, Holy Communion Service, or Thanksgiving Service), and the **Plan**. The type brings its positions, time, and reminder. The plan brings the order of service, and it's the type's usual plan unless you choose another.
