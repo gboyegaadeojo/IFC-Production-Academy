@@ -60,4 +60,4 @@ While a feature is off, nobody sees it, and the app refuses to let anyone use it
 
 | Feature | What it adds |
 | --- | --- |
-| **Messages** | Department chats, group chats, and direct messages with photos. Off until it's ready and you switch it on |
+| **Messages** | Department chats, group chats, and direct messages with photos, GIFs and documents. Under it, choose how long photos and documents (30 to 365 days) and messages (1 to 10 years) are kept. A daily cleanup removes older ones, so the Academy stays inside the free plan |

@@ -3,10 +3,19 @@ import {
   backupNames,
   backupStamp,
   filesToDelete,
+  isBackedUpBucket,
   latestCompleteStamp,
   stampOf,
   stampsToKeep,
 } from "./backup";
+
+describe("isBackedUpBucket", () => {
+  it("leaves chat files out and keeps everything else", () => {
+    expect(isBackedUpBucket("chat-files")).toBe(false);
+    expect(isBackedUpBucket("sops")).toBe(true);
+    expect(isBackedUpBucket("course-covers")).toBe(true);
+  });
+});
 
 /** One nightly stamp for each of the given number of days, ending on `end`. */
 function nightly(end: string, days: number): string[] {

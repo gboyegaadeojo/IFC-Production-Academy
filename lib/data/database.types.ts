@@ -1822,6 +1822,14 @@ export type Database = {
       remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
       restart_course: { Args: { p_course_id: string }; Returns: undefined };
       set_feature_flag: { Args: { p_key: string; p_enabled: boolean }; Returns: undefined };
+      messaging_settings: {
+        Args: Record<string, never>;
+        Returns: { chat_file_days: number; message_text_years: number }[];
+      };
+      set_messaging_retention: {
+        Args: { p_file_days: number; p_text_years: number };
+        Returns: undefined;
+      };
       my_conversations: {
         Args: Record<string, never>;
         Returns: {

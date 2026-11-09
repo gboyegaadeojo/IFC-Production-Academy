@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { SwitchForm } from "@/components/ui/action-form";
+import { ActionForm, Field, fieldClasses, SwitchForm } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { getFeatureFlags } from "@/lib/data/features";
+import { getFeatureFlags, getMessagingSettings } from "@/lib/data/features";
 import { FEATURES } from "@/lib/domain/features";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
-import { setFeatureFlagAction } from "./actions";
+import { setFeatureFlagAction, setRetentionAction } from "./actions";
 
 export const metadata: Metadata = { title: "Features" };
 
@@ -27,7 +27,7 @@ async function FeaturesContent() {
   if (!allowed) {
     return <AccessDenied />;
   }
-  const flags = await getFeatureFlags();
+  const [flags, settings] = await Promise.all([getFeatureFlags(), getMessagingSettings()]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,6 +52,47 @@ async function FeaturesContent() {
               label={feature.name}
             />
             <p className="text-small text-text-secondary">{feature.description}</p>
+            {feature.key === "messaging" ? (
+              <ActionForm
+                action={setRetentionAction}
+                submitLabel="Save"
+                pendingLabel="Saving…"
+                className="mt-2 flex flex-col gap-3 border-t border-border pt-3"
+              >
+                <p className="text-small font-semibold">How long things are kept</p>
+                <div className="flex flex-wrap gap-4">
+                  <Field id="chat-file-days" label="Photos and documents (days)">
+                    <input
+                      id="chat-file-days"
+                      name="chatFileDays"
+                      type="number"
+                      min={30}
+                      max={365}
+                      required
+                      defaultValue={settings.chatFileDays}
+                      className={`${fieldClasses} w-32`}
+                    />
+                  </Field>
+                  <Field id="message-text-years" label="Message text (years)">
+                    <input
+                      id="message-text-years"
+                      name="messageTextYears"
+                      type="number"
+                      min={1}
+                      max={10}
+                      required
+                      defaultValue={settings.messageTextYears}
+                      className={`${fieldClasses} w-32`}
+                    />
+                  </Field>
+                </div>
+                <p className="text-small text-text-muted">
+                  A daily cleanup removes older photos and documents, and older messages, so the
+                  Academy stays inside the free plan. The weekly summary warns when storage is 70%
+                  full.
+                </p>
+              </ActionForm>
+            ) : null}
           </li>
         ))}
       </ul>
