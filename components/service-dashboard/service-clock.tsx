@@ -51,7 +51,7 @@ function useClock(): Clock {
   return clock;
 }
 
-const NO_PLAN = "No run of service yet. It comes from the plan in Planning Center.";
+const NO_PLAN = "No run of service yet. It comes from the service's plan.";
 
 export function RunOfServiceTile() {
   const { run, progress } = useClock();

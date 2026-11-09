@@ -58,6 +58,7 @@ On a service's page, **Order of service and times** opens its plan:
 - **Use this plan** replaces the order with a plan template's, and you can change anything after.
 - **Save as a template** keeps this order for other services.
 - **Other times:** rehearsals and sound checks on the same day. They show in requests, reminders, and calendars.
+- **Files:** stage plots, run sheets, and the like, up to 10 MB each (PDF, images, Word, Excel, PowerPoint, or text). Only schedulers and the people asked to serve at that service can open them.
 
 **Plan templates**, a tab on Schedule, lists the saved orders of service. Open one to change it, **Duplicate** it, or **Archive** it. Changing a template never changes services already planned. On a service type, **Usual plan** chooses the template its new services start with.
 

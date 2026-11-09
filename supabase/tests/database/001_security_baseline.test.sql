@@ -54,7 +54,10 @@ select is_empty(
       and p.proname not in ('keepalive', 'check_certificate', 'submit_interest', 'open_departments',
                             'claim_push', 'push_subscription_gone', 'app_branding',
                             'screen_start_pairing', 'screen_claim', 'screen_dashboard',
-                            'service_youtube_state', 'save_youtube_check')
+                            'service_youtube_state', 'save_youtube_check',
+                            -- A calendar app reads someone's serving with their private link, which
+                            -- it can't sign in to give (082_service_files_and_calendar_feed).
+                            'calendar_feed')
       -- Ignore functions owned by extensions such as pgTAP itself.
       and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
   $$,

@@ -29,6 +29,9 @@ import {
   type MyAssignment,
 } from "@/lib/data/schedule";
 import { getHouseholdOptions, getMyPreferences } from "@/lib/data/auto-schedule";
+import { getMyCalendarFeedSince } from "@/lib/data/calendar-feed";
+import { getServiceFiles } from "@/lib/data/service-files";
+import { fileSizeLabel } from "@/lib/domain/service-files";
 import { HOUSEHOLD_MODE_LABELS, HOUSEHOLD_MODES } from "@/lib/domain/auto-schedule";
 import { blockoutLabel, blocksDate } from "@/lib/domain/blockouts";
 import {
@@ -56,6 +59,8 @@ import {
   takeCoverAction,
   withdrawCoverAction,
   savePreferencesAction,
+  resetCalendarFeedAction,
+  stopCalendarFeedAction,
 } from "./actions";
 
 export const metadata: Metadata = { title: "Your schedule" };
@@ -111,9 +116,18 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
   ]);
 
   const pco = source === "planning_center";
-  const [preferences, householdOptions] = pco
-    ? [null, []]
-    : await Promise.all([getMyPreferences(user.id), getHouseholdOptions()]);
+  const [preferences, householdOptions, feedSince, files] = pco
+    ? [null, [], null, []]
+    : await Promise.all([
+        getMyPreferences(user.id),
+        getHouseholdOptions(),
+        getMyCalendarFeedSince(),
+        getServiceFiles(
+          assignments
+            .filter((a) => a.status === "pending" || a.status === "confirmed")
+            .map((a) => a.event.id),
+        ),
+      ]);
   const canRefresh = pco && pcoRefreshEnabled() && canOpenAdminSection(grants, "planning-center");
   const marks = new Map<string, DayMark[]>();
   for (const assignment of inMonth) {
@@ -448,6 +462,70 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
           </div>
         </section>
       )}
+
+      {!pco && files.length > 0 ? (
+        <section aria-labelledby="files-heading" className="flex flex-col gap-3">
+          <h2 id="files-heading" className="text-heading font-semibold">
+            Files for your services
+          </h2>
+          <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
+            {files.map((file) => {
+              const service = assignments.find((a) => a.event.id === file.eventId)?.event;
+              return (
+                <li key={file.id} className="flex flex-col gap-0.5 px-4 py-3">
+                  {file.url ? (
+                    <a
+                      href={file.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-accent-light underline-offset-4 hover:underline"
+                    >
+                      {file.name}
+                    </a>
+                  ) : (
+                    <span className="font-medium">{file.name}</span>
+                  )}
+                  <span className="text-small text-text-muted">
+                    {service ? `${service.title} · ` : ""}
+                    {fileSizeLabel(file.bytes)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
+      {!pco ? (
+        <section aria-labelledby="feed-heading" className="flex flex-col gap-3">
+          <h2 id="feed-heading" className="text-heading font-semibold">
+            Calendar link
+          </h2>
+          <p className="max-w-3xl text-small text-text-secondary">
+            Add a private link to Google, Apple, or Outlook Calendar once, and your serving shows up
+            there and stays up to date.
+            {feedSince ? " You have a link. Making a new one stops the old one." : ""}
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <ActionForm
+              action={resetCalendarFeedAction}
+              submitLabel={feedSince ? "Make a new link" : "Make my calendar link"}
+              pendingLabel="Making…"
+              variant="secondary"
+              className="flex flex-col gap-2"
+            />
+            {feedSince ? (
+              <ActionForm
+                action={stopCalendarFeedAction}
+                submitLabel="Stop my link"
+                pendingLabel="Stopping…"
+                variant="tertiary"
+                className="flex"
+              />
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       {preferences ? (
         <section aria-labelledby="preferences-heading" className="flex flex-col gap-3">
