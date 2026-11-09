@@ -235,6 +235,28 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      message_attachments: {
+        Row: {
+          id: string;
+          message_id: string;
+          conversation_id: string;
+          kind: string;
+          full_path: string | null;
+          thumb_path: string | null;
+          width: number | null;
+          height: number | null;
+          bytes: number | null;
+          file_name: string | null;
+          mime_type: string | null;
+          gif_id: string | null;
+          gif_url: string | null;
+          created_at: string;
+          removed_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       feature_flags: {
         Row: {
           id: string;
@@ -1817,6 +1839,8 @@ export type Database = {
           last_sender_name: string | null;
           last_mine: boolean | null;
           last_deleted: boolean | null;
+          last_attachment_kind: string | null;
+          last_attachment_count: number;
           unread_count: number;
           muted: boolean;
         }[];
@@ -1852,6 +1876,7 @@ export type Database = {
           created_at: string;
           deleted_at: string | null;
           deleted_by_other: boolean;
+          attachments: Json;
         }[];
       };
       messaging_people: {
@@ -1869,6 +1894,7 @@ export type Database = {
           p_client_id: string;
           p_body: string;
           p_reply_to?: string | null;
+          p_attachments?: Json;
         };
         Returns: string;
       };

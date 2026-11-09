@@ -29,6 +29,16 @@ To answer a particular message, choose the **…** beside it, then **Reply**. Yo
 
 If you lose your connection, the chat says **You're offline**. What you write waits, and sends when you're back. If a message says **Not sent**, choose **Try again**.
 
+## Photos, GIFs and documents
+
+Choose the **+** beside the message box:
+
+- **Photo:** choose up to 4. They're made smaller on your phone before they're sent, which also removes where they were taken. The chat shows small versions; tap one to see it full size.
+- **GIF:** search GIPHY and tap one to send it. Only GIFs rated G appear. What you type in the search goes to GIPHY.
+- **Document:** a PDF, Word, Excel, PowerPoint or text file, up to 10 MB, in a message of its own. Others in the chat tap it to download it. Programs, and files that aren't what their name says, are refused.
+
+Photos and documents are kept for 90 days. After that the message stays, and says the photo or file is no longer available. Save anything you need to keep.
+
 ## Starting a direct message
 
 Choose the pencil at the top of the list, find the person, and choose them. You can message anyone in the Academy.

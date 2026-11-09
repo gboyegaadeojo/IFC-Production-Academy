@@ -4,6 +4,7 @@
  * grouped and dated. The database decides who reads and writes what.
  */
 import { z } from "zod";
+import { attachmentPreview, type ChatAttachment } from "./chat-files";
 
 export type ConversationKind = "department" | "group" | "direct";
 
@@ -19,6 +20,9 @@ export type ConversationSummary = {
   lastSenderName: string | null;
   lastMine: boolean;
   lastDeleted: boolean;
+  /** What the last message carried, if anything: "photo", "document" or "gif". */
+  lastAttachmentKind?: string | null;
+  lastAttachmentCount?: number;
   unread: number;
   muted: boolean;
 };
@@ -46,6 +50,7 @@ export type ChatMessage = {
   createdAt: string;
   deletedAt: string | null;
   deletedByOther: boolean;
+  attachments?: ChatAttachment[];
 };
 
 export type MessagingPerson = {
@@ -84,7 +89,10 @@ export function conversationPreview(chat: ConversationSummary): string {
     : chat.kind === "direct"
       ? null
       : firstName(chat.lastSenderName);
-  const text = (chat.lastBody ?? "").replace(/\s+/g, " ").trim();
+  const text =
+    (chat.lastBody ?? "").replace(/\s+/g, " ").trim() ||
+    attachmentPreview(chat.lastAttachmentKind ?? null, chat.lastAttachmentCount ?? 0) ||
+    "";
   return who ? `${who}: ${text}` : text;
 }
 

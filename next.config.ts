@@ -1,5 +1,12 @@
 import type { NextConfig } from "next";
 
+// A local Supabase (development and CI) isn't on supabase.co, so its address is allowed too, for
+// stored files and live messages. Production uses supabase.co, which is already allowed.
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const localSupabase =
+  supabaseUrl && !/\.supabase\.co\/?$/.test(supabaseUrl) ? new URL(supabaseUrl).origin : "";
+const localSupabaseLive = localSupabase.replace(/^http/, "ws");
+
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -13,10 +20,11 @@ const securityHeaders = [
       // Next.js's own start-up scripts are inline.
       "script-src 'self' 'unsafe-inline' https://www.youtube.com https://s.ytimg.com https://us-assets.i.posthog.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com",
+      // GIFs come from GIPHY's servers (ADD-MSG-08).
+      `img-src 'self' data: blob: https://*.supabase.co https://i.ytimg.com https://*.giphy.com ${localSupabase}`,
       "font-src 'self' data:",
-      "media-src 'self' blob: https://*.supabase.co",
-      "connect-src 'self' https://*.supabase.co https://*.ingest.us.sentry.io https://us.i.posthog.com https://us-assets.i.posthog.com",
+      `media-src 'self' blob: https://*.supabase.co ${localSupabase}`,
+      `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.us.sentry.io https://us.i.posthog.com https://us-assets.i.posthog.com ${localSupabase} ${localSupabaseLive}`,
       "frame-src https://www.youtube.com https://www.youtube-nocookie.com",
       "object-src 'none'",
       "base-uri 'self'",

@@ -24,6 +24,19 @@ import {
   WifiOffIcon,
 } from "@/components/ui/icons";
 import { subscribeToConversation, type LiveStatus } from "@/lib/data/messages-live";
+import { firstBytes, shrinkPhoto, uploadChatFile } from "@/lib/data/chat-uploads";
+import {
+  attachmentPreview,
+  chatFilePath,
+  DOCUMENT_ACCEPT,
+  documentTypeFor,
+  matchesSignature,
+  MAX_DOCUMENT_BYTES,
+  MAX_PHOTOS,
+  type ChatAttachment,
+  type GifResult,
+  type OutgoingAttachment,
+} from "@/lib/domain/chat-files";
 import {
   deletedText,
   MESSAGE_MAX_LENGTH,
@@ -42,13 +55,25 @@ import {
   setMutedAction,
 } from "../actions";
 import { ChatAvatar } from "../chat-avatar";
+import {
+  AttachMenu,
+  DraftFiles,
+  GifPicker,
+  MessageAttachments,
+  PhotoViewer,
+  type DraftFile,
+} from "./attachments";
 
 type Pending = {
   clientId: string;
   body: string;
   replyTo: ChatMessage | null;
+  attachments: OutgoingAttachment[];
   state: "sending" | "failed";
 };
+
+/** A file picked for the next message, and what to send once it's uploaded. */
+type Draft = DraftFile & { result: OutgoingAttachment | null };
 
 /** The newest time the page has seen a message sent, for catching up. */
 function latest(messages: readonly ChatMessage[]): string | null {
@@ -85,6 +110,11 @@ export function ChatThread({
   const [live, setLive] = useState<LiveStatus>("connecting");
   const [online, setOnline] = useState(true);
   const [notice, setNotice] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Draft[]>([]);
+  const [gifOpen, setGifOpen] = useState(false);
+  const [viewer, setViewer] = useState<{ photos: ChatAttachment[]; index: number } | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef(messages);
   const listRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -165,6 +195,7 @@ export function ChatThread({
         body: item.body,
         replyTo: item.replyTo?.id ?? null,
         after: latest(messagesRef.current),
+        attachments: item.attachments,
       }).catch(() => ({ ok: false as const, message: "That didn't send. Check your connection." }));
       if (result.ok) {
         setPending((current) => current.filter((p) => p.clientId !== item.clientId));
@@ -214,25 +245,198 @@ export function ChatThread({
     }
   }, [toDelete]);
 
-  function submit(event?: FormEvent) {
-    event?.preventDefault();
-    const body = draft.trim();
-    if (!body || body.length > MESSAGE_MAX_LENGTH) {
-      return;
-    }
-    const item: Pending = { clientId: crypto.randomUUID(), body, replyTo, state: "sending" };
+  function queue(body: string, attachments: OutgoingAttachment[]) {
+    const item: Pending = {
+      clientId: crypto.randomUUID(),
+      body,
+      replyTo,
+      attachments,
+      state: navigator.onLine ? "sending" : "failed",
+    };
     setPending((current) => [...current, item]);
-    setDraft("");
     setReplyTo(null);
     setNotice(null);
     if (navigator.onLine) {
       void send(item);
-    } else {
-      setPending((current) =>
-        current.map((p) => (p.clientId === item.clientId ? { ...p, state: "failed" } : p)),
+    }
+  }
+
+  function submit(event?: FormEvent) {
+    event?.preventDefault();
+    const body = draft.trim();
+    if (drafts.some((file) => file.state === "working")) {
+      setNotice("Wait a moment: a file is still uploading.");
+      return;
+    }
+    const ready = drafts.flatMap((file) => (file.result ? [file.result] : []));
+    if ((!body && ready.length === 0) || body.length > MESSAGE_MAX_LENGTH) {
+      return;
+    }
+    queue(body, ready);
+    setDraft("");
+    clearDrafts();
+    inputRef.current?.focus();
+  }
+
+  function clearDrafts() {
+    setDrafts((current) => {
+      for (const file of current) {
+        if (file.previewUrl) {
+          URL.revokeObjectURL(file.previewUrl);
+        }
+      }
+      return [];
+    });
+  }
+
+  function removeDraft(localId: string) {
+    setDrafts((current) =>
+      current.filter((file) => {
+        if (file.localId === localId && file.previewUrl) {
+          URL.revokeObjectURL(file.previewUrl);
+        }
+        return file.localId !== localId;
+      }),
+    );
+  }
+
+  function updateDraft(localId: string, change: Partial<Draft>) {
+    setDrafts((current) =>
+      current.map((file) => (file.localId === localId ? { ...file, ...change } : file)),
+    );
+  }
+
+  // Photos are made smaller here, then go straight to the chat's private folder (ADD-MSG-04).
+  async function addPhotos(files: File[]) {
+    if (drafts.some((file) => file.kind === "document")) {
+      setNotice("Send the document first, or remove it, then add photos.");
+      return;
+    }
+    const room = MAX_PHOTOS - drafts.length;
+    if (files.length > room) {
+      setNotice(`Up to ${MAX_PHOTOS} photos in one message.`);
+    }
+    for (const file of files.slice(0, Math.max(room, 0))) {
+      const localId = crypto.randomUUID();
+      setDrafts((current) => [
+        ...current,
+        {
+          localId,
+          kind: "photo",
+          name: file.name || "Photo",
+          previewUrl: URL.createObjectURL(file),
+          bytes: file.size,
+          state: "working",
+          result: null,
+        },
+      ]);
+      const photo = await shrinkPhoto(file);
+      if (!photo) {
+        updateDraft(localId, { state: "failed" });
+        setNotice("That picture couldn't be read. Try a JPEG or PNG photo.");
+        continue;
+      }
+      const uploadId = crypto.randomUUID();
+      const type = photo.extension === "webp" ? "image/webp" : "image/jpeg";
+      const fullPath = chatFilePath(conversationId, uploadId, `full.${photo.extension}`);
+      const thumbPath = chatFilePath(conversationId, uploadId, `thumb.${photo.extension}`);
+      const [full, thumb] = await Promise.all([
+        uploadChatFile({
+          url: supabaseUrl,
+          publishableKey,
+          path: fullPath,
+          file: photo.full,
+          contentType: type,
+        }),
+        uploadChatFile({
+          url: supabaseUrl,
+          publishableKey,
+          path: thumbPath,
+          file: photo.thumb,
+          contentType: type,
+        }),
+      ]);
+      updateDraft(
+        localId,
+        full && thumb
+          ? {
+              state: "ready",
+              bytes: photo.full.size,
+              result: {
+                kind: "photo",
+                full_path: fullPath,
+                thumb_path: thumbPath,
+                width: photo.width,
+                height: photo.height,
+                bytes: photo.full.size,
+              },
+            }
+          : { state: "failed" },
       );
     }
-    inputRef.current?.focus();
+  }
+
+  // Documents: PDF and Office files up to 10 MB, checked by name and first bytes (ADD-MSG-09).
+  async function addDocument(file: File) {
+    if (drafts.length > 0) {
+      setNotice("Send or remove what's waiting first. A document goes in a message of its own.");
+      return;
+    }
+    const type = documentTypeFor(file.name);
+    if (!type) {
+      setNotice("Share PDF, Word, Excel, PowerPoint or text files.");
+      return;
+    }
+    if (file.size > MAX_DOCUMENT_BYTES) {
+      setNotice("That file is over 10 MB. Try a smaller one, or share a link to it.");
+      return;
+    }
+    if (!matchesSignature(await firstBytes(file), type.mime)) {
+      setNotice("That file isn't what its name says, so it can't be shared.");
+      return;
+    }
+    const localId = crypto.randomUUID();
+    setDrafts([
+      {
+        localId,
+        kind: "document",
+        name: file.name,
+        previewUrl: null,
+        bytes: file.size,
+        state: "working",
+        result: null,
+      },
+    ]);
+    const path = chatFilePath(conversationId, crypto.randomUUID(), `file.${type.extension}`);
+    const uploaded = await uploadChatFile({
+      url: supabaseUrl,
+      publishableKey,
+      path,
+      file,
+      contentType: type.mime,
+    });
+    updateDraft(
+      localId,
+      uploaded
+        ? {
+            state: "ready",
+            result: {
+              kind: "document",
+              full_path: path,
+              file_name: file.name.slice(0, 200),
+              mime_type: type.mime,
+              bytes: file.size,
+            },
+          }
+        : { state: "failed" },
+    );
+  }
+
+  function sendGif(gif: GifResult) {
+    setGifOpen(false);
+    queue("", [
+      { kind: "gif", gif_id: gif.id, gif_url: gif.url, width: gif.width, height: gif.height },
+    ]);
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
@@ -354,13 +558,15 @@ export function ChatThread({
                 setToDelete(item.message);
                 setMenuFor(null);
               }}
+              onOpenPhoto={(photos, index) => setViewer({ photos, index })}
             />
           ),
         )}
         {pending.map((item) => (
           <div key={item.clientId} className="flex flex-col items-end gap-1 self-end">
             <p className="max-w-[min(32rem,85%)] rounded-[1rem_1rem_0.375rem_1rem] bg-accent-soft px-3.5 py-2 [overflow-wrap:anywhere] whitespace-pre-wrap opacity-70">
-              {item.body}
+              {item.body ||
+                attachmentPreview(item.attachments[0]?.kind ?? null, item.attachments.length)}
             </p>
             {item.state === "failed" ? (
               <span className="flex items-center gap-2 text-[0.75rem] text-error">
@@ -406,7 +612,42 @@ export function ChatThread({
             </button>
           </div>
         ) : null}
+        {gifOpen ? <GifPicker onPick={sendGif} onClose={() => setGifOpen(false)} /> : null}
+        <DraftFiles files={drafts} onRemove={removeDraft} />
+        <input
+          ref={photoInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          aria-label="Add photos"
+          onChange={(event) => {
+            const files = Array.from(event.target.files ?? []);
+            event.target.value = "";
+            void addPhotos(files);
+          }}
+        />
+        <input
+          ref={documentInputRef}
+          type="file"
+          accept={DOCUMENT_ACCEPT}
+          hidden
+          aria-label="Add a document"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) {
+              void addDocument(file);
+            }
+          }}
+        />
         <div className="flex items-end gap-2">
+          <AttachMenu
+            disabled={isOffline}
+            onPhotos={() => photoInputRef.current?.click()}
+            onDocument={() => documentInputRef.current?.click()}
+            onGif={() => setGifOpen(true)}
+          />
           <label htmlFor={`${titleId}-draft`} className="sr-only">
             Message
           </label>
@@ -424,7 +665,7 @@ export function ChatThread({
           <button
             type="submit"
             aria-label="Send"
-            disabled={!draft.trim()}
+            disabled={!draft.trim() && !drafts.some((file) => file.state === "ready")}
             className="flex size-11 shrink-0 items-center justify-center rounded-pill bg-accent text-on-accent transition-surface disabled:opacity-45"
           >
             <SendIcon className="size-5" />
@@ -457,6 +698,9 @@ export function ChatThread({
           </Button>
         </div>
       </dialog>
+      {viewer ? (
+        <PhotoViewer photos={viewer.photos} start={viewer.index} onClose={() => setViewer(null)} />
+      ) : null}
     </section>
   );
 }
@@ -470,6 +714,7 @@ function MessageRow({
   onMenu,
   onReply,
   onDelete,
+  onOpenPhoto,
 }: {
   message: ChatMessage;
   mine: boolean;
@@ -479,6 +724,7 @@ function MessageRow({
   onMenu: () => void;
   onReply: () => void;
   onDelete: () => void;
+  onOpenPhoto: (photos: ChatAttachment[], index: number) => void;
 }) {
   const deleted = message.deletedAt !== null;
   return (
@@ -517,15 +763,22 @@ function MessageRow({
             {deletedText(message, mine)}
           </p>
         ) : (
-          <p
-            className={`px-3.5 py-2 [overflow-wrap:anywhere] whitespace-pre-wrap ${
-              mine
-                ? "rounded-[1rem_1rem_0.375rem_1rem] bg-accent-soft"
-                : "rounded-[1rem_1rem_1rem_0.375rem] border border-border bg-surface"
-            }`}
-          >
-            {message.body}
-          </p>
+          <>
+            {message.body ? (
+              <p
+                className={`px-3.5 py-2 [overflow-wrap:anywhere] whitespace-pre-wrap ${
+                  mine
+                    ? "rounded-[1rem_1rem_0.375rem_1rem] bg-accent-soft"
+                    : "rounded-[1rem_1rem_1rem_0.375rem] border border-border bg-surface"
+                }`}
+              >
+                {message.body}
+              </p>
+            ) : null}
+            {message.attachments && message.attachments.length > 0 ? (
+              <MessageAttachments attachments={message.attachments} onOpenPhoto={onOpenPhoto} />
+            ) : null}
+          </>
         )}
         <time
           dateTime={message.createdAt}

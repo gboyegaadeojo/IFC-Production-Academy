@@ -10,7 +10,8 @@ import type { Database } from "@/lib/data/database.types";
 type Client = ReturnType<typeof createBrowserClient<Database>>;
 let client: Client | null = null;
 
-function browserClient(url: string, key: string): Client {
+/** The signed-in person's browser client, shared by live updates and uploads. */
+export function browserClient(url: string, key: string): Client {
   client ??= createBrowserClient<Database>(url, key);
   return client;
 }
