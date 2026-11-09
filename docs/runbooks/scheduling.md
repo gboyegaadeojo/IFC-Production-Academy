@@ -113,8 +113,11 @@ included, from anyone but the sync, so the two can't drift apart.
 While the Academy schedules, the sync job checks the setting first and stops without reading
 Planning Center. Its log says "the Academy schedules production, so nothing was read". The
 database refuses the sync as well (`academy_schedules`), so nothing from Planning Center can
-overwrite the Academy's schedule. Switching back to Planning Center starts the sync again at its next
-run. The plan for moving fully to the Academy is in the decision record
+overwrite the Academy's schedule. Switching to the Academy copies what's coming up: upcoming services keep
+their positions, who's scheduled and each reply, service types are made from Planning Center's,
+and team members and blockouts carry over, all keeping their Planning Center ids. Switching back
+hands those rows back, so the next run updates them instead of adding a second copy. Switching
+back starts the sync again at its next run. The plan for moving fully to the Academy is in the decision record
 `docs/decisions/2026-11-09-academy-scheduling.md`.
 
 ## Service Dashboard run of service

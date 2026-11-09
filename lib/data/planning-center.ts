@@ -24,6 +24,44 @@ export async function setSchedulingSource(source: SchedulingSource): Promise<boo
   return !error;
 }
 
+/** What switching who schedules would copy into the Academy, or leave there on the way back. */
+export type SwitchPreview = {
+  serviceTypes: number;
+  services: number;
+  assignments: number;
+  teamMembers: number;
+  blockouts: number;
+  /** Upcoming services made in the Academy, which stay when Planning Center schedules again. */
+  academyServices: number;
+};
+
+const previewSchema = z.object({
+  service_types: z.number(),
+  services: z.number(),
+  assignments: z.number(),
+  team_members: z.number(),
+  blockouts: z.number(),
+  academy_services: z.number(),
+});
+
+/** Null for people who can't change who schedules. */
+export async function getSwitchPreview(): Promise<SwitchPreview | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("scheduling_switch_preview");
+  const parsed = previewSchema.safeParse(data);
+  if (error || !parsed.success) {
+    return null;
+  }
+  return {
+    serviceTypes: parsed.data.service_types,
+    services: parsed.data.services,
+    assignments: parsed.data.assignments,
+    teamMembers: parsed.data.team_members,
+    blockouts: parsed.data.blockouts,
+    academyServices: parsed.data.academy_services,
+  };
+}
+
 export type SyncRun = { finishedAt: string; counts: Record<string, number> };
 
 export type PcoMapping = {

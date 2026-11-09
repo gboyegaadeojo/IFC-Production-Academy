@@ -1749,6 +1749,7 @@ export type Database = {
       };
       cancel_assignment: { Args: { p_assignment_id: string }; Returns: undefined };
       scheduling_source: { Args: never; Returns: string };
+      scheduling_switch_preview: { Args: never; Returns: Json };
       set_scheduling_source: { Args: { p_source: string }; Returns: undefined };
       set_pco_link: {
         Args: { p_team_id: string; p_position_id: string | null; p_role_id: string | null };
