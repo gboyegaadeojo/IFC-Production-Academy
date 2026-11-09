@@ -7,11 +7,14 @@ import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getSchedulingSource } from "@/lib/data/planning-center";
+import { listPlanTemplates, type PlanTemplate } from "@/lib/data/plans";
 import { getUpcomingEvents } from "@/lib/data/schedule";
+import { listServiceTypes, type ServiceType } from "@/lib/data/service-types";
 import { eventTimeLabel } from "@/lib/domain/schedule";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
 import { createEventAction } from "./actions";
+import { createServiceAction } from "./plan-actions";
 import { ScheduleTabs } from "./schedule-tabs";
 
 export const metadata: Metadata = { title: "Schedule" };
@@ -31,6 +34,8 @@ async function AdminScheduleContent() {
     return <AccessDenied />;
   }
   const [events, source] = await Promise.all([getUpcomingEvents(), getSchedulingSource()]);
+  const [types, templates] =
+    source === "academy" ? await Promise.all([listServiceTypes(), listPlanTemplates()]) : [[], []];
 
   return (
     <div className="flex flex-col gap-10">
@@ -83,6 +88,10 @@ async function AdminScheduleContent() {
           </ul>
         )}
       </section>
+
+      {source === "academy" && types.length > 0 ? (
+        <NewService types={types} templates={templates} />
+      ) : null}
 
       {source === "academy" ? (
         <section
@@ -146,5 +155,57 @@ async function AdminScheduleContent() {
         </section>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * One service on a day: its type brings the positions, times, and reminder; its plan brings the
+ * order of service. Any plan can go with any type.
+ */
+function NewService({ types, templates }: { types: ServiceType[]; templates: PlanTemplate[] }) {
+  return (
+    <section
+      aria-labelledby="new-service-heading"
+      className="flex max-w-3xl flex-col gap-4 rounded-card border border-border bg-surface p-5"
+    >
+      <h2 id="new-service-heading" className="text-subheading font-semibold">
+        New service
+      </h2>
+      <ActionForm
+        action={createServiceAction}
+        submitLabel="Create service"
+        pendingLabel="Creating…"
+      >
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Field id="service-day" label="Day">
+            <input id="service-day" name="date" type="date" required className={fieldClasses} />
+          </Field>
+          <Field id="service-type" label="Service type">
+            <select id="service-type" name="typeId" className={fieldClasses}>
+              {types.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field id="service-plan" label="Plan">
+            <select id="service-plan" name="templateId" className={fieldClasses}>
+              <option value="">The type&apos;s usual plan</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        <p className="text-small text-text-muted">
+          The service type sets the positions, time, and reminder. The plan sets the order of
+          service: a Holy Communion Service can use the Standard Sunday plan, or the other way
+          round.
+        </p>
+      </ActionForm>
+    </section>
   );
 }

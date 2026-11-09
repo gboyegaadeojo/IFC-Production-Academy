@@ -48,6 +48,21 @@ If **Who schedules** is set to the Academy, you also get **Matrix** and **Servic
 3. **Matrix:** the next services side by side. Open a cell to schedule someone.
 4. **Edit details:** on a service's page, change its name, day, times, location, or notes. If the day or start time changes, everyone on it gets a short email.
 
+**New service** on Schedule makes one service: choose the day, the **Service type** (such as Sunday Service, Holy Communion Service, or Thanksgiving Service), and the **Plan**. The type brings its positions, time, and reminder. The plan brings the order of service, and it's the type's usual plan unless you choose another.
+
+### Order of service and plan templates
+
+On a service's page, **Order of service and times** opens its plan:
+
+- **Items:** items, songs, and section headers, each with a length such as 4:30. The running time and the clock time each item starts add up as you type. Use the arrows to reorder. **Add note** puts a note on an item for one department, such as "Cam 1 tight on the speaker" for Camera Operations. Choose **Save order of service** when you're done. The Service Dashboard and the wall TV show it straight away.
+- **Use this plan** replaces the order with a plan template's, and you can change anything after.
+- **Save as a template** keeps this order for other services.
+- **Other times:** rehearsals and sound checks on the same day. They show in requests, reminders, and calendars.
+
+**Plan templates**, a tab on Schedule, lists the saved orders of service. Open one to change it, **Duplicate** it, or **Archive** it. Changing a template never changes services already planned. On a service type, **Usual plan** chooses the template its new services start with.
+
+While Planning Center schedules, a service's order of service is shown read only, as Planning Center has it.
+
 On a service's page:
 
 - **Places:** each position shows how many people it needs, such as "Camera 2, 1 of 2 filled". **Need one more** adds a place and **Need one fewer** removes an empty one. **Add position** adds one the service doesn't have yet.
