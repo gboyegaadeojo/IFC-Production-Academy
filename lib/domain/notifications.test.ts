@@ -4,7 +4,6 @@ import {
   emailChoiceGroups,
   groupChoice,
   isNotificationGroupId,
-  isQuietHours,
   NOTIFICATION_GROUPS,
   NOTIFICATION_KIND_LABELS,
   NOTIFICATION_KINDS,
@@ -134,18 +133,6 @@ describe("onboardingEmail", () => {
     const newcomer = onboardingEmail({ subject: "Hi", body: "Welcome", hasAccount: false }, site);
     expect(newcomer.text).not.toContain("/notifications");
     expect(newcomer.text).toContain("reply and let us know");
-  });
-});
-
-describe("isQuietHours", () => {
-  it("holds email from 20:00 to 08:00 Winnipeg time", () => {
-    // Summer 2026 (UTC-5). Later dates depend on the time-zone data: Manitoba moved to permanent
-    // daylight time on 1 Nov 2026 (IANA tz 2026e), and older runtimes still expect a winter offset.
-    expect(isQuietHours(new Date("2026-07-10T12:59:00Z"))).toBe(true); // 07:59
-    expect(isQuietHours(new Date("2026-07-10T13:00:00Z"))).toBe(false); // 08:00
-    expect(isQuietHours(new Date("2026-07-11T00:59:00Z"))).toBe(false); // 19:59
-    expect(isQuietHours(new Date("2026-07-11T01:00:00Z"))).toBe(true); // 20:00
-    expect(isQuietHours(new Date("2026-07-11T05:00:00Z"))).toBe(true); // 00:00
   });
 });
 

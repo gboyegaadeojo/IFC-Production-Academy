@@ -18,7 +18,7 @@ The steps you can use:
 
 | Step | What it does |
 | --- | --- |
-| **Send an email** | Start from a template, then edit the subject and message. `{first name}` becomes their first name. **Emails are held until volunteer emails are switched on at launch, and emails held before then aren't sent later.** |
+| **Send an email** | Start from a template, then edit the subject and message. `{first name}` becomes their first name. The email goes out within about 15 minutes of reaching this step. Emails written before onboarding emails were switched on (9 November 2026) were never sent. |
 | **Notify leaders** | Tells the leaders who look after the pathway |
 | **Follow-up task** | Something a leader has to do, with who reaches out and how many hours they have |
 | **Pair a mentor** | Sets up [mentoring](mentoring.md) |

@@ -10,9 +10,6 @@ begin
 end;
 $$;
 
--- These check sending, whatever time of day the tests run.
-insert into private.app_settings (key, value) values ('quiet_hours_off', '1');
-
 -- Test people (fake): Pia (alerts on) ad…01; Quinn (no devices) ad…02.
 insert into auth.users (instance_id, id, aud, role, email, raw_user_meta_data, created_at, updated_at) values
   ('00000000-0000-0000-0000-000000000000', 'ad000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'pia.push@example.com', '{"full_name": "Test Pia"}', now(), now()),

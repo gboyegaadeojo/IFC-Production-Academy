@@ -43,8 +43,6 @@ insert into public.user_roles (user_id, role_id)
 select 'a8800000-0000-4000-8000-000000000005', r.id from public.roles r where r.key = 'platform_admin';
 select pg_temp.device('a8800000-0000-4000-8000-000000000002', 1);
 select pg_temp.device('a8800000-0000-4000-8000-000000000004', 2);
--- Outside quiet hours, whatever time the test runs.
-insert into private.app_settings (key, value) values ('quiet_hours_off', 'true') on conflict (key) do nothing;
 
 create temporary table ctx (key text primary key, id uuid);
 grant all on ctx to authenticated;
@@ -110,8 +108,7 @@ select is((select count(*)::int from dm_got), 1, 'after launch, anyone with a ph
 select is((select preview from dm_got), null, 'a direct message carries no words');
 select is((select sender_name from dm_got), 'Test Alert Sender', 'only who it''s from');
 
--- Quiet hours and the messaging switch still hold.
-delete from private.app_settings where key = 'quiet_hours_off';
+-- The messaging switch still holds.
 select pg_temp.act_as('a8800000-0000-4000-8000-000000000005');
 select public.set_feature_flag('messaging', false);
 reset role;

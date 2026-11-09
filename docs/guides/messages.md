@@ -73,7 +73,7 @@ You aren't alerted for your own messages, a chat you've muted, or a chat you hav
 
 **New messages are never emailed.** To hear about them away from the app, turn on alerts on your phone.
 
-Under the bell, then **Settings**, the **Messages** group has a **Phone** button: turn it off to stop message alerts. New messages always show under the bell. Nothing reaches your phone between 20:00 and 08:00.
+Under the bell, then **Settings**, the **Messages** group has a **Phone** button: turn it off to stop message alerts. New messages always show under the bell. Alerts come at any time of day, so use your phone's Do Not Disturb or mute a chat if you want quiet.
 
 ## Earlier messages and who's in a chat
 

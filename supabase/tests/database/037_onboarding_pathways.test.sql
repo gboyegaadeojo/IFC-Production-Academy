@@ -2,6 +2,8 @@
 -- hand over), private notes, held emails, and a Planning Center team place finishing a step.
 begin;
 select no_plan();
+-- Onboarding emails are on in production since 20270118120200_no_quiet_hours.sql; test them held.
+update public.organizations set onboarding_emails_enabled = false;
 
 create function pg_temp.new_user(p_id uuid, p_name text) returns void language sql as $$
   insert into auth.users (instance_id, id, aud, role, email, raw_user_meta_data, created_at, updated_at)

@@ -10,7 +10,7 @@ Alerts that drop down on phones and computers, like a native app's, for anyone w
 4. Anything not sent within a minute is picked up by `notifications.yml` (every 15 minutes) through `claim_push_batch`. Alerts older than a day are dropped.
 5. A device the push service reports as gone (404 or 410) is deleted.
 
-Quiet hours don't apply to alerts, because phones have their own Do Not Disturb. Emails still respect quiet hours.
+There are no quiet hours: alerts and emails go out at any time of day (G, 2026-11-09). Phones have their own Do Not Disturb.
 
 ## Setup (once)
 
