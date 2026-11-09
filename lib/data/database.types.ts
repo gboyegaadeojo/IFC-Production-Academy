@@ -1015,7 +1015,36 @@ export type Database = {
           notes: Json;
           actual_seconds: number | null;
         } & Timestamps;
-        // Applied only by sync_service_plan_items.
+        // Applied by sync_service_plan_items, or for the Academy's own services by save_service_plan.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      plan_templates: {
+        Row: {
+          id: string;
+          organization_id: string;
+          name: string;
+          items: Json;
+          archived_at: string | null;
+          created_by: string | null;
+        } & Timestamps;
+        // Changed only through save_plan_template and archive_plan_template.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      event_times: {
+        Row: {
+          id: string;
+          event_id: string;
+          kind: string;
+          label: string;
+          starts_at: string;
+          ends_at: string;
+          created_at: string;
+        };
+        // Changed only through save_event_times.
         Insert: never;
         Update: never;
         Relationships: [];
@@ -1121,6 +1150,7 @@ export type Database = {
           created_by: string | null;
           allow_signups: boolean;
           reminder_days: number;
+          default_template_id: string | null;
         } & Timestamps;
         // Changed only through save_service_type and archive_service_type.
         Insert: never;
@@ -1741,6 +1771,22 @@ export type Database = {
         }[];
       };
       set_service_type_reminder: { Args: { p_id: string; p_days: number }; Returns: undefined };
+      save_service_plan: { Args: { p_event_id: string; p_items: Json }; Returns: number };
+      apply_plan_template: { Args: { p_event_id: string; p_template_id: string }; Returns: number };
+      save_plan_template: {
+        Args: { p_id: string | null; p_name: string; p_items: Json };
+        Returns: string;
+      };
+      archive_plan_template: { Args: { p_id: string }; Returns: undefined };
+      set_service_type_template: {
+        Args: { p_type_id: string; p_template_id: string | null };
+        Returns: undefined;
+      };
+      create_service: {
+        Args: { p_type_id: string; p_date: string; p_template_id?: string | null };
+        Returns: string;
+      };
+      save_event_times: { Args: { p_event_id: string; p_times: Json }; Returns: number };
       event_conflicts: {
         Args: { p_event_id: string };
         Returns: {

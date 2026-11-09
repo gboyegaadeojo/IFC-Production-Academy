@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
@@ -91,6 +92,12 @@ async function EventContent({ params }: Pick<Props, "params">) {
           {event.location ? ` · ${event.location}` : ""}
         </p>
         {event.cancelled ? <StatusBadge tone="neutral">Cancelled</StatusBadge> : null}
+        <Link
+          href={`/admin/schedule/${event.id}/plan`}
+          className="self-start text-small font-medium text-accent-light underline-offset-4 hover:underline"
+        >
+          Order of service and times
+        </Link>
         {academy ? null : (
           <p className="max-w-2xl text-small text-text-secondary">
             Scheduled in Planning Center. Changes made there show here within 15 minutes.

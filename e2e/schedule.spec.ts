@@ -70,6 +70,34 @@ test("a scheduler adds a one-off service and edits its details", async ({ page }
   await expect(page.getByRole("heading", { level: 1, name: `${name} moved` })).toBeVisible();
 });
 
+test("a scheduler plans a service's order of service and saves it as a template", async ({
+  page,
+}) => {
+  const name = `E2E planned ${Date.now()}`;
+  await signInByEmail(page, "casey.leader@example.com");
+  await page.goto("/admin/schedule");
+  await page.getByLabel("Name").fill(name);
+  await page.getByLabel("Date").fill("2031-03-09");
+  await page.getByLabel("Starts").fill("10:30");
+  await page.getByLabel("Ends").fill("12:00");
+  await page.getByRole("button", { name: "Add event" }).click();
+  await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
+
+  await page.getByRole("link", { name: "Order of service and times" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Order of service" })).toBeVisible();
+  await page.getByLabel("New item").fill("Welcome");
+  await page.getByRole("button", { name: "Add to the end" }).click();
+  await expect(page.getByText("Total 5:00, ending about 10:35 a.m.")).toBeVisible();
+  await page.getByRole("button", { name: "Save order of service" }).click();
+  await expect(page.getByText(/^Saved\. The Service Dashboard/)).toBeVisible();
+
+  await page.getByLabel("Template name").fill(`${name} plan`);
+  await page.getByRole("button", { name: "Save as a template" }).click();
+  await expect(page.getByText(`Saved as "${name} plan".`)).toBeVisible();
+  await page.goto("/admin/schedule/templates");
+  await expect(page.getByRole("link", { name: new RegExp(`${name} plan`) })).toBeVisible();
+});
+
 test("a volunteer taps a day on their calendar", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   await page.goto("/schedule");

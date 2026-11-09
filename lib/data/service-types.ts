@@ -23,6 +23,8 @@ export type ServiceType = {
   allowSignups: boolean;
   /** How many days before each service its reminder goes out. */
   reminderDays: number;
+  /** The plan template services made from it start with. */
+  defaultTemplateId: string | null;
   positions: { roleId: string; roleName: string; departmentName: string }[];
 };
 
@@ -32,7 +34,7 @@ export async function listServiceTypes(): Promise<ServiceType[]> {
     supabase
       .from("service_types")
       .select(
-        "id, name, start_time, duration_minutes, location, notes, allow_signups, reminder_days",
+        "id, name, start_time, duration_minutes, location, notes, allow_signups, reminder_days, default_template_id",
       )
       .is("archived_at", null)
       .order("name"),
@@ -57,6 +59,7 @@ export async function listServiceTypes(): Promise<ServiceType[]> {
     notes: type.notes,
     allowSignups: type.allow_signups,
     reminderDays: type.reminder_days,
+    defaultTemplateId: type.default_template_id,
     positions: positions.data
       .filter((p) => p.service_type_id === type.id)
       .map((p) => ({

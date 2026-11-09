@@ -1,10 +1,11 @@
 import { Tabs } from "@/components/ui/tabs";
 import { getSchedulingSource } from "@/lib/data/planning-center";
 
-export type ScheduleView = "upcoming" | "calendar" | "matrix" | "types";
+export type ScheduleView = "upcoming" | "calendar" | "matrix" | "types" | "templates";
 
 /**
- * The scheduler's views (decision record 9): a list, a calendar, the Matrix, and service types.
+ * The scheduler's views (decision record 9): a list, a calendar, the Matrix, service types, and
+ * plan templates.
  * While Planning Center schedules, only the list and the calendar show: the rest happen there.
  */
 export async function ScheduleTabs({ current }: { current: ScheduleView }) {
@@ -25,6 +26,15 @@ export async function ScheduleTabs({ current }: { current: ScheduleView }) {
                   href: "/admin/schedule/types",
                   label: "Service types",
                   current: current === "types",
+                },
+              ]
+            : []),
+          ...(academy || current === "templates"
+            ? [
+                {
+                  href: "/admin/schedule/templates",
+                  label: "Plan templates",
+                  current: current === "templates",
                 },
               ]
             : []),

@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { getAdminAccess } from "@/lib/data/admin/access";
+import { listPlanTemplates } from "@/lib/data/plans";
 import { getSchedulableRoles, getServiceType } from "@/lib/data/service-types";
 import { addDays, winnipegDate } from "@/lib/domain/month-calendar";
 import { REMINDER_DAY_CHOICES, reminderDaysLabel } from "@/lib/domain/schedule";
@@ -18,6 +19,7 @@ import {
   setTypeSignupsAction,
   updateServiceTypeAction,
 } from "../actions";
+import { setTypeTemplateAction } from "../../plan-actions";
 import { ServiceTypeFields } from "../service-type-fields";
 
 export const metadata: Metadata = { title: "Service type" };
@@ -44,7 +46,11 @@ async function ServiceTypeContent({ params }: Pick<Props, "params">) {
   if (!UUID.test(typeId)) {
     notFound();
   }
-  const [type, roles] = await Promise.all([getServiceType(typeId), getSchedulableRoles(grants)]);
+  const [type, roles, templates] = await Promise.all([
+    getServiceType(typeId),
+    getSchedulableRoles(grants),
+    listPlanTemplates(),
+  ]);
   if (!type) {
     notFound();
   }
@@ -90,6 +96,35 @@ async function ServiceTypeContent({ params }: Pick<Props, "params">) {
             className="flex"
           />
         </div>
+        <ActionForm
+          action={setTypeTemplateAction}
+          submitLabel="Save"
+          pendingLabel="Saving…"
+          variant="secondary"
+          hidden={{ typeId: type.id }}
+          className="flex flex-wrap items-end gap-3"
+        >
+          <Field
+            id="type-template"
+            label="Usual plan"
+            hint="New services of this type start with this order of service. Any service can use another."
+          >
+            <select
+              id="type-template"
+              name="templateId"
+              defaultValue={type.defaultTemplateId ?? ""}
+              aria-describedby="type-template-hint"
+              className={fieldClasses}
+            >
+              <option value="">None (start empty)</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </ActionForm>
         <ActionForm
           action={setTypeReminderAction}
           submitLabel="Save"
