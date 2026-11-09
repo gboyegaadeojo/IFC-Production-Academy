@@ -220,6 +220,27 @@ G compared the three mocks in [docs/mocks/messaging/](../mocks/messaging/index.h
   - G confirmed (2026-11-08): Department Leaders, the Production Director and Platform Admins make
     group chats, and everyone in an Everyone chat can post in it.
 
+## GIFs and documents (G, 2026-11-09)
+
+G asked for GIFs and documents in chats, and chose:
+
+- **GIFs from a search, rated G only.** A GIF choice in the "+" menu searches GIPHY's free API
+  through the Academy's server, with GIPHY's rating set to G, so only rated-G results come back.
+  The key (`GIPHY_API_KEY`) is a Cloudflare secret, never in the browser or the repository. A sent
+  GIF is stored as GIPHY's id and address, not a file, so it uses none of the free storage. The
+  picker says "Powered by GIPHY", as GIPHY requires. What people type in the search goes to GIPHY.
+- **Documents: PDF and Office files.** PDF, Word, Excel, PowerPoint, and plain text, up to 10 MB
+  each, the same limit as SOP files. They're kept in the private chat bucket and open through
+  one-minute signed links when tapped, as a download, never shown inside the app. Other file types,
+  such as programs and scripts, are refused, by file type and by checking the file's first bytes.
+- **Kept for 90 days, like photos.** The same cleanup job removes documents after 90 days (admins
+  can change it), and the message stays with "File no longer available". Documents are left out
+  of the weekly backup with photos.
+- **The "+" in the message box** opens Photo, GIF and Document (screen 10 of the mocks).
+
+This adds ADD-MSG-08 (GIFs) and ADD-MSG-09 (documents). They're built with photos, in the photos
+step.
+
 ## Questions for G (answered above)
 
 1. **Start now, or after the pilot?** Building now means messaging work runs alongside the 17 Nov

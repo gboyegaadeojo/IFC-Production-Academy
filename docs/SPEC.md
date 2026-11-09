@@ -284,6 +284,8 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ADD-MSG-04 | Photos are resized in the browser to at most 1,600 px, WebP at about 80%, with a small thumbnail. They're kept in a private bucket opened with one-minute signed links. Chats show thumbnails and load the full photo on tap | M |
 | ADD-MSG-05 | Chat photos are deleted after 90 days, and message text after 3 years, by a scheduled job, and admins can change both. Photos are left out of the weekly backup. The weekly summary shows database and storage use against the free limits and warns at 70% | S |
 | ADD-MSG-07 | Group chats: Department Leaders, the Production Director and Platform Admins (`message.group_create`) make a named chat for people they choose, or for everyone in the Academy, which keeps itself up to date. Its maker, the Production Director and Platform Admins delete messages in it. Audited (G, 2026-11-08) | S |
+| ADD-MSG-08 | GIFs in chats, from GIPHY search through the Academy's server, rated G only. Stored as GIPHY's id and address, not a file. The key is a Cloudflare secret (G, 2026-11-09) | S |
+| ADD-MSG-09 | Documents in chats: PDF, Word, Excel, PowerPoint, and plain text, up to 10 MB, checked by type and first bytes, in the private chat bucket, opened as downloads through one-minute signed links, removed after 90 days like photos, and left out of the weekly backup (G, 2026-11-09) | S |
 | ADD-MSG-06 | A Messages group in notification settings for phone and email, and mute per chat. Notices are batched per chat ("3 new messages in Camera team"), never one per message, with at most one message email per person every 4 hours, and quiet hours apply. ADD-NOTIF-02 holds them until launch | M |
 
 ## 3. Progression, business rules and workflows
