@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  assignmentStatusLabel,
   candidateLabel,
   eventDayLabel,
   eventSchema,
   eventTimeLabel,
+  groupPlaces,
+  sendRequestsSchema,
   syncedAgo,
   toScheduleError,
   unavailabilitySchema,
@@ -109,7 +112,7 @@ describe("candidateLabel", () => {
     ).toBe("Avery (trained)");
     expect(
       candidateLabel({ name: "Blake", approved: false, conflict: true, unavailable: true }),
-    ).toBe("Blake (still learning, already serving that day, unavailable that day)");
+    ).toBe("Blake (still learning, already serving that day, blocked out that day)");
   });
 });
 
@@ -130,5 +133,46 @@ describe("syncedAgo", () => {
     expect(syncedAgo("2026-11-01T09:00:00Z", now)).toBe("3 hours ago");
     expect(syncedAgo("2026-10-30T12:00:00Z", now)).toBe("2 days ago");
     expect(syncedAgo("2026-11-01T12:05:00Z", now)).toBe("just now");
+  });
+});
+
+describe("positions with several places", () => {
+  const place = (roleId: string, status: "pending" | "confirmed" | "declined" | null) => ({
+    roleId,
+    roleName: roleId === "cam2" ? "Camera 2" : "Director",
+    departmentName: "Fake department",
+    assignment: status ? { status } : null,
+  });
+
+  it("groups places by position in the order they appear, and counts who holds one", () => {
+    const groups = groupPlaces([
+      place("cam2", "confirmed"),
+      place("dir", null),
+      place("cam2", "declined"),
+      place("cam2", "pending"),
+    ]);
+    expect(groups.map((g) => [g.roleName, g.places.length, g.filled])).toEqual([
+      ["Camera 2", 3, 2],
+      ["Director", 1, 0],
+    ]);
+  });
+
+  it("says Not sent yet until the request goes out", () => {
+    expect(assignmentStatusLabel({ status: "pending", requestSent: false })).toBe("Not sent yet");
+    expect(assignmentStatusLabel({ status: "pending", requestSent: true })).toBe(
+      "Waiting for a reply",
+    );
+    expect(assignmentStatusLabel({ status: "confirmed", requestSent: true })).toBe("Confirmed");
+  });
+
+  it("needs at least one person ticked to send requests", () => {
+    const eventId = "00000000-0000-4000-8000-000000000001";
+    expect(sendRequestsSchema.safeParse({ eventId, assignmentIds: [], message: "" }).success).toBe(
+      false,
+    );
+    expect(
+      sendRequestsSchema.safeParse({ eventId, assignmentIds: [eventId], message: " Hi " }).data
+        ?.message,
+    ).toBe("Hi");
   });
 });

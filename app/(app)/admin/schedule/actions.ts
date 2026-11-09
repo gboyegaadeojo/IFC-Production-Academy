@@ -8,9 +8,9 @@ import { getAdminAccess } from "@/lib/data/admin/access";
 import * as schedule from "@/lib/data/schedule";
 import {
   eventSchema,
-  overrideReasonSchema,
   READINESS_LABELS,
   scheduleErrorMessage,
+  sendRequestsSchema,
 } from "@/lib/domain/schedule";
 
 // Scheduling for leaders (SRS-SCHED, workflow D). The database runs every check when someone is
@@ -146,7 +146,6 @@ export async function assignAction(_: FormState, formData: FormData): Promise<Fo
   const userId = id.safeParse(formData.get("userId"));
   const supervisorRaw = text(formData.get("supervisorId"));
   const supervisorId = supervisorRaw === "" ? null : id.safeParse(supervisorRaw).data;
-  const reason = overrideReasonSchema.safeParse(text(formData.get("overrideReason")));
   if (!positionId.success) {
     return error(scheduleErrorMessage("unknown"));
   }
@@ -156,9 +155,6 @@ export async function assignAction(_: FormState, formData: FormData): Promise<Fo
   if (supervisorId === undefined) {
     return error("Choose a supervisor from the list.");
   }
-  if (!reason.success) {
-    return error(reason.error.issues[0]?.message ?? "Check the reason.");
-  }
   if (!(await allowed())) {
     return error(scheduleErrorMessage("not_authorized"));
   }
@@ -166,7 +162,7 @@ export async function assignAction(_: FormState, formData: FormData): Promise<Fo
     positionId: positionId.data,
     userId: userId.data,
     supervisorId,
-    overrideReason: reason.data === "" ? null : reason.data,
+    overrideReason: null,
   });
   if (!result.ok) {
     return error(scheduleErrorMessage(result.error));
@@ -174,7 +170,37 @@ export async function assignAction(_: FormState, formData: FormData): Promise<Fo
   refresh();
   return {
     status: "done",
-    message: `Scheduled (${READINESS_LABELS[result.value].toLowerCase()}). They'll be asked to confirm.`,
+    message: `Added (${READINESS_LABELS[result.value].toLowerCase()}), not sent yet. Send requests when you're ready.`,
+  };
+}
+
+export async function sendRequestsAction(_: FormState, formData: FormData): Promise<FormState> {
+  const input = sendRequestsSchema.safeParse({
+    eventId: formData.get("eventId"),
+    assignmentIds: formData.getAll("assignmentIds"),
+    message: text(formData.get("message")),
+  });
+  if (!input.success) {
+    return error(input.error.issues[0]?.message ?? scheduleErrorMessage("unknown"));
+  }
+  if (!(await allowed())) {
+    return error(scheduleErrorMessage("not_authorized"));
+  }
+  const result = await schedule.sendAssignmentRequests(
+    input.data.eventId,
+    input.data.assignmentIds,
+    input.data.message,
+  );
+  if (!result.ok) {
+    return error(scheduleErrorMessage(result.error));
+  }
+  refresh();
+  return {
+    status: "done",
+    message:
+      result.value === 1
+        ? "Request sent to 1 person."
+        : `Requests sent to ${result.value} people. Each gets one email.`,
   };
 }
 

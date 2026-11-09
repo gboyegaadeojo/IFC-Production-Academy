@@ -96,10 +96,20 @@ select throws_ok(
   $$ select public.assign_to_position((select id from ctx where key = 'pos1'), 'e0000000-0000-4000-8000-000000000002') $$,
   'P0001', 'position_filled', 'one person per position'
 );
-select throws_ok(
-  $$ select public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000001') $$,
-  'P0001', 'schedule_conflict', 'nobody serves twice at the same time'
+-- Serving twice at the same time is a warning, not a block (decided 2026-11-09).
+select is(
+  public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000001')::text,
+  'approved', 'someone already serving then can still be added'
 );
+select ok(
+  exists (select 1 from public.event_conflicts((select id from ctx where key = 'event')) c
+          join public.event_assignments a on a.id = c.assignment_id
+          where a.position_id = (select id from ctx where key = 'pos2') and c.serving_elsewhere is not null),
+  'and the service page warns that they''re serving elsewhere'
+);
+reset role;
+delete from public.event_assignments where position_id = (select id from ctx where key = 'pos2');
+select pg_temp.act_as('e0000000-0000-4000-8000-000000000004');
 -- Training is shown, never enforced (decided 2026-10-31): someone still learning can serve.
 select is(
   public.assign_to_position((select id from ctx where key = 'pos4'), 'e0000000-0000-4000-8000-000000000002')::text,
@@ -127,12 +137,19 @@ select lives_ok(
 );
 reset role;
 select pg_temp.act_as('e0000000-0000-4000-8000-000000000004');
-select throws_ok(
-  $$ select public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000002',
-       'e0000000-0000-4000-8000-000000000001') $$,
-  'P0001', 'volunteer_unavailable', 'nobody is scheduled on a day they are away'
+select is(
+  public.assign_to_position((select id from ctx where key = 'pos2'), 'e0000000-0000-4000-8000-000000000002',
+    'e0000000-0000-4000-8000-000000000001')::text,
+  'supervised', 'someone blocked out can still be added'
+);
+select is(
+  (select c.blocked_out from public.event_conflicts((select id from ctx where key = 'event')) c
+     join public.event_assignments a on a.id = c.assignment_id
+    where a.position_id = (select id from ctx where key = 'pos2')),
+  'Away', 'and the service page warns with their blockout note'
 );
 reset role;
+delete from public.event_assignments where position_id = (select id from ctx where key = 'pos2');
 select pg_temp.act_as('e0000000-0000-4000-8000-000000000002');
 select public.remove_unavailability((select id from public.unavailability where user_id = 'e0000000-0000-4000-8000-000000000002'));
 reset role;
@@ -181,11 +198,16 @@ select is(
   public.assign_to_position((select id from ctx where key = 'pos5'), 'e0000000-0000-4000-8000-000000000001')::text,
   'approved', 'scheduled in the morning'
 );
-select throws_ok(
-  $$ select public.assign_to_position((select id from ctx where key = 'pos6'), 'e0000000-0000-4000-8000-000000000001') $$,
-  'P0001', 'schedule_conflict', 'not a second position the same day'
+select is(
+  public.assign_to_position((select id from ctx where key = 'pos6'), 'e0000000-0000-4000-8000-000000000001')::text,
+  'approved', 'a second position the same day is allowed, with a warning'
+);
+select is(
+  (select c.serving_elsewhere from public.event_conflicts((select id from public.events where title = 'Fake evening')) c),
+  'Fake switcher (Fake morning)', 'the warning names the other position and service'
 );
 reset role;
+delete from public.event_assignments where position_id = (select id from ctx where key = 'pos6');
 
 -- Taken off the team: no longer offered or scheduled.
 select pg_temp.act_as('e0000000-0000-4000-8000-000000000004');

@@ -132,11 +132,6 @@ export const unavailabilitySchema = z
     message: "The last day can't be before the first.",
   });
 
-export const overrideReasonSchema = z
-  .string()
-  .trim()
-  .max(300, "Keep the reason under 300 characters.");
-
 // ---------------------------------------------------------------------------
 // Labels
 // ---------------------------------------------------------------------------
@@ -173,10 +168,69 @@ export function candidateLabel(candidate: {
   const notes = [
     candidate.approved ? "trained" : "still learning",
     candidate.conflict ? "already serving that day" : null,
-    candidate.unavailable ? "unavailable that day" : null,
+    candidate.unavailable ? "blocked out that day" : null,
   ].filter(Boolean);
   return `${candidate.name} (${notes.join(", ")})`;
 }
+
+// ---------------------------------------------------------------------------
+// Positions with several places
+// ---------------------------------------------------------------------------
+
+type Place = {
+  roleId: string;
+  roleName: string;
+  departmentName: string;
+  assignment: { status: AssignmentStatus } | null;
+};
+
+export type PositionGroup<T extends Place> = {
+  roleId: string;
+  roleName: string;
+  departmentName: string;
+  places: T[];
+  /** Places held by someone who hasn't declined. */
+  filled: number;
+};
+
+/**
+ * A service's places grouped by position, in the order they first appear: "Camera 2, 1 of 2
+ * filled". Each place holds one person.
+ */
+export function groupPlaces<T extends Place>(places: readonly T[]): PositionGroup<T>[] {
+  const groups = new Map<string, PositionGroup<T>>();
+  for (const place of places) {
+    const group = groups.get(place.roleId) ?? {
+      roleId: place.roleId,
+      roleName: place.roleName,
+      departmentName: place.departmentName,
+      places: [],
+      filled: 0,
+    };
+    group.places.push(place);
+    if (place.assignment?.status === "pending" || place.assignment?.status === "confirmed") {
+      group.filled += 1;
+    }
+    groups.set(place.roleId, group);
+  }
+  return [...groups.values()];
+}
+
+/** "Not sent yet" until the scheduler sends the request, then the reply. */
+export function assignmentStatusLabel(assignment: {
+  status: AssignmentStatus;
+  requestSent: boolean;
+}): string {
+  return assignment.status === "pending" && !assignment.requestSent
+    ? "Not sent yet"
+    : ASSIGNMENT_STATUS_LABELS[assignment.status];
+}
+
+export const sendRequestsSchema = z.object({
+  eventId: z.uuid(),
+  assignmentIds: z.array(z.uuid()).min(1, "Tick at least one person."),
+  message: z.string().trim().max(500, "Keep the message under 500 characters."),
+});
 
 // ---------------------------------------------------------------------------
 // Errors from the database

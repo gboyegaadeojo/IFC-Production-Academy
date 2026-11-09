@@ -104,8 +104,9 @@ select public.assign_to_position((select id from ctx where key = 'soon2'), 'f100
   'f1000000-0000-4000-8000-000000000003');
 select public.assign_to_position((select id from ctx where key = 'later1'), 'f1000000-0000-4000-8000-000000000003');
 reset role;
--- Scheduled a week ago.
-update public.event_assignments set assigned_at = now() - interval '7 days';
+-- Scheduled and asked a week ago.
+update public.event_assignments set assigned_at = now() - interval '7 days',
+  request_sent_at = now() - interval '7 days';
 
 select public.queue_reminders();
 select is(pg_temp.count_for('f1000000-0000-4000-8000-000000000001', 'serving_reminder'), 0,
