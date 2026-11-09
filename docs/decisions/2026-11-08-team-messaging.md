@@ -180,6 +180,14 @@ Small pull requests, each with lint, typecheck and tests passing:
 8. The cleanup job and the backup change, with the backups runbook.
 9. Polish, the guide, and help.
 
+## Built (2026-11-09)
+
+Every step of the build order is done, each in its own pull request: the feature flag and the
+migration order rule (#198), the database (#199), live text chat (#200), private direct messages
+(#202), photos, GIFs and documents (#203), the cleanup, backups and free-plan warnings (#204),
+notifications (#205), and the polish: earlier messages, and who's in a chat, with adding, removing
+and leaving for groups of chosen people.
+
 ## G's answers (2026-11-08)
 
 1. **Start now.** Messaging is built alongside the pilot and stays switched off until G turns it on.

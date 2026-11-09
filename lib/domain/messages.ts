@@ -53,6 +53,9 @@ export type ChatMessage = {
   attachments?: ChatAttachment[];
 };
 
+/** Someone in a chat, for its people panel. */
+export type ChatPerson = { userId: string; name: string; isLeader: boolean };
+
 export type MessagingPerson = {
   userId: string;
   name: string;

@@ -1903,6 +1903,23 @@ export type Database = {
           attachments: Json;
         }[];
       };
+      conversation_messages_before: {
+        Args: { p_conversation_id: string; p_before: string; p_limit?: number };
+        Returns: Database["public"]["Functions"]["conversation_messages"]["Returns"];
+      };
+      conversation_people: {
+        Args: { p_conversation_id: string };
+        Returns: { user_id: string; display_name: string; is_leader: boolean }[];
+      };
+      add_group_members: {
+        Args: { p_conversation_id: string; p_user_ids: string[] };
+        Returns: number;
+      };
+      remove_group_member: {
+        Args: { p_conversation_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      leave_group: { Args: { p_conversation_id: string }; Returns: undefined };
       messaging_people: {
         Args: Record<string, never>;
         Returns: {
