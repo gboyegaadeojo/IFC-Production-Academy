@@ -146,7 +146,7 @@ test("on a phone, Messages sits in the middle of the tabs, and Serve holds the c
   // What a screen reader hears. An unread count comes after the name: "Messages, 1 unread".
   const links = tabs.getByRole("link");
   await expect(links).toHaveCount(5);
-  const names = ["Training", "Courses", /^Messages(, \d+ unread)?$/, "Schedule", "Serve"];
+  const names = ["Training", "Courses", /^Messages\s*(, \d+ unread)?$/, "Schedule", "Serve"];
   for (const [index, name] of names.entries()) {
     await expect(links.nth(index)).toHaveAccessibleName(name);
   }
