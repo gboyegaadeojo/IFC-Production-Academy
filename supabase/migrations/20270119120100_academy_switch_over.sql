@@ -256,10 +256,15 @@ begin
   if v_current = p_source then
     return;
   end if;
-  update public.organizations o set scheduling_source = p_source where o.id = v_org;
-  v_counts := case when p_source = 'academy'
-                   then private.copy_from_planning_center(v_org)
-                   else private.hand_back_to_planning_center(v_org) end;
+  -- The copy and the hand back change schedule rows, which only the Academy may do while it
+  -- schedules: so switch first when taking over, and hand back before switching back.
+  if p_source = 'academy' then
+    update public.organizations o set scheduling_source = p_source where o.id = v_org;
+    v_counts := private.copy_from_planning_center(v_org);
+  else
+    v_counts := private.hand_back_to_planning_center(v_org);
+    update public.organizations o set scheduling_source = p_source where o.id = v_org;
+  end if;
   insert into public.audit_events (organization_id, actor_id, action, target_table, target_id, metadata)
   values (v_org, (select auth.uid()),
     case when p_source = 'academy' then 'scheduling.switched_to_academy'
