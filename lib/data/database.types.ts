@@ -2459,7 +2459,8 @@ export type Database = {
         | "quiz_attempt_granted"
         | "assignment_cancelled"
         | "mentoring_ended"
-        | "course_unassigned";
+        | "course_unassigned"
+        | "message";
       onboarding_step_kind:
         | "trigger_form"
         | "trigger_manual"

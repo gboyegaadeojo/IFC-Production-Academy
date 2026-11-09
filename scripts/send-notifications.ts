@@ -141,6 +141,9 @@ async function main(): Promise<void> {
   const serving = await rpc<number>(supabaseUrl, serviceKey, "queue_serving_reminders", {});
   const cover = await rpc<number>(supabaseUrl, serviceKey, "queue_cover_reminders", {});
   console.log(`Reminders checked: ${sopReminders + reminders + serving + cover} due.`);
+  // New messages, one notice per person per chat (ADD-MSG-06). Nothing while messaging is off.
+  const messages = await rpc<number>(supabaseUrl, serviceKey, "queue_message_notifications", {});
+  console.log(`Message notices: ${messages}.`);
   // Freeze the checklist record of services whose day has ended (checklist app US-07b).
   const frozen = await rpc<number>(supabaseUrl, serviceKey, "freeze_service_checklist_records", {});
   console.log(`Checklist records frozen: ${frozen}.`);

@@ -189,6 +189,12 @@ describe("emailChoiceGroups", () => {
   it("offers leading choices only to people who lead", () => {
     expect(emailChoiceGroups(false).map((g) => g.id)).toEqual(["serving", "training"]);
     expect(emailChoiceGroups(true).map((g) => g.id)).toEqual(["serving", "training", "leading"]);
+    // Messages only while messaging is switched on (ADD-MSG-06).
+    expect(emailChoiceGroups(false, true).map((g) => g.id)).toEqual([
+      "serving",
+      "training",
+      "messages",
+    ]);
   });
 });
 

@@ -5,6 +5,7 @@ import { ChevronLeftIcon } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeviceAlerts } from "@/app/(app)/get-the-app/device-alerts";
 import { requireActiveUser } from "@/lib/data/auth";
+import { getFeatureFlags } from "@/lib/data/features";
 import { getMyNotificationChoices, offersLeadingChoices } from "@/lib/data/notifications";
 import {
   emailChoiceGroups,
@@ -58,9 +59,10 @@ export default function NotificationSettingsPage() {
  */
 async function Choices() {
   const user = await requireActiveUser();
-  const [preferences, leads] = await Promise.all([
+  const [preferences, leads, flags] = await Promise.all([
     getMyNotificationChoices(user.id),
     offersLeadingChoices(user.id),
+    getFeatureFlags(),
   ]);
   // A kind with no saved choice is on.
   const choicesFrom = (saved: ReadonlyMap<NotificationKind, boolean>) =>
@@ -70,7 +72,7 @@ async function Choices() {
     >;
   return (
     <NotificationChoices
-      groups={emailChoiceGroups(leads)}
+      groups={emailChoiceGroups(leads, flags.messaging)}
       initial={{ phone: choicesFrom(preferences.phone), email: choicesFrom(preferences.email) }}
     />
   );
