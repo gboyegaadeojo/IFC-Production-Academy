@@ -67,9 +67,13 @@ Nobody else can delete someone's direct messages. Every deletion goes in the aud
 
 ## Being told about new messages
 
-You're told about new messages in your chats a few at a time, never one by one: for example "3 new messages in Camera Operations". A notice for a direct message says who it's from, but not what they wrote. Nothing comes for a chat you've already read, or for messages under two minutes old, in case you're reading them.
+**On your phone, alerts come straight away** when someone sends a message, if you've turned on alerts for your device. Each chat has one alert that updates as more arrive, for example "4 new messages in Camera Operations", so a busy chat doesn't buzz again and again: it waits at least 20 seconds before alerting you again. A direct message alert says who it's from, but never what they wrote.
 
-Choose where these reach you under the bell, then **Settings**, in the **Messages** group: your phone, your email, or the app only. Email comes at most once every 4 hours, and nothing is sent between 20:00 and 08:00.
+You aren't alerted for your own messages, a chat you've muted, or a chat you have open on screen.
+
+**By email**, new messages come a few at a time, at most once every 4 hours, and only if you don't have alerts on a phone.
+
+Choose where these reach you under the bell, then **Settings**, in the **Messages** group: your phone, your email, or the app only. Under the bell they always show. Nothing reaches your phone or email between 20:00 and 08:00.
 
 ## Quieter chats
 

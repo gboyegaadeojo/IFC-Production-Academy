@@ -2,10 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { refresh } from "next/cache";
+import { after as afterResponse } from "next/server";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
 import { searchGifs, type GifSearch } from "@/lib/data/giphy";
+import { sendMessageAlerts } from "@/lib/data/message-alerts";
 import {
   createGroupConversation,
   deleteMessage,
@@ -122,6 +124,8 @@ export async function sendMessageAction(input: {
   if (!sent) {
     return { ok: false, message: "That didn't send. Check your connection and try again." };
   }
+  // Phone alerts go straight away, after the reply, so sending is never slower (ADD-MSG-06).
+  afterResponse(() => sendMessageAlerts(sent));
   return { ok: true, messages: await getMessages(conversationId, after ?? undefined) };
 }
 
