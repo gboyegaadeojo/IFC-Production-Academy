@@ -382,14 +382,17 @@ test("a new member learns, passes the quiz and practical, and is approved to ser
     .getByLabel("Role")
     .selectOption({ label: "Sample role (seed data) (Camera Operations)" });
   await scheduler.getByRole("button", { name: "Add position" }).click();
-  await scheduler.getByText("Schedule someone").click();
+  await scheduler.getByText("Add someone").click();
   await scheduler.getByLabel("Volunteer").selectOption({ label: `${name} (trained)` });
-  await scheduler.getByRole("button", { name: "Schedule", exact: true }).click();
-  // The position now shows who's in it and the check result.
+  await scheduler.getByRole("button", { name: "Add", exact: true }).click();
+  // The place now shows who's in it, not asked yet, then asked once the request is sent.
   const position = scheduler
     .getByRole("region", { name: "Positions" })
     .getByRole("listitem")
-    .filter({ hasText: name });
+    .filter({ hasText: name })
+    .last();
+  await expect(position.getByText("Not sent yet")).toBeVisible();
+  await scheduler.getByRole("button", { name: "Send requests" }).click();
   await expect(position.getByText("Waiting for a reply")).toBeVisible();
   await expect(position.getByText("Trained", { exact: true })).toBeVisible();
   await schedulerContext.close();

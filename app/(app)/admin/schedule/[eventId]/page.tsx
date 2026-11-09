@@ -179,7 +179,7 @@ async function EventContent({ params }: Pick<Props, "params">) {
           <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
             <ActionForm
               action={addPositionAction}
-              submitLabel="Add a position"
+              submitLabel="Add position"
               pendingLabel="Adding…"
               variant="secondary"
               hidden={{ eventId: event.id }}
