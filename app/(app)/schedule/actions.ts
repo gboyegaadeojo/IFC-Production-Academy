@@ -5,6 +5,8 @@ import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
 import * as schedule from "@/lib/data/schedule";
+import { setMyPreferences } from "@/lib/data/auto-schedule";
+import { preferencesSchema } from "@/lib/domain/auto-schedule";
 import { blockoutSchema } from "@/lib/domain/blockouts";
 import { scheduleErrorMessage } from "@/lib/domain/schedule";
 
@@ -62,6 +64,23 @@ export async function addBlockoutAction(_: FormState, formData: FormData): Promi
     status: "done",
     message: "Saved. Schedulers will see you're away, and anyone scheduling you then is told.",
   };
+}
+
+export async function savePreferencesAction(_: FormState, formData: FormData): Promise<FormState> {
+  const input = preferencesSchema.safeParse({
+    maxPerMonth: text(formData.get("maxPerMonth")),
+    householdMemberId: text(formData.get("householdMemberId")),
+    householdMode: text(formData.get("householdMode")) || "together",
+  });
+  if (!input.success || !(await signedIn())) {
+    return { status: "error", message: "Check your choices and try again." };
+  }
+  const result = await setMyPreferences(input.data);
+  if (!result.ok) {
+    return { status: "error", message: "That didn't save. Check your connection and try again." };
+  }
+  refresh();
+  return { status: "done", message: "Saved. Auto-schedule follows these from now on." };
 }
 
 export async function removeUnavailabilityAction(
