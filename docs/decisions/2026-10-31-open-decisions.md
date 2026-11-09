@@ -177,7 +177,7 @@ them. Every reminder can be turned off per person in Notification settings (buil
 | SOP review due | 7 days before (built), and once more 7 days after if still not reviewed | SOP owner |
 | Competency expiring | 30 days before, only where expiry is turned on | Volunteer and department leaders |
 
-**Quiet hours:** no email is sent between **20:00 and 08:00 Winnipeg time**. Anything queued
+**Quiet hours** (removed by G on 2026-11-09; see `2026-11-09-notifications-live.md`): no email is sent between **20:00 and 08:00 Winnipeg time**. Anything queued
 overnight goes at 08:00. Sign-in links ignore quiet hours, because Supabase sends them straight
 away.
 

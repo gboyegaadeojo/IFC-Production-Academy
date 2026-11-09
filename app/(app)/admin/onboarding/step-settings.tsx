@@ -140,11 +140,7 @@ export function StepSettings({
                 className={fieldClasses}
               />
             </Field>
-            <Field
-              id={id("body")}
-              label="Message"
-              hint="{first name} becomes their first name. Emails are held until volunteer emails are switched on at launch."
-            >
+            <Field id={id("body")} label="Message" hint="{first name} becomes their first name.">
               <textarea
                 id={id("body")}
                 name="cfg_body"

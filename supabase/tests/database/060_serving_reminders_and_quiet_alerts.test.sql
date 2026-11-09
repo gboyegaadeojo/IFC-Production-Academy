@@ -1,5 +1,5 @@
 -- Serving reminders for Planning Center's services, the morning-of and assigned-course reminders,
--- quiet hours for phones, and one learning reminder a day.
+-- no quiet hours, and one learning reminder a day.
 begin;
 select no_plan();
 -- Start with the launch switch off, as it was before go-live.
@@ -12,9 +12,8 @@ begin
 end;
 $$;
 
--- Quiet hours, at fixed times: well away from either edge, whichever offset the time zone uses.
-select is(private.is_quiet_hour('2026-11-05T18:00:00Z'), false, 'midday isn''t quiet');
-select is(private.is_quiet_hour('2026-11-05T08:00:00Z'), true, 'the small hours are quiet');
+-- No quiet hours (G, 2026-11-09): alerts are never held for the time of day.
+select is(private.alerts_held_now(), false, 'nothing is held for the time of day');
 
 -- The morning of: only on the day, from 08:00, until it starts.
 select is(private.serving_today_due('2026-11-08T22:00:00Z', '2026-11-08T18:00:00Z'), true,

@@ -58,8 +58,8 @@ sends the alerts with the VAPID keys. Both are Cloudflare secrets already set fo
   ("4 new messages in Camera Operations"), and at most one every 20 seconds per person per chat.
 - **Privacy:** a direct message alert says who it's from, never the words. Group and department chat
   alerts show the start of the message.
-- **Rules that still apply:** quiet hours (20:00 to 08:00), the launch switch (on since 2026-11-09),
-  and nothing while messaging is off.
+- **Rules that still apply:** the launch switch (on since 2026-11-09) and nothing while messaging
+  is off. There are no quiet hours (removed 2026-11-09).
 - **Logs:** counts only ("Message alerts: 3 sent, 0 devices gone, 0 failed"), in the Worker's logs.
 
 The 15-minute job still writes message notices for the bell. `private.route_notification()` keeps
@@ -105,16 +105,16 @@ deploy workflow already uses.
    and "Still to start") are limited to one a day per person, and a skipped one is written on a later
    day. An assessment request also notifies the department's trainers the moment it's made.
    Times follow decision 8 in `docs/decisions/2026-10-31-open-decisions.md`.
-2. Holds email and device alerts during quiet hours, 20:00 to 08:00 Winnipeg time; they go out at
-   08:00. Sign-in links aren't affected, because Supabase sends them. The Send a test alert button
-   isn't held either, because it isn't a notification.
-3. Claims up to 50 pending emails at a time (`claim_email_notifications`), skipping kinds the
+2. Claims up to 50 pending emails at a time (`claim_email_notifications`), skipping kinds the
    person turned off and accounts that aren't active.
-4. Sends each through Resend and records the result (`complete_email_notification`). A failed
+3. Sends each through Resend and records the result (`complete_email_notification`). A failed
    send is retried on the next runs, up to three attempts.
-
-5. Sends onboarding pathway emails the same way (`claim_onboarding_emails`,
+4. Sends onboarding pathway emails the same way (`claim_onboarding_emails`,
    `complete_onboarding_email`), if onboarding emails are on. See below.
+
+**There are no quiet hours** (G, 2026-11-09, `20270118120200_no_quiet_hours.sql`). Emails and
+alerts go out at any time of day; until then they were held from 20:00 to 08:00 Winnipeg time.
+`private.alerts_held_now()` is where a hold would go back if it's ever wanted.
 
 The job logs counts only: no addresses, names, or content. If every send in a run fails, the job
 fails and the failure alert emails the admins.
@@ -144,18 +144,18 @@ update public.organizations set notifications_live = false;
 ```
 
 This switch doesn't affect sign-in links, or the job alerts and weekly summary that go to the
-admins. Onboarding emails have their own switch, below, and it's still off.
+admins. Onboarding emails have their own switch, below.
 
 ## Onboarding emails
 
-These go to people on a pathway, who may not have an account yet. They're off until launch: while
-`organizations.onboarding_emails_enabled` is false, each email is written to `onboarding_outbox`
-as `held` and nothing is sent.
+These go to people on a pathway, who may not have an account yet. **On since 2026-11-09**
+(`20270118120200_no_quiet_hours.sql`): new emails are written to `onboarding_outbox` as `pending`
+and go out on the next run.
 
-To turn them on, at launch only, set `organizations.onboarding_emails_enabled` to true. From then
-on, new emails are written as `pending` and go out on the next run, outside quiet hours.
+While `organizations.onboarding_emails_enabled` is false, each email is written as `held` and
+nothing is sent. To hold them again, set it to false.
 
-- **Emails held before that stay held.** They aren't sent when you switch on, so nobody gets a
+- **Emails held before 2026-11-09 stay held.** They aren't sent when you switch on, so nobody gets a
   welcome written for them weeks ago. Look through them and contact anyone who still needs one.
 - **Someone whose account is suspended or deactivated isn't emailed.** Their email is marked
   `skipped`.

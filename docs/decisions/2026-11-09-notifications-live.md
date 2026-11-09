@@ -11,11 +11,14 @@ A first group of volunteers starts using the Academy from 2026-11-10. They need 
 
 - **The launch switch is on,** `organizations.notifications_live = true`, set by
   `20270118120000_notifications_live.sql`. Everyone with an account gets email and phone alerts as
-  they've chosen, with quiet hours (20:00 to 08:00) as before.
+  they've chosen.
+- **No quiet hours** (later the same day). Emails and phone alerts go out at any time of day; they
+  were held from 20:00 to 08:00 Winnipeg time (decision 8 in `2026-10-31-open-decisions.md`).
+  Phones have their own Do Not Disturb. Set by `20270118120200_no_quiet_hours.sql`.
 - **What was held stays held.** Notifications written before today were marked `skipped`, so
   nobody gets old notices.
-- **Onboarding emails stay off.** They go to people on a pathway who may not have an account, and
-  keep their own switch, `organizations.onboarding_emails_enabled`.
+- **Onboarding emails are on** (later the same day), `organizations.onboarding_emails_enabled =
+  true`, in the same migration. Emails written while they were off stay `held` and aren't sent.
 - `notification_testers` stays, in case the switch is turned off again.
 - **Messages are never emailed,** only sent as phone alerts and shown under the bell. G didn't want
   "New message from…" emails. This replaces the 4-hourly message email in

@@ -254,23 +254,6 @@ const WINNIPEG_SHORT_DATE = new Intl.DateTimeFormat("en-CA", {
   day: "numeric",
 });
 
-const WINNIPEG_HOUR = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
-  hour: "numeric",
-  hour12: false,
-});
-
-/**
- * Quiet hours (decision 8): no notification email between 20:00 and 08:00 Winnipeg time. Anything
- * queued overnight goes out at 08:00. Sign-in links aren't affected: Supabase sends them directly.
- */
-export function isQuietHours(now: Date): boolean {
-  // Read the hour field itself: the formatted string differs between runtimes ("07" or "7 a.m.").
-  const part = WINNIPEG_HOUR.formatToParts(now).find((p) => p.type === "hour");
-  const hour = Number(part?.value) % 24;
-  return hour >= 20 || hour < 8;
-}
-
 export function isNotificationKind(value: string): value is NotificationKind {
   return Object.hasOwn(NOTIFICATION_KIND_LABELS, value);
 }
