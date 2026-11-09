@@ -107,7 +107,8 @@ select is(
   (select title from public.calendar_feed((select token from feed))),
   'Fake files Sunday', 'a calendar app reads her serving with the link, without signing in');
 select is_empty($$ select 1 from public.calendar_feed(repeat('0', 48)) $$, 'a wrong link reads nothing');
-select is_empty($$ select 1 from public.calendar_feeds $$, 'and nobody reads the links themselves');
+select throws_ok($$ select 1 from public.calendar_feeds $$, '42501', null,
+  'and nobody reads the links themselves');
 reset role;
 
 select pg_temp.act_as('a8200000-0000-4000-8000-000000000002');
