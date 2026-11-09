@@ -46,7 +46,7 @@ reset role;
 
 select pg_temp.act_as('a7300000-0000-4000-8000-000000000001');
 select throws_ok(
-  $$ insert into public.service_types (name, start_time) values ('Fake Switch Sunday', '10:30') $$,
+  $$ select public.save_service_type(null, 'Fake Switch Sunday', '10:30', 90, '', '') $$,
   'P0001', 'managed_in_planning_center',
   'service types cannot be added in the Academy while Planning Center schedules');
 reset role;
@@ -55,7 +55,7 @@ reset role;
 select pg_temp.act_as('a7300000-0000-4000-8000-000000000001');
 select lives_ok($$ select public.set_scheduling_source('academy') $$, 'the scheduler switches to the Academy');
 select lives_ok(
-  $$ insert into public.service_types (name, start_time) values ('Fake Switch Sunday', '10:30') $$,
+  $$ select public.save_service_type(null, 'Fake Switch Sunday', '10:30', 90, '', '') $$,
   'service types can be added once the Academy schedules');
 reset role;
 
