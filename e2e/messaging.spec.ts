@@ -143,14 +143,13 @@ test("on a phone, Messages sits in the middle of the tabs, and Serve holds the c
   await signInByEmail(page, "blake.volunteer@example.com");
   await page.goto("/messages");
   const tabs = page.getByRole("navigation", { name: "Academy" }).filter({ visible: true });
-  await expect(tabs.getByRole("link")).toHaveText([
-    "Training",
-    "Courses",
-    // The unread count, when there is one, comes after the name: "Messages, 1 unread".
-    /^Messages(, \d+ unread)?$/,
-    "Schedule",
-    "Serve",
-  ]);
+  // What a screen reader hears. An unread count comes after the name: "Messages, 1 unread".
+  const links = tabs.getByRole("link");
+  await expect(links).toHaveCount(5);
+  const names = ["Training", "Courses", /^Messages(, \d+ unread)?$/, "Schedule", "Serve"];
+  for (const [index, name] of names.entries()) {
+    await expect(links.nth(index)).toHaveAccessibleName(name);
+  }
   await expect(tabs.getByRole("link", { name: "Messages" })).toHaveAttribute(
     "aria-current",
     "page",
