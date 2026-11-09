@@ -29,6 +29,9 @@ export const CAPABILITIES = [
   "dashboard.manage",
   "branding.manage",
   "feature.manage",
+  "message.moderate",
+  "message.review",
+  "message.group_create",
   "topic.create",
   "topic.manage",
 ] as const;

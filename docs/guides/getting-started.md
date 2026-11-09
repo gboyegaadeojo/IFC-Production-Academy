@@ -25,6 +25,9 @@ The side bar on the left has these places, each an icon with its name. On a phon
 | **Schedule** | When you're serving, and who with | [Schedule](schedule.md) |
 | **Checklist** | What to do before and after this service | [Checklist](checklist.md) |
 | **SOPs** | The team's written procedures | [SOPs](sops.md) |
+| **Messages** | Chats with your department, groups, and anyone in the Academy, once it's switched on | [Messages](messages.md) |
+
+When Messages is switched on, it sits after **Schedule** in the side bar, and in the middle of the bar along the bottom of a phone. On a phone, **Checklist** and **SOPs** then share one tab, **Serve**, which opens the checklist and has an **SOPs** button at the top.
 
 If you're on a production team and using a computer, you also get the [Service Dashboard](service-dashboard.md).
 

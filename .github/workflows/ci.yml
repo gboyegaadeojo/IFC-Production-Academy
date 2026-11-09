@@ -102,9 +102,10 @@ jobs:
           cache: npm
       - run: npm ci
 
-      # Storage stays on: SOP files are uploaded and opened in the end-to-end tests.
+      # Storage stays on: SOP files are uploaded and opened in the end-to-end tests. Realtime stays on
+      # for live messages (team messaging decision, 2026-11-08).
       - name: Start local Supabase (migrations and fake seed data)
-        run: npx supabase start -x realtime,imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+        run: npx supabase start -x imgproxy,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
 
       - name: Database tests (pgTAP, row-level security)
         run: npx supabase test db

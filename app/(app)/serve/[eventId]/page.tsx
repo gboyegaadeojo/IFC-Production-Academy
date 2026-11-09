@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AutoRefresh } from "@/components/checklist/auto-refresh";
@@ -8,7 +9,7 @@ import { TabIdField } from "@/components/checklist/tab-id";
 import { ActionForm } from "@/components/ui/action-form";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { EmptyState } from "@/components/ui/empty-state";
-import { InfoIcon } from "@/components/ui/icons";
+import { FileTextIcon, InfoIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -94,7 +95,17 @@ async function ServeContent({ params, searchParams }: Pick<Props, "params" | "se
             ) : null}
           </div>
         </div>
-        {data && team.total > 0 ? <TeamRing done={team.done} total={team.total} /> : null}
+        <div className="flex items-center gap-4">
+          {/* Serve holds the checklist and the SOPs on phones (G, 2026-11-08). */}
+          <Link
+            href="/sops"
+            className="flex min-h-touch items-center gap-1.5 rounded-pill bg-accent-soft px-3.5 text-small font-semibold text-accent-light"
+          >
+            <FileTextIcon className="size-4" />
+            SOPs
+          </Link>
+          {data && team.total > 0 ? <TeamRing done={team.done} total={team.total} /> : null}
+        </div>
       </header>
 
       {service.notPublished && !service.cancelled ? <Notice>{NOT_PUBLISHED_NOTE}</Notice> : null}
