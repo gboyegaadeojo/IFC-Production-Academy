@@ -90,6 +90,10 @@ insert into ctx (key, id) values ('doc', public.send_message((select id from ctx
   jsonb_build_array(jsonb_build_object('kind', 'document', 'full_path', (select path from ctx where key = 'camera') || 'd1/file.pdf',
     'file_name', 'Fake run sheet.pdf', 'mime_type', 'application/pdf', 'bytes', 240000))));
 select ok((select id from ctx where key = 'doc') is not null, 'a PDF sends');
+-- Everything here happens in one instant, so make the document clearly the latest.
+reset role;
+update public.messages set created_at = now() + interval '1 second' where id = (select id from ctx where key = 'doc');
+select pg_temp.act_as('a8400000-0000-4000-8000-000000000001');
 select is((select last_attachment_kind from public.my_conversations() where id = (select id from ctx where key = 'camera')),
   'document', 'and the list knows the last message carried a document');
 
