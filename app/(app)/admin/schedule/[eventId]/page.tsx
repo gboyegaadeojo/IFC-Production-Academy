@@ -125,7 +125,7 @@ async function EventContent({ params }: Pick<Props, "params">) {
         >
           <ActionForm
             action={setEventReminderAction}
-            submitLabel="Save"
+            submitLabel="Save reminder"
             pendingLabel="Saving…"
             variant="secondary"
             hidden={{ eventId: event.id }}

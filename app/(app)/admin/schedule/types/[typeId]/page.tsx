@@ -92,7 +92,7 @@ async function ServiceTypeContent({ params }: Pick<Props, "params">) {
         </div>
         <ActionForm
           action={setTypeReminderAction}
-          submitLabel="Save"
+          submitLabel="Save reminder"
           pendingLabel="Saving…"
           variant="secondary"
           hidden={{ typeId: type.id }}
