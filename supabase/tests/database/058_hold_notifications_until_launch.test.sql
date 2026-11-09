@@ -38,8 +38,9 @@ select is((select push_status from public.notifications where dedupe_key = 'held
   'and the device alert');
 
 set local role service_role;
-select is((select array_agg(email) from public.claim_email_notifications(50)), array['held.tester@example.com'],
-  'the email job only ever gets the tester''s');
+-- Seed data written with the switch on may also be waiting, so look only at these two.
+select is((select array_agg(email) from public.claim_email_notifications(50) where email like 'held.%'),
+  array['held.tester@example.com'], 'the email job only ever gets the tester''s');
 select is((select array_agg(endpoint) from public.claim_push_batch(50)), null::text[],
   'and a new notification waits a minute for the device job, as before');
 reset role;
