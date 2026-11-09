@@ -124,6 +124,15 @@ test("a direct message is private, and a leader makes an everyone chat", async (
   await expect(
     leader.getByRole("heading", { level: 1, name: `Fake everyone ${stamp}` }),
   ).toBeVisible();
+  // Who's in it: everyone in the Academy, so nobody is added or removed by hand.
+  await leader.getByRole("button", { name: "Chat settings" }).click();
+  await leader.getByRole("button", { name: /People in this chat/ }).click();
+  const people = leader.getByRole("dialog", { name: "People in this chat" });
+  await expect(
+    people.getByText("Everyone in the Academy. New people join automatically."),
+  ).toBeVisible();
+  await expect(people.getByText("Casey Example")).toBeVisible();
+  await expect(people.getByRole("button", { name: /^Remove/ })).toHaveCount(0);
   await leaderContext.close();
 
   // Everyone can read it.

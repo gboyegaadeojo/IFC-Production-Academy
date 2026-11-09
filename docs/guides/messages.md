@@ -71,6 +71,16 @@ You're told about new messages in your chats a few at a time, never one by one: 
 
 Choose where these reach you under the bell, then **Settings**, in the **Messages** group: your phone, your email, or the app only. Email comes at most once every 4 hours, and nothing is sent between 20:00 and 08:00.
 
+## Earlier messages and who's in a chat
+
+A chat opens on its latest messages. To read further back, scroll to the top and choose **Show earlier messages**.
+
+To see who's in a chat, choose the **…** at the top right, then **People in this chat**. Leaders have a **Leader** label.
+
+- **Department chats** follow the department: joining it, or being on one of its serving teams, puts you in.
+- **Everyone in the Academy** includes everyone, and new people join automatically.
+- **Group chats of chosen people:** the person who made the group can add people (find them under **Add someone**) and remove them. Anyone in the group can choose **Leave this group**. Someone who leaves or is removed can't read it any more. Adding, removing and leaving go in the audit log.
+
 ## Quieter chats
 
 Choose the **…** at the top right of a chat, then **Mute notifications**, to stop being told about that chat. Muted chats don't add to the number on Messages.

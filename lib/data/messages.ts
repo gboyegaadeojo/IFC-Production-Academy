@@ -5,6 +5,7 @@ import {
   isConversationKind,
   unreadTotal,
   type ChatMessage,
+  type ChatPerson,
   type ConversationDetails,
   type ConversationSummary,
   type MessagingPerson,
@@ -146,8 +147,15 @@ export async function getMessages(id: string, after?: string): Promise<ChatMessa
   if (error) {
     throw new Error("Could not load messages", { cause: error.code });
   }
-  // Thumbnails only; a full photo or a document gets its own link when it's opened.
-  const thumbs = data.flatMap((row) =>
+  return withThumbnails(supabase, data);
+}
+
+/** Thumbnails only; a full photo or a document gets its own link when it's opened. */
+async function withThumbnails(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  rows: MessageRow[],
+): Promise<ChatMessage[]> {
+  const thumbs = rows.flatMap((row) =>
     storedAttachments(row.attachments).flatMap((item) =>
       item.thumb_path ? [item.thumb_path] : [],
     ),
@@ -163,7 +171,59 @@ export async function getMessages(id: string, after?: string): Promise<ChatMessa
       }
     }
   }
-  return data.map((row) => toMessage(row, links));
+  return rows.map((row) => toMessage(row, links));
+}
+
+/** Up to 60 messages before a time, oldest first: "Show earlier messages". */
+export async function getEarlierMessages(id: string, before: string): Promise<ChatMessage[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("conversation_messages_before", {
+    p_conversation_id: id,
+    p_before: before,
+  });
+  if (error) {
+    throw new Error("Could not load messages", { cause: error.code });
+  }
+  return withThumbnails(supabase, data);
+}
+
+/** Who's in a chat: names only, for people who can read it. */
+export async function getConversationPeople(id: string): Promise<ChatPerson[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("conversation_people", { p_conversation_id: id });
+  if (error) {
+    throw new Error("Could not load people", { cause: error.code });
+  }
+  return data.map((row) => ({
+    userId: row.user_id,
+    name: row.display_name,
+    isLeader: row.is_leader,
+  }));
+}
+
+/** Adds people to a group of chosen people. Audited by the database. Null if refused. */
+export async function addGroupMembers(id: string, userIds: string[]): Promise<number | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("add_group_members", {
+    p_conversation_id: id,
+    p_user_ids: userIds,
+  });
+  return error ? null : data;
+}
+
+export async function removeGroupMember(id: string, userId: string): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("remove_group_member", {
+    p_conversation_id: id,
+    p_user_id: userId,
+  });
+  return !error;
+}
+
+export async function leaveGroup(id: string): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("leave_group", { p_conversation_id: id });
+  return !error;
 }
 
 /**

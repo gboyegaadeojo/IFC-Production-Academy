@@ -7,10 +7,15 @@ import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
 import { searchGifs, type GifSearch } from "@/lib/data/giphy";
 import {
+  addGroupMembers,
   createGroupConversation,
   deleteMessage,
   getAttachmentLink,
+  getConversationPeople,
+  getEarlierMessages,
   getMessages,
+  leaveGroup,
+  removeGroupMember,
   getMessagesUnread,
   markConversationRead,
   readFirstBytes,
@@ -26,7 +31,12 @@ import {
   MAX_PHOTOS,
   type OutgoingAttachment,
 } from "@/lib/domain/chat-files";
-import { groupTitleSchema, MESSAGE_MAX_LENGTH, type ChatMessage } from "@/lib/domain/messages";
+import {
+  groupTitleSchema,
+  MESSAGE_MAX_LENGTH,
+  type ChatMessage,
+  type ChatPerson,
+} from "@/lib/domain/messages";
 
 // Team messaging (ADD-MSG-01 to 03, 07). Inputs are checked here; the database checks the feature
 // flag, membership, and capabilities, and audits deletions and groups.
@@ -123,6 +133,83 @@ export async function sendMessageAction(input: {
     return { ok: false, message: "That didn't send. Check your connection and try again." };
   }
   return { ok: true, messages: await getMessages(conversationId, after ?? undefined) };
+}
+
+/** Up to 60 messages before the oldest shown: "Show earlier messages". */
+export async function fetchEarlierAction(
+  conversationId: string,
+  before: string,
+): Promise<ChatMessage[]> {
+  const parsed = z
+    .object({ conversationId: id, before: z.iso.datetime({ offset: true }) })
+    .safeParse({ conversationId, before });
+  if (!parsed.success || !(await active())) {
+    return [];
+  }
+  try {
+    return await getEarlierMessages(parsed.data.conversationId, parsed.data.before);
+  } catch {
+    return [];
+  }
+}
+
+/** Who's in a chat, for its people panel. Empty if they can't read it. */
+export async function chatPeopleAction(conversationId: string): Promise<ChatPerson[]> {
+  if (!id.safeParse(conversationId).success || !(await active())) {
+    return [];
+  }
+  try {
+    return await getConversationPeople(conversationId);
+  } catch {
+    return [];
+  }
+}
+
+/** Adds people to a group of chosen people (its maker, or a church-wide moderator). Audited. */
+export async function addGroupMembersAction(
+  conversationId: string,
+  userIds: string[],
+): Promise<{ ok: boolean; message: string }> {
+  const parsed = z
+    .object({ conversationId: id, userIds: z.array(id).min(1).max(200) })
+    .safeParse({ conversationId, userIds });
+  if (!parsed.success || !(await active())) {
+    return { ok: false, message: "Choose someone to add." };
+  }
+  const added = await addGroupMembers(parsed.data.conversationId, parsed.data.userIds);
+  if (added === null) {
+    return {
+      ok: false,
+      message: "That didn't work. Only the person who made the group can add people.",
+    };
+  }
+  refresh();
+  return { ok: true, message: added === 1 ? "Added 1 person." : `Added ${added} people.` };
+}
+
+export async function removeGroupMemberAction(
+  conversationId: string,
+  userId: string,
+): Promise<boolean> {
+  if (!id.safeParse(conversationId).success || !id.safeParse(userId).success || !(await active())) {
+    return false;
+  }
+  const removed = await removeGroupMember(conversationId, userId);
+  if (removed) {
+    refresh();
+  }
+  return removed;
+}
+
+/** Leaves a group of chosen people, then goes back to the list. */
+export async function leaveGroupAction(formData: FormData): Promise<void> {
+  const conversationId = id.safeParse(formData.get("conversationId"));
+  if (!conversationId.success || !(await active())) {
+    return;
+  }
+  if (await leaveGroup(conversationId.data)) {
+    redirect("/messages");
+  }
 }
 
 /** A one-minute link to open a full photo or download a document, for someone in the chat. */
