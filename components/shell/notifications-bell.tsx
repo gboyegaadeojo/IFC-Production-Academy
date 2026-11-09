@@ -45,6 +45,7 @@ export function NotificationsBell({
   const [allRead, setAllRead] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [message, setMessage] = useState("");
+  const [panelLeft, setPanelLeft] = useState<number | null>(null);
   const [pending, startTransition] = useTransition();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -65,6 +66,9 @@ export function NotificationsBell({
       close();
       return;
     }
+    // Beside the side bar, which is narrower when folded to icons.
+    const sidebar = buttonRef.current?.closest("aside");
+    setPanelLeft(sidebar ? sidebar.getBoundingClientRect().right + 8 : null);
     setOpenedOn(pathname);
     setAllRead(false);
     setConfirming(false);
@@ -149,15 +153,29 @@ export function NotificationsBell({
         title="Notifications"
         onClick={toggle}
         className={`relative flex size-10 shrink-0 items-center justify-center rounded-pill transition-surface ${
-          open ? "bg-accent-soft text-accent-light" : "bg-card text-text hover:bg-hover"
+          open
+            ? "bg-accent-soft text-accent-light"
+            : sheet
+              ? "bg-card text-text hover:bg-hover"
+              : "text-text-muted hover:bg-card hover:text-text"
         }`}
       >
         <BellIcon className="size-5" />
         {unreadNow > 0 ? (
-          <span
-            aria-hidden="true"
-            className="absolute top-2 right-2.5 size-2 rounded-pill bg-error ring-2 ring-card"
-          />
+          sheet ? (
+            <span
+              aria-hidden="true"
+              className="absolute top-2 right-2.5 size-2 rounded-pill bg-error ring-2 ring-card"
+            />
+          ) : (
+            // The side bar shows how many (side bar B, G 2026-11-09); the name says it too.
+            <span
+              aria-hidden="true"
+              className="tabular absolute top-0.5 right-0 flex h-[1.125rem] min-w-[1.125rem] items-center justify-center rounded-pill bg-error px-1 text-[0.625rem] leading-none font-bold text-on-accent ring-2 ring-surface"
+            >
+              {unreadNow > 99 ? "99+" : unreadNow}
+            </span>
+          )
         ) : null}
       </button>
       {open
@@ -176,6 +194,7 @@ export function NotificationsBell({
                 role="dialog"
                 aria-labelledby={headingId}
                 tabIndex={-1}
+                style={sheet || panelLeft === null ? undefined : { left: panelLeft }}
                 className={`fixed z-50 flex flex-col overflow-hidden border border-border bg-surface text-text shadow-[0_18px_50px_rgb(0_0_0/0.22)] outline-none print:hidden ${
                   sheet
                     ? "inset-x-0 bottom-0 max-h-[75dvh] rounded-t-[1.375rem] border-b-0 pb-[env(safe-area-inset-bottom)]"

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { cache, Suspense } from "react";
-import { BrandMark, Wordmark } from "@/components/brand";
+import { StackedWordmark, Wordmark } from "@/components/brand";
+import { ACADEMY_SIDEBAR_COOKIE } from "@/lib/domain/appearance";
 import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
@@ -9,7 +11,7 @@ import { adminSections } from "@/lib/domain/admin";
 import { initials } from "@/lib/domain/people";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccountMenu } from "./account-menu";
-import { AcademyNav } from "./academy-nav";
+import { AcademyNav, SidebarFoldButton } from "./academy-nav";
 import { MessagesNavLink } from "./messages-nav";
 import { NotificationsBell } from "./notifications-bell";
 import { ServiceDashboardNavLink } from "./service-dashboard-nav-link";
@@ -31,23 +33,31 @@ export function AcademyHeader() {
 }
 
 /**
- * The learner side bar from 768px (mock 5, approved 2026-11-06): a narrow bar of icons with their
- * names, then light or dark, the bell, and your name at the bottom, which opens the account menu.
+ * The learner side bar from 768px (side bar B, G 2026-11-09): the brand, then each page with its
+ * name in sections, and your name and the bell at the bottom. It folds to icons only, remembered on
+ * this device; data-folded drives the folded look, so server-rendered links follow it too.
  */
-export function AcademySidebar() {
+export async function AcademySidebar() {
+  const folded = (await cookies()).get(ACADEMY_SIDEBAR_COOKIE)?.value === "folded";
   return (
     // Sticky makes the side bar its own layer, so it needs a z-index of its own: without one, the
     // page content painted after it (course posters, cards) covered the account menu opening out.
-    <aside className="sticky top-0 z-30 hidden h-dvh w-24 shrink-0 flex-col items-center gap-3 border-r border-border bg-surface py-4 md:flex print:hidden">
-      <Link
-        href="/home"
-        title="Training"
-        className="flex min-h-touch items-center justify-center rounded-button px-2"
-      >
-        <BrandMark height={28} />
-        <span className="sr-only">Training</span>
-      </Link>
-      <div className="flex min-h-0 w-full flex-1 flex-col items-center overflow-y-auto">
+    <aside
+      data-folded={folded}
+      className="group/sidebar sticky top-0 z-30 hidden h-dvh w-44 shrink-0 flex-col gap-1 border-r border-border bg-surface px-2.5 pt-3.5 pb-3 transition-[width] duration-[var(--duration-base)] ease-standard data-[folded=true]:w-[4.25rem] md:flex print:hidden"
+    >
+      <div className="mb-2 flex min-h-11 items-center justify-between gap-1 group-data-[folded=true]/sidebar:flex-col group-data-[folded=true]/sidebar:justify-center">
+        <Link
+          href="/home"
+          title="Training"
+          className="flex min-h-touch min-w-0 items-center rounded-button px-1"
+        >
+          <StackedWordmark nameClassName="group-data-[folded=true]/sidebar:hidden" />
+          <span className="sr-only">Training</span>
+        </Link>
+        <SidebarFoldButton initialFolded={folded} />
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <AcademyNav
           messages={
             <Suspense fallback={null}>
@@ -61,7 +71,7 @@ export function AcademySidebar() {
           }
         />
       </div>
-      <Suspense fallback={<div className="min-h-36" aria-hidden="true" />}>
+      <Suspense fallback={<div className="min-h-14" aria-hidden="true" />}>
         <Account placement="rail" />
       </Suspense>
     </aside>
@@ -96,14 +106,23 @@ async function Account({ placement }: { placement: "header" | "rail" }) {
     return null;
   }
   const { user, unread, appearance, showAdmin } = account;
+  if (placement === "rail") {
+    // Light or dark lives in the account menu here (side bar B, G 2026-11-09).
+    return (
+      <div className="flex flex-wrap items-center justify-center gap-1 border-t border-border pt-2.5">
+        <AccountMenu
+          displayName={user.displayName}
+          initials={initials(user.displayName)}
+          showAdmin={showAdmin}
+          placement="rail"
+          appearance={appearance}
+        />
+        <NotificationsBell unread={unread} placement="rail" />
+      </div>
+    );
+  }
   return (
-    <div
-      className={
-        placement === "rail"
-          ? "flex flex-col items-center gap-2 border-t border-border pt-3"
-          : "flex items-center gap-2"
-      }
-    >
+    <div className="flex items-center gap-2">
       <ThemeToggle initial={appearance} />
       <NotificationsBell unread={unread} placement={placement} />
       <AccountMenu

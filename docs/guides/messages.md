@@ -4,7 +4,7 @@
 
 ## Finding it
 
-- **On a computer or tablet:** choose **Messages** in the side bar, after **Schedule**.
+- **On a computer or tablet:** choose **Messages** in the side bar, under **Training**.
 - **On a phone:** choose **Messages** in the middle of the bottom bar.
 
 A number on Messages shows how many messages you haven't read. It updates about once a minute, and whenever you move to another page.

@@ -99,6 +99,16 @@
   --duration-base: 200ms;
   --duration-slow: 240ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  /* The phone tab bar's pill: a small overshoot as it lands (phone bar A, G 2026-11-09). */
+  --duration-spring: 380ms;
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /*
+   * The phone tab bar floats with a gap beneath it: 12px above the screen's edge, or tucked just
+   * inside an iPhone's home bar area. Pages leave this much room at the bottom.
+   */
+  --tab-bar-gap: max(0.75rem, calc(env(safe-area-inset-bottom) - 0.5rem));
+  --tab-bar-space: calc(4rem + var(--tab-bar-gap) + 0.75rem);
 }
 
 /*
@@ -163,6 +173,21 @@
     --duration-fast: 0ms;
     --duration-base: 0ms;
     --duration-slow: 0ms;
+    --duration-spring: 0ms;
+  }
+}
+
+/* Phones: each page fades in and settles as you move between tabs (phone bar A, G 2026-11-09). */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (width < 48rem) and (prefers-reduced-motion: no-preference) {
+  .page-enter {
+    /* Backwards only: once it ends, nothing is left that could move a fixed bar on the page. */
+    animation: page-enter 280ms var(--ease-standard) backwards;
   }
 }
 

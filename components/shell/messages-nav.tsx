@@ -15,7 +15,7 @@ const loadMessages = cache(async (): Promise<{ unread: number } | null> => {
   return { unread: await getMessagesUnread() };
 });
 
-/** Messages in the side bar, after Schedule (G, 2026-11-08), while messaging is on. */
+/** Messages in the side bar, under Training (side bar B, G 2026-11-09), while messaging is on. */
 export async function MessagesNavLink() {
   const messages = await loadMessages();
   if (!messages) {
@@ -28,7 +28,10 @@ export async function MessagesNavLink() {
         label="Messages"
         icon={<MessageIcon className="size-5" />}
         badge={
-          <MessagesBadge initial={messages.unread} className="top-0.5 left-[calc(50%+0.5rem)]" />
+          <MessagesBadge
+            initial={messages.unread}
+            className="shrink-0 group-data-[folded=true]/sidebar:absolute group-data-[folded=true]/sidebar:top-0 group-data-[folded=true]/sidebar:right-1 group-data-[folded=true]/sidebar:ring-2 group-data-[folded=true]/sidebar:ring-surface"
+          />
         }
       />
     </li>

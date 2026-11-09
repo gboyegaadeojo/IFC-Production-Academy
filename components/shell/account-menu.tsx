@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { helpHrefFor } from "@/lib/domain/help";
 import { HELP_ADMIN_PATHS } from "@/lib/domain/admin";
 import { useEffect, useId, useRef, useState } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import type { Appearance } from "@/lib/domain/appearance";
 import {
   BellIcon,
   ChevronRightIcon,
@@ -29,6 +31,7 @@ export function AccountMenu({
   unread = 0,
   placement = "header",
   compact = false,
+  appearance,
 }: {
   displayName: string;
   initials: string;
@@ -36,12 +39,15 @@ export function AccountMenu({
   /** Unread notifications. Only Admin passes it, since it has no bell. */
   unread?: number;
   /**
-   * The phone bar (initials only), the learner side bar (initials over the first name, opening
-   * sideways), or the admin sidebar's footer (opening upwards, or sideways when it's icons only).
+   * The phone bar (initials only), the learner side bar (your name beside the initials, opening
+   * upwards, or sideways when the side bar is folded), or the admin sidebar's footer (opening
+   * upwards, or sideways when it's icons only).
    */
   placement?: "header" | "rail" | "sidebar";
   /** Icons-only admin sidebar: just the avatar. */
   compact?: boolean;
+  /** Given where the menu holds the light or dark switch (the learner side bar). */
+  appearance?: Appearance;
 }) {
   const inSidebar = placement === "sidebar";
   const inRail = placement === "rail";
@@ -85,7 +91,12 @@ export function AccountMenu({
   const avatar = `${avatarBase} size-8 text-small`;
 
   return (
-    <div ref={rootRef} className="relative">
+    <div
+      ref={rootRef}
+      className={
+        inRail ? "relative min-w-0 flex-1 group-data-[folded=true]/sidebar:flex-none" : "relative"
+      }
+    >
       <button
         ref={buttonRef}
         type="button"
@@ -99,20 +110,30 @@ export function AccountMenu({
                 compact ? "relative w-11 justify-center" : "w-full px-2"
               }`
             : inRail
-              ? "flex w-20 flex-col items-center gap-1 rounded-card py-1.5 text-text transition-surface hover:bg-card"
+              ? "flex w-full min-w-0 items-center gap-2 rounded-button p-1 text-left text-text transition-surface group-data-[folded=true]/sidebar:justify-center hover:bg-card"
               : "flex min-h-touch items-center rounded-pill text-text"
         }
       >
-        <span aria-hidden="true" className={inSidebar ? avatar : `${avatarBase} size-10 text-body`}>
+        <span
+          aria-hidden="true"
+          className={
+            inSidebar
+              ? avatar
+              : inRail
+                ? `${avatarBase} size-9 text-small`
+                : `${avatarBase} size-10 text-body`
+          }
+        >
           {initials}
         </span>
-        {/* The first name shows under the initials in the side bar; the whole name is always in the label. */}
+        {/* Your name beside the initials in the side bar; the whole name is always in the label. */}
         {inRail ? (
           <span
             aria-hidden="true"
-            className="max-w-full truncate px-1 text-[0.6875rem] font-semibold"
+            className="flex min-w-0 flex-1 flex-col text-[0.5rem] leading-snug group-data-[folded=true]/sidebar:hidden"
           >
-            {displayName.split(" ")[0]}
+            <span className="truncate font-semibold">{displayName}</span>
+            <span className="truncate text-text-muted">Settings, sign out</span>
           </span>
         ) : null}
         <span
@@ -156,7 +177,7 @@ export function AccountMenu({
                 ? "bottom-0 left-full ml-3"
                 : "bottom-full left-0 mb-2"
               : inRail
-                ? "bottom-0 left-full ml-3"
+                ? "bottom-full left-0 mb-2 group-data-[folded=true]/sidebar:bottom-0 group-data-[folded=true]/sidebar:left-full group-data-[folded=true]/sidebar:mb-0 group-data-[folded=true]/sidebar:ml-3"
                 : "right-0 mt-2"
           }`}
         >
@@ -174,6 +195,12 @@ export function AccountMenu({
             <ChevronRightIcon className="size-4 shrink-0 text-text-muted" />
           </Link>
           <ul className="flex flex-col p-1.5">
+            {appearance ? (
+              <li className="flex min-h-touch items-center justify-between gap-3 pr-1 pl-2.5 text-body text-text-secondary">
+                <span aria-hidden="true">Dark mode</span>
+                <ThemeToggle initial={appearance} />
+              </li>
+            ) : null}
             {inAdmin ? (
               <li>
                 <Link href="/notifications" className={item}>
