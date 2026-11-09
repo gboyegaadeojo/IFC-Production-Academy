@@ -33,7 +33,7 @@ If you lose your connection, the chat says **You're offline**. What you write wa
 
 Choose the pencil at the top of the list, find the person, and choose them. You can message anyone in the Academy.
 
-Direct messages are private between the two of you, with one exception, which every direct message shows at the top: the Production Director and Platform Administrators can read direct messages to keep everyone safe. Each time they do, it goes in the audit log.
+Direct messages are private between the two of you. Nobody else can read them, including leaders, the Production Director and Platform Administrators.
 
 ## Group chats
 

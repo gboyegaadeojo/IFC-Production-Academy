@@ -47,7 +47,7 @@ G wants teams to message each other in the Academy, with photos, while staying o
 | --- | --- | --- |
 | Department chat, one per active department, made automatically | People with an active membership of the department, people on its position teams, and people holding `message.moderate` there (Department Leaders, Production Director, Platform Admin) | Anyone their own message; `message.moderate` holders any message in that department's chat |
 | Group chat, made by a leader (added with [G's choice](#gs-choice-of-design-2026-11-08)) | Chosen people, or everyone active in the Academy, kept up to date | Anyone their own message; the person who made it, the Production Director and Platform Admins any message |
-| Direct message | Exactly two people, both active | Each person their own message. The Production Director and Platform Admins can read them for safety (`message.review`, audited each time), but not delete them |
+| Direct message | Exactly two people, both active | Each person their own message. Nobody else reads or deletes them (G, 2026-11-09, replacing answer 3) |
 
 - **Department chats follow membership.** Joining a department, or being removed, changes who can see
   its chat straight away, with no copying of member lists. Someone removed loses access to the
@@ -184,7 +184,11 @@ Small pull requests, each with lint, typecheck and tests passing:
 
 1. **Start now.** Messaging is built alongside the pilot and stays switched off until G turns it on.
 2. **Anyone active can message anyone active** directly.
-3. **Direct messages can be read for safety.** The Production Director and Platform Admins can open
+3. **Replaced on 2026-11-09: direct messages are private.** G decided the Production Director and
+   Platform Admins should not be able to read direct messages. The review function and the
+   `message.review` capability were removed (migration `20270112120000_private_direct_messages`),
+   and the notice in direct messages went with them. The original answer, kept for the record:
+   **Direct messages can be read for safety.** The Production Director and Platform Admins can open
    any direct message (capability `message.review`, not Department Leaders). Every time they open
    one, an audit event records who opened which conversation, and the two people see a line at the
    top of every direct message: "The Production Director and Platform Admins can read direct

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useFormStatus } from "react-dom";
-import { ChevronLeftIcon, ShieldIcon } from "@/components/ui/icons";
+import { ChevronLeftIcon } from "@/components/ui/icons";
 import type { MessagingPerson } from "@/lib/domain/messages";
 import { startDirectAction } from "../actions";
 import { ChatAvatar } from "../chat-avatar";
@@ -61,10 +61,6 @@ export function PeoplePicker({
           </span>
         </Link>
       ) : null}
-      <p className="flex items-center gap-2 rounded-card bg-accent-soft px-3 py-2 text-small text-accent-light">
-        <ShieldIcon className="size-4 shrink-0" />
-        The Production Director and Platform Admins can read direct messages to keep everyone safe.
-      </p>
       <h2 className="mt-1 px-1 text-[0.6875rem] font-bold tracking-[0.06em] text-text-muted uppercase">
         People in the Academy
       </h2>

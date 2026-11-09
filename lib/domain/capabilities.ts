@@ -30,7 +30,6 @@ export const CAPABILITIES = [
   "branding.manage",
   "feature.manage",
   "message.moderate",
-  "message.review",
   "message.group_create",
   "topic.create",
   "topic.manage",
