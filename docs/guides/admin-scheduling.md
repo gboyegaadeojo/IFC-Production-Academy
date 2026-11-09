@@ -12,6 +12,12 @@ The **Planning Center** page is where the two connect.
 - **Not in the Academy yet:** people on a Planning Center team or schedule who haven't signed in. Nothing is sent to them. They get an account the first time they sign in with Planning Center.
 - **Who schedules:** Planning Center, or the Academy's own tools. Leave it on Planning Center unless you've decided to move away from it. While the Academy schedules, Planning Center Services isn't read at all, so nothing there changes the schedule here.
 
+### Switching who schedules
+
+Open **Change this** under Who schedules. Before you switch to the Academy, it shows what will be copied from Planning Center: service types, upcoming services, who's scheduled with their replies, team members, and blockout dates. Choose **Switch to the Academy** and they become the Academy's own, so nothing needs to be typed in again. Past services aren't touched, and nobody is emailed.
+
+Switching back to Planning Center hands those upcoming services back, and the next read updates them from Planning Center. Services you made in the Academy stay. Anything you changed in the Academy meanwhile isn't sent to Planning Center, so make it there too. Each switch is in the audit log.
+
 The setup is in the [Planning Center setup guide](../runbooks/scheduling.md).
 
 ## Serving teams

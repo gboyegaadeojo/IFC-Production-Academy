@@ -75,8 +75,8 @@ export async function setSourceAction(_: FormState, formData: FormData): Promise
     status: "done",
     message:
       source.data === "planning_center"
-        ? "Planning Center schedules. The Academy shows what it reads from there."
-        : "The Academy schedules. Planning Center is no longer read.",
+        ? "Planning Center schedules again. The next read updates upcoming services from there."
+        : "The Academy schedules. What was coming up in Planning Center is copied here.",
   };
 }
 

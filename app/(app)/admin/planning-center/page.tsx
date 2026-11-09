@@ -9,7 +9,9 @@ import {
   getLastRefreshRequest,
   getPcoMapping,
   getSchedulingSource,
+  getSwitchPreview,
   getUnlinkedPlaces,
+  type SwitchPreview,
   pcoRefreshEnabled,
   type UnlinkedPlace,
 } from "@/lib/data/planning-center";
@@ -51,12 +53,13 @@ async function PlanningCenterContent() {
     return <AccessDenied />;
   }
   const canRefresh = pcoRefreshEnabled();
-  const [mapping, source, roles, unlinked, lastRequest] = await Promise.all([
+  const [mapping, source, roles, unlinked, lastRequest, preview] = await Promise.all([
     getPcoMapping(),
     getSchedulingSource(),
     getSchedulableRoles(grants),
     getUnlinkedPlaces(),
     canRefresh ? getLastRefreshRequest() : Promise.resolve(null),
+    getSwitchPreview(),
   ]);
   // Asked for since the last read finished: the run is still under way.
   const refreshing =
@@ -129,24 +132,7 @@ async function PlanningCenterContent() {
           ? "Volunteers accept, decline, and block out dates there, and the Academy shows it."
           : "The Academy schedules with its own tools. Planning Center Services isn't read, so nothing there changes the schedule here."}
       </p>
-      <details>
-        <summary className="flex min-h-control cursor-pointer items-center text-small font-medium">
-          Change this
-        </summary>
-        <div className="mt-1">
-          <ActionForm
-            action={setSourceAction}
-            submitLabel={
-              source === "planning_center"
-                ? "Schedule in the Academy instead"
-                : "Schedule in Planning Center"
-            }
-            pendingLabel="Saving…"
-            variant="secondary"
-            hidden={{ source: source === "planning_center" ? "academy" : "planning_center" }}
-          />
-        </div>
-      </details>
+      {preview ? <SwitchSource source={source} preview={preview} /> : null}
     </section>
   );
 
@@ -281,5 +267,79 @@ function UnlinkedPlaces({ places }: { places: UnlinkedPlace[] }) {
         </div>
       ))}
     </section>
+  );
+}
+
+const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+
+/**
+ * Changing who schedules. Switching to the Academy copies what's coming up from Planning Center;
+ * switching back hands it back. Past services aren't touched, and nobody is emailed.
+ */
+function SwitchSource({
+  source,
+  preview,
+}: {
+  source: "academy" | "planning_center";
+  preview: SwitchPreview;
+}) {
+  const toAcademy = source === "planning_center";
+  return (
+    <details>
+      <summary className="flex min-h-control cursor-pointer items-center text-small font-medium">
+        Change this
+      </summary>
+      <div className="mt-1 flex flex-col gap-3">
+        {toAcademy ? (
+          <>
+            <p className="text-small text-text-secondary">
+              The Academy copies what&apos;s coming up from Planning Center, so nothing needs to be
+              typed in again:
+            </p>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-small">
+              <dt className="text-text-muted">Service types</dt>
+              <dd>{preview.serviceTypes}</dd>
+              <dt className="text-text-muted">Upcoming services</dt>
+              <dd>{preview.services}</dd>
+              <dt className="text-text-muted">Who&apos;s scheduled</dt>
+              <dd>
+                {plural(
+                  preview.assignments,
+                  "person, with their reply",
+                  "people, with their replies",
+                )}
+              </dd>
+              <dt className="text-text-muted">Team members</dt>
+              <dd>{preview.teamMembers}</dd>
+              <dt className="text-text-muted">Blockout dates</dt>
+              <dd>{preview.blockouts}</dd>
+              <dt className="text-text-muted">Past services</dt>
+              <dd>Not touched</dd>
+            </dl>
+            <p className="text-small text-text-muted">
+              Each copied service keeps its Planning Center id, so switching back matches it up
+              again. Nobody is emailed about the switch. Planning Center Services stops being read.
+            </p>
+          </>
+        ) : (
+          <p className="text-small text-text-secondary">
+            Upcoming services that came from Planning Center go back to it, and the next read
+            updates them from there.
+            {preview.academyServices > 0
+              ? ` ${plural(preview.academyServices, "service", "services")} made in the Academy stay${preview.academyServices === 1 ? "s" : ""} as ${preview.academyServices === 1 ? "it is" : "they are"}.`
+              : ""}{" "}
+            Changes made here since the switch aren&apos;t sent to Planning Center, so make them
+            there too.
+          </p>
+        )}
+        <ActionForm
+          action={setSourceAction}
+          submitLabel={toAcademy ? "Switch to the Academy" : "Switch back to Planning Center"}
+          pendingLabel="Switching…"
+          variant={toAcademy ? "primary" : "secondary"}
+          hidden={{ source: toAcademy ? "academy" : "planning_center" }}
+        />
+      </div>
+    </details>
   );
 }
