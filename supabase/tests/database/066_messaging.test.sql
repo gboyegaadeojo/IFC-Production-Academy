@@ -1,5 +1,5 @@
 -- Team messaging: only a chat's members see it, deletions are audited and never record content, and
--- direct messages are opened for safety only with an audit event. Off unless the flag is on.
+-- direct messages are private to the two people. Off unless the flag is on.
 begin;
 select no_plan();
 
@@ -113,7 +113,7 @@ select is((select count(*)::int from public.audit_events where action = 'message
 select ok((select metadata::text from public.audit_events where action = 'message.deleted'
   and target_id = (select id from ctx where key = 'm1')) not like '%long lens%', 'without the message');
 
--- Direct messages: one per pair, seen by the two, opened by admins only with an audit event.
+-- Direct messages: one per pair, seen by the two and nobody else.
 select pg_temp.act_as('a8200000-0000-4000-8000-000000000001');
 insert into ctx values ('dm', public.start_direct_conversation('a8200000-0000-4000-8000-000000000003'));
 select is(public.start_direct_conversation('a8200000-0000-4000-8000-000000000003'), (select id from ctx where key = 'dm'),
@@ -129,17 +129,14 @@ select throws_ok($$ select public.delete_message((select id from ctx where key =
 select pg_temp.act_as('a8200000-0000-4000-8000-000000000004');
 select is((select count(*)::int from public.messages where conversation_id = (select id from ctx where key = 'dm')), 0,
   'a department leader can''t read it');
-select throws_ok($$ select * from public.review_direct_conversation((select id from ctx where key = 'dm')) $$,
-  '42501', 'not_authorized', 'or open it for review');
 select pg_temp.act_as('a8200000-0000-4000-8000-000000000005');
 select is((select count(*)::int from public.messages where conversation_id = (select id from ctx where key = 'dm')), 0,
-  'a platform admin doesn''t see it in the ordinary way');
-select is((select count(*)::int from public.review_direct_conversation((select id from ctx where key = 'dm'))), 1,
-  'but can open it for safety');
+  'nor can a platform admin (G, 2026-11-09: direct messages are private)');
+select is((select count(*)::int from public.conversation_messages((select id from ctx where key = 'dm'))), 0,
+  'by any route');
 reset role;
-select is((select count(*)::int from public.audit_events where action = 'direct_messages.reviewed'
-  and target_id = (select id from ctx where key = 'dm') and actor_id = 'a8200000-0000-4000-8000-000000000005'), 1,
-  'and that opening is audited');
+select hasnt_function('public', 'review_direct_conversation', 'there''s no way to open someone else''s direct messages');
+select is((select count(*)::int from public.capabilities where key = 'message.review'), 0, 'and no capability for it');
 
 -- Group chats: leaders make them, for chosen people or everyone.
 select pg_temp.act_as('a8200000-0000-4000-8000-000000000001');

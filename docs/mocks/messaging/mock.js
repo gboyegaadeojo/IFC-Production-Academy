@@ -437,7 +437,7 @@
     const p = PEOPLE[personId];
     return (
       '<section class="thread">' + threadHead({ kind: "dm", person: personId, id: "new" }) +
-      '<div class="safety">' + icon("shield") + "<span>The Production Director and Platform Admins can read direct messages to keep everyone safe.</span></div>" +
+      '<div class="safety">' + icon("shield") + "<span>Private between the two of you. Nobody else can read it.</span></div>" +
       '<div class="empty small"><span class="avatar person lg" data-hue="' + DEPTS[p.dept].hue + '">' + p.initials + "</span><h2>" + esc(p.name) + "</h2><p>" + esc(DEPTS[p.dept].name) + ". Start the conversation below.</p></div>" +
       composer() + "</section>"
     );
@@ -757,7 +757,7 @@
       thread: "Tap a photo to open it. Leaders carry a Leader label.",
       compose: "Watch the photo shrink and upload. Press Send, or remove it.",
       viewer: "Step through the photos. Only the photo on screen loads at full size.",
-      dm: "Search for someone and pick them. Note the safety line in direct messages.",
+      dm: "Search for someone and pick them. Direct messages are private between the two of you.",
       leader: "You're a leader here. Use a message's menu to delete it, then confirm.",
       states: "Switch between a chat with no messages and being offline.",
       settings: "The new Messages group, with a choice of phone, email or the app only, and mute per chat.",

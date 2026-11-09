@@ -20,7 +20,6 @@ import {
   MoreHorizontalIcon,
   ReplyIcon,
   SendIcon,
-  ShieldIcon,
   TrashIcon,
   WifiOffIcon,
 } from "@/components/ui/icons";
@@ -305,13 +304,6 @@ export function ChatThread({
         <ChatSettings conversation={conversation} />
       </header>
 
-      {conversation.kind === "direct" ? (
-        <p className="mx-3 mt-2 flex items-center gap-2 rounded-card bg-accent-soft px-3 py-2 text-small text-accent-light">
-          <ShieldIcon className="size-4 shrink-0" />
-          The Production Director and Platform Admins can read direct messages to keep everyone
-          safe.
-        </p>
-      ) : null}
       {isOffline ? (
         <p
           role="status"

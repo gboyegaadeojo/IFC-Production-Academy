@@ -94,7 +94,7 @@ test("a department chat updates live, and a leader deletes a message", async ({
   await leaderContext.close();
 });
 
-test("a direct message shows the safety line, and a leader makes an everyone chat", async ({
+test("a direct message is private, and a leader makes an everyone chat", async ({
   page,
   browser,
   isMobile,
@@ -109,7 +109,8 @@ test("a direct message shows the safety line, and a leader makes an everyone cha
   await page.getByLabel("Find a person").fill("Blake");
   await page.getByRole("button", { name: /Blake Example/ }).click();
   await expect(page.getByRole("heading", { level: 1, name: "Blake Example" })).toBeVisible();
-  await expect(page.getByText(/can read direct messages to keep everyone safe/)).toBeVisible();
+  // Private between the two (G, 2026-11-09): no notice that anyone else reads it.
+  await expect(page.getByText(/can read direct messages/)).toHaveCount(0);
   await page.getByLabel("Message", { exact: true }).fill(`Fake: can you swap ${stamp}?`);
   await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByRole("log").getByText(`Fake: can you swap ${stamp}?`)).toBeVisible();
