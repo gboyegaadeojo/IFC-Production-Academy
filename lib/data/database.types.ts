@@ -1800,6 +1800,93 @@ export type Database = {
       remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
       restart_course: { Args: { p_course_id: string }; Returns: undefined };
       set_feature_flag: { Args: { p_key: string; p_enabled: boolean }; Returns: undefined };
+      my_conversations: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          kind: string;
+          title: string;
+          department_id: string | null;
+          department_hue: string | null;
+          department_icon: string | null;
+          everyone: boolean;
+          other_user_id: string | null;
+          other_name: string | null;
+          last_message_at: string | null;
+          last_body: string | null;
+          last_sender_name: string | null;
+          last_mine: boolean | null;
+          last_deleted: boolean | null;
+          unread_count: number;
+          muted: boolean;
+        }[];
+      };
+      conversation_details: {
+        Args: { p_conversation_id: string };
+        Returns: {
+          id: string;
+          kind: string;
+          title: string;
+          department_id: string | null;
+          department_hue: string | null;
+          department_icon: string | null;
+          everyone: boolean;
+          other_name: string | null;
+          member_count: number;
+          can_moderate: boolean;
+          can_rename: boolean;
+          muted: boolean;
+        }[];
+      };
+      conversation_messages: {
+        Args: { p_conversation_id: string; p_after?: string | null; p_limit?: number };
+        Returns: {
+          id: string;
+          sender_id: string | null;
+          sender_name: string | null;
+          sender_is_leader: boolean;
+          body: string | null;
+          reply_to: string | null;
+          reply_sender_name: string | null;
+          reply_body: string | null;
+          created_at: string;
+          deleted_at: string | null;
+          deleted_by_other: boolean;
+        }[];
+      };
+      messaging_people: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          display_name: string;
+          department_name: string | null;
+          department_hue: string | null;
+        }[];
+      };
+      send_message: {
+        Args: {
+          p_conversation_id: string;
+          p_client_id: string;
+          p_body: string;
+          p_reply_to?: string | null;
+        };
+        Returns: string;
+      };
+      delete_message: { Args: { p_message_id: string }; Returns: undefined };
+      start_direct_conversation: { Args: { p_user_id: string }; Returns: string };
+      create_group_conversation: {
+        Args: { p_title: string; p_everyone: boolean; p_user_ids: string[] };
+        Returns: string;
+      };
+      rename_group_conversation: {
+        Args: { p_conversation_id: string; p_title: string };
+        Returns: undefined;
+      };
+      mark_conversation_read: { Args: { p_conversation_id: string }; Returns: undefined };
+      set_conversation_muted: {
+        Args: { p_conversation_id: string; p_muted: boolean };
+        Returns: undefined;
+      };
       assign_course: {
         Args: { p_course_id: string; p_user_id: string; p_due_on?: string | null };
         Returns: string;

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
@@ -20,7 +21,17 @@ export default async function CurrentServicePage() {
   return (
     <div className="page-container flex flex-col gap-8 py-8 lg:py-12">
       <PageHeader title="Checklist" description="The pre-service checklist for the next service." />
-      <EmptyState title="No service on the schedule yet">
+      <EmptyState
+        title="No service on the schedule yet"
+        action={
+          <Link
+            href="/sops"
+            className="font-semibold text-accent-light underline-offset-4 hover:underline"
+          >
+            Open the SOPs
+          </Link>
+        }
+      >
         When the next service is on the schedule, its checklist opens here.
       </EmptyState>
     </div>

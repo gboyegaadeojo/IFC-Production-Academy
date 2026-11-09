@@ -4,6 +4,7 @@ import { AcademyHeader, AcademySidebar } from "@/components/shell/academy-header
 import { AlertsSetupBanner } from "@/components/shell/alerts-setup-banner";
 import { AcademyTabBar } from "@/components/shell/academy-nav";
 import { HideOnAdmin } from "@/components/shell/hide-on-admin";
+import { MessagesAwareTabBar } from "@/components/shell/messages-nav";
 import { getCurrentUser } from "@/lib/data/auth";
 import { getAlertsSetupNeeded } from "@/lib/data/push";
 
@@ -32,7 +33,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
-      <AcademyTabBar />
+      <Suspense fallback={<AcademyTabBar />}>
+        <MessagesAwareTabBar />
+      </Suspense>
     </>
   );
 }

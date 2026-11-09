@@ -72,6 +72,14 @@ export const HELP_PAGES: readonly HelpPage[] = [
     adminSections: ["branding"],
   },
   {
+    slug: "messages",
+    title: "Messages",
+    summary: "Department chats, group chats, and direct messages.",
+    section: "Using the app",
+    source: "docs/guides/messages.md",
+    paths: ["/messages"],
+  },
+  {
     slug: "mentoring",
     title: "Mentoring",
     summary: "Goals and notes between you and your mentor.",

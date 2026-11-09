@@ -10,6 +10,7 @@ import { initials } from "@/lib/domain/people";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { AccountMenu } from "./account-menu";
 import { AcademyNav } from "./academy-nav";
+import { MessagesNavLink } from "./messages-nav";
 import { NotificationsBell } from "./notifications-bell";
 import { ServiceDashboardNavLink } from "./service-dashboard-nav-link";
 
@@ -48,6 +49,11 @@ export function AcademySidebar() {
       </Link>
       <div className="flex min-h-0 w-full flex-1 flex-col items-center overflow-y-auto">
         <AcademyNav
+          messages={
+            <Suspense fallback={null}>
+              <MessagesNavLink />
+            </Suspense>
+          }
           extra={
             <Suspense fallback={null}>
               <ServiceDashboardNavLink />

@@ -310,6 +310,49 @@ export const ChevronLeftIcon = (props: IconProps) => (
     <path d="M15 6l-6 6 6 6" />
   </Icon>
 );
+/** A speech bubble: Messages. */
+export const MessageIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 5h16v11H9l-5 4z" />
+  </Icon>
+);
+export const SendIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M5 12h12M12 6l6 6-6 6" />
+  </Icon>
+);
+export const PencilIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 20h4L19 9l-4-4L4 16z" />
+    <path d="m13.5 6.5 4 4" />
+  </Icon>
+);
+export const TrashIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+  </Icon>
+);
+export const ReplyIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M10 8 5 12l5 4" />
+    <path d="M5 12h9a5 5 0 0 1 5 5v1" />
+  </Icon>
+);
+export const WifiOffIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0" />
+    <path d="M3 3l18 18" />
+    <circle cx="12" cy="19" r="1" />
+  </Icon>
+);
+/** A clipboard: Serve, the checklist and SOPs together on phones. */
+export const ClipboardIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="5" y="4" width="14" height="17" rx="2" />
+    <path d="M9 4h6v3H9zM9 12h6M9 16h4" />
+  </Icon>
+);
+
 /** A list with bullets: a course outline. */
 export const ListIcon = (props: IconProps) => (
   <Icon {...props}>
