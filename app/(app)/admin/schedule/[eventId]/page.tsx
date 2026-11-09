@@ -21,6 +21,9 @@ import {
   groupPlaces,
   type PositionGroup,
   READINESS_LABELS,
+  REMINDER_DAY_CHOICES,
+  reminderDayLabel,
+  reminderDaysLabel,
   utcToWinnipeg,
 } from "@/lib/domain/schedule";
 import { AccessDenied } from "../../access-denied";
@@ -32,6 +35,7 @@ import {
   cancelEventAction,
   removePositionAction,
   sendRequestsAction,
+  setEventReminderAction,
   updateEventAction,
   setSignupsAction,
 } from "../actions";
@@ -113,6 +117,42 @@ async function EventContent({ params }: Pick<Props, "params">) {
       </header>
 
       {open ? <SendRequests eventId={event.id} positions={event.positions} /> : null}
+
+      {open ? (
+        <section
+          aria-label="Reminder email"
+          className="flex max-w-3xl flex-col gap-2 rounded-card border border-border p-5"
+        >
+          <ActionForm
+            action={setEventReminderAction}
+            submitLabel="Save reminder"
+            pendingLabel="Saving…"
+            variant="secondary"
+            hidden={{ eventId: event.id }}
+            className="flex flex-wrap items-end gap-3"
+          >
+            <Field
+              id="event-reminder"
+              label="Reminder email"
+              hint={`Goes out ${reminderDayLabel(event.startsAt, event.reminderDays)} at 10:00 a.m. to everyone who accepted.`}
+            >
+              <select
+                id="event-reminder"
+                name="reminderDays"
+                defaultValue={event.reminderDays}
+                aria-describedby="event-reminder-hint"
+                className={fieldClasses}
+              >
+                {REMINDER_DAY_CHOICES.map((days) => (
+                  <option key={days} value={days}>
+                    {reminderDaysLabel(days)}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </ActionForm>
+        </section>
+      ) : null}
 
       <section aria-labelledby="positions-heading" className="flex flex-col gap-4">
         <h2 id="positions-heading" className="text-heading font-semibold">

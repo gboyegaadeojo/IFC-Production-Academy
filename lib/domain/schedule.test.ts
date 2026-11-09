@@ -6,6 +6,9 @@ import {
   eventSchema,
   eventTimeLabel,
   groupPlaces,
+  reminderDayLabel,
+  reminderDaysLabel,
+  reminderDaysSchema,
   sendRequestsSchema,
   syncedAgo,
   toScheduleError,
@@ -174,5 +177,27 @@ describe("positions with several places", () => {
       sendRequestsSchema.safeParse({ eventId, assignmentIds: [eventId], message: " Hi " }).data
         ?.message,
     ).toBe("Hi");
+  });
+});
+
+describe("reminder days", () => {
+  it("names the Winnipeg day the reminder goes out", () => {
+    // Sunday 15 November 2026, 10:30 in Winnipeg.
+    const startsAt = winnipegToUtc("2026-11-15", "10:30")!.toISOString();
+    expect(reminderDayLabel(startsAt, 2)).toBe("Fri, Nov 13");
+    expect(reminderDayLabel(startsAt, 7)).toBe("Sun, Nov 8");
+  });
+
+  it("counts back across a month end", () => {
+    const startsAt = winnipegToUtc("2026-12-01", "09:00")!.toISOString();
+    expect(reminderDayLabel(startsAt, 3)).toBe("Sat, Nov 28");
+  });
+
+  it("allows 1 to 7 days", () => {
+    expect(reminderDaysSchema.safeParse("3").data).toBe(3);
+    expect(reminderDaysSchema.safeParse("0").success).toBe(false);
+    expect(reminderDaysSchema.safeParse("8").success).toBe(false);
+    expect(reminderDaysLabel(1)).toBe("1 day before");
+    expect(reminderDaysLabel(3)).toBe("3 days before");
   });
 });

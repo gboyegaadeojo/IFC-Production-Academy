@@ -43,7 +43,7 @@ To change a service or who's on it, do it in Planning Center. It shows here with
 
 If **Who schedules** is set to the Academy, you also get **Matrix** and **Service types**:
 
-1. **Service types:** set up each kind of service once, with its time and positions.
+1. **Service types:** set up each kind of service once, with its time, positions, and **Reminder email** (how many days before, 2 unless you change it).
 2. **Make services:** create the next weeks in one step, repeating every 1 to 4 weeks. Dates that already have this service are skipped.
 3. **Matrix:** the next services side by side. Open a cell to schedule someone.
 4. **Edit details:** on a service's page, change its name, day, times, location, or notes. If the day or start time changes, everyone on it gets a short email.
@@ -54,4 +54,5 @@ On a service's page:
 - **Add someone:** only the position's team is listed. Someone blocked out, or already in another position that day, can still be added. A **Conflict** note then shows their other position or their blockout note, as in Planning Center. Nothing is blocked. You can pair someone still learning with **Someone alongside**.
 - **Not sent yet:** people you add aren't emailed straight away. When you're ready, **Send requests** emails each person once, for everything they're on at that service, with your message if you add one. Untick anyone you want to hold back. Each send is in the audit log.
 - **Reminders to confirm** go 48 hours after the request was sent, if there's still no reply.
+- **Reminder email:** choose how many days before the service (1 to 7) everyone who accepted gets their "Serving soon" reminder, at 10:00 a.m. The page shows the day it goes out. Set the usual number on the service type, and change it for one service on that service's page.
 - **When someone declines,** you're told, and the Academy adds the best free person from that position's team and asks them. That's someone who isn't blocked out or serving that day and hasn't already declined, trained first, then whoever served least recently. Their place shows "Added automatically after … declined". If nobody is free, the place stays open and you're told that instead.

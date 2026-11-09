@@ -226,6 +226,31 @@ export function assignmentStatusLabel(assignment: {
     : ASSIGNMENT_STATUS_LABELS[assignment.status];
 }
 
+/** How many days before a service its reminder goes out: 1 to 7. */
+export const reminderDaysSchema = z.coerce
+  .number()
+  .int()
+  .min(1, "Choose 1 to 7 days.")
+  .max(7, "Choose 1 to 7 days.");
+
+export const REMINDER_DAY_CHOICES = [1, 2, 3, 4, 5, 6, 7] as const;
+
+export function reminderDaysLabel(days: number): string {
+  return days === 1 ? "1 day before" : `${days} days before`;
+}
+
+/** The Winnipeg day a service's reminder goes out, at 10:00: "Fri, Nov 13". */
+export function reminderDayLabel(startsAt: string, days: number): string {
+  const [date] = utcToWinnipeg(startsAt);
+  const [year, month, day] = date.split("-").map(Number) as [number, number, number];
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "UTC",
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(Date.UTC(year, month - 1, day - days, 12)));
+}
+
 export const sendRequestsSchema = z.object({
   eventId: z.uuid(),
   assignmentIds: z.array(z.uuid()).min(1, "Tick at least one person."),

@@ -6,6 +6,7 @@ import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import * as types from "@/lib/data/service-types";
+import { reminderDaysLabel, reminderDaysSchema } from "@/lib/domain/schedule";
 import {
   createServicesSchema,
   movePosition,
@@ -76,6 +77,26 @@ export async function updateServiceTypeAction(
   }
   refresh();
   return { status: "done", message: "Saved. Services already made keep their times." };
+}
+
+export async function setTypeReminderAction(_: FormState, formData: FormData): Promise<FormState> {
+  const typeId = id.safeParse(formData.get("typeId"));
+  const days = reminderDaysSchema.safeParse(formData.get("reminderDays"));
+  if (!typeId.success || !(await allowed())) {
+    return error(serviceTypeErrorMessage("not_authorized"));
+  }
+  if (!days.success) {
+    return error(days.error.issues[0]?.message ?? "Choose 1 to 7 days.");
+  }
+  const result = await types.setServiceTypeReminder(typeId.data, days.data);
+  if (!result.ok) {
+    return error(serviceTypeErrorMessage(result.error));
+  }
+  refresh();
+  return {
+    status: "done",
+    message: `Services made from now on remind ${reminderDaysLabel(days.data)}. Services already made keep their own.`,
+  };
 }
 
 export async function setTypeSignupsAction(_: FormState, formData: FormData): Promise<FormState> {

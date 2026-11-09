@@ -21,6 +21,8 @@ export type ServiceType = {
   location: string;
   notes: string;
   allowSignups: boolean;
+  /** How many days before each service its reminder goes out. */
+  reminderDays: number;
   positions: { roleId: string; roleName: string; departmentName: string }[];
 };
 
@@ -29,7 +31,9 @@ export async function listServiceTypes(): Promise<ServiceType[]> {
   const [types, positions, roles, departments] = await Promise.all([
     supabase
       .from("service_types")
-      .select("id, name, start_time, duration_minutes, location, notes, allow_signups")
+      .select(
+        "id, name, start_time, duration_minutes, location, notes, allow_signups, reminder_days",
+      )
       .is("archived_at", null)
       .order("name"),
     supabase
@@ -52,6 +56,7 @@ export async function listServiceTypes(): Promise<ServiceType[]> {
     location: type.location,
     notes: type.notes,
     allowSignups: type.allow_signups,
+    reminderDays: type.reminder_days,
     positions: positions.data
       .filter((p) => p.service_type_id === type.id)
       .map((p) => ({
@@ -80,6 +85,12 @@ export async function saveServiceType(
     p_notes: input.notes,
   });
   return error ? { ok: false, error: toServiceTypeError(error) } : { ok: true, value: data };
+}
+
+export async function setServiceTypeReminder(id: string, days: number): Promise<Result> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_service_type_reminder", { p_id: id, p_days: days });
+  return error ? { ok: false, error: toServiceTypeError(error) } : { ok: true, value: undefined };
 }
 
 export async function setServiceTypeSignups(id: string, open: boolean): Promise<Result> {
