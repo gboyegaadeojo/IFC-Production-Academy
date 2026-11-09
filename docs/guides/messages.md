@@ -65,6 +65,12 @@ Choose the **…** beside a message, then **Delete message**, and confirm. It's 
 
 Nobody else can delete someone's direct messages. Every deletion goes in the audit log, with who deleted it and when. The log never keeps what the message said.
 
+## Being told about new messages
+
+You're told about new messages in your chats a few at a time, never one by one: for example "3 new messages in Camera Operations". A notice for a direct message says who it's from, but not what they wrote. Nothing comes for a chat you've already read, or for messages under two minutes old, in case you're reading them.
+
+Choose where these reach you under the bell, then **Settings**, in the **Messages** group: your phone, your email, or the app only. Email comes at most once every 4 hours, and nothing is sent between 20:00 and 08:00.
+
 ## Quieter chats
 
 Choose the **…** at the top right of a chat, then **Mute notifications**, to stop being told about that chat. Muted chats don't add to the number on Messages.

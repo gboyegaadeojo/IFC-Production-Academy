@@ -5,6 +5,7 @@ import {
   ClockIcon,
   FileTextIcon,
   GraduationCapIcon,
+  MessageIcon,
   UserCheckIcon,
   UsersIcon,
 } from "@/components/ui/icons";
@@ -46,6 +47,7 @@ const KIND_ICON: Record<
   assignment_cancelled: { icon: CalendarRangeIcon, tone: "text-warning" },
   mentoring_ended: { icon: UsersIcon, tone: "text-text-secondary" },
   course_unassigned: { icon: GraduationCapIcon, tone: "text-text-secondary" },
+  message: { icon: MessageIcon, tone: "text-accent-light" },
 };
 
 /** A round icon for what kind of notification it is: serving, training, leading. Decorative. */

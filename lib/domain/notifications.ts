@@ -37,7 +37,8 @@ export type NotificationKind =
   | "quiz_attempt_granted"
   | "assignment_cancelled"
   | "mentoring_ended"
-  | "course_unassigned";
+  | "course_unassigned"
+  | "message";
 
 /** These stay in the app, so there's nothing to choose (decision 2026-11-05). */
 export const APP_ONLY_KINDS: readonly NotificationKind[] = [
@@ -76,6 +77,7 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "assignment_cancelled",
   "mentoring_ended",
   "course_unassigned",
+  "message",
   ...APP_ONLY_KINDS,
 ];
 
@@ -109,6 +111,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   assignment_cancelled: "When I'm taken off a service",
   mentoring_ended: "When my mentoring ends",
   course_unassigned: "When a course is no longer assigned to me",
+  message: "New messages in my chats, a few at a time",
   certificate_ready: "When a certificate is ready",
   new_course: "When my department has a new course",
   sop_updated: "When an SOP in my department is updated",
@@ -124,7 +127,7 @@ export const NOTIFICATION_KIND_HINTS: Partial<Record<NotificationKind, string>> 
 };
 
 export type NotificationGroup = {
-  id: "serving" | "training" | "leading";
+  id: "serving" | "training" | "leading" | "messages";
   title: string;
   kinds: readonly NotificationKind[];
 };
@@ -178,6 +181,8 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "role_removed",
     ],
   },
+  // Only while messaging is on (team messaging decision, 2026-11-08; ADD-MSG-06).
+  { id: "messages", title: "Messages", kinds: ["message"] },
 ];
 
 /** What each group covers, in a line, on the settings page (refinements mock, 2026-11-06). */
@@ -188,6 +193,8 @@ export const NOTIFICATION_GROUP_HINTS: Record<NotificationGroup["id"], string> =
     "Joining, courses, nudges, results, approvals, certificates, mentoring, and changes a leader makes",
   leading:
     "Roles a leader gives or removes, join requests, people ready for an assessment, SOP reviews, and onboarding follow-ups",
+  messages:
+    "New messages in your chats, a few at a time: one notice per chat, and at most one email every 4 hours. Mute a chat to stop its notices",
 };
 
 export type GroupChoice = "on" | "off" | "some";
@@ -212,8 +219,10 @@ export function isNotificationGroupId(value: string): value is NotificationGroup
  * The groups to offer. Leading choices are only for people who lead or assess, or own an SOP, so
  * volunteers aren't asked about emails they can never get.
  */
-export function emailChoiceGroups(leads: boolean): readonly NotificationGroup[] {
-  return NOTIFICATION_GROUPS.filter((group) => group.id !== "leading" || leads);
+export function emailChoiceGroups(leads: boolean, messaging = false): readonly NotificationGroup[] {
+  return NOTIFICATION_GROUPS.filter(
+    (group) => (group.id !== "leading" || leads) && (group.id !== "messages" || messaging),
+  );
 }
 
 /** "now", "5m", "2h", "Yesterday", or a short date, for the Recent list. */
@@ -303,6 +312,7 @@ const BUTTON_LABELS: Record<NotificationKind, string> = {
   assignment_cancelled: "See your schedule",
   mentoring_ended: "Open mentoring",
   course_unassigned: "See the course",
+  message: "Open the chat",
 };
 
 export function emailButtonLabel(kind: string): string {

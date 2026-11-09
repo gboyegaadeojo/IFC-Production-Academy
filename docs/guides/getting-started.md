@@ -62,7 +62,7 @@ You're also told when a leader changes something for you: a role given or remove
 
 ### Notification settings
 
-Here you turn on alerts for the device you're using, and choose what also reaches your phone or your email. There's one choice for each group: **Serving**, **Training**, and, for leaders, **Leading**. Each has a **Phone** button and an **Email** button. A tick means it's on. A dash means only some kinds in that group are on.
+Here you turn on alerts for the device you're using, and choose what also reaches your phone or your email. There's one choice for each group: **Serving**, **Training**, for leaders **Leading**, and, when Messages is switched on, **Messages**. Each has a **Phone** button and an **Email** button. A tick means it's on. A dash means only some kinds in that group are on.
 
 To choose kinds one by one, open **Fine-tune each alert**. Most people never need it.
 
