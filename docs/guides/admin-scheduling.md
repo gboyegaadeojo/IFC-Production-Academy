@@ -10,7 +10,7 @@ The **Planning Center** page is where the two connect.
 - **Position links:** connect each Planning Center position to an Academy position, so people see the right checklist and their training. Your choice saves as soon as you pick it. On a phone, tap a row to choose. Planning Center gives each service type its own copy of a team, so link each one. Add Academy positions under [Competencies and roles](admin-assessments.md) first.
 - **Scheduled in positions not linked yet:** these people won't see their checklist for the service until you link their position.
 - **Not in the Academy yet:** people on a Planning Center team or schedule who haven't signed in. Nothing is sent to them. They get an account the first time they sign in with Planning Center.
-- **Who schedules:** Planning Center, or the Academy's own tools. Leave it on Planning Center unless you've decided to move away from it.
+- **Who schedules:** Planning Center, or the Academy's own tools. Leave it on Planning Center unless you've decided to move away from it. While the Academy schedules, Planning Center Services isn't read at all, so nothing there changes the schedule here.
 
 The setup is in the [Planning Center setup guide](../runbooks/scheduling.md).
 
@@ -40,5 +40,6 @@ If **Who schedules** is set to the Academy, you also get **Matrix** and **Servic
 1. **Service types:** set up each kind of service once, with its time and positions.
 2. **Make services:** create the next weeks in one step, repeating every 1 to 4 weeks. Dates that already have this service are skipped.
 3. **Matrix:** the next services side by side. Open a cell to schedule someone.
+4. **Edit details:** on a service's page, change its name, day, times, location, or notes. If the day or start time changes, everyone on it gets a short email.
 
 A position is filled only from its team, never on a day someone is away, and never in a second position on the same day. **Override reason** lets you go past that if you must, and it's kept in the audit log. You can pair someone still learning with **Someone alongside**.

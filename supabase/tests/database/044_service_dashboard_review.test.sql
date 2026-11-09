@@ -2,6 +2,9 @@
 begin;
 select no_plan();
 
+-- Planning Center schedules, so its sync applies (the local seed has the Academy scheduling).
+update public.organizations set scheduling_source = 'planning_center';
+
 create function pg_temp.new_user(p_id uuid, p_name text) returns void language sql as $$
   insert into auth.users (instance_id, id, aud, role, email, raw_user_meta_data, created_at, updated_at)
   values ('00000000-0000-0000-0000-000000000000', p_id, 'authenticated', 'authenticated',

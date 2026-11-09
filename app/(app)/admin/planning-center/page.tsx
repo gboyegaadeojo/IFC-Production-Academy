@@ -127,7 +127,7 @@ async function PlanningCenterContent() {
       <p className="text-text-secondary">
         {source === "planning_center"
           ? "Volunteers accept, decline, and block out dates there, and the Academy shows it."
-          : "The Academy schedules with its own tools. Planning Center isn't read."}
+          : "The Academy schedules with its own tools. Planning Center Services isn't read, so nothing there changes the schedule here."}
       </p>
       <details>
         <summary className="flex min-h-control cursor-pointer items-center text-small font-medium">

@@ -386,6 +386,29 @@ export async function createEvent(input: {
   return error ? fail(error) : { ok: true, value: data.id };
 }
 
+export async function updateEvent(
+  eventId: string,
+  input: { title: string; startsAt: string; endsAt: string; location: string; notes: string },
+): Promise<ScheduleResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("events")
+    .update({
+      title: input.title,
+      starts_at: input.startsAt,
+      ends_at: input.endsAt,
+      location: input.location,
+      notes: input.notes,
+    })
+    .eq("id", eventId)
+    .is("cancelled_at", null)
+    .select("id");
+  if (error) {
+    return fail(error);
+  }
+  return data.length === 1 ? { ok: true } : { ok: false, error: "event_closed" };
+}
+
 export async function cancelEvent(eventId: string): Promise<ScheduleResult> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("cancel_event", { p_event_id: eventId });

@@ -48,6 +48,36 @@ export async function createEventAction(_: FormState, formData: FormData): Promi
   redirect(`/admin/schedule/${result.value}`);
 }
 
+export async function updateEventAction(_: FormState, formData: FormData): Promise<FormState> {
+  const eventId = id.safeParse(formData.get("eventId"));
+  const input = eventSchema.safeParse({
+    title: text(formData.get("title")),
+    date: text(formData.get("date")),
+    startTime: text(formData.get("startTime")),
+    endTime: text(formData.get("endTime")),
+    location: text(formData.get("location")),
+    notes: text(formData.get("notes")),
+  });
+  if (!eventId.success) {
+    return error(scheduleErrorMessage("not_authorized"));
+  }
+  if (!input.success) {
+    return error(input.error.issues[0]?.message ?? "Check the event details.");
+  }
+  if (!(await allowed())) {
+    return error(scheduleErrorMessage("not_authorized"));
+  }
+  const result = await schedule.updateEvent(eventId.data, input.data);
+  if (!result.ok) {
+    return error(scheduleErrorMessage(result.error));
+  }
+  refresh();
+  return {
+    status: "done",
+    message: "Saved. If the day or start time changed, everyone on it gets a short email.",
+  };
+}
+
 export async function setSignupsAction(_: FormState, formData: FormData): Promise<FormState> {
   const eventId = id.safeParse(formData.get("eventId"));
   const open = z.enum(["true", "false"]).safeParse(formData.get("open"));
