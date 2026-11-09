@@ -57,7 +57,7 @@ Anyone can read the code, the commit history, and **the GitHub Actions logs**.
 - **Never upload backups or dumps as workflow artifacts.** They go straight to the Google Drive Shared Drive after `age` encryption. `*.dump`, `*.age`, and `backups/` are gitignored.
 - Workflows that use secrets run only on `schedule`, `workflow_dispatch`, or `push` to `main`. Never use `pull_request_target` with secrets. Fork PRs get no secrets.
 - Pin third-party actions to a full commit SHA, set `permissions:` to the minimum per workflow, and enable Dependabot for npm and actions.
-- The weekly summary commit writes only `status/last-run.json`, containing timestamps, success flags, and backup sizes. No counts of people, no names.
+- The weekly summary commit writes only `status/last-run.json`, containing timestamps, success flags, backup sizes, and free plan sizes in bytes. No counts of people, no names.
 
 ## Scheduled jobs (`.github/workflows/`)
 
@@ -68,6 +68,7 @@ Anyone can read the code, the commit history, and **the GitHub Actions logs**.
 | `restore-test.yml` | Monthly | Restore the latest backup into a throwaway Postgres 17 container (Supabase's image) and compare row counts with those taken at backup time. Results go in the log as pass/fail only |
 | `notifications.yml` | Every 15 minutes | Queue SOP review reminders, then send pending notification emails through Resend with the service role (Actions secret only). Logs counts only. Sends nothing until `RESEND_API_KEY` and `NOTIFY_FROM` are set, and only to `notification_testers` until `organizations.notifications_live` is on at launch; see `docs/runbooks/notifications.md` |
 | `planning-center.yml` | Every 15 minutes, and on demand from the Planning Center page | Read Planning Center Services (read-only Personal Access Token, `PCO_PAT_ID` and `PCO_PAT_SECRET`, Actions secrets only) and apply it with `sync_planning_center()` using the service role. Logs counts only. Does nothing until the token is set; see `docs/runbooks/scheduling.md` |
+| `chat-cleanup.yml` | Daily, 09:30 UTC | Remove chat photos and documents past the limit on Admin → Features (90 days unless changed) and those of deleted messages, then message text past its limit (3 years), with the service role (Actions secret only). Logs counts only; see `docs/runbooks/messaging.md` |
 | `weekly-summary.yml` | Weekly | Email G and the Platform Admin via Resend with the last successful runs, then commit `status/last-run.json`, which keeps scheduled workflows enabled (GitHub disables them after 60 days of repo inactivity) |
 
 GitHub's schedule can run hours late, so a Cloudflare cron trigger on the Worker (`workers/entry.ts`, `GITHUB_DISPATCH_TOKEN`) starts `notifications.yml` and `planning-center.yml` every 15 minutes, with GitHub's schedule as a backup. See `docs/runbooks/scheduling.md`.

@@ -1,10 +1,12 @@
 /**
- * Downloads every object in every Supabase Storage bucket into a folder, for the weekly backup.
+ * Downloads every object in every Supabase Storage bucket into a folder, for the weekly backup,
+ * except chat photos and documents (lib/domain/backup.ts, SKIPPED_BUCKETS).
  * Usage: node scripts/backup/download-storage.ts <out-dir>
  * Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Logs counts and total size only.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { isBackedUpBucket } from "../../lib/domain/backup.ts";
 import { supabaseKeyHeaders } from "../../lib/domain/supabase-keys.ts";
 
 const url = (process.env.SUPABASE_URL ?? "").replace(/\/+$/, "");
@@ -58,10 +60,12 @@ async function listAll(bucket: string, prefix = ""): Promise<string[]> {
 }
 
 async function main(): Promise<void> {
-  const buckets = await json<{ id: string }[]>(
-    await fetch(`${url}/storage/v1/bucket`, { headers }),
-    "Listing buckets",
-  );
+  const buckets = (
+    await json<{ id: string }[]>(
+      await fetch(`${url}/storage/v1/bucket`, { headers }),
+      "Listing buckets",
+    )
+  ).filter((bucket) => isBackedUpBucket(bucket.id));
   let files = 0;
   let bytes = 0;
   for (const bucket of buckets) {
