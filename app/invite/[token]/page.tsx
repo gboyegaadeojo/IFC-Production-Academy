@@ -5,7 +5,10 @@ import { Suspense } from "react";
 import { Wordmark } from "@/components/brand";
 import { DepartmentIcon } from "@/components/department-icon";
 import { buttonClasses } from "@/components/ui/button";
+import { EmailOption } from "@/app/sign-in/email-option";
+import { PlanningCenterButton } from "@/app/sign-in/planning-center-button";
 import { SignInForm } from "@/app/sign-in/sign-in-form";
+import { pcoSignInEnabled } from "@/lib/data/planning-center-auth";
 import { getBranding } from "@/lib/data/branding";
 import { getCurrentUser } from "@/lib/data/auth";
 import { previewInvitation } from "@/lib/data/invitations";
@@ -55,17 +58,29 @@ async function InviteContent({ params }: Pick<PageProps<"/invite/[token]">, "par
 
   const user = await getCurrentUser();
   if (!user) {
-    // Details stay hidden until sign-in, so a leaked link reveals nothing on its own.
+    // Details stay hidden until sign-in, so a leaked link reveals nothing on its own. Planning
+    // Center first, as on the sign-in page; either way brings them back here to accept.
+    const planningCenter = pcoSignInEnabled();
     return (
       <>
         <div className="flex flex-col gap-2">
           <h1 className="text-heading font-semibold">You&apos;re invited</h1>
           <p className="text-text-secondary">
-            Someone on the IFC production team invited you to the Academy. Enter your email and
-            we&apos;ll send you a link to sign in and accept. No password needed.
+            {planningCenter
+              ? "Someone on the IFC production team invited you to the Academy. Sign in to accept. Use Planning Center if you're on a production team."
+              : "Someone on the IFC production team invited you to the Academy. Enter your email and we'll send you a link to sign in and accept. No password needed."}
           </p>
         </div>
-        <SignInForm invite={token} />
+        {planningCenter ? (
+          <div className="flex flex-col gap-3">
+            <PlanningCenterButton
+              href={`/auth/planning-center?next=${encodeURIComponent(`/invite/${token}`)}`}
+            />
+            <EmailOption initiallyOpen={false} invite={token} />
+          </div>
+        ) : (
+          <SignInForm invite={token} />
+        )}
       </>
     );
   }

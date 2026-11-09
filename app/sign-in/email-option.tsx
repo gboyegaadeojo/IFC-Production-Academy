@@ -8,10 +8,16 @@ import { SignInForm } from "./sign-in-form";
  * button that opens the email form in its place. It starts open after an error, so the message and
  * the form are already showing.
  */
-export function EmailOption({ initiallyOpen }: { initiallyOpen: boolean }) {
+export function EmailOption({
+  initiallyOpen,
+  invite,
+}: {
+  initiallyOpen: boolean;
+  invite?: string;
+}) {
   const [open, setOpen] = useState(initiallyOpen);
   if (open) {
-    return <SignInForm />;
+    return <SignInForm invite={invite} />;
   }
   return (
     <button
