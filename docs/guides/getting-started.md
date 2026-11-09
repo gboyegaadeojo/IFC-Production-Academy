@@ -16,7 +16,7 @@ Open your name, then choose your name at the top of the menu, to see the quizzes
 
 ## Finding your way around
 
-The side bar on the left has these places, each an icon with its name. On a phone, five of them are along the bottom, and **Explore** is at the top of **Courses**.
+On a tablet or computer, the side bar on the left lists these places, each an icon with its name, under **Learn** and **Serve**. The button at the top of the side bar folds it down to icons only (hover over an icon to see its name), and the device remembers your choice. On a phone, five of them are on the bar floating along the bottom: a soft purple highlight slides to the one you're on. **Explore** is at the top of **Courses** there.
 
 | Place | What it's for | Guide |
 | --- | --- | --- |
@@ -27,11 +27,11 @@ The side bar on the left has these places, each an icon with its name. On a phon
 | **SOPs** | The team's written procedures | [SOPs](sops.md) |
 | **Messages** | Chats with your department, groups, and anyone in the Academy, once it's switched on | [Messages](messages.md) |
 
-When Messages is switched on, it sits after **Schedule** in the side bar, and in the middle of the bar along the bottom of a phone. On a phone, **Checklist** and **SOPs** then share one tab, **Serve**, which opens the checklist and has an **SOPs** button at the top.
+When Messages is switched on, it sits under **Training** in the side bar, with how many are unread, and in the middle of the bar along the bottom of a phone. On a phone, **Checklist** and **SOPs** then share one tab, **Serve**, which opens the checklist and has an **SOPs** button at the top.
 
 If you're on a production team and using a computer, you also get the [Service Dashboard](service-dashboard.md).
 
-Beside your name are the sun or moon (light or dark) and the bell (notifications). On a phone they're at the top right; on a tablet or computer they're at the bottom of the side bar. Your name opens a menu with the rest: choose your name at the top of it for your profile, then mentoring, getting the app, help, and signing out. Leaders also see **Admin** there.
+Beside your name is the bell (notifications). On a phone your name, the bell, and the sun or moon (light or dark) are at the top right. On a tablet or computer your name and the bell are at the bottom of the side bar, and light or dark is in the menu your name opens. Your name opens a menu with the rest: choose your name at the top of it for your profile, then mentoring, getting the app, help, and signing out. Leaders also see **Admin** there.
 
 ## Three things that are kept separate
 
@@ -49,7 +49,7 @@ Open your name, then choose your name at the top of the menu. Your profile shows
 
 ## Notifications
 
-Notifications come to your phone and email as you've chosen, and they're all in the app too. Choose the bell beside your name. A dot on it means something is unread. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it slides up from the bottom. Choose the bell again, or anywhere outside the panel, to close it.
+Notifications come to your phone and email as you've chosen, and they're all in the app too. Choose the bell beside your name. On a phone a dot on it means something is unread; in the side bar it shows how many. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it slides up from the bottom. Choose the bell again, or anywhere outside the panel, to close it.
 
 Each notification has an icon for what it's about (serving, training, or leading) and a line in purple saying what tapping it does, such as **Confirm or decline**.
 
@@ -82,7 +82,7 @@ On the same page, choose **Turn on alerts** to get updates that drop down like a
 
 ## Dark or light
 
-Tap the sun or moon beside your name to change between light and dark: one tap switches. It's remembered on each device.
+On a phone, tap the sun or moon beside your name to change between light and dark: one tap switches. On a tablet or computer, open your name and use the **Dark mode** switch at the top of the menu. It's remembered on each device.
 
 ## Want to join the team?
 

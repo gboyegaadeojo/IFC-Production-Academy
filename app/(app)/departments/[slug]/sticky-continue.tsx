@@ -34,7 +34,7 @@ export function StickyContinue({
 
   if (!show) return null;
   return (
-    <div className="fixed inset-x-0 bottom-[calc(3.5rem+1px+env(safe-area-inset-bottom))] z-20 border-t border-border bg-surface/95 px-4 py-2.5 backdrop-blur md:hidden print:hidden">
+    <div className="fixed inset-x-0 bottom-(--tab-bar-space) z-20 border-t border-border bg-surface/95 px-4 py-2.5 backdrop-blur md:hidden print:hidden">
       <Link
         href={href}
         className="flex min-h-12 items-center justify-between gap-3 rounded-pill bg-text py-1.5 pr-1.5 pl-5 text-bg"

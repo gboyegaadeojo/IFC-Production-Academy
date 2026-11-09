@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, type ReactNode } from "react";
+import { type ReactNode, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,8 +12,11 @@ import {
   GraduationCapIcon,
   ListChecksIcon,
   MessageIcon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
   PlayCircleIcon,
 } from "@/components/ui/icons";
+import { ACADEMY_SIDEBAR_COOKIE } from "@/lib/domain/appearance";
 import { MessagesBadge } from "./messages-badge";
 
 type NavLink = {
@@ -22,29 +25,28 @@ type NavLink = {
   icon: (props: { className?: string }) => ReactNode;
 };
 
-/** The learner destinations (DESIGN §3.1), in the side bar's order. */
-const NAV_LINKS: NavLink[] = [
-  { href: "/home", label: "Training", icon: GraduationCapIcon },
-  { href: "/courses", label: "Courses", icon: BookOpenIcon },
-  { href: "/explore", label: "Explore", icon: PlayCircleIcon },
-  { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
-  { href: "/serve", label: "Checklist", icon: ListChecksIcon },
-  { href: "/sops", label: "SOPs", icon: FileTextIcon },
-];
+const TRAINING: NavLink = { href: "/home", label: "Training", icon: GraduationCapIcon };
+const COURSES: NavLink = { href: "/courses", label: "Courses", icon: BookOpenIcon };
+const SCHEDULE: NavLink = { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon };
+const CHECKLIST: NavLink = { href: "/serve", label: "Checklist", icon: ListChecksIcon };
+const SOPS: NavLink = { href: "/sops", label: "SOPs", icon: FileTextIcon };
+
+/** The side bar's sections (side bar B, G 2026-11-09). Messages and the dashboard come from the server. */
+const LEARN: NavLink[] = [COURSES, { href: "/explore", label: "Explore", icon: PlayCircleIcon }];
+const SERVE: NavLink[] = [SCHEDULE, CHECKLIST, SOPS];
 
 /** Phones have five tabs (G, 2026-11-04). Explore is a switch at the top of Courses there. */
-const TAB_HREFS = new Set(["/home", "/courses", "/schedule", "/serve", "/sops"]);
-const TAB_LINKS = NAV_LINKS.filter((link) => TAB_HREFS.has(link.href));
+const TAB_LINKS: NavLink[] = [TRAINING, COURSES, SCHEDULE, CHECKLIST, SOPS];
 
 /**
  * With messaging on (G, 2026-11-08): Messages in the middle, and Checklist and SOPs together as
  * Serve, which opens the checklist and is current on either.
  */
 const MESSAGE_TAB_LINKS: NavLink[] = [
-  { href: "/home", label: "Training", icon: GraduationCapIcon },
-  { href: "/courses", label: "Courses", icon: BookOpenIcon },
+  TRAINING,
+  COURSES,
   { href: "/messages", label: "Messages", icon: MessageIcon },
-  { href: "/schedule", label: "Schedule", icon: CalendarRangeIcon },
+  SCHEDULE,
   { href: "/serve", label: "Serve", icon: ClipboardIcon },
 ];
 
@@ -56,9 +58,13 @@ function isCurrent(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/** Classes for a folded side bar (icons only), set by data-folded on the side bar itself. */
+const FOLDED_HIDE = "group-data-[folded=true]/sidebar:sr-only";
+
 /**
- * One link in the side bar: the icon, with its name underneath in 10px type (mock 5; smaller at
- * G's request, 2026-11-06). The tinted pill and the weight mark the current page, not colour alone.
+ * One link in the side bar: the icon and its name, in 9px type (side bar B, G 2026-11-09). Folded,
+ * only the icon shows and the name is its tooltip. The tinted row and the weight mark the current
+ * page, not colour alone.
  */
 export function AcademyNavLink({
   href,
@@ -70,60 +76,122 @@ export function AcademyNavLink({
   label: string;
   /** Rendered already, so a server component can pass one in. */
   icon?: ReactNode;
-  /** A count over the icon, such as unread messages. */
+  /** A count, such as unread messages: after the name, or over the icon when folded. */
   badge?: ReactNode;
 }) {
   const current = isCurrent(usePathname(), href);
   return (
     <Link
       href={href}
+      title={label}
       aria-current={current ? "page" : undefined}
-      className={`group relative flex w-20 flex-col items-center gap-1 rounded-button py-1.5 text-center text-[0.625rem] leading-tight transition-surface [&_svg]:size-[1.125rem] ${
-        current ? "font-semibold text-text" : "font-medium text-text-muted hover:text-text"
+      className={`relative flex min-h-[1.875rem] items-center gap-2.5 rounded-button px-2.5 text-[0.5625rem] leading-tight transition-surface group-data-[folded=true]/sidebar:justify-center group-data-[folded=true]/sidebar:px-0 pointer-coarse:min-h-11 ${
+        current
+          ? "bg-accent-soft font-semibold text-text"
+          : "font-medium text-text-secondary hover:bg-card hover:text-text"
       }`}
     >
       <span
-        className={`relative flex h-7 w-12 items-center justify-center rounded-pill transition-surface ${
-          current ? "bg-accent-soft text-accent-light" : "group-hover:bg-card"
-        }`}
+        className={`flex shrink-0 [&_svg]:size-[1.125rem] ${current ? "text-accent-light" : "text-text-muted"}`}
       >
         {icon}
       </span>
-      {label}
+      <span className={`min-w-0 flex-1 truncate ${FOLDED_HIDE}`}>{label}</span>
       {badge}
     </Link>
   );
 }
 
+function Section({ heading, children }: { heading: string; children: ReactNode }) {
+  const id = useId();
+  return (
+    <div role="group" aria-labelledby={id} className="flex flex-col">
+      <div
+        aria-hidden="true"
+        className="mx-2 my-2.5 hidden h-px bg-border group-data-[folded=true]/sidebar:block"
+      />
+      <p
+        id={id}
+        className={`px-2.5 pt-3.5 pb-1.5 text-[0.5rem] font-semibold tracking-[0.04em] text-text-muted uppercase ${FOLDED_HIDE}`}
+      >
+        {heading}
+      </p>
+      <ul className="flex flex-col gap-0.5">{children}</ul>
+    </div>
+  );
+}
+
+function NavItem({ link }: { link: NavLink }) {
+  return (
+    <li>
+      <AcademyNavLink href={link.href} label={link.label} icon={<link.icon className="size-5" />} />
+    </li>
+  );
+}
+
 /**
- * Learner navigation in the side bar (DESIGN §3.1). From 768px; phones use the tab bar instead.
- * `extra` adds links the server decides on; `messages` goes after Schedule (G, 2026-11-08).
+ * Learner navigation in the side bar (DESIGN §3.1; side bar B, G 2026-11-09): Training and
+ * Messages, then Learn and Serve. From 768px; phones use the tab bar instead. `messages` and
+ * `extra` (the Service Dashboard) are links the server decides on.
  */
 export function AcademyNav({ extra, messages }: { extra?: ReactNode; messages?: ReactNode }) {
   return (
-    <nav aria-label="Academy">
-      <ul className="flex flex-col items-center gap-1">
-        {NAV_LINKS.map((link) => (
-          <Fragment key={link.href}>
-            <li>
-              <AcademyNavLink
-                href={link.href}
-                label={link.label}
-                icon={<link.icon className="size-5" />}
-              />
-            </li>
-            {link.href === "/schedule" ? messages : null}
-          </Fragment>
+    <nav aria-label="Academy" className="flex flex-col">
+      <ul className="flex flex-col gap-0.5">
+        <NavItem link={TRAINING} />
+        {messages}
+      </ul>
+      <Section heading="Learn">
+        {LEARN.map((link) => (
+          <NavItem key={link.href} link={link} />
+        ))}
+      </Section>
+      <Section heading="Serve">
+        {SERVE.map((link) => (
+          <NavItem key={link.href} link={link} />
         ))}
         {extra}
-      </ul>
+      </Section>
     </nav>
   );
 }
 
 /**
- * Phone tab bar (DESIGN §3, "bottom navigation for 3–4 high-frequency learner destinations";
- * approved mock, 2026-11-01). Below 640px only, never in the admin workspace, and not on lessons.
+ * Folds the side bar to icons and back, remembered on this device. The side bar starts the way
+ * the cookie says (no jump on load), and this flips data-folded on it.
+ */
+export function SidebarFoldButton({ initialFolded }: { initialFolded: boolean }) {
+  const [folded, setFolded] = useState(initialFolded);
+  const ref = useRef<HTMLButtonElement>(null);
+  const toggle = () => {
+    const next = !folded;
+    setFolded(next);
+    const sidebar = ref.current?.closest<HTMLElement>("[data-folded]");
+    if (sidebar) {
+      sidebar.dataset.folded = String(next);
+    }
+    document.cookie = `${ACADEMY_SIDEBAR_COOKIE}=${next ? "folded" : "open"}; path=/; max-age=${60 * 60 * 24 * 400}; samesite=lax`;
+  };
+  const Icon = folded ? PanelLeftOpenIcon : PanelLeftCloseIcon;
+  return (
+    <button
+      ref={ref}
+      type="button"
+      onClick={toggle}
+      aria-pressed={folded}
+      title={folded ? "Show names" : "Icons only"}
+      className="inline-flex size-8 shrink-0 items-center justify-center rounded-button text-text-muted transition-surface hover:bg-hover hover:text-text pointer-coarse:size-11"
+    >
+      <Icon className="size-[18px]" />
+      <span className="sr-only">Icons only</span>
+    </button>
+  );
+}
+
+/**
+ * Phone tab bar (DESIGN §3; phone bar A, G 2026-11-09): it floats with a gap beneath it, and a
+ * soft pill springs across to the tab you tap. Below 768px only, never in the admin workspace, and
+ * not on lessons or in a chat.
  */
 export function AcademyTabBar({ messages }: { messages?: { unread: number } | null }) {
   const pathname = usePathname();
@@ -141,13 +209,10 @@ export function AcademyTabBar({ messages }: { messages?: { unread: number } | nu
   // drags it along. The spacer keeps the page's last lines clear of it.
   return (
     <>
-      <div
-        aria-hidden="true"
-        className="h-[calc(3.5rem+1px+env(safe-area-inset-bottom))] shrink-0 md:hidden print:hidden"
-      />
+      <div aria-hidden="true" className="h-(--tab-bar-space) shrink-0 md:hidden print:hidden" />
       <nav
         aria-label="Academy"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] md:hidden print:hidden"
+        className="fixed inset-x-3 bottom-(--tab-bar-gap) z-30 rounded-[1.375rem] border border-border bg-surface p-1.5 shadow-[0_10px_30px_rgb(22_20_31/0.12),0_2px_6px_rgb(22_20_31/0.06)] md:hidden print:hidden"
       >
         <TabList pathname={pathname} messages={messages ?? null} />
       </nav>
@@ -162,42 +227,62 @@ function TabList({
   pathname: string;
   messages: { unread: number } | null;
 }) {
+  const links = messages ? MESSAGE_TAB_LINKS : TAB_LINKS;
+  // Explore sits inside the Courses tab on phones, and SOPs inside Serve.
+  const currentFlags = links.map(
+    (link) =>
+      isCurrent(pathname, link.href) ||
+      (link.href === "/courses" && pathname === "/explore") ||
+      (messages !== null && link.href === "/serve" && isCurrent(pathname, "/sops")),
+  );
+  const currentIndex = currentFlags.indexOf(true);
   return (
-    <ul className="grid grid-cols-5">
-      {(messages ? MESSAGE_TAB_LINKS : TAB_LINKS).map((link) => {
-        // Explore sits inside the Courses tab on phones, and SOPs inside Serve.
-        const current =
-          isCurrent(pathname, link.href) ||
-          (link.href === "/courses" && pathname === "/explore") ||
-          (messages !== null && link.href === "/serve" && isCurrent(pathname, "/sops"));
-        const Icon = link.icon;
-        return (
-          <li key={link.href}>
-            <Link
-              href={link.href}
-              aria-current={current ? "page" : undefined}
-              className={`relative flex min-h-14 flex-col items-center justify-center gap-1 text-[0.6875rem] transition-surface ${
-                current ? "font-semibold text-text" : "font-medium text-text-muted hover:text-text"
-              }`}
-            >
-              <span
-                className={`relative flex h-7 w-13 items-center justify-center rounded-pill ${
-                  current ? "bg-accent-soft text-accent-light" : ""
+    <div className="relative">
+      {/* One pill, moved under the current tab; hidden on pages that aren't a tab. */}
+      <span
+        aria-hidden="true"
+        className={`absolute inset-y-0 left-0 transition-[translate,opacity] duration-[var(--duration-spring)] ease-[var(--ease-spring)] ${
+          currentIndex < 0 ? "opacity-0" : ""
+        }`}
+        style={{
+          width: `${100 / links.length}%`,
+          translate: `${Math.max(currentIndex, 0) * 100}% 0`,
+        }}
+      >
+        <span className="absolute inset-0.5 rounded-2xl bg-accent-soft" />
+      </span>
+      <ul className="relative grid grid-cols-5">
+        {links.map((link, index) => {
+          const current = currentFlags[index];
+          const Icon = link.icon;
+          return (
+            <li key={link.href}>
+              <Link
+                href={link.href}
+                aria-current={current ? "page" : undefined}
+                className={`relative flex min-h-[3.25rem] flex-col items-center justify-center gap-[3px] text-[0.625rem] transition-colors duration-[var(--duration-base)] ${
+                  current ? "font-semibold text-accent-light" : "font-medium text-text-muted"
                 }`}
               >
-                <Icon className="size-5" />
-              </span>
-              {link.label}
-              {messages && link.href === "/messages" ? (
-                <MessagesBadge
-                  initial={messages.unread}
-                  className="top-1 left-[calc(50%+0.375rem)]"
-                />
-              ) : null}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+                <span
+                  className={`flex transition-transform duration-[var(--duration-spring)] ease-[var(--ease-spring)] ${
+                    current ? "-translate-y-px scale-110" : ""
+                  }`}
+                >
+                  <Icon className="size-[1.375rem]" />
+                </span>
+                {link.label}
+                {messages && link.href === "/messages" ? (
+                  <MessagesBadge
+                    initial={messages.unread}
+                    className="absolute top-0.5 left-[calc(50%+0.25rem)] ring-2 ring-surface"
+                  />
+                ) : null}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }

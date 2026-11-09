@@ -51,6 +51,23 @@ export function BrandMark({ height = 22, className }: { height?: number; classNa
   return <IfcMark height={height} className={`mark-on-theme ${className ?? ""}`} />;
 }
 
+/** The side bar's brand: the mark, with the name on two small lines that hide when it's folded. */
+export function StackedWordmark({ nameClassName = "" }: { nameClassName?: string }) {
+  const { name } = useBrand();
+  const { lead, soft } = wordmarkParts(name);
+  return (
+    <span className="flex min-w-0 items-center gap-2">
+      <BrandMark height={28} className="shrink-0" />
+      <span
+        className={`flex min-w-0 flex-col text-[0.5625rem] leading-tight font-bold text-text ${nameClassName}`}
+      >
+        <span className="truncate">{lead}</span>
+        <span className="truncate text-text-secondary">{soft}</span>
+      </span>
+    </span>
+  );
+}
+
 export function Wordmark() {
   const { name } = useBrand();
   const { lead, soft } = wordmarkParts(name);

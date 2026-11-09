@@ -9,6 +9,9 @@ export type Appearance = (typeof APPEARANCES)[number];
 export const APPEARANCE_COOKIE = "appearance";
 export const APPEARANCE_MAX_AGE = 60 * 60 * 24 * 400;
 
+/** The device cookie that remembers whether the learner side bar is folded to icons. */
+export const ACADEMY_SIDEBAR_COOKIE = "academy_sidebar";
+
 export function parseAppearance(value: string | null | undefined): Appearance {
   return (APPEARANCES as readonly string[]).includes(value ?? "") ? (value as Appearance) : "light";
 }
