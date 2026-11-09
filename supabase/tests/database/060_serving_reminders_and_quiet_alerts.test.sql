@@ -2,6 +2,8 @@
 -- quiet hours for phones, and one learning reminder a day.
 begin;
 select no_plan();
+-- Start with the launch switch off, as it was before go-live.
+update public.organizations set notifications_live = false;
 
 create function pg_temp.act_as(p_id uuid) returns void language plpgsql as $$
 begin

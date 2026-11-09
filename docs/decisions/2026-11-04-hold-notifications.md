@@ -1,6 +1,7 @@
 # Hold notifications until launch
 
-**Decided by G, 2026-11-04.** Requirement: ADD-NOTIF-02.
+**Decided by G, 2026-11-04.** Requirement: ADD-NOTIF-02. **The switch was turned on 2026-11-09**
+([decision](2026-11-09-notifications-live.md)).
 
 ## Why
 

@@ -4,6 +4,8 @@
 -- notices from the 15-minute job never go to phones.
 begin;
 select no_plan();
+-- Start with the launch switch off, as it was before go-live.
+update public.organizations set notifications_live = false;
 
 create function pg_temp.new_user(p_id uuid, p_name text) returns void language sql as $$
   insert into auth.users (instance_id, id, aud, role, email, raw_user_meta_data, created_at, updated_at)

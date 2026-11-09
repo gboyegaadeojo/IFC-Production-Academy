@@ -254,7 +254,7 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ID | Addition | Level |
 | --- | --- | --- |
 | ADD-NOTIF-01 | Gentle reminder after 14 days of inactivity (configurable) | S |
-| ADD-NOTIF-02 | Until launch, notifications show in the app but aren't emailed or sent to devices, except to named testers, and what's held is never sent later. One switch turns them on (decision 2026-11-04) | M |
+| ADD-NOTIF-02 | Until launch, notifications show in the app but aren't emailed or sent to devices, except to named testers, and what's held is never sent later. One switch turns them on (decision 2026-11-04). Turned on 2026-11-09 (decision 2026-11-09) | M |
 | ADD-SCHED-01 | Quick reference: a service-day view with the SOPs for the volunteer's assigned role two taps from Home | S |
 | ADD-REPORT-01 | Readiness matrix for the Production Director: approved volunteers per role per department | S |
 | ADD-REPORT-02 | Volunteers see their own quiz results on Profile: quizzes passed, lessons complete, and each quiz's best score and tries. Leaders see Course progress in Reports: who has finished, is in progress, or hasn't started, with each person's lessons, best quiz score, and practical. There is no overall score or ranking, and neither view affects who serves (G, 2026-11-04) | S |

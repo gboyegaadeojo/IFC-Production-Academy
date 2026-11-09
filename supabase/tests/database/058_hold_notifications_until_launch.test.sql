@@ -22,7 +22,8 @@ insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values
   ('a8000000-0000-4000-8000-000000000001', 'https://push.example.net/send/fake-held-1', repeat('B', 87), repeat('a', 22)),
   ('a8000000-0000-4000-8000-000000000002', 'https://push.example.net/send/fake-held-2', repeat('B', 87), repeat('a', 22));
 
-select is((select bool_or(notifications_live) from public.organizations), false, 'the switch starts off');
+-- The switch is on in production (20270118120000_notifications_live.sql); test what it does when off.
+update public.organizations set notifications_live = false;
 
 select private.notify('a8000000-0000-4000-8000-000000000001', 'learning_nudge', 'Fake', 'Fake', '/home', 'held-volunteer');
 select private.notify('a8000000-0000-4000-8000-000000000002', 'learning_nudge', 'Fake', 'Fake', '/home', 'held-tester');
