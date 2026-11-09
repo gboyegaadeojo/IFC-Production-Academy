@@ -52,7 +52,15 @@
     { id: "m5", from: "me", time: "9:20", text: "Got it. I'm on camera 3 this week." },
     { id: "m6", from: "taylor", time: "9:31", text: "Tripod plate on camera 1 is cracked. Flagged it.", photos: [2, 3, 1] },
     { id: "m7", from: "jordan", time: "9:33", text: "Thanks Taylor. The spare plate is in the grey case." },
+    { id: "m8", from: "jordan", time: "9:40", text: "Run sheet for Sunday.", doc: { name: "Sunday run sheet.pdf", kind: "PDF", size: "240 KB" } },
+    { id: "m9", from: "sam", time: "9:41", gif: 0 },
   ];
+
+  // Drawn stand-ins for GIFs from GIPHY search (G, 2026-11-08: rated G only).
+  const GIFS = ["Thumbs up", "Applause", "Let's go", "Thank you", "Coffee", "High five"];
+  function gif(n) {
+    return '<span class="gif-art g' + (n % 6) + '"><span>' + GIFS[n % 6] + "</span></span>";
+  }
 
   // ---- Drawn photos (simple scenes, so nothing real is shown) -------------------------------
 
@@ -130,6 +138,7 @@
     { id: "states", label: "7 · Empty and offline" },
     { id: "settings", label: "8 · Notification settings" },
     { id: "group", label: "9 · New group chat (leaders)" },
+    { id: "attach", label: "10 · GIFs and documents" },
     { id: "nav", label: "Where Messages lives" },
   ];
 
@@ -159,6 +168,10 @@
     navPhone: NAV_PHONE,
     navComputer: NAV_COMPUTER,
     sent: [],
+    attachOpen: false,
+    gifOpen: false,
+    gifQuery: "",
+    docUpload: null,
     group: { name: "", everyone: true, picked: {}, created: false },
   };
 
@@ -173,6 +186,10 @@
     if (id === "leader") state.menuFor = "m6";
     if (id === "dm") { state.dmPicked = null; state.dmQuery = ""; }
     if (id === "group") state.group = { name: "Sunday volunteers", everyone: true, picked: {}, created: false };
+    state.attachOpen = id === "attach";
+    state.gifOpen = false;
+    state.docUpload = null;
+    if (id === "attach") state.chat = "camera";
     render();
     if (id === "compose") startUpload();
   }
@@ -268,6 +285,15 @@
         body += '<div class="reply-quote"><b>' + esc(PEOPLE[r.from].name) + "</b> " + esc(r.text) + "</div>";
       }
       if (m.text) body += '<div class="bubble">' + esc(m.text) + "</div>";
+      if (m.doc) {
+        body +=
+          '<button class="doc" data-act="noop" aria-label="Open ' + esc(m.doc.name) + '">' +
+          '<span class="doc-icon">' + icon("file") + "</span>" +
+          '<span class="doc-info"><b>' + esc(m.doc.name) + "</b><span>" + m.doc.kind + " · " + m.doc.size + " · Tap to open</span></span></button>";
+      }
+      if (m.gif !== undefined) {
+        body += '<span class="gif" role="img" aria-label="GIF: ' + GIFS[m.gif % 6] + '">' + gif(m.gif) + '<span class="gif-badge">GIF</span></span>';
+      }
       if (m.photos) {
         body +=
           '<div class="photos n' + Math.min(m.photos.length, 3) + '">' +
@@ -320,11 +346,40 @@
         "</span>" +
         '<button class="icon-btn sm" data-act="remove-photo" aria-label="Remove photo">' + icon("close") + "</button></div>";
     }
+    if (state.docUpload) {
+      const d = state.docUpload;
+      attach =
+        '<div class="upload">' +
+        '<span class="upload-thumb doc-icon">' + icon("file") + "</span>" +
+        '<span class="upload-info"><b>' + (d.progress < 100 ? "Uploading " + d.progress + "%" : "Ready to send") + "</b><span>Sunday run sheet.pdf · PDF · 240 KB</span>" +
+        (d.progress < 100 ? '<span class="bar"><span style="width:' + d.progress + '%"></span></span>' : "") +
+        "</span>" +
+        '<button class="icon-btn sm" data-act="remove-doc" aria-label="Remove document">' + icon("close") + "</button></div>";
+    }
     const text = state.screen === "compose" ? c.text : "";
+    const attachMenu = state.attachOpen
+      ? '<div class="attach-menu" role="menu">' +
+        '<button role="menuitem" data-act="pick-photo">' + icon("photo") + "<span><b>Photo</b><small>Made smaller before it's sent</small></span></button>" +
+        '<button role="menuitem" data-act="open-gifs">' + '<span class="gif-mark">GIF</span>' + "<span><b>GIF</b><small>Search GIPHY, rated G only</small></span></button>" +
+        '<button role="menuitem" data-act="pick-doc">' + icon("file") + "<span><b>Document</b><small>PDF, Word, Excel, PowerPoint or text, up to 10 MB</small></span></button>" +
+        "</div>"
+      : "";
+    const gifPanel = state.gifOpen
+      ? '<div class="gif-panel" role="dialog" aria-label="Choose a GIF">' +
+        '<div class="gif-head"><label class="search">' + icon("search") + '<input data-input="gifQuery" placeholder="Search GIPHY" value="' + esc(state.gifQuery) + '" aria-label="Search GIPHY"></label>' +
+        '<button class="icon-btn sm" data-act="close-gifs" aria-label="Close">' + icon("close") + "</button></div>" +
+        '<div class="gif-grid">' +
+        GIFS.map(function (name, i) { return { name: name, i: i }; })
+          .filter(function (g) { return !state.gifQuery.trim() || g.name.toLowerCase().includes(state.gifQuery.trim().toLowerCase()); })
+          .map(function (g) { return '<button class="gif-pick" data-act="send-gif" data-id="' + g.i + '" aria-label="Send ' + g.name + ' GIF">' + gif(g.i) + "</button>"; })
+          .join("") +
+        "</div>" +
+        '<p class="gif-foot">Powered by GIPHY · Rated G only</p></div>'
+      : "";
     return (
-      '<div class="composer-wrap">' + attach +
+      '<div class="composer-wrap">' + attach + gifPanel + attachMenu +
       '<form class="composer" data-form="send">' +
-      '<button type="button" class="icon-btn" data-act="pick-photo" aria-label="Add a photo"' + (offline ? " disabled" : "") + ">" + icon("photo") + "</button>" +
+      '<button type="button" class="icon-btn attach-btn" data-act="attach" aria-label="Add a photo, GIF or document" aria-expanded="' + Boolean(state.attachOpen) + '"' + (offline ? " disabled" : "") + ">" + icon("plus") + "</button>" +
       '<input class="composer-input" data-input="draft" placeholder="' + (offline ? "You're offline. This will send when you're back." : "Message") + '" value="' + esc(text) + '" aria-label="Message">' +
       '<button type="submit" class="send" aria-label="Send"' + (state.screen === "compose" && c.stage === "uploading" ? " disabled" : "") + ">" + icon("send") + "</button>" +
       "</form></div>"
@@ -363,7 +418,7 @@
     let msgs = "";
     if (chat.id === "camera") {
       THREAD.forEach(function (m, i) { msgs += messageHtml(m, THREAD[i - 1]); });
-      state.sent.forEach(function (t) { msgs += messageHtml({ id: "s" + t.length, from: "me", time: "Now", text: t }, { from: "me" }); });
+      state.sent.forEach(function (s, i) { msgs += messageHtml(Object.assign({ id: "s" + i, from: "me", time: "Now" }, s), { from: "me" }); });
     } else {
       msgs =
         '<div class="day"><span>Today</span></div>' +
@@ -707,6 +762,7 @@
       states: "Switch between a chat with no messages and being offline.",
       settings: "The new Messages group, with a choice of phone, email or the app only, and mute per chat.",
       group: "Leaders only. Name the group, then turn on Everyone in the Academy, or turn it off and choose people.",
+      attach: "The + opens Photo, GIF and Document. Search for a GIF and pick one, or add a document and send it. Scroll up to see a shared PDF and a GIF.",
       nav: "Pick one phone and one computer option.",
     }[state.screen];
   }
@@ -763,7 +819,28 @@
         state.confirmFor = null;
         break;
       }
-      case "pick-photo": state.screen = "compose"; state.compose.text = state.compose.text || ""; render(); startUpload(); return;
+      case "attach": state.attachOpen = !state.attachOpen; state.gifOpen = false; break;
+      case "open-gifs": state.attachOpen = false; state.gifOpen = true; state.gifQuery = ""; break;
+      case "close-gifs": state.gifOpen = false; break;
+      case "send-gif":
+        state.sent.push({ gif: Number(id) });
+        state.gifOpen = false;
+        state.chat = "camera";
+        if (state.screen !== "thread") state.screen = "thread";
+        break;
+      case "pick-doc": {
+        state.attachOpen = false;
+        state.docUpload = { progress: 0 };
+        const docTimer = setInterval(function () {
+          if (!state.docUpload) { clearInterval(docTimer); return; }
+          state.docUpload.progress = Math.min(100, state.docUpload.progress + 20);
+          if (state.docUpload.progress >= 100) clearInterval(docTimer);
+          render();
+        }, 200);
+        break;
+      }
+      case "remove-doc": state.docUpload = null; break;
+      case "pick-photo": state.attachOpen = false; state.screen = "compose"; state.compose.text = state.compose.text || ""; render(); startUpload(); return;
       case "remove-photo": clearInterval(uploadTimer); state.compose.stage = "idle"; break;
       case "pick-person": state.dmPicked = id; break;
       case "notify": state.notify[id] = t.getAttribute("data-v"); break;
@@ -794,6 +871,7 @@
     if (key === "dmQuery") { state.dmQuery = e.target.value; render(); }
     if (key === "draft") state.compose.text = e.target.value;
     if (key === "groupName") { state.group.name = e.target.value; render(); }
+    if (key === "gifQuery") { state.gifQuery = e.target.value; render(); }
   });
 
   root.addEventListener("change", function (e) {
@@ -803,9 +881,16 @@
   root.addEventListener("submit", function (e) {
     e.preventDefault();
     const input = root.querySelector('[data-input="draft"]');
-    const text = (input && input.value.trim()) || (state.compose.stage === "ready" ? "Photo" : "");
-    if (!text || (state.screen === "states" && state.statesView === "offline")) return;
-    state.sent.push(text);
+    const text = (input && input.value.trim()) || "";
+    const photoReady = state.screen === "compose" && state.compose.stage === "ready";
+    const docReady = state.docUpload && state.docUpload.progress >= 100;
+    if ((!text && !photoReady && !docReady) || (state.screen === "states" && state.statesView === "offline")) return;
+    const sent = {};
+    if (text) sent.text = text;
+    if (photoReady) sent.photos = [1];
+    if (docReady) sent.doc = { name: "Sunday run sheet.pdf", kind: "PDF", size: "240 KB" };
+    state.sent.push(sent);
+    state.docUpload = null;
     state.compose = { stage: "idle", progress: 0, text: "" };
     state.chat = "camera";
     if (state.screen !== "thread") state.screen = "thread";
