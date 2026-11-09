@@ -34,4 +34,4 @@ Team managers add people to position teams in Planning Center when they're ready
 
 ## If the Academy schedules instead
 
-An administrator can switch scheduling from Planning Center to the Academy. If your church has done that, the page also offers **Days you're away**, **Ask for cover**, and **Open spots** to sign up for, and you accept or decline right here. If you decline, your scheduler is told, and the Academy asks a teammate who's free that day. It isn't switched on today.
+An administrator can switch scheduling from Planning Center to the Academy. If your church has done that, the page also offers **Blockout dates** (one day, a date range, part of a day, or repeating, such as every 1st Sunday, each with an optional reason your scheduler sees), **Ask for cover**, and **Open spots** to sign up for, and you accept or decline right here. If you decline, your scheduler is told, and the Academy asks a teammate who's free that day. It isn't switched on today.

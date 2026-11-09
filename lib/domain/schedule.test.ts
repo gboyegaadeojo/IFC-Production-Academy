@@ -12,7 +12,6 @@ import {
   sendRequestsSchema,
   syncedAgo,
   toScheduleError,
-  unavailabilitySchema,
   utcToWinnipeg,
   winnipegToUtc,
 } from "./schedule";
@@ -92,19 +91,6 @@ describe("eventDayLabel", () => {
   it("shows the Winnipeg day, even just after midnight there", () => {
     const start = winnipegToUtc("2026-12-06", "00:00")?.toISOString() ?? "";
     expect(eventDayLabel(start)).toContain("Dec 6");
-  });
-});
-
-describe("unavailabilitySchema", () => {
-  it("keeps the dates in order", () => {
-    expect(
-      unavailabilitySchema.safeParse({ startsOn: "2026-12-10", endsOn: "2026-12-09", note: "" })
-        .success,
-    ).toBe(false);
-    expect(
-      unavailabilitySchema.safeParse({ startsOn: "2026-12-10", endsOn: "2026-12-10", note: "" })
-        .success,
-    ).toBe(true);
   });
 });
 

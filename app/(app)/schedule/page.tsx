@@ -6,6 +6,7 @@ import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
 import { serviceChecklistHref } from "@/lib/domain/checklists";
 import { buttonClasses } from "@/components/ui/button";
 import { CalendarRangeIcon, CheckIcon, PlaneIcon } from "@/components/ui/icons";
+import { BlockoutForm } from "./blockout-form";
 import Loading from "./loading";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -27,12 +28,11 @@ import {
   getMyUpcomingAssignments,
   type MyAssignment,
 } from "@/lib/data/schedule";
-import { formatDate } from "@/lib/domain/dates";
+import { blockoutLabel, blocksDate } from "@/lib/domain/blockouts";
 import {
   addDays,
   dayLabel,
   gridRange,
-  isAway,
   monthLabel,
   parseDate,
   parseMonth,
@@ -47,7 +47,6 @@ import {
   winnipegToUtc,
 } from "@/lib/domain/schedule";
 import {
-  addUnavailabilityAction,
   removeUnavailabilityAction,
   requestCoverAction,
   respondAction,
@@ -127,7 +126,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
     ]);
   }
   for (let date = range.from; date <= range.to; date = addDays(date, 1)) {
-    if (isAway(date, away)) {
+    if (away.some((entry) => blocksDate(entry, date))) {
       marks.set(date, [...(marks.get(date) ?? []), { label: "Blocked", tone: "away" }]);
     }
   }
@@ -224,7 +223,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
           <DayPanel
             date={selected}
             assignments={inMonth.filter((a) => winnipegDate(a.event.startsAt) === selected)}
-            away={isAway(selected, away)}
+            away={away.some((entry) => blocksDate(entry, selected))}
             pco={pco}
             myRequests={myRequests}
           />
@@ -305,9 +304,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                   <ul className="flex flex-col gap-1">
                     {upcomingAway.map((entry) => (
                       <li key={entry.id} className="text-small">
-                        <span className="font-medium">
-                          {awayLabel(entry.startsOn, entry.endsOn)}
-                        </span>
+                        <span className="font-medium">{blockoutLabel(entry)}</span>
                         {entry.note ? (
                           <span className="block text-text-secondary">{entry.note}</span>
                         ) : null}
@@ -409,10 +406,11 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
       {pco ? null : (
         <section aria-labelledby="away-heading" className="flex flex-col gap-3">
           <h2 id="away-heading" className="text-heading font-semibold">
-            Days you&apos;re away
+            Blockout dates
           </h2>
           <p className="max-w-3xl text-small text-text-secondary">
-            Leaders won&apos;t be able to schedule you on these days without overriding it.
+            Times you can&apos;t serve: one day, a date range, part of a day, or repeating.
+            Schedulers see them, and the Academy never picks you then.
           </p>
           {away.length > 0 ? (
             <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
@@ -422,7 +420,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                   className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <span className="flex flex-col">
-                    <span className="font-medium">{awayLabel(entry.startsOn, entry.endsOn)}</span>
+                    <span className="font-medium">{blockoutLabel(entry)}</span>
                     {entry.note ? (
                       <span className="text-small text-text-muted">{entry.note}</span>
                     ) : null}
@@ -440,31 +438,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
             </ul>
           ) : null}
           <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
-            <ActionForm
-              action={addUnavailabilityAction}
-              submitLabel="Add days away"
-              pendingLabel="Saving…"
-              variant="secondary"
-              className="flex flex-col gap-3"
-            >
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field id="away-from" label="From">
-                  <input
-                    id="away-from"
-                    name="startsOn"
-                    type="date"
-                    required
-                    className={fieldClasses}
-                  />
-                </Field>
-                <Field id="away-to" label="To (optional)">
-                  <input id="away-to" name="endsOn" type="date" className={fieldClasses} />
-                </Field>
-              </div>
-              <Field id="away-note" label="Note (optional)">
-                <input id="away-note" name="note" maxLength={200} className={fieldClasses} />
-              </Field>
-            </ActionForm>
+            <BlockoutForm today={today} />
           </div>
         </section>
       )}
@@ -711,11 +685,6 @@ const KEY_DOT: Record<(typeof KEY)[number][0], string> = {
   declined: "ring-[1.5px] ring-warning ring-inset",
   away: "bg-error",
 };
-
-function awayLabel(startsOn: string, endsOn: string): string {
-  const from = formatDate(`${startsOn}T12:00:00Z`);
-  return startsOn === endsOn ? from : `${from} – ${formatDate(`${endsOn}T12:00:00Z`)}`;
-}
 
 function MonthLink({
   href,

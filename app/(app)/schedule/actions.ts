@@ -5,7 +5,8 @@ import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
 import * as schedule from "@/lib/data/schedule";
-import { scheduleErrorMessage, unavailabilitySchema } from "@/lib/domain/schedule";
+import { blockoutSchema } from "@/lib/domain/blockouts";
+import { scheduleErrorMessage } from "@/lib/domain/schedule";
 
 // A volunteer's own schedule (SRS-SCHED): confirm or decline, and mark unavailable days.
 
@@ -36,13 +37,14 @@ export async function respondAction(_: FormState, formData: FormData): Promise<F
   };
 }
 
-export async function addUnavailabilityAction(
-  _: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const input = unavailabilitySchema.safeParse({
+export async function addBlockoutAction(_: FormState, formData: FormData): Promise<FormState> {
+  const input = blockoutSchema.safeParse({
+    kind: text(formData.get("kind")),
     startsOn: text(formData.get("startsOn")),
-    endsOn: text(formData.get("endsOn")) || text(formData.get("startsOn")),
+    endsOn: text(formData.get("endsOn")),
+    startTime: text(formData.get("startTime")),
+    endTime: text(formData.get("endTime")),
+    repeat: text(formData.get("repeat")),
     note: text(formData.get("note")),
   });
   if (!input.success) {
@@ -51,12 +53,15 @@ export async function addUnavailabilityAction(
   if (!(await signedIn())) {
     return { status: "error", message: scheduleErrorMessage("not_authorized") };
   }
-  const result = await schedule.addUnavailability(input.data);
+  const result = await schedule.addBlockout(input.data);
   if (!result.ok) {
     return { status: "error", message: scheduleErrorMessage(result.error) };
   }
   refresh();
-  return { status: "done", message: "Saved. Leaders will see you're away." };
+  return {
+    status: "done",
+    message: "Saved. Schedulers will see you're away, and anyone scheduling you then is told.",
+  };
 }
 
 export async function removeUnavailabilityAction(

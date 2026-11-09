@@ -122,16 +122,6 @@ export const eventSchema = z
     };
   });
 
-export const unavailabilitySchema = z
-  .object({
-    startsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Choose the first day."),
-    endsOn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Choose the last day."),
-    note: z.string().trim().max(200, "Keep the note under 200 characters."),
-  })
-  .refine((value) => value.endsOn >= value.startsOn, {
-    message: "The last day can't be before the first.",
-  });
-
 // ---------------------------------------------------------------------------
 // Labels
 // ---------------------------------------------------------------------------
