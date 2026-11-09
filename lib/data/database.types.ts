@@ -1169,6 +1169,7 @@ export type Database = {
           assigned_at: string;
           responded_at: string | null;
           cancelled_at: string | null;
+          request_sent_at: string | null;
         } & Timestamps;
         // Written only through the scheduling functions, which run the checks.
         Insert: never;
@@ -1735,6 +1736,18 @@ export type Database = {
           conflict: boolean;
           unavailable: boolean;
         }[];
+      };
+      event_conflicts: {
+        Args: { p_event_id: string };
+        Returns: {
+          assignment_id: string;
+          serving_elsewhere: string | null;
+          blocked_out: string | null;
+        }[];
+      };
+      send_assignment_requests: {
+        Args: { p_event_id: string; p_assignment_ids: string[]; p_message?: string | null };
+        Returns: number;
       };
       add_event_position: { Args: { p_event_id: string; p_role_id: string }; Returns: string };
       remove_event_position: { Args: { p_position_id: string }; Returns: undefined };

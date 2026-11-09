@@ -14,11 +14,12 @@ import {
   type EventDetail,
   type PositionDetail,
 } from "@/lib/data/schedule";
-import { hasCapability } from "@/lib/domain/capabilities";
 import {
-  ASSIGNMENT_STATUS_LABELS,
+  assignmentStatusLabel,
   candidateLabel,
   eventTimeLabel,
+  groupPlaces,
+  type PositionGroup,
   READINESS_LABELS,
   utcToWinnipeg,
 } from "@/lib/domain/schedule";
@@ -30,6 +31,7 @@ import {
   cancelAssignmentAction,
   cancelEventAction,
   removePositionAction,
+  sendRequestsAction,
   updateEventAction,
   setSignupsAction,
 } from "../actions";
@@ -110,23 +112,25 @@ async function EventContent({ params }: Pick<Props, "params">) {
         ) : null}
       </header>
 
+      {open ? <SendRequests eventId={event.id} positions={event.positions} /> : null}
+
       <section aria-labelledby="positions-heading" className="flex flex-col gap-4">
         <h2 id="positions-heading" className="text-heading font-semibold">
           Positions
         </h2>
         {event.positions.length === 0 ? (
           <EmptyState title="No positions yet">
-            Add the roles this event needs, one position for each person.
+            Add the positions this service needs. A position can need more than one person.
           </EmptyState>
         ) : (
-          <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
-            {event.positions.map((position) => (
-              <Position
-                key={position.id}
-                position={position}
+          <ul className="flex max-w-3xl flex-col gap-4">
+            {groupPlaces(event.positions).map((group) => (
+              <PositionGroupCard
+                key={group.roleId}
+                group={group}
+                eventId={event.id}
                 open={open}
-                coverRequested={coverRequested.has(position.id)}
-                canOverride={hasCapability(grants, "schedule.override", position.departmentId)}
+                coverRequested={coverRequested}
               />
             ))}
           </ul>
@@ -184,16 +188,80 @@ async function EventContent({ params }: Pick<Props, "params">) {
   );
 }
 
-async function Position({
+/** One position on the service, with its places: "Camera 2, 1 of 2 filled". */
+function PositionGroupCard({
+  group,
+  eventId,
+  open,
+  coverRequested,
+}: {
+  group: PositionGroup<PositionDetail>;
+  eventId: string;
+  open: boolean;
+  coverRequested: ReadonlySet<string>;
+}) {
+  const canManage = group.places.some((place) => place.canManage);
+  // The last place nobody has ever held can go, to need one fewer.
+  const spare = [...group.places].reverse().find((place) => !place.assignment);
+  const needed = group.places.length;
+  return (
+    <li className="flex flex-col rounded-card border border-border">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-card px-4 py-3">
+        <p className="font-medium">
+          {group.roleName}
+          <span className="font-normal text-text-muted"> · {group.departmentName}</span>
+        </p>
+        <span className="text-small text-text-secondary tabular-nums">
+          {group.filled} of {needed} filled
+        </span>
+        {open && canManage ? (
+          <span className="ml-auto flex flex-wrap gap-2">
+            <ActionForm
+              action={addPositionAction}
+              submitLabel="Need one more"
+              pendingLabel="Adding…"
+              variant="tertiary"
+              hidden={{ eventId, roleId: group.roleId }}
+              srLabel={group.roleName}
+              className="flex"
+            />
+            {spare ? (
+              <ActionForm
+                action={removePositionAction}
+                submitLabel={needed === 1 ? "Remove position" : "Need one fewer"}
+                pendingLabel="Removing…"
+                variant="tertiary"
+                hidden={{ positionId: spare.id }}
+                srLabel={group.roleName}
+                className="flex"
+              />
+            ) : null}
+          </span>
+        ) : null}
+      </div>
+      <ul className="flex flex-col divide-y divide-border">
+        {group.places.map((place) => (
+          <Place
+            key={place.id}
+            position={place}
+            open={open}
+            coverRequested={coverRequested.has(place.id)}
+          />
+        ))}
+      </ul>
+    </li>
+  );
+}
+
+/** One place in a position: who holds it, any warning, and scheduling someone into it. */
+async function Place({
   position,
   open,
   coverRequested,
-  canOverride,
 }: {
   position: PositionDetail;
   open: boolean;
   coverRequested: boolean;
-  canOverride: boolean;
 }) {
   const active =
     position.assignment &&
@@ -204,38 +272,53 @@ async function Position({
   const supervisors = candidates.filter((c) => c.approved);
 
   return (
-    <li className="flex flex-col gap-3 p-4">
-      <div className="flex flex-col gap-1">
-        <p className="font-medium">
-          {position.roleName}
-          <span className="font-normal text-text-muted"> · {position.departmentName}</span>
+    <li className="flex flex-col gap-3 px-4 py-3">
+      {active ? (
+        <div className="flex flex-wrap items-center gap-2 text-small">
+          <span className="font-medium">{active.name}</span>
+          <StatusBadge
+            tone={
+              active.status === "confirmed" ? "success" : active.requestSent ? "pending" : "neutral"
+            }
+          >
+            {assignmentStatusLabel(active)}
+          </StatusBadge>
+          <StatusBadge tone={active.readiness === "approved" ? "success" : "info"}>
+            {READINESS_LABELS[active.readiness]}
+          </StatusBadge>
+          {coverRequested ? <StatusBadge tone="pending">Cover requested</StatusBadge> : null}
+          {active.supervisorName ? (
+            <span className="text-text-muted">Alongside: {active.supervisorName}</span>
+          ) : null}
+        </div>
+      ) : (
+        <p className="text-small text-text-muted">
+          Open
+          {position.assignment?.status === "declined"
+            ? ` · ${position.assignment.name} declined`
+            : ""}
         </p>
-        {active ? (
-          <div className="flex flex-wrap items-center gap-2 text-small">
-            <span>{active.name}</span>
-            <StatusBadge tone={active.status === "confirmed" ? "success" : "pending"}>
-              {ASSIGNMENT_STATUS_LABELS[active.status]}
-            </StatusBadge>
-            <StatusBadge tone={active.readiness === "approved" ? "success" : "info"}>
-              {READINESS_LABELS[active.readiness]}
-            </StatusBadge>
-            {coverRequested ? <StatusBadge tone="pending">Cover requested</StatusBadge> : null}
-            {active.supervisorName ? (
-              <span className="text-text-muted">Alongside: {active.supervisorName}</span>
-            ) : null}
-          </div>
-        ) : (
-          <p className="text-small text-text-muted">
-            Open
-            {position.assignment?.status === "declined"
-              ? ` · ${position.assignment.name} declined`
-              : ""}
-          </p>
-        )}
-        {active?.overrideReason ? (
-          <p className="text-small text-text-secondary">Override reason: {active.overrideReason}</p>
-        ) : null}
-      </div>
+      )}
+      {active && (active.servingElsewhere || active.blockedOut) ? (
+        <div
+          role="note"
+          className="flex flex-col gap-0.5 rounded-button border border-warning-line bg-warning-soft px-3 py-2 text-small"
+        >
+          <span className="font-medium">Conflict for {active.name}</span>
+          {active.servingElsewhere ? (
+            <span className="text-text-secondary">
+              Also scheduled that day as {active.servingElsewhere}.
+            </span>
+          ) : null}
+          {active.blockedOut ? (
+            <span className="text-text-secondary">Blocked out: {active.blockedOut}.</span>
+          ) : null}
+          <span className="text-text-secondary">Nothing is blocked. Keep both or change one.</span>
+        </div>
+      ) : null}
+      {active?.overrideReason ? (
+        <p className="text-small text-text-secondary">Note: {active.overrideReason}</p>
+      ) : null}
 
       {open && position.canManage ? (
         active ? (
@@ -259,17 +342,26 @@ async function Position({
         ) : (
           <details>
             <summary className="flex min-h-control cursor-pointer items-center text-small font-medium text-accent-light">
-              Schedule someone<span className="sr-only"> as {position.roleName}</span>
+              Add someone<span className="sr-only"> as {position.roleName}</span>
             </summary>
             <div className="mt-3 flex flex-col gap-3">
               <ActionForm
                 action={assignAction}
-                submitLabel="Schedule"
-                pendingLabel="Checking…"
+                submitLabel="Add"
+                pendingLabel="Adding…"
                 hidden={{ positionId: position.id }}
               >
-                <Field id={`who-${position.id}`} label="Volunteer">
-                  <select id={`who-${position.id}`} name="userId" className={fieldClasses}>
+                <Field
+                  id={`who-${position.id}`}
+                  label="Volunteer"
+                  hint="Only this position's team is listed. Someone already serving that day, or blocked out, can still be added, with a warning."
+                >
+                  <select
+                    id={`who-${position.id}`}
+                    name="userId"
+                    aria-describedby={`who-${position.id}-hint`}
+                    className={fieldClasses}
+                  >
                     {candidates.map((candidate) => (
                       <option key={candidate.id} value={candidate.id}>
                         {candidateLabel(candidate)}
@@ -296,39 +388,76 @@ async function Position({
                     ))}
                   </select>
                 </Field>
-                {canOverride ? (
-                  <Field
-                    id={`override-${position.id}`}
-                    label="Override reason (only if you must)"
-                    hint="Lets you schedule someone who is already serving then, or has said they're away. Kept in the audit log."
-                  >
-                    <input
-                      id={`override-${position.id}`}
-                      name="overrideReason"
-                      maxLength={300}
-                      aria-describedby={`override-${position.id}-hint`}
-                      className={fieldClasses}
-                    />
-                  </Field>
-                ) : null}
               </ActionForm>
             </div>
           </details>
         )
       ) : null}
-
-      {open && position.canManage && !position.assignment ? (
-        <ActionForm
-          action={removePositionAction}
-          submitLabel="Remove position"
-          pendingLabel="Removing…"
-          variant="tertiary"
-          hidden={{ positionId: position.id }}
-          srLabel={position.roleName}
-          className="flex"
-        />
-      ) : null}
     </li>
+  );
+}
+
+/** Everyone added but not asked yet, to send their requests in one go. */
+function SendRequests({ eventId, positions }: { eventId: string; positions: PositionDetail[] }) {
+  const unsent = positions.flatMap((position) =>
+    position.canManage &&
+    position.assignment?.status === "pending" &&
+    !position.assignment.requestSent
+      ? [{ assignment: position.assignment, roleName: position.roleName }]
+      : [],
+  );
+  if (unsent.length === 0) {
+    return null;
+  }
+  return (
+    <section
+      aria-labelledby="send-heading"
+      className="flex max-w-3xl flex-col gap-3 rounded-card border border-accent bg-surface p-5"
+    >
+      <h2 id="send-heading" className="text-heading font-semibold">
+        Send requests
+      </h2>
+      <p className="text-text-secondary">
+        {unsent.length === 1 ? "1 person hasn't" : `${unsent.length} people haven't`} been asked
+        yet. Each person gets one email for everything they&apos;re on at this service, and can
+        accept or decline. Untick anyone you want to hold back.
+      </p>
+      <ActionForm
+        action={sendRequestsAction}
+        submitLabel="Send requests"
+        pendingLabel="Sending…"
+        hidden={{ eventId }}
+      >
+        <fieldset className="flex flex-col gap-2">
+          <legend className="sr-only">Who to ask</legend>
+          {unsent.map(({ assignment, roleName }) => (
+            <label key={assignment.id} className="flex min-h-control items-center gap-3">
+              <input
+                type="checkbox"
+                name="assignmentIds"
+                value={assignment.id}
+                defaultChecked
+                className="size-5"
+              />
+              <span>
+                {assignment.name}
+                <span className="text-text-muted"> · {roleName}</span>
+              </span>
+            </label>
+          ))}
+        </fieldset>
+        <Field id="send-message" label="Add a message (optional)">
+          <textarea
+            id="send-message"
+            name="message"
+            rows={2}
+            maxLength={500}
+            placeholder="For example: rehearsal starts 15 minutes early this week."
+            className={`${fieldClasses} py-3`}
+          />
+        </Field>
+      </ActionForm>
+    </section>
   );
 }
 

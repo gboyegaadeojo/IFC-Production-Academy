@@ -44,7 +44,9 @@ export async function getMyUpcomingAssignments(userId: string): Promise<MyAssign
     .from("event_assignments")
     .select("id, status, readiness, event_id, role_id, department_id")
     .eq("user_id", userId)
-    .in("status", ["pending", "confirmed", "declined"]);
+    .in("status", ["pending", "confirmed", "declined"])
+    // A scheduler's request that hasn't been sent yet isn't theirs to see.
+    .not("request_sent_at", "is", null);
   if (assignments.error) {
     throw new Error("Could not load your schedule", { cause: assignments.error.code });
   }
@@ -217,6 +219,7 @@ export async function getUpcomingEvents(): Promise<EventSummary[]> {
 
 export type PositionDetail = {
   id: string;
+  roleId: string;
   departmentId: string;
   departmentName: string;
   roleName: string;
@@ -229,6 +232,12 @@ export type PositionDetail = {
     readiness: AssignmentReadiness;
     supervisorName: string | null;
     overrideReason: string | null;
+    /** False until the scheduler sends the request. */
+    requestSent: boolean;
+    /** Another position they're on that day, if any: a warning, never a block. */
+    servingElsewhere: string | null;
+    /** Their blockout note, if they're blocked out that day. */
+    blockedOut: string | null;
   } | null;
 };
 
@@ -245,6 +254,26 @@ export type EventDetail = {
   /** Roles the person may add positions for. */
   roles: { id: string; name: string; departmentName: string }[];
 };
+
+type Conflict = { servingElsewhere: string | null; blockedOut: string | null };
+
+/** Warnings for the people on a service, for departments the person schedules. */
+async function getEventConflicts(
+  supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+  eventId: string,
+): Promise<Map<string, Conflict>> {
+  const { data, error } = await supabase.rpc("event_conflicts", { p_event_id: eventId });
+  if (error) {
+    // Only schedulers get warnings; anyone else simply sees none.
+    return new Map();
+  }
+  return new Map(
+    data.map((row) => [
+      row.assignment_id,
+      { servingElsewhere: row.serving_elsewhere, blockedOut: row.blocked_out },
+    ]),
+  );
+}
 
 export async function getEventDetail(
   eventId: string,
@@ -270,7 +299,9 @@ export async function getEventDetail(
       .order("sort_order"),
     supabase
       .from("event_assignments")
-      .select("id, position_id, user_id, status, readiness, supervisor_id, override_reason")
+      .select(
+        "id, position_id, user_id, status, readiness, supervisor_id, override_reason, request_sent_at",
+      )
       .eq("event_id", eventId)
       .in("status", ["pending", "confirmed", "declined"])
       .order("assigned_at", { ascending: false }),
@@ -286,9 +317,12 @@ export async function getEventDetail(
       cause: (positions.error ?? assignments.error ?? departments.error ?? roles.error)?.code,
     });
   }
-  const people = await peopleById(supabase, [
-    ...assignments.data.map((a) => a.user_id),
-    ...assignments.data.flatMap((a) => (a.supervisor_id ? [a.supervisor_id] : [])),
+  const [people, conflicts] = await Promise.all([
+    peopleById(supabase, [
+      ...assignments.data.map((a) => a.user_id),
+      ...assignments.data.flatMap((a) => (a.supervisor_id ? [a.supervisor_id] : [])),
+    ]),
+    getEventConflicts(supabase, eventId),
   ]);
   const departmentName = (id: string) => departments.data.find((d) => d.id === id)?.name ?? "";
   return {
@@ -309,6 +343,7 @@ export async function getEventDetail(
         ) ?? assignments.data.find((a) => a.position_id === position.id);
       return {
         id: position.id,
+        roleId: position.role_id,
         departmentId: position.department_id,
         departmentName: departmentName(position.department_id),
         roleName: roles.data.find((r) => r.id === position.role_id)?.name ?? "A serving role",
@@ -324,6 +359,9 @@ export async function getEventDetail(
                 ? personFor(people, current.supervisor_id).displayName
                 : null,
               overrideReason: current.override_reason,
+              requestSent: current.request_sent_at !== null,
+              servingElsewhere: conflicts.get(current.id)?.servingElsewhere ?? null,
+              blockedOut: conflicts.get(current.id)?.blockedOut ?? null,
             }
           : null,
       };
@@ -409,6 +447,21 @@ export async function updateEvent(
   return data.length === 1 ? { ok: true } : { ok: false, error: "event_closed" };
 }
 
+/** Emails each chosen person one request to accept. Returns how many people were asked. */
+export async function sendAssignmentRequests(
+  eventId: string,
+  assignmentIds: string[],
+  message: string,
+): Promise<WithValue<number>> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("send_assignment_requests", {
+    p_event_id: eventId,
+    p_assignment_ids: assignmentIds,
+    p_message: message === "" ? null : message,
+  });
+  return error ? fail(error) : { ok: true, value: data };
+}
+
 export async function cancelEvent(eventId: string): Promise<ScheduleResult> {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.rpc("cancel_event", { p_event_id: eventId });
@@ -480,6 +533,7 @@ export async function getMyAssignmentsBetween(
     .select("id, status, readiness, event_id, role_id, department_id")
     .eq("user_id", userId)
     .in("status", ["pending", "confirmed", "declined"])
+    .not("request_sent_at", "is", null)
     .in(
       "event_id",
       events.data.map((e) => e.id),
