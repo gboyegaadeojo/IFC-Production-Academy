@@ -7,6 +7,8 @@ alter table public.service_types
   add column reminder_days integer not null default 2 check (reminder_days between 1 and 7);
 alter table public.events
   add column reminder_days integer not null default 2 check (reminder_days between 1 and 7);
+-- Schedulers change a service's reminder directly, as they change its details.
+grant update (reminder_days) on public.events to authenticated;
 
 -- Services made from a type take its reminder, as they take its sign-up setting.
 create function private.event_reminder_from_type()
