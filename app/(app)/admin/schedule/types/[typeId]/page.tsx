@@ -98,7 +98,7 @@ async function ServiceTypeContent({ params }: Pick<Props, "params">) {
         </div>
         <ActionForm
           action={setTypeTemplateAction}
-          submitLabel="Save"
+          submitLabel="Save usual plan"
           pendingLabel="Saving…"
           variant="secondary"
           hidden={{ typeId: type.id }}
