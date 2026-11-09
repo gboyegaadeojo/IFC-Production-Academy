@@ -49,7 +49,7 @@ Open your name, then choose your name at the top of the menu. Your profile shows
 
 ## Notifications
 
-Until the Academy launches, notifications stay in the app. Choose the bell beside your name. A dot on it means something is unread. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it slides up from the bottom. Choose the bell again, or anywhere outside the panel, to close it.
+Notifications come to your phone and email as you've chosen, and they're all in the app too. Choose the bell beside your name. A dot on it means something is unread. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it slides up from the bottom. Choose the bell again, or anywhere outside the panel, to close it.
 
 Each notification has an icon for what it's about (serving, training, or leading) and a line in purple saying what tapping it does, such as **Confirm or decline**.
 
@@ -62,7 +62,7 @@ You're also told when a leader changes something for you: a role given or remove
 
 ### Notification settings
 
-Here you turn on alerts for the device you're using, and choose what also reaches your phone or your email. There's one choice for each group: **Serving**, **Training**, for leaders **Leading**, and, when Messages is switched on, **Messages**. Each has a **Phone** button and an **Email** button. A tick means it's on. A dash means only some kinds in that group are on.
+Here you turn on alerts for the device you're using, and choose what also reaches your phone or your email. There's one choice for each group: **Serving**, **Training**, for leaders **Leading**, and, when Messages is switched on, **Messages**. Each has a **Phone** button and an **Email** button, except Messages, which is never emailed and has only **Phone**. A tick means it's on. A dash means only some kinds in that group are on.
 
 To choose kinds one by one, open **Fine-tune each alert**. Most people never need it.
 

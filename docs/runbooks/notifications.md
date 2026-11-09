@@ -58,19 +58,20 @@ sends the alerts with the VAPID keys. Both are Cloudflare secrets already set fo
   ("4 new messages in Camera Operations"), and at most one every 20 seconds per person per chat.
 - **Privacy:** a direct message alert says who it's from, never the words. Group and department chat
   alerts show the start of the message.
-- **Rules that still apply:** quiet hours (20:00 to 08:00), the launch switch (testers only until
-  launch), and nothing while messaging is off.
+- **Rules that still apply:** quiet hours (20:00 to 08:00), the launch switch (on since 2026-11-09),
+  and nothing while messaging is off.
 - **Logs:** counts only ("Message alerts: 3 sent, 0 devices gone, 0 failed"), in the Worker's logs.
 
-The 15-minute job still writes message notices for the bell and for email (people without phone
-alerts, at most one email every 4 hours). `private.route_notification()` keeps those notices off
-phones, so nobody gets a second alert for the same messages.
+The 15-minute job still writes message notices for the bell. `private.route_notification()` keeps
+them off phones, so nobody gets a second alert for the same messages, and **never emails them**
+(G, 2026-11-09: `20270118120100_no_message_emails.sql`). The settings page offers only a Phone
+choice for Messages.
 
 Emails are sent every 15 minutes by `.github/workflows/notifications.yml`, which runs
 `scripts/send-notifications.ts`. A Cloudflare timer starts it, because GitHub's own schedule can run
 hours late ([how it works](scheduling.md#starting-jobs-on-time)). Until the secrets below are set,
-nothing is emailed and notifications stay in the app. The secrets are set, so **the launch switch
-below is what holds email now.**
+nothing is emailed and notifications stay in the app. The secrets are set and the launch switch
+below is on, so **everyone gets email and alerts as they've chosen.**
 
 ## Secrets (GitHub → Settings → Secrets and variables → Actions)
 
@@ -120,27 +121,30 @@ fails and the failure alert emails the admins.
 
 ## The launch switch
 
+**On since 2026-11-09** (`20270118120000_notifications_live.sql`), as the first volunteers start:
+everyone gets email and phone alerts as they've chosen. Decided in
+`docs/decisions/2026-11-09-notifications-live.md`.
+
 While `organizations.notifications_live` is false, notifications still show in the app, but aren't
 emailed or sent to devices. Each one is marked `skipped` as it's written, so **it's never sent
-later**, and nobody gets a pile of old notices on launch day.
+later**. What was held before 2026-11-09 stayed held.
 
-People in `notification_testers` are let through, so a pilot can check real emails. Add them by
-account in the Supabase SQL editor, and never put their addresses in this repository:
+People in `notification_testers` are let through while it's off, so a pilot can check real emails.
+Add them by account in the Supabase SQL editor, and never put their addresses in this repository:
 
 ```sql
 insert into public.notification_testers (user_id)
 select id from auth.users where email = 'someone@example.com';
 ```
 
-To go live, at launch only:
+To hold everything again (testers still get theirs):
 
 ```sql
-update public.organizations set notifications_live = true;
+update public.organizations set notifications_live = false;
 ```
 
-Then remove the sentence about this from `docs/guides/getting-started.md`. This switch doesn't
-affect sign-in links, or the job alerts and weekly summary that go to the admins. Onboarding emails
-have their own switch, below.
+This switch doesn't affect sign-in links, or the job alerts and weekly summary that go to the
+admins. Onboarding emails have their own switch, below, and it's still off.
 
 ## Onboarding emails
 
@@ -162,8 +166,8 @@ on, new emails are written as `pending` and go out on the next run, outside quie
 
 - Run the workflow by hand (Actions → Notifications → Run workflow) and look for
   `Notification emails: N sent, 0 failed`.
-- Before launch, add yourself to `notification_testers`. Do something that notifies you, wait for the next run, and check the email
-  arrives with a link back to the Academy.
+- Do something that notifies you, wait for the next run, and check the email arrives with a link
+  back to the Academy.
 
 ## Resend's limits
 

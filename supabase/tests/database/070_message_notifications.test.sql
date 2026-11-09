@@ -1,6 +1,6 @@
 -- Message notifications: one per person per chat, never for your own messages, not while muted or
--- read, not for brand-new messages, private wording for direct messages, at most one email every
--- 4 hours, and nothing while messaging is off.
+-- read, not for brand-new messages, private wording for direct messages, never emailed, and nothing
+-- while messaging is off.
 begin;
 select no_plan();
 
@@ -28,7 +28,7 @@ insert into public.department_memberships (department_id, user_id, status, decid
   ('b7ba9dae-cab5-43e0-a996-8ae9d2436855', 'a8600000-0000-4000-8000-000000000002', 'active', now());
 insert into public.user_roles (user_id, role_id)
 select 'a8600000-0000-4000-8000-000000000003', r.id from public.roles r where r.key = 'platform_admin';
--- Emails would otherwise be held until launch (ADD-NOTIF-02); the 4-hour rule needs them pending.
+-- With the launch switch on (ADD-NOTIF-02), so a held email can't pass for a skipped one.
 update public.organizations set notifications_live = true;
 
 create temporary table ctx (key text primary key, id uuid);
@@ -68,13 +68,13 @@ select public.queue_message_notifications();
 select is((select count(*)::int from public.notifications where user_id = 'a8600000-0000-4000-8000-000000000001' and kind = 'message'), 1,
   'a message under two minutes old waits');
 
--- A second batch within 4 hours shows in the app and on phones, but isn't emailed.
+-- A second batch makes a new notice in the app. Message notices are never emailed (G, 2026-11-09).
 update public.messages set created_at = now() - interval '3 minutes' where body = 'Fake: just now';
 select public.queue_message_notifications();
 select is((select count(*)::int from public.notifications where user_id = 'a8600000-0000-4000-8000-000000000001' and kind = 'message'), 2,
   'later messages make a new notice');
 select is((select count(*)::int from public.notifications where user_id = 'a8600000-0000-4000-8000-000000000001' and kind = 'message'
-  and email_status = 'pending'), 1, 'but only one email in 4 hours');
+  and email_status = 'pending'), 0, 'and no message notice is emailed');
 
 -- Muted chats stay quiet.
 select pg_temp.act_as('a8600000-0000-4000-8000-000000000001');

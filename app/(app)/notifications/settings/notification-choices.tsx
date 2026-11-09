@@ -33,6 +33,10 @@ const CHANNELS: { id: Channel; label: string }[] = [
   { id: "email", label: "Email" },
 ];
 
+function channelsFor(group: NotificationGroup) {
+  return group.phoneOnly ? CHANNELS.filter(({ id }) => id === "phone") : CHANNELS;
+}
+
 const PRESSED: Record<GroupChoice, "true" | "false" | "mixed"> = {
   on: "true",
   off: "false",
@@ -109,7 +113,7 @@ export function NotificationChoices({
                 </span>
               </div>
               <div role="group" aria-label={group.title} className="flex flex-wrap gap-2">
-                {CHANNELS.map(({ id, label }) => {
+                {channelsFor(group).map(({ id, label }) => {
                   const current = groupChoice(group.kinds, choices[id]);
                   return (
                     <ChoiceButton
@@ -157,7 +161,7 @@ export function NotificationChoices({
                     {hint ? <span className="text-small text-text-muted">{hint}</span> : null}
                   </span>
                   <span className="flex gap-2">
-                    {CHANNELS.map(({ id, label }) => (
+                    {channelsFor(group).map(({ id, label }) => (
                       <ChoiceButton
                         key={id}
                         small

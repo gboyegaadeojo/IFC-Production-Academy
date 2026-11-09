@@ -196,6 +196,11 @@ describe("emailChoiceGroups", () => {
       "messages",
     ]);
   });
+
+  it("offers only a phone choice for messages, which are never emailed", () => {
+    const phoneOnly = NOTIFICATION_GROUPS.filter((g) => g.phoneOnly).map((g) => g.id);
+    expect(phoneOnly).toEqual(["messages"]);
+  });
 });
 
 describe("relativeTime", () => {

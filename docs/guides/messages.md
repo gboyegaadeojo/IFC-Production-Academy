@@ -71,9 +71,9 @@ Nobody else can delete someone's direct messages. Every deletion goes in the aud
 
 You aren't alerted for your own messages, a chat you've muted, or a chat you have open on screen.
 
-**By email**, new messages come a few at a time, at most once every 4 hours, and only if you don't have alerts on a phone.
+**New messages are never emailed.** To hear about them away from the app, turn on alerts on your phone.
 
-Choose where these reach you under the bell, then **Settings**, in the **Messages** group: your phone, your email, or the app only. Under the bell they always show. Nothing reaches your phone or email between 20:00 and 08:00.
+Under the bell, then **Settings**, the **Messages** group has a **Phone** button: turn it off to stop message alerts. New messages always show under the bell. Nothing reaches your phone between 20:00 and 08:00.
 
 ## Earlier messages and who's in a chat
 

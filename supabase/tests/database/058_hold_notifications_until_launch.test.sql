@@ -22,7 +22,8 @@ insert into public.push_subscriptions (user_id, endpoint, p256dh, auth) values
   ('a8000000-0000-4000-8000-000000000001', 'https://push.example.net/send/fake-held-1', repeat('B', 87), repeat('a', 22)),
   ('a8000000-0000-4000-8000-000000000002', 'https://push.example.net/send/fake-held-2', repeat('B', 87), repeat('a', 22));
 
-select is((select bool_or(notifications_live) from public.organizations), false, 'the switch starts off');
+-- The switch is on in production (20270118120000_notifications_live.sql); test what it does when off.
+update public.organizations set notifications_live = false;
 
 select private.notify('a8000000-0000-4000-8000-000000000001', 'learning_nudge', 'Fake', 'Fake', '/home', 'held-volunteer');
 select private.notify('a8000000-0000-4000-8000-000000000002', 'learning_nudge', 'Fake', 'Fake', '/home', 'held-tester');
@@ -37,8 +38,9 @@ select is((select push_status from public.notifications where dedupe_key = 'held
   'and the device alert');
 
 set local role service_role;
-select is((select array_agg(email) from public.claim_email_notifications(50)), array['held.tester@example.com'],
-  'the email job only ever gets the tester''s');
+-- Seed data written with the switch on may also be waiting, so look only at these two.
+select is((select array_agg(email) from public.claim_email_notifications(50) where email like 'held.%'),
+  array['held.tester@example.com'], 'the email job only ever gets the tester''s');
 select is((select array_agg(endpoint) from public.claim_push_batch(50)), null::text[],
   'and a new notification waits a minute for the device job, as before');
 reset role;
