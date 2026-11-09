@@ -1219,6 +1219,9 @@ export type Database = {
           created_at: string;
           source: string;
           external_id: string | null;
+          start_time: string | null;
+          end_time: string | null;
+          repeat_rule: string | null;
         };
         Insert: never;
         Update: never;
@@ -1787,6 +1790,17 @@ export type Database = {
         Returns: string;
       };
       save_event_times: { Args: { p_event_id: string; p_times: Json }; Returns: number };
+      add_blockout: {
+        Args: {
+          p_starts_on: string;
+          p_ends_on: string;
+          p_note?: string;
+          p_start_time?: string | null;
+          p_end_time?: string | null;
+          p_repeat?: string | null;
+        };
+        Returns: string;
+      };
       event_conflicts: {
         Args: { p_event_id: string };
         Returns: {

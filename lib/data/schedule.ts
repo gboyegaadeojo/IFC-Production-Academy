@@ -1,6 +1,7 @@
 import "server-only";
 import { peopleById, personFor } from "@/lib/data/admin/shared";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { REPEAT_RULES, type Blockout, type RepeatRule } from "@/lib/domain/blockouts";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
 import {
   toScheduleError,
@@ -106,14 +107,14 @@ export async function getMyUpcomingAssignments(userId: string): Promise<MyAssign
     .toSorted((a, b) => (a.event.startsAt < b.event.startsAt ? -1 : 1));
 }
 
-export type Unavailable = { id: string; startsOn: string; endsOn: string; note: string };
+export type Unavailable = Blockout & { id: string };
 
 export async function getMyUnavailability(userId: string): Promise<Unavailable[]> {
   const supabase = await createSupabaseServerClient();
   const today = new Date().toISOString().slice(0, 10);
   const { data, error } = await supabase
     .from("unavailability")
-    .select("id, starts_on, ends_on, note")
+    .select("id, starts_on, ends_on, note, start_time, end_time, repeat_rule")
     .eq("user_id", userId)
     .gte("ends_on", today)
     .order("starts_on");
@@ -125,6 +126,11 @@ export async function getMyUnavailability(userId: string): Promise<Unavailable[]
     startsOn: row.starts_on,
     endsOn: row.ends_on,
     note: row.note,
+    startTime: row.start_time?.slice(0, 5) ?? null,
+    endTime: row.end_time?.slice(0, 5) ?? null,
+    repeat: (REPEAT_RULES as readonly string[]).includes(row.repeat_rule ?? "")
+      ? (row.repeat_rule as RepeatRule)
+      : null,
   }));
 }
 
@@ -140,16 +146,15 @@ export async function respondToAssignment(
   return error ? fail(error) : { ok: true };
 }
 
-export async function addUnavailability(input: {
-  startsOn: string;
-  endsOn: string;
-  note: string;
-}): Promise<ScheduleResult> {
+export async function addBlockout(blockout: Blockout): Promise<ScheduleResult> {
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("add_unavailability", {
-    p_starts_on: input.startsOn,
-    p_ends_on: input.endsOn,
-    p_note: input.note,
+  const { error } = await supabase.rpc("add_blockout", {
+    p_starts_on: blockout.startsOn,
+    p_ends_on: blockout.endsOn,
+    p_note: blockout.note,
+    p_start_time: blockout.startTime,
+    p_end_time: blockout.endTime,
+    p_repeat: blockout.repeat,
   });
   return error ? fail(error) : { ok: true };
 }
