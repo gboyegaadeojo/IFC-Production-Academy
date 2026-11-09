@@ -122,6 +122,8 @@ select is((select count(*)::int from public.claim_message_alerts((select id from
 select private.notify('a8800000-0000-4000-8000-000000000002', 'message', 'Fake notice', 'Fake', '/messages', 'fake-message-notice');
 select is((select push_status::text from public.notifications where dedupe_key = 'fake-message-notice'), 'none',
   'a message notice never sends a second phone alert');
+select is((select email_status::text from public.notifications where dedupe_key = 'fake-message-notice'), 'skipped',
+  'or an email');
 
 -- Only the Worker's service role can claim alerts.
 select pg_temp.act_as('a8800000-0000-4000-8000-000000000002');

@@ -62,9 +62,10 @@ sends the alerts with the VAPID keys. Both are Cloudflare secrets already set fo
   and nothing while messaging is off.
 - **Logs:** counts only ("Message alerts: 3 sent, 0 devices gone, 0 failed"), in the Worker's logs.
 
-The 15-minute job still writes message notices for the bell and for email (people without phone
-alerts, at most one email every 4 hours). `private.route_notification()` keeps those notices off
-phones, so nobody gets a second alert for the same messages.
+The 15-minute job still writes message notices for the bell. `private.route_notification()` keeps
+them off phones, so nobody gets a second alert for the same messages, and **never emails them**
+(G, 2026-11-09: `20270118120100_no_message_emails.sql`). The settings page offers only a Phone
+choice for Messages.
 
 Emails are sent every 15 minutes by `.github/workflows/notifications.yml`, which runs
 `scripts/send-notifications.ts`. A Cloudflare timer starts it, because GitHub's own schedule can run

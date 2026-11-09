@@ -17,9 +17,13 @@ A first group of volunteers starts using the Academy from 2026-11-10. They need 
 - **Onboarding emails stay off.** They go to people on a pathway who may not have an account, and
   keep their own switch, `organizations.onboarding_emails_enabled`.
 - `notification_testers` stays, in case the switch is turned off again.
+- **Messages are never emailed,** only sent as phone alerts and shown under the bell. G didn't want
+  "New message from…" emails. This replaces the 4-hourly message email in
+  [the team messaging decision](2026-11-08-team-messaging.md). Message emails waiting to be sent
+  were dropped. The settings page shows only a Phone choice for Messages.
 
 ## Watch
 
 Resend's free plan allows 100 emails a day, shared with sign-in links. Email is only for people
-without phone alerts, and message emails are at most one every 4 hours, so a small group fits well.
-Emails over the limit wait for a later run.
+without phone alerts, and messages are never emailed, so a small group fits well. Emails over the
+limit wait for a later run.

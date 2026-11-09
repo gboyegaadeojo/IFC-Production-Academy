@@ -130,6 +130,8 @@ export type NotificationGroup = {
   id: "serving" | "training" | "leading" | "messages";
   title: string;
   kinds: readonly NotificationKind[];
+  /** Never emailed, so only the Phone choice is offered. */
+  phoneOnly?: boolean;
 };
 
 /** Email choices, grouped the way people think about them (approved mock, 2026-11-01). */
@@ -181,8 +183,9 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "role_removed",
     ],
   },
-  // Only while messaging is on (team messaging decision, 2026-11-08; ADD-MSG-06).
-  { id: "messages", title: "Messages", kinds: ["message"] },
+  // Only while messaging is on (team messaging decision, 2026-11-08; ADD-MSG-06). Phone only: G
+  // doesn't want emails about new messages (2026-11-09).
+  { id: "messages", title: "Messages", kinds: ["message"], phoneOnly: true },
 ];
 
 /** What each group covers, in a line, on the settings page (refinements mock, 2026-11-06). */
@@ -194,7 +197,7 @@ export const NOTIFICATION_GROUP_HINTS: Record<NotificationGroup["id"], string> =
   leading:
     "Roles a leader gives or removes, join requests, people ready for an assessment, SOP reviews, and onboarding follow-ups",
   messages:
-    "New messages in your chats, a few at a time: one notice per chat, and at most one email every 4 hours. Mute a chat to stop its notices",
+    "New messages in your chats, as a phone alert. They're never emailed. Mute a chat to stop its alerts",
 };
 
 export type GroupChoice = "on" | "off" | "some";
