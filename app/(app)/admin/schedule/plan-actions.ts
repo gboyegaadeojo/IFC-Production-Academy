@@ -6,6 +6,8 @@ import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import * as plans from "@/lib/data/plans";
+import { addServiceFile, removeServiceFile } from "@/lib/data/service-files";
+import { checkServiceFile } from "@/lib/domain/service-files";
 import {
   eventTimesSchema,
   planErrorMessage,
@@ -219,4 +221,41 @@ export async function createServiceAction(_: FormState, formData: FormData): Pro
     return error(planErrorMessage(result.error));
   }
   redirect(`/admin/schedule/${result.value}`);
+}
+
+export async function addServiceFileAction(_: FormState, formData: FormData): Promise<FormState> {
+  const eventId = id.safeParse(formData.get("eventId"));
+  const file = formData.get("file");
+  if (!eventId.success || !(await allowed())) {
+    return error(planErrorMessage("not_authorized"));
+  }
+  if (!(file instanceof File)) {
+    return error("Choose a file.");
+  }
+  const check = checkServiceFile(file);
+  if (!check.ok) {
+    return error(check.message);
+  }
+  const result = await addServiceFile(eventId.data, file);
+  if (!result.ok) {
+    return error(planErrorMessage(result.error));
+  }
+  refresh();
+  return { status: "done", message: `Added ${file.name}. Everyone asked to serve can open it.` };
+}
+
+export async function removeServiceFileAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const fileId = id.safeParse(formData.get("fileId"));
+  if (!fileId.success || !(await allowed())) {
+    return error(planErrorMessage("not_authorized"));
+  }
+  const result = await removeServiceFile(fileId.data);
+  if (!result.ok) {
+    return error(planErrorMessage(result.error));
+  }
+  refresh();
+  return { status: "done", message: "File removed." };
 }

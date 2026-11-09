@@ -1034,6 +1034,22 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      service_files: {
+        Row: {
+          id: string;
+          event_id: string;
+          path: string;
+          name: string;
+          mime_type: string;
+          bytes: number;
+          uploaded_by: string | null;
+          created_at: string;
+        };
+        // Changed only through add_service_file and remove_service_file.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       scheduling_preferences: {
         Row: {
           user_id: string;
@@ -1822,6 +1838,33 @@ export type Database = {
         }[];
       };
       apply_schedule_proposal: { Args: { p_items: Json }; Returns: number };
+      add_service_file: {
+        Args: {
+          p_event_id: string;
+          p_path: string;
+          p_name: string;
+          p_mime_type: string;
+          p_bytes: number;
+        };
+        Returns: string;
+      };
+      remove_service_file: { Args: { p_id: string }; Returns: string };
+      reset_my_calendar_feed: { Args: never; Returns: string };
+      stop_my_calendar_feed: { Args: never; Returns: undefined };
+      my_calendar_feed_since: { Args: never; Returns: string | null };
+      calendar_feed: {
+        Args: { p_token: string };
+        Returns: {
+          assignment_id: string;
+          role_name: string;
+          department_name: string;
+          title: string;
+          location: string;
+          starts_at: string;
+          ends_at: string;
+          confirmed: boolean;
+        }[];
+      };
       add_blockout: {
         Args: {
           p_starts_on: string;

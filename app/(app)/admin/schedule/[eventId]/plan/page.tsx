@@ -7,13 +7,17 @@ import { getAdminAccess } from "@/lib/data/admin/access";
 import { getSchedulingSource } from "@/lib/data/planning-center";
 import { getNoteHeadings, getServicePlan, listPlanTemplates } from "@/lib/data/plans";
 import { getEventDetail } from "@/lib/data/schedule";
+import { getServiceFiles } from "@/lib/data/service-files";
 import { formatLength, PLAN_ITEM_KIND_LABELS, planTimeline } from "@/lib/domain/plan";
 import { eventTimeLabel } from "@/lib/domain/schedule";
+import { fileSizeLabel, SERVICE_FILE_TYPES } from "@/lib/domain/service-files";
 import { AccessDenied } from "../../../access-denied";
 import { PageSkeleton } from "../../../page-skeleton";
 import { PlanEditor } from "../../plan-editor";
 import {
+  addServiceFileAction,
   applyTemplateAction,
+  removeServiceFileAction,
   savePlanTemplateAction,
   saveServicePlanAction,
 } from "../../plan-actions";
@@ -48,11 +52,12 @@ async function ServicePlanContent({ params }: { params: Promise<{ eventId: strin
   if (!event) {
     notFound();
   }
-  const [source, plan, templates, headings] = await Promise.all([
+  const [source, plan, templates, headings, files] = await Promise.all([
     getSchedulingSource(),
     getServicePlan(eventId),
     listPlanTemplates(),
     getNoteHeadings(),
+    getServiceFiles([eventId]),
   ]);
   const open =
     source === "academy" &&
@@ -167,6 +172,72 @@ async function ServicePlanContent({ params }: { params: Promise<{ eventId: strin
               calendars.
             </p>
             <TimesEditor eventId={event.id} startsAt={event.startsAt} initialTimes={plan.times} />
+          </section>
+
+          <section aria-labelledby="files-heading" className="flex max-w-3xl flex-col gap-3">
+            <h2 id="files-heading" className="text-heading font-semibold">
+              Files
+            </h2>
+            <p className="text-small text-text-secondary">
+              Stage plots, run sheets, and the like. Only schedulers and the people asked to serve
+              at this service can open them.
+            </p>
+            {files.length > 0 ? (
+              <ul className="flex flex-col divide-y divide-border rounded-card border border-border">
+                {files.map((file) => (
+                  <li
+                    key={file.id}
+                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                  >
+                    <span className="flex flex-col">
+                      {file.url ? (
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-accent-light underline-offset-4 hover:underline"
+                        >
+                          {file.name}
+                        </a>
+                      ) : (
+                        <span className="font-medium">{file.name}</span>
+                      )}
+                      <span className="text-small text-text-muted">
+                        {SERVICE_FILE_TYPES[file.mimeType] ?? "File"} · {fileSizeLabel(file.bytes)}
+                      </span>
+                    </span>
+                    <ActionForm
+                      action={removeServiceFileAction}
+                      submitLabel="Remove"
+                      pendingLabel="Removing…"
+                      variant="tertiary"
+                      hidden={{ fileId: file.id }}
+                      srLabel={file.name}
+                      className="flex"
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <ActionForm
+              action={addServiceFileAction}
+              submitLabel="Add file"
+              pendingLabel="Uploading…"
+              variant="secondary"
+              hidden={{ eventId: event.id }}
+              className="flex flex-wrap items-end gap-3"
+            >
+              <Field id="service-file" label="File (up to 10 MB)">
+                <input
+                  id="service-file"
+                  name="file"
+                  type="file"
+                  required
+                  accept={Object.keys(SERVICE_FILE_TYPES).join(",")}
+                  className={fieldClasses}
+                />
+              </Field>
+            </ActionForm>
           </section>
         </>
       ) : (

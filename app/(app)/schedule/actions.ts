@@ -6,6 +6,9 @@ import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
 import * as schedule from "@/lib/data/schedule";
 import { setMyPreferences } from "@/lib/data/auto-schedule";
+import { resetMyCalendarFeed, stopMyCalendarFeed } from "@/lib/data/calendar-feed";
+import { feedUrl } from "@/lib/domain/service-files";
+import { publicEnv } from "@/lib/env";
 import { preferencesSchema } from "@/lib/domain/auto-schedule";
 import { blockoutSchema } from "@/lib/domain/blockouts";
 import { scheduleErrorMessage } from "@/lib/domain/schedule";
@@ -158,4 +161,32 @@ export async function requestCoverAction(_: FormState, formData: FormData): Prom
     (assignmentId) => schedule.requestCover(assignmentId, note.data),
     "Asked. Your teammates who are free have been told. You stay scheduled until someone takes it.",
   );
+}
+
+/** A new calendar link, shown once. Any old link stops working. */
+export async function resetCalendarFeedAction(): Promise<FormState> {
+  if (!(await signedIn())) {
+    return { status: "error", message: scheduleErrorMessage("not_authorized") };
+  }
+  const token = await resetMyCalendarFeed();
+  if (!token) {
+    return { status: "error", message: "That didn't work. Check your connection and try again." };
+  }
+  refresh();
+  return {
+    status: "done",
+    message: `Your link: ${feedUrl(publicEnv().NEXT_PUBLIC_SITE_URL, token)} Copy it into your calendar app now. It isn't shown again; make a new one if you lose it.`,
+  };
+}
+
+export async function stopCalendarFeedAction(): Promise<FormState> {
+  if (!(await signedIn())) {
+    return { status: "error", message: scheduleErrorMessage("not_authorized") };
+  }
+  const ok = await stopMyCalendarFeed();
+  if (!ok) {
+    return { status: "error", message: "That didn't work. Check your connection and try again." };
+  }
+  refresh();
+  return { status: "done", message: "Your calendar link has stopped working." };
 }
