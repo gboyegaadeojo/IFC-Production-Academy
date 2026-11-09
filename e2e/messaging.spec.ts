@@ -146,7 +146,8 @@ test("on a phone, Messages sits in the middle of the tabs, and Serve holds the c
   await expect(tabs.getByRole("link")).toHaveText([
     "Training",
     "Courses",
-    "Messages",
+    // The unread count, when there is one, comes after the name: "Messages, 1 unread".
+    /^Messages(, \d+ unread)?$/,
     "Schedule",
     "Serve",
   ]);

@@ -27,7 +27,9 @@ export async function MessagesNavLink() {
         href="/messages"
         label="Messages"
         icon={<MessageIcon className="size-5" />}
-        badge={<MessagesBadge initial={messages.unread} />}
+        badge={
+          <MessagesBadge initial={messages.unread} className="top-0.5 left-[calc(50%+0.5rem)]" />
+        }
       />
     </li>
   );

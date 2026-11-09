@@ -78,7 +78,7 @@ export function AcademyNavLink({
     <Link
       href={href}
       aria-current={current ? "page" : undefined}
-      className={`group flex w-20 flex-col items-center gap-1 rounded-button py-1.5 text-center text-[0.625rem] leading-tight transition-surface [&_svg]:size-[1.125rem] ${
+      className={`group relative flex w-20 flex-col items-center gap-1 rounded-button py-1.5 text-center text-[0.625rem] leading-tight transition-surface [&_svg]:size-[1.125rem] ${
         current ? "font-semibold text-text" : "font-medium text-text-muted hover:text-text"
       }`}
     >
@@ -88,9 +88,9 @@ export function AcademyNavLink({
         }`}
       >
         {icon}
-        {badge}
       </span>
       {label}
+      {badge}
     </Link>
   );
 }
@@ -176,7 +176,7 @@ function TabList({
             <Link
               href={link.href}
               aria-current={current ? "page" : undefined}
-              className={`flex min-h-14 flex-col items-center justify-center gap-1 text-[0.6875rem] transition-surface ${
+              className={`relative flex min-h-14 flex-col items-center justify-center gap-1 text-[0.6875rem] transition-surface ${
                 current ? "font-semibold text-text" : "font-medium text-text-muted hover:text-text"
               }`}
             >
@@ -186,11 +186,14 @@ function TabList({
                 }`}
               >
                 <Icon className="size-5" />
-                {messages && link.href === "/messages" ? (
-                  <MessagesBadge initial={messages.unread} />
-                ) : null}
               </span>
               {link.label}
+              {messages && link.href === "/messages" ? (
+                <MessagesBadge
+                  initial={messages.unread}
+                  className="top-1 left-[calc(50%+0.375rem)]"
+                />
+              ) : null}
             </Link>
           </li>
         );
