@@ -133,6 +133,76 @@ test("a direct message is private, and a leader makes an everyone chat", async (
   ).toBeVisible();
 });
 
+/** A small blue picture drawn in the page, so a photo can be picked without a real one. */
+async function fakePhoto(page: Page): Promise<Buffer> {
+  const base64 = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 80;
+    canvas.height = 60;
+    const context = canvas.getContext("2d");
+    if (context) {
+      context.fillStyle = "#4f8cff";
+      context.fillRect(0, 0, 80, 60);
+    }
+    return canvas.toDataURL("image/png").split(",")[1] ?? "";
+  });
+  return Buffer.from(base64, "base64");
+}
+
+test("photos and documents are shared, and GIFs say when they aren't set up", async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, "Shared seed accounts: desktop project only");
+  test.setTimeout(120_000);
+  const stamp = Date.now();
+  await signInByEmail(page, "avery.volunteer@example.com");
+  await openChat(page, "Camera Operations");
+  const log = page.getByRole("log");
+
+  // A photo: made smaller in the browser, uploaded, then sent with words.
+  await page.getByLabel("Add photos").setInputFiles({
+    name: "fake-riser.png",
+    mimeType: "image/png",
+    buffer: await fakePhoto(page),
+  });
+  await expect(page.getByText(/^Ready · /)).toBeVisible({ timeout: 20_000 });
+  await page.getByLabel("Message", { exact: true }).fill(`Fake: riser photo ${stamp}`);
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(log.getByText(`Fake: riser photo ${stamp}`)).toBeVisible();
+  await expect(log.getByRole("button", { name: "Open photo 1 of 1" }).last()).toBeVisible();
+
+  // The full photo opens on its own, and closes again.
+  await log.getByRole("button", { name: "Open photo 1 of 1" }).last().click();
+  await expect(page.getByRole("dialog", { name: "Photo 1 of 1" })).toBeVisible();
+  await page.getByRole("button", { name: "Close" }).click();
+
+  // A document: checked by its name and first bytes, then shared on its own.
+  await page.getByLabel("Add a document").setInputFiles({
+    name: `Fake run sheet ${stamp}.pdf`,
+    mimeType: "application/pdf",
+    buffer: Buffer.from("%PDF-1.4\n% Fake run sheet for tests\n%%EOF\n"),
+  });
+  await expect(page.getByText(/^Ready · /)).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(log.getByText(`Fake run sheet ${stamp}.pdf`)).toBeVisible();
+
+  // A program renamed to .pdf is refused before it's uploaded.
+  await page.getByLabel("Add a document").setInputFiles({
+    name: "not-really.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("MZ fake program"),
+  });
+  await expect(
+    page.getByText("That file isn't what its name says, so it can't be shared."),
+  ).toBeVisible();
+
+  // GIFs need the GIPHY key, which tests don't have.
+  await page.getByRole("button", { name: "Add a photo, GIF or document" }).click();
+  await page.getByRole("button", { name: /^GIF/ }).click();
+  await expect(page.getByText(/GIFs aren't set up yet/)).toBeVisible();
+});
+
 test("on a phone, Messages sits in the middle of the tabs, and Serve holds the checklist", async ({
   browser,
   isMobile,

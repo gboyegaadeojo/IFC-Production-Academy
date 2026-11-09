@@ -9,6 +9,7 @@ import {
   type ConversationSummary,
   type MessagingPerson,
 } from "@/lib/domain/messages";
+import type { ChatAttachment, OutgoingAttachment } from "@/lib/domain/chat-files";
 
 // Team messaging (ADD-MSG-01 to 03, 07). The database checks the feature flag, membership, and
 // capabilities on every call, and audits deletions; these only shape the results.
@@ -37,6 +38,8 @@ export async function getMyConversations(): Promise<ConversationSummary[]> {
             lastSenderName: row.last_sender_name,
             lastMine: row.last_mine ?? false,
             lastDeleted: row.last_deleted ?? false,
+            lastAttachmentKind: row.last_attachment_kind,
+            lastAttachmentCount: row.last_attachment_count,
             unread: row.unread_count,
             muted: row.muted,
           },
@@ -75,8 +78,50 @@ export async function getConversation(id: string): Promise<ConversationDetails |
   };
 }
 
-function toMessage(row: MessageRow): ChatMessage {
+const SIGNED_URL_SECONDS = 60;
+
+type StoredAttachment = {
+  id: string;
+  kind: string;
+  removed: boolean;
+  full_path: string | null;
+  thumb_path: string | null;
+  gif_url: string | null;
+  width: number | null;
+  height: number | null;
+  bytes: number | null;
+  file_name: string | null;
+  mime_type: string | null;
+};
+
+function storedAttachments(value: unknown): StoredAttachment[] {
+  return Array.isArray(value) ? (value as StoredAttachment[]) : [];
+}
+
+function toAttachment(item: StoredAttachment, links: Map<string, string>): ChatAttachment | null {
+  if (item.kind !== "photo" && item.kind !== "document" && item.kind !== "gif") {
+    return null;
+  }
   return {
+    id: item.id,
+    kind: item.kind,
+    removed: item.removed,
+    thumbUrl: item.thumb_path ? (links.get(item.thumb_path) ?? null) : null,
+    width: item.width,
+    height: item.height,
+    fileName: item.file_name,
+    mimeType: item.mime_type,
+    bytes: item.bytes,
+    gifUrl: item.gif_url,
+  };
+}
+
+function toMessage(row: MessageRow, links: Map<string, string>): ChatMessage {
+  return {
+    attachments: storedAttachments(row.attachments).flatMap((item) => {
+      const attachment = toAttachment(item, links);
+      return attachment ? [attachment] : [];
+    }),
     id: row.id,
     senderId: row.sender_id,
     senderName: row.sender_name ?? "Someone who left",
@@ -101,7 +146,64 @@ export async function getMessages(id: string, after?: string): Promise<ChatMessa
   if (error) {
     throw new Error("Could not load messages", { cause: error.code });
   }
-  return data.map(toMessage);
+  // Thumbnails only; a full photo or a document gets its own link when it's opened.
+  const thumbs = data.flatMap((row) =>
+    storedAttachments(row.attachments).flatMap((item) =>
+      item.thumb_path ? [item.thumb_path] : [],
+    ),
+  );
+  const links = new Map<string, string>();
+  if (thumbs.length > 0) {
+    const signed = await supabase.storage
+      .from("chat-files")
+      .createSignedUrls(thumbs, SIGNED_URL_SECONDS);
+    for (const item of signed.data ?? []) {
+      if (item.path && item.signedUrl) {
+        links.set(item.path, item.signedUrl);
+      }
+    }
+  }
+  return data.map((row) => toMessage(row, links));
+}
+
+/**
+ * A one-minute link to a full photo, or to download a document, for someone who can read its
+ * chat (row-level security decides). Null if it's gone or not theirs.
+ */
+export async function getAttachmentLink(attachmentId: string): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("message_attachments")
+    .select("full_path, file_name, kind, removed_at")
+    .eq("id", attachmentId)
+    .maybeSingle();
+  if (!data?.full_path || data.removed_at) {
+    return null;
+  }
+  const { data: link } = await supabase.storage
+    .from("chat-files")
+    .createSignedUrl(data.full_path, SIGNED_URL_SECONDS, {
+      download: data.kind === "document" ? (data.file_name ?? true) : false,
+    });
+  return link?.signedUrl ?? null;
+}
+
+/** The first bytes of an uploaded file, to check it's what its name says. */
+export async function readFirstBytes(path: string): Promise<Uint8Array | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.storage.from("chat-files").createSignedUrl(path, 30);
+  if (!data?.signedUrl) {
+    return null;
+  }
+  try {
+    const response = await fetch(data.signedUrl, {
+      headers: { Range: "bytes=0-1023" },
+      signal: AbortSignal.timeout(8000),
+    });
+    return response.ok ? new Uint8Array(await response.arrayBuffer()).slice(0, 1024) : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function getMessagingPeople(): Promise<MessagingPerson[]> {
@@ -124,6 +226,7 @@ export async function sendMessage(
   clientId: string,
   body: string,
   replyTo: string | null,
+  attachments: OutgoingAttachment[] = [],
 ): Promise<string | null> {
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("send_message", {
@@ -131,6 +234,7 @@ export async function sendMessage(
     p_client_id: clientId,
     p_body: body,
     p_reply_to: replyTo,
+    p_attachments: attachments,
   });
   return error ? null : data;
 }

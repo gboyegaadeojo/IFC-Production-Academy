@@ -56,6 +56,20 @@ describe("conversationPreview", () => {
     expect(conversationPreview({ ...chat, kind: "direct" })).toMatch(/^Thanks Taylor/);
   });
 
+  it("says what a message without words carried", () => {
+    expect(
+      conversationPreview({
+        ...chat,
+        lastBody: null,
+        lastAttachmentKind: "photo",
+        lastAttachmentCount: 2,
+      }),
+    ).toBe("Jordan: 2 photos");
+    expect(conversationPreview({ ...chat, lastBody: null, lastAttachmentKind: "gif" })).toBe(
+      "Jordan: GIF",
+    );
+  });
+
   it("covers empty and deleted", () => {
     expect(conversationPreview({ ...chat, lastMessageAt: null })).toBe("No messages yet");
     expect(conversationPreview({ ...chat, lastDeleted: true })).toBe("Message deleted");

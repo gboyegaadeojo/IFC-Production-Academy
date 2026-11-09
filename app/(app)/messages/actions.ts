@@ -5,18 +5,28 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
+import { searchGifs, type GifSearch } from "@/lib/data/giphy";
 import {
   createGroupConversation,
   deleteMessage,
+  getAttachmentLink,
   getMessages,
   getMessagesUnread,
   markConversationRead,
+  readFirstBytes,
   renameGroupConversation,
   sendMessage,
   setConversationMuted,
   startDirectConversation,
 } from "@/lib/data/messages";
-import { groupTitleSchema, messageBodySchema, type ChatMessage } from "@/lib/domain/messages";
+import {
+  documentTypeFor,
+  matchesSignature,
+  MAX_DOCUMENT_BYTES,
+  MAX_PHOTOS,
+  type OutgoingAttachment,
+} from "@/lib/domain/chat-files";
+import { groupTitleSchema, MESSAGE_MAX_LENGTH, type ChatMessage } from "@/lib/domain/messages";
 
 // Team messaging (ADD-MSG-01 to 03, 07). Inputs are checked here; the database checks the feature
 // flag, membership, and capabilities, and audits deletions and groups.
@@ -29,35 +39,106 @@ async function active(): Promise<boolean> {
 
 export type SendResult = { ok: true; messages: ChatMessage[] } | { ok: false; message: string };
 
-/** Sends, then returns what's new since `after`, including the sent message. Safe to retry. */
+const filePath = z.string().regex(/^[0-9a-f-]{36}\/[0-9a-f-]{36}\/[a-z0-9._-]{1,40}$/);
+const side = z.number().int().min(1).max(1600);
+const attachmentSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("photo"),
+    full_path: filePath,
+    thumb_path: filePath,
+    width: side,
+    height: side,
+    bytes: z.number().int().min(1).max(MAX_DOCUMENT_BYTES),
+  }),
+  z.object({
+    kind: z.literal("document"),
+    full_path: filePath,
+    file_name: z.string().trim().min(1).max(200),
+    mime_type: z.string(),
+    bytes: z.number().int().min(1).max(MAX_DOCUMENT_BYTES),
+  }),
+  z.object({
+    kind: z.literal("gif"),
+    gif_id: z.string().regex(/^[A-Za-z0-9]{1,64}$/),
+    gif_url: z.string().regex(/^https:\/\/media[0-9]*\.giphy\.com\//),
+    width: side,
+    height: side,
+  }),
+]);
+
+/**
+ * Sends, then returns what's new since `after`, including the sent message. Safe to retry. A
+ * document's first bytes are checked here as well as in the browser, so a program renamed to .pdf
+ * is refused (ADD-MSG-09).
+ */
 export async function sendMessageAction(input: {
   conversationId: string;
   clientId: string;
   body: string;
   replyTo: string | null;
   after: string | null;
+  attachments?: OutgoingAttachment[];
 }): Promise<SendResult> {
   const parsed = z
     .object({
       conversationId: id,
       clientId: id,
-      body: messageBodySchema,
+      body: z.string().max(MESSAGE_MAX_LENGTH * 2),
       replyTo: id.nullable(),
       after: z.iso.datetime({ offset: true }).nullable(),
+      attachments: z.array(attachmentSchema).max(MAX_PHOTOS).default([]),
     })
     .safeParse(input);
-  if (!parsed.success) {
+  const words = parsed.success ? parsed.data.body.trim() : "";
+  if (
+    !parsed.success ||
+    words.length > MESSAGE_MAX_LENGTH ||
+    (words.length === 0 && parsed.data.attachments.length === 0)
+  ) {
     return { ok: false, message: "Write a message first, up to 4,000 characters." };
   }
   if (!(await active())) {
     return { ok: false, message: "Sign in again to send messages." };
   }
-  const { conversationId, clientId, body, replyTo, after } = parsed.data;
-  const sent = await sendMessage(conversationId, clientId, body, replyTo);
+  const { conversationId, clientId, replyTo, after, attachments } = parsed.data;
+  for (const attachment of attachments) {
+    if (attachment.kind === "document") {
+      const type = documentTypeFor(attachment.file_name);
+      const bytes = await readFirstBytes(attachment.full_path);
+      if (
+        !type ||
+        type.mime !== attachment.mime_type ||
+        !bytes ||
+        !matchesSignature(bytes, type.mime)
+      ) {
+        return {
+          ok: false,
+          message: "That file couldn't be sent. Share PDF, Word, Excel, PowerPoint or text files.",
+        };
+      }
+    }
+  }
+  const sent = await sendMessage(conversationId, clientId, words, replyTo, attachments);
   if (!sent) {
     return { ok: false, message: "That didn't send. Check your connection and try again." };
   }
   return { ok: true, messages: await getMessages(conversationId, after ?? undefined) };
+}
+
+/** A one-minute link to open a full photo or download a document, for someone in the chat. */
+export async function attachmentLinkAction(attachmentId: string): Promise<string | null> {
+  if (!id.safeParse(attachmentId).success || !(await active())) {
+    return null;
+  }
+  return getAttachmentLink(attachmentId);
+}
+
+/** GIF search, rated G (ADD-MSG-08). Says when the GIPHY key isn't set up yet. */
+export async function searchGifsAction(query: string): Promise<GifSearch> {
+  if (typeof query !== "string" || !(await active())) {
+    return { configured: true, results: [] };
+  }
+  return searchGifs(query);
 }
 
 /** Messages sent or deleted since `after`, for live updates and catching up after being offline. */

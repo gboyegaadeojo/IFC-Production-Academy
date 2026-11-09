@@ -188,6 +188,13 @@ export const HELP_PAGES: readonly HelpPage[] = [
     source: "docs/runbooks/planning-center-sign-in.md",
   },
   {
+    slug: "runbook-messaging",
+    title: "Messaging setup",
+    summary: "Switching Messages on, the GIPHY key, and where files are kept.",
+    section: "Setting things up",
+    source: "docs/runbooks/messaging.md",
+  },
+  {
     slug: "runbook-notifications",
     title: "Notifications and email setup",
     summary: "Sending notification emails through Resend.",
