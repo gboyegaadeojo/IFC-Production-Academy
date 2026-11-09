@@ -20,7 +20,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       <HideOnAdmin>
         <AcademyHeader />
       </HideOnAdmin>
-      <div className="flex min-w-0 flex-1 flex-col md:flex-row">
+      {/* Clip, not hidden: nothing too wide can slide the page sideways on a phone, and the
+          sticky side bar still sticks. Rows meant to scroll sideways scroll inside their own box. */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-x-clip md:flex-row">
         <HideOnAdmin>
           <AcademySidebar />
         </HideOnAdmin>

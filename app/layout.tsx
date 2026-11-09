@@ -60,7 +60,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       data-theme={appearance}
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-bg font-sans text-body text-text">
+      <body className="flex min-h-full flex-col overflow-x-clip bg-bg font-sans text-body text-text">
         <a
           href="#main"
           className="sr-only rounded-button bg-accent px-4 py-2 text-on-accent focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
