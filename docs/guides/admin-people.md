@@ -17,6 +17,8 @@ Use **Invitations** to bring someone straight into a department. They join when 
 3. Say how many people can use it and how long the link works. A note for you is optional. Leave out personal details.
 4. Copy the link, or show its QR code on a screen or print it. **It's shown only once,** for security.
 
+The person opens the link and signs in with **Planning Center**, or with an email link if they aren't on Planning Center. Either way they come back to the invitation and choose **Accept**. Nothing is emailed for you, so send the link yourself, for example by text.
+
 To stop a link, choose **Revoke**. It stops working straight away, and people who already joined stay members.
 
 ## Phone alerts
