@@ -250,6 +250,8 @@ export type EventDetail = {
   notes: string;
   cancelled: boolean;
   signupsOpen: boolean;
+  /** How many days before the service its reminder goes out. */
+  reminderDays: number;
   positions: PositionDetail[];
   /** Roles the person may add positions for. */
   roles: { id: string; name: string; departmentName: string }[];
@@ -282,7 +284,9 @@ export async function getEventDetail(
   const supabase = await createSupabaseServerClient();
   const event = await supabase
     .from("events")
-    .select("id, title, starts_at, ends_at, location, notes, cancelled_at, signups_open")
+    .select(
+      "id, title, starts_at, ends_at, location, notes, cancelled_at, signups_open, reminder_days",
+    )
     .eq("id", eventId)
     .maybeSingle();
   if (event.error) {
@@ -334,6 +338,7 @@ export async function getEventDetail(
     notes: event.data.notes,
     cancelled: event.data.cancelled_at !== null,
     signupsOpen: event.data.signups_open,
+    reminderDays: event.data.reminder_days,
     positions: positions.data.map((position) => {
       // The newest assignment that still holds the position, or the latest decline.
       const current =
@@ -460,6 +465,20 @@ export async function sendAssignmentRequests(
     p_message: message === "" ? null : message,
   });
   return error ? fail(error) : { ok: true, value: data };
+}
+
+export async function setEventReminder(eventId: string, days: number): Promise<ScheduleResult> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("events")
+    .update({ reminder_days: days })
+    .eq("id", eventId)
+    .is("cancelled_at", null)
+    .select("id");
+  if (error) {
+    return fail(error);
+  }
+  return data.length === 1 ? { ok: true } : { ok: false, error: "event_closed" };
 }
 
 export async function cancelEvent(eventId: string): Promise<ScheduleResult> {

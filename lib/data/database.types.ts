@@ -848,6 +848,7 @@ export type Database = {
           created_by: string | null;
           service_type_id: string | null;
           signups_open: boolean;
+          reminder_days: number;
           checklist_recorded_at: string | null;
           source: string;
           external_id: string | null;
@@ -867,6 +868,7 @@ export type Database = {
           ends_at?: string;
           location?: string;
           notes?: string;
+          reminder_days?: number;
         };
         Relationships: [];
       };
@@ -1118,6 +1120,7 @@ export type Database = {
           archived_at: string | null;
           created_by: string | null;
           allow_signups: boolean;
+          reminder_days: number;
         } & Timestamps;
         // Changed only through save_service_type and archive_service_type.
         Insert: never;
@@ -1737,6 +1740,7 @@ export type Database = {
           unavailable: boolean;
         }[];
       };
+      set_service_type_reminder: { Args: { p_id: string; p_days: number }; Returns: undefined };
       event_conflicts: {
         Args: { p_event_id: string };
         Returns: {

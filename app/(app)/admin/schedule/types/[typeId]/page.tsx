@@ -6,6 +6,7 @@ import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getSchedulableRoles, getServiceType } from "@/lib/data/service-types";
 import { addDays, winnipegDate } from "@/lib/domain/month-calendar";
+import { REMINDER_DAY_CHOICES, reminderDaysLabel } from "@/lib/domain/schedule";
 import { serviceTimeLabel } from "@/lib/domain/service-types";
 import { AccessDenied } from "../../../access-denied";
 import { PageSkeleton } from "../../../page-skeleton";
@@ -13,6 +14,7 @@ import {
   archiveServiceTypeAction,
   changePositionsAction,
   createServicesAction,
+  setTypeReminderAction,
   setTypeSignupsAction,
   updateServiceTypeAction,
 } from "../actions";
@@ -88,6 +90,34 @@ async function ServiceTypeContent({ params }: Pick<Props, "params">) {
             className="flex"
           />
         </div>
+        <ActionForm
+          action={setTypeReminderAction}
+          submitLabel="Save"
+          pendingLabel="Saving…"
+          variant="secondary"
+          hidden={{ typeId: type.id }}
+          className="flex flex-wrap items-end gap-3"
+        >
+          <Field
+            id="type-reminder"
+            label="Reminder email"
+            hint="Goes at 10:00 a.m. to everyone who accepted. Each service can change it."
+          >
+            <select
+              id="type-reminder"
+              name="reminderDays"
+              defaultValue={type.reminderDays}
+              aria-describedby="type-reminder-hint"
+              className={fieldClasses}
+            >
+              {REMINDER_DAY_CHOICES.map((days) => (
+                <option key={days} value={days}>
+                  {reminderDaysLabel(days)}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </ActionForm>
         <ActionForm
           action={createServicesAction}
           submitLabel="Make services"

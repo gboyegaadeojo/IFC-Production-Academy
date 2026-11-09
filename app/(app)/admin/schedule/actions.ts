@@ -9,6 +9,8 @@ import * as schedule from "@/lib/data/schedule";
 import {
   eventSchema,
   READINESS_LABELS,
+  reminderDaysLabel,
+  reminderDaysSchema,
   scheduleErrorMessage,
   sendRequestsSchema,
 } from "@/lib/domain/schedule";
@@ -75,6 +77,29 @@ export async function updateEventAction(_: FormState, formData: FormData): Promi
   return {
     status: "done",
     message: "Saved. If the day or start time changed, everyone on it gets a short email.",
+  };
+}
+
+export async function setEventReminderAction(_: FormState, formData: FormData): Promise<FormState> {
+  const eventId = id.safeParse(formData.get("eventId"));
+  const days = reminderDaysSchema.safeParse(formData.get("reminderDays"));
+  if (!eventId.success) {
+    return error(scheduleErrorMessage("not_authorized"));
+  }
+  if (!days.success) {
+    return error(days.error.issues[0]?.message ?? "Choose 1 to 7 days.");
+  }
+  if (!(await allowed())) {
+    return error(scheduleErrorMessage("not_authorized"));
+  }
+  const result = await schedule.setEventReminder(eventId.data, days.data);
+  if (!result.ok) {
+    return error(scheduleErrorMessage(result.error));
+  }
+  refresh();
+  return {
+    status: "done",
+    message: `The reminder goes out ${reminderDaysLabel(days.data)}, at 10:00 a.m.`,
   };
 }
 
