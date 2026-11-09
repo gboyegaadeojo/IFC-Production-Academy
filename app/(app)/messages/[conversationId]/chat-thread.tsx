@@ -45,9 +45,15 @@ import {
   threadItems,
   type ChatMessage,
   type ConversationDetails,
+  type MessagingPerson,
 } from "@/lib/domain/messages";
+import { ChatPeople } from "./chat-people";
+
+/** How many messages a page loads at a time (conversation_messages). */
+const PAGE = 60;
 import {
   deleteMessageAction,
+  fetchEarlierAction,
   fetchMessagesAction,
   markReadAction,
   renameGroupAction,
@@ -92,6 +98,7 @@ export function ChatThread({
   nowIso,
   supabaseUrl,
   publishableKey,
+  peopleToAdd,
 }: {
   conversation: ConversationDetails;
   initialMessages: ChatMessage[];
@@ -99,6 +106,8 @@ export function ChatThread({
   nowIso: string;
   supabaseUrl: string;
   publishableKey: string;
+  /** For someone who manages a group of chosen people: who could be added. */
+  peopleToAdd: MessagingPerson[] | null;
 }) {
   const router = useRouter();
   const [messages, setMessages] = useState(initialMessages);
@@ -113,6 +122,11 @@ export function ChatThread({
   const [drafts, setDrafts] = useState<Draft[]>([]);
   const [gifOpen, setGifOpen] = useState(false);
   const [viewer, setViewer] = useState<{ photos: ChatAttachment[]; index: number } | null>(null);
+  const [hasEarlier, setHasEarlier] = useState(initialMessages.length >= PAGE);
+  const [loadingEarlier, setLoadingEarlier] = useState(false);
+  const [showPeople, setShowPeople] = useState(false);
+  // While earlier messages are added above, keep the reader where they were.
+  const keepFromBottom = useRef<number | null>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const documentInputRef = useRef<HTMLInputElement>(null);
   const messagesRef = useRef(messages);
@@ -234,10 +248,32 @@ export function ChatThread({
   const count = messages.length + pending.length;
   useEffect(() => {
     const list = listRef.current;
-    if (list) {
+    if (!list) {
+      return;
+    }
+    if (keepFromBottom.current !== null) {
+      list.scrollTop = list.scrollHeight - keepFromBottom.current;
+      keepFromBottom.current = null;
+    } else {
       list.scrollTop = list.scrollHeight;
     }
   }, [count]);
+
+  async function showEarlier() {
+    const oldest = messagesRef.current[0]?.createdAt;
+    if (!oldest || loadingEarlier) {
+      return;
+    }
+    setLoadingEarlier(true);
+    const earlier = await fetchEarlierAction(conversationId, oldest);
+    const list = listRef.current;
+    if (list && earlier.length > 0) {
+      keepFromBottom.current = list.scrollHeight - list.scrollTop;
+    }
+    setMessages((current) => mergeMessages(current, earlier));
+    setHasEarlier(earlier.length >= PAGE);
+    setLoadingEarlier(false);
+  }
 
   useEffect(() => {
     if (toDelete) {
@@ -505,7 +541,7 @@ export function ChatThread({
           </h1>
           <span className="truncate text-small text-text-muted">{subtitle}</span>
         </span>
-        <ChatSettings conversation={conversation} />
+        <ChatSettings conversation={conversation} onShowPeople={() => setShowPeople(true)} />
       </header>
 
       {isOffline ? (
@@ -527,6 +563,16 @@ export function ChatThread({
         aria-label={`Messages in ${conversation.title}`}
         className="flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto bg-bg px-3 py-3"
       >
+        {hasEarlier ? (
+          <button
+            type="button"
+            onClick={() => void showEarlier()}
+            disabled={loadingEarlier}
+            className="mx-auto mb-2 rounded-pill bg-card px-4 py-2 text-small font-semibold text-accent-light hover:bg-hover disabled:opacity-60"
+          >
+            {loadingEarlier ? "Loading…" : "Show earlier messages"}
+          </button>
+        ) : null}
         {items.length === 0 && pending.length === 0 ? (
           <div className="m-auto flex max-w-xs flex-col items-center gap-1 text-center">
             <h2 className="font-semibold">No messages yet</h2>
@@ -701,6 +747,14 @@ export function ChatThread({
       {viewer ? (
         <PhotoViewer photos={viewer.photos} start={viewer.index} onClose={() => setViewer(null)} />
       ) : null}
+      {showPeople ? (
+        <ChatPeople
+          conversation={conversation}
+          me={me}
+          everyoneToAdd={peopleToAdd}
+          onClose={() => setShowPeople(false)}
+        />
+      ) : null}
     </section>
   );
 }
@@ -831,8 +885,14 @@ function MessageRow({
   );
 }
 
-/** Mute, and for a group's maker, rename. */
-function ChatSettings({ conversation }: { conversation: ConversationDetails }) {
+/** Who's in it, mute, and for a group's maker, rename. */
+function ChatSettings({
+  conversation,
+  onShowPeople,
+}: {
+  conversation: ConversationDetails;
+  onShowPeople: () => void;
+}) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   return (
@@ -852,6 +912,19 @@ function ChatSettings({ conversation }: { conversation: ConversationDetails }) {
         hidden={!open}
         className="absolute top-full right-0 z-20 mt-2 flex w-[min(18rem,calc(100vw-2rem))] flex-col gap-3 rounded-card border border-border bg-surface p-3.5 shadow-[var(--shadow-lift)]"
       >
+        {conversation.kind !== "direct" ? (
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              onShowPeople();
+            }}
+            className="flex min-h-touch items-center justify-between rounded-button px-1 text-left font-medium hover:bg-hover"
+          >
+            People in this chat
+            <span className="text-small text-text-muted">{conversation.memberCount}</span>
+          </button>
+        ) : null}
         <SwitchForm
           action={setMutedAction}
           hidden={{ conversationId: conversation.id }}
