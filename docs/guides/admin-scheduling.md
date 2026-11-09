@@ -50,7 +50,7 @@ If **Who schedules** is set to the Academy, you also get **Matrix** and **Servic
 
 On a service's page:
 
-- **Places:** each position shows how many people it needs, such as "Camera 2, 1 of 2 filled". **Need one more** adds a place and **Need one fewer** removes an empty one. **Add a position** adds one the service doesn't have yet.
+- **Places:** each position shows how many people it needs, such as "Camera 2, 1 of 2 filled". **Need one more** adds a place and **Need one fewer** removes an empty one. **Add position** adds one the service doesn't have yet.
 - **Add someone:** only the position's team is listed. Someone blocked out, or already in another position that day, can still be added. A **Conflict** note then shows their other position or their blockout note, as in Planning Center. Nothing is blocked. You can pair someone still learning with **Someone alongside**.
 - **Not sent yet:** people you add aren't emailed straight away. When you're ready, **Send requests** emails each person once, for everything they're on at that service, with your message if you add one. Untick anyone you want to hold back. Each send is in the audit log.
 - **Reminders to confirm** go 48 hours after the request was sent, if there's still no reply.
