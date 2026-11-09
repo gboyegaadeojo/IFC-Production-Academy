@@ -56,7 +56,7 @@ alter table public.message_attachments
   alter column bytes drop not null,
   drop constraint message_attachments_bytes_check,
   add constraint message_attachments_bytes_check check (bytes is null or bytes between 1 and 10485760),
-  add constraint message_attachments_kind_check check (
+  add constraint message_attachments_kind_fields_check check (
     case kind
       when 'photo' then full_path is not null and thumb_path is not null and width is not null and height is not null
       when 'document' then full_path is not null and file_name is not null and mime_type is not null
