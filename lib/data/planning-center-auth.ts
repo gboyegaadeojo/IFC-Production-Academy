@@ -96,6 +96,7 @@ export async function signInAsPcoPerson(
       p_pco_person_id: identity.personId,
       p_pco_organization_id: organizationId,
       p_emails: identity.emails,
+      p_name: identity.name,
     });
 
   let result = await lookUp();
