@@ -318,11 +318,12 @@ test("App name and logo, for design review", async ({ page }) => {
 test("the side bar's links and account never overlap, at any width", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   const nav = page.getByRole("navigation", { name: "Academy" }).first();
-  const toggle = page.locator("aside").getByRole("switch", { name: "Dark mode" });
+  // Your name at the bottom of the side bar; light or dark is in its menu (decision 2026-11-09).
+  const account = page.locator("aside").getByRole("button", { name: /, account menu$/ });
   for (const width of [768, 834, 1024, 1280]) {
     await page.setViewportSize({ width, height: 800 });
     const links = await nav.boundingBox();
-    const box = await toggle.boundingBox();
+    const box = await account.boundingBox();
     expect(links && box && links.y + links.height <= box.y, `at ${width}px`).toBe(true);
   }
 });
