@@ -107,8 +107,15 @@ service, the next sync gives it that day's checklist, ticks included.
 
 The Academy's own scheduler (service types, the Matrix, sign-ups, and swaps) is built but switched
 off. An organisation-wide scheduler can switch it on under **Who schedules** on the Planning Center
-page. While Planning Center schedules, the Academy refuses schedule changes from anyone but the
-sync, so the two can't drift apart.
+page. While Planning Center schedules, the Academy refuses schedule changes, service types
+included, from anyone but the sync, so the two can't drift apart.
+
+While the Academy schedules, the sync job checks the setting first and stops without reading
+Planning Center. Its log says "the Academy schedules production, so nothing was read". The
+database refuses the sync as well (`academy_schedules`), so nothing from Planning Center can
+overwrite the Academy's schedule. Switching back to Planning Center starts the sync again at its next
+run. The plan for moving fully to the Academy is in the decision record
+`docs/decisions/2026-11-09-academy-scheduling.md`.
 
 ## Service Dashboard run of service
 

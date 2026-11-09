@@ -11,6 +11,7 @@ import {
   getCandidates,
   getEventDetail,
   getOpenCoverRequestsForEvent,
+  type EventDetail,
   type PositionDetail,
 } from "@/lib/data/schedule";
 import { hasCapability } from "@/lib/domain/capabilities";
@@ -19,6 +20,7 @@ import {
   candidateLabel,
   eventTimeLabel,
   READINESS_LABELS,
+  utcToWinnipeg,
 } from "@/lib/domain/schedule";
 import { AccessDenied } from "../../access-denied";
 import { PageSkeleton } from "../../page-skeleton";
@@ -28,6 +30,7 @@ import {
   cancelAssignmentAction,
   cancelEventAction,
   removePositionAction,
+  updateEventAction,
   setSignupsAction,
 } from "../actions";
 
@@ -155,6 +158,8 @@ async function EventContent({ params }: Pick<Props, "params">) {
           </p>
         ) : null}
       </section>
+
+      {open ? <EditEvent event={event} /> : null}
 
       {open ? (
         <details className="max-w-3xl rounded-card border border-border p-5">
@@ -324,5 +329,92 @@ async function Position({
         />
       ) : null}
     </li>
+  );
+}
+
+/** The service's name, day, times, location, and notes. Moving it emails everyone on it. */
+function EditEvent({ event }: { event: EventDetail }) {
+  const [date, start] = utcToWinnipeg(event.startsAt);
+  const [, end] = utcToWinnipeg(event.endsAt);
+  return (
+    <details className="max-w-3xl rounded-card border border-border p-5">
+      <summary className="flex min-h-control cursor-pointer items-center font-medium">
+        Edit details
+      </summary>
+      <div className="mt-3">
+        <ActionForm
+          action={updateEventAction}
+          submitLabel="Save"
+          pendingLabel="Saving…"
+          hidden={{ eventId: event.id }}
+        >
+          <Field id="edit-title" label="Name">
+            <input
+              id="edit-title"
+              name="title"
+              required
+              maxLength={120}
+              defaultValue={event.title}
+              className={fieldClasses}
+            />
+          </Field>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Field id="edit-date" label="Date">
+              <input
+                id="edit-date"
+                name="date"
+                type="date"
+                required
+                defaultValue={date}
+                className={fieldClasses}
+              />
+            </Field>
+            <Field id="edit-start" label="Starts">
+              <input
+                id="edit-start"
+                name="startTime"
+                type="time"
+                required
+                defaultValue={start}
+                className={fieldClasses}
+              />
+            </Field>
+            <Field id="edit-end" label="Ends">
+              <input
+                id="edit-end"
+                name="endTime"
+                type="time"
+                required
+                defaultValue={end}
+                className={fieldClasses}
+              />
+            </Field>
+          </div>
+          <p className="text-small text-text-muted">
+            Times are Winnipeg time. If the day or start time changes, everyone on it gets a short
+            email.
+          </p>
+          <Field id="edit-location" label="Location (optional)">
+            <input
+              id="edit-location"
+              name="location"
+              maxLength={120}
+              defaultValue={event.location}
+              className={fieldClasses}
+            />
+          </Field>
+          <Field id="edit-notes" label="Notes (optional)">
+            <textarea
+              id="edit-notes"
+              name="notes"
+              rows={2}
+              maxLength={1000}
+              defaultValue={event.notes}
+              className={`${fieldClasses} py-3`}
+            />
+          </Field>
+        </ActionForm>
+      </div>
+    </details>
   );
 }

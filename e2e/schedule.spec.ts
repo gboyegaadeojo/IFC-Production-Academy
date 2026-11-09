@@ -51,6 +51,25 @@ test("a scheduler sets up a service type, makes its dates, and sees them in the 
   await expect(page.getByRole("table").first()).toBeVisible();
 });
 
+test("a scheduler adds a one-off service and edits its details", async ({ page }) => {
+  const name = `E2E one-off ${Date.now()}`;
+  await signInByEmail(page, "casey.leader@example.com");
+  await page.goto("/admin/schedule");
+  await page.getByLabel("Name").fill(name);
+  await page.getByLabel("Date").fill("2031-03-02");
+  await page.getByLabel("Starts").fill("18:00");
+  await page.getByLabel("Ends").fill("19:30");
+  await page.getByRole("button", { name: "Add event" }).click();
+  await expect(page.getByRole("heading", { level: 1, name })).toBeVisible();
+
+  await page.getByText("Edit details").click();
+  await page.getByLabel("Name").fill(`${name} moved`);
+  await page.getByLabel("Starts").fill("18:30");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText(/Saved\./)).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: `${name} moved` })).toBeVisible();
+});
+
 test("a volunteer taps a day on their calendar", async ({ page }) => {
   await signInByEmail(page, "avery.volunteer@example.com");
   await page.goto("/schedule");

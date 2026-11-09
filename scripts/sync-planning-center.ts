@@ -369,6 +369,20 @@ async function main(): Promise<void> {
     console.log("Planning Center sync: PCO_PAT_ID and PCO_PAT_SECRET aren't set; nothing synced.");
     return;
   }
+  // While the Academy schedules (Who schedules, on the Planning Center page), Planning Center
+  // Services isn't read, so nothing it holds can overwrite the Academy's schedule.
+  const source = await fetch(
+    `${supabaseUrl}/rest/v1/organizations?select=scheduling_source&order=created_at.asc&limit=1`,
+    { headers: supabaseKeyHeaders(serviceKey) },
+  );
+  if (!source.ok) {
+    throw new Error(`Couldn't read who schedules (HTTP ${source.status}).`);
+  }
+  const [organization] = (await source.json()) as { scheduling_source?: unknown }[];
+  if (organization?.scheduling_source !== "planning_center") {
+    console.log("Planning Center sync: the Academy schedules production, so nothing was read.");
+    return;
+  }
   const authorization = `Basic ${Buffer.from(`${appId}:${secret}`).toString("base64")}`;
   const started = Date.now();
   const payload = await read(authorization);

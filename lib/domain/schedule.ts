@@ -197,6 +197,7 @@ export type ScheduleError =
   | "signups_closed"
   | "request_closed"
   | "invalid_note"
+  | "managed_in_planning_center"
   | "unknown";
 
 const KNOWN: ReadonlySet<string> = new Set<ScheduleError>([
@@ -214,6 +215,7 @@ const KNOWN: ReadonlySet<string> = new Set<ScheduleError>([
   "signups_closed",
   "request_closed",
   "invalid_note",
+  "managed_in_planning_center",
 ]);
 
 export function toScheduleError(
@@ -255,6 +257,8 @@ export function scheduleErrorMessage(error: ScheduleError): string {
       return "Someone has already covered this, or it was withdrawn.";
     case "invalid_note":
       return "Keep the note under 300 characters.";
+    case "managed_in_planning_center":
+      return "Planning Center schedules right now, so make this change there. It shows here within 15 minutes.";
     case "unknown":
       return "That didn't save. Check your connection and try again.";
   }
