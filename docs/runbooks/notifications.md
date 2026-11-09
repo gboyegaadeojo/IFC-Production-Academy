@@ -44,6 +44,28 @@ Set in `private.route_notification()`, and decided in `docs/decisions/2026-11-05
 - **Email:** if the person has no alerts on a phone, or turned that kind off for their phone, and as
   they've chosen. A moved or cancelled service comes by email as well as by alert.
 
+### Messages: instant phone alerts (ADD-MSG-06)
+
+Message alerts don't wait for the job. When someone sends a message, the Worker replies first, then
+(with `after`, so sending is never slower) calls `claim_message_alerts()` with the service role and
+sends the alerts with the VAPID keys. Both are Cloudflare secrets already set for other alerts
+(`SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PRIVATE_KEY`, and the public key `NEXT_PUBLIC_VAPID_PUBLIC_KEY`).
+
+- **Who:** people who can read the chat, have alerts on a device, haven't muted it, haven't read it
+  in the last 30 seconds (an open chat refreshes this every 15), and have **Messages** on for their
+  phone. Not the sender.
+- **How often:** one alert per chat, with the same tag, so a new one replaces the last on the device
+  ("4 new messages in Camera Operations"), and at most one every 20 seconds per person per chat.
+- **Privacy:** a direct message alert says who it's from, never the words. Group and department chat
+  alerts show the start of the message.
+- **Rules that still apply:** quiet hours (20:00 to 08:00), the launch switch (testers only until
+  launch), and nothing while messaging is off.
+- **Logs:** counts only ("Message alerts: 3 sent, 0 devices gone, 0 failed"), in the Worker's logs.
+
+The 15-minute job still writes message notices for the bell and for email (people without phone
+alerts, at most one email every 4 hours). `private.route_notification()` keeps those notices off
+phones, so nobody gets a second alert for the same messages.
+
 Emails are sent every 15 minutes by `.github/workflows/notifications.yml`, which runs
 `scripts/send-notifications.ts`. A Cloudflare timer starts it, because GitHub's own schedule can run
 hours late ([how it works](scheduling.md#starting-jobs-on-time)). Until the secrets below are set,

@@ -116,6 +116,8 @@ G wants teams to message each other in the Academy, with photos, while staying o
   emails a day, messages can't crowd out serving emails, because serving emails are sent first.
 - Messages stay inside ADD-NOTIF-02: nothing is emailed or sent to phones before launch, except to
   named testers.
+- **Replaced for phones on 2026-11-09: alerts are instant.** See
+  [Instant phone alerts](#instant-phone-alerts-g-2026-11-09). Email stays batched as above.
 
 ### Navigation
 
@@ -185,8 +187,34 @@ Small pull requests, each with lint, typecheck and tests passing:
 Every step of the build order is done, each in its own pull request: the feature flag and the
 migration order rule (#198), the database (#199), live text chat (#200), private direct messages
 (#202), photos, GIFs and documents (#203), the cleanup, backups and free-plan warnings (#204),
-notifications (#205), and the polish: earlier messages, and who's in a chat, with adding, removing
-and leaving for groups of chosen people.
+notifications (#205), and the polish (#206): earlier messages, and who's in a chat, with adding,
+removing and leaving for groups of chosen people.
+
+## Instant phone alerts (G, 2026-11-09)
+
+G asked for messages to "feel like WhatsApp": waiting up to 15 minutes for a phone alert was too
+slow. Using the Academy's paid Cloudflare Workers plan ($5 a month, which allows work after the
+reply):
+
+- **Straight away.** When a message is sent, the Worker replies first, then (with `after`, which uses
+  `waitUntil`) asks the database who to alert (`claim_message_alerts`) and sends web push alerts with
+  the existing VAPID keys. Sending is never slower. It logs counts only.
+- **Who.** People who can read the chat, have alerts on a device, haven't muted it, aren't looking at
+  it (read in the last 30 seconds; an open chat refreshes this every 15), and have **Messages** on for
+  their phone. Never the sender.
+- **One updating alert per chat.** Every alert for a chat has the same tag, so a new one replaces the
+  last: "4 new messages in Camera Operations". At most one every 20 seconds per person per chat, so a
+  busy chat doesn't buzz constantly.
+- **Privacy.** A direct-message alert says only who it's from, never the words. Group and department
+  chats show a short preview.
+- **Rules kept.** Quiet hours (20:00 to 08:00), the launch switch (ADD-NOTIF-02: named testers only
+  until launch), each person's Messages phone choice, and nothing while messaging is off.
+- **Email stays batched.** The 15-minute job still writes one notice per chat for the bell and for
+  email, at most one message email every 4 hours, for people without phone alerts. Its notices never
+  go to phones, so nobody is alerted twice for the same messages.
+
+Built in migration `20270117120000_instant_message_alerts`, with database tests (072) for who is
+alerted and unit tests for the wording.
 
 ## G's answers (2026-11-08)
 

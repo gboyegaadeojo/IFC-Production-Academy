@@ -1822,6 +1822,22 @@ export type Database = {
       remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
       restart_course: { Args: { p_course_id: string }; Returns: undefined };
       set_feature_flag: { Args: { p_key: string; p_enabled: boolean }; Returns: undefined };
+      claim_message_alerts: {
+        Args: { p_message_id: string };
+        Returns: {
+          conversation_id: string;
+          kind: string;
+          chat_name: string;
+          sender_name: string | null;
+          preview: string | null;
+          attachment_kind: string | null;
+          unread_count: number;
+          endpoint: string;
+          p256dh: string;
+          auth: string;
+        }[];
+      };
+      message_alert_device_gone: { Args: { p_endpoint: string }; Returns: undefined };
       messaging_settings: {
         Args: Record<string, never>;
         Returns: { chat_file_days: number; message_text_years: number }[];
