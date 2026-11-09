@@ -37,7 +37,7 @@ Choose the **+** beside the message box:
 - **GIF:** search GIPHY and tap one to send it. Only GIFs rated G appear. What you type in the search goes to GIPHY.
 - **Document:** a PDF, Word, Excel, PowerPoint or text file, up to 10 MB, in a message of its own. Others in the chat tap it to download it. Programs, and files that aren't what their name says, are refused.
 
-Photos and documents are kept for 90 days. After that the message stays, and says the photo or file is no longer available. Save anything you need to keep.
+Photos and documents are kept for 90 days, and messages for 3 years, unless a Platform Administrator changes them. After that the message stays, and says the photo or file is no longer available. Save anything you need to keep.
 
 ## Starting a direct message
 

@@ -10,6 +10,8 @@
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { backupNames, latestCompleteStamp } from "../lib/domain/backup.ts";
+import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
+import { usageLines, usageWarnings, type Usage } from "../lib/domain/usage.ts";
 import { driveConfigured, driveToken, listFolder } from "./backup/drive.ts";
 
 const WORKFLOWS = [
@@ -18,7 +20,33 @@ const WORKFLOWS = [
   { file: "backup.yml", label: "Weekly backup", staleAfterHours: 24 * 8 },
   { file: "restore-test.yml", label: "Monthly restore test", staleAfterHours: 24 * 40 },
   { file: "notifications.yml", label: "Notification emails", staleAfterHours: 24 },
+  { file: "chat-cleanup.yml", label: "Chat cleanup", staleAfterHours: 48 },
 ] as const;
+
+/** Free plan usage in bytes (platform_usage), or null if it can't be read. Sizes only. */
+async function usage(): Promise<Usage | null> {
+  const url = env("SUPABASE_URL").replace(/\/+$/, "");
+  const key = env("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !key) {
+    return null;
+  }
+  const response = await fetch(`${url}/rest/v1/rpc/platform_usage`, {
+    method: "POST",
+    headers: { ...supabaseKeyHeaders(key), "Content-Type": "application/json" },
+    body: "{}",
+  });
+  if (!response.ok) {
+    return null;
+  }
+  const row = ((await response.json()) as Record<string, number>[])[0];
+  return row
+    ? {
+        databaseBytes: Number(row.database_bytes),
+        storageBytes: Number(row.storage_bytes),
+        chatFileBytes: Number(row.chat_file_bytes),
+      }
+    : null;
+}
 
 type Run = { conclusion: string | null; updated_at: string; event: string };
 
@@ -93,10 +121,22 @@ async function main(): Promise<void> {
     problems.push("Backup sizes could not be read from the Shared Drive");
   }
 
+  let used: Usage | null = null;
+  try {
+    used = await usage();
+  } catch {
+    used = null;
+  }
+  // Warnings, not failures: nothing has stopped working yet.
+  const warnings = used ? usageWarnings(used) : [];
+
   const status = {
     generated_at: new Date(now).toISOString(),
     jobs,
     latest_backup_bytes: sizes,
+    free_plan_bytes: used
+      ? { database: used.databaseBytes, storage: used.storageBytes, chat_files: used.chatFileBytes }
+      : null,
     healthy: problems.length === 0,
   };
   mkdirSync("status", { recursive: true });
@@ -116,12 +156,14 @@ async function main(): Promise<void> {
     const text = [
       problems.length === 0 ? "Everything ran as expected this week." : "Needs attention:",
       ...problems.map((p) => `- ${p}`),
+      ...(warnings.length > 0 ? ["", "Free plan:", ...warnings.map((w) => `- ${w}`)] : []),
       "",
       ...lines,
       "",
       sizes
         ? `Latest backup: database ${sizes.db} bytes, files ${sizes.files} bytes.`
         : "Backups: not set up yet.",
+      ...(used ? ["", "Free plan use:", ...usageLines(used)] : []),
     ].join("\n");
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -132,7 +174,13 @@ async function main(): Promise<void> {
           .split(",")
           .map((a) => a.trim())
           .filter(Boolean),
-        subject: `IFC Academy weekly summary: ${problems.length === 0 ? "all healthy" : "needs attention"}`,
+        subject: `IFC Academy weekly summary: ${
+          problems.length > 0
+            ? "needs attention"
+            : warnings.length > 0
+              ? "free plan filling up"
+              : "all healthy"
+        }`,
         text,
       }),
     });

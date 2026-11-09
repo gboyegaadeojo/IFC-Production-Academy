@@ -14,6 +14,14 @@ Supabase Free keeps no backups, so the Academy makes its own (SPEC §9 "Backup d
   A keep-alive with no success for two days, or a backup with none for eight, counts as an incident
   and alerts the admins.
 
+**Chat photos and documents are left out** (the `chat-files` bucket, `SKIPPED_BUCKETS` in
+`lib/domain/backup.ts`): they're removed after 90 days anyway, and would make every copy larger.
+Message text is in the database, so it is backed up. After a restore, messages say their photo
+or file is no longer available.
+
+The weekly summary also reports how much of the Supabase free plan is used (database and stored
+files, in bytes) and warns at 70%, with what to change on **Admin → Features**.
+
 None of it logs data: only status, timings, sizes, and file counts. Nothing is ever uploaded as a
 workflow artifact. Backups and restore tests are **off until the repository variable
 `BACKUPS_ENABLED` is `true`**; until then scheduled runs show as skipped.
@@ -111,7 +119,9 @@ Target: back online within 4 hours, losing at most a week of data.
    `pg_restore --no-owner --no-privileges -d "<session pooler connection string>" db.dump`.
    Supabase's own schemas already exist, so "already exists" messages are expected.
 4. Re-upload the files: unzip `files.zip`; each top-level folder is a Storage bucket. Upload them
-   to the same paths (for example with the Supabase CLI `supabase storage cp -r`).
+   to the same paths (for example with the Supabase CLI `supabase storage cp -r`). Chat files
+   aren't in the backup; the next run of `chat-cleanup.yml` marks their messages "no longer
+   available".
 5. Point the app at the project: update `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in GitHub
    and run the deploy. Check you can sign in and that a course and an SOP open.
 6. Delete every decrypted copy.

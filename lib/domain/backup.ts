@@ -7,6 +7,17 @@
  * for 30 days, plus 12 Sundays and 12 first-of-the-month copies; everything else is deleted.
  */
 
+/**
+ * Storage buckets the weekly backup leaves out. Chat photos and documents are removed after 90
+ * days anyway, and would only make the Shared Drive copies grow (team messaging decision,
+ * 2026-11-08). Message text is in the database, so it is backed up.
+ */
+export const SKIPPED_BUCKETS: readonly string[] = ["chat-files"];
+
+export function isBackedUpBucket(bucket: string): boolean {
+  return !SKIPPED_BUCKETS.includes(bucket);
+}
+
 export const BACKUP_FILE =
   /^academy-(?:db-|files-)?(\d{4}-\d{2}-\d{2}T\d{4}Z)\.(?:dump\.age|zip\.age|sha256)$/;
 
