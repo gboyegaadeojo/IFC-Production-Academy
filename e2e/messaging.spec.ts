@@ -73,8 +73,11 @@ test("a department chat updates live, and a leader deletes a message", async ({
   await leader.getByLabel("Message", { exact: true }).fill(`Fake: yes, long lens ${stamp}`);
   await leader.getByRole("button", { name: "Send" }).click();
 
-  // It arrives in Avery's open chat without a refresh.
+  // It arrives in Avery's open chat without a refresh: live, or by the 15-second check.
   await expect(log.getByText(`Fake: yes, long lens ${stamp}`)).toBeVisible({ timeout: 20_000 });
+  // How it arrived, for the CI log: "live" means Realtime delivered it.
+  const live = await page.locator("section[data-live]").getAttribute("data-live");
+  console.log(`Messaging live status in CI: ${live ?? "unknown"}`);
 
   // The leader deletes Avery's message, and Avery sees why it's gone.
   await leader

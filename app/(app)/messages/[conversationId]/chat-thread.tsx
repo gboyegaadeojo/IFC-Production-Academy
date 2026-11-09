@@ -141,8 +141,16 @@ export function ChatThread({
       start();
     }
     document.addEventListener("visibilitychange", onVisibility);
+    // A safety net if the live connection drops quietly: one small check every 15 seconds while
+    // the chat is on screen.
+    const timer = window.setInterval(() => {
+      if (document.visibilityState === "visible") {
+        void catchUp();
+      }
+    }, 15_000);
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
+      window.clearInterval(timer);
       stop();
     };
   }, [conversationId, supabaseUrl, publishableKey, catchUp]);
@@ -271,6 +279,7 @@ export function ChatThread({
   return (
     <section
       aria-labelledby={titleId}
+      data-live={live}
       className="flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] min-h-0 flex-col md:h-dvh"
     >
       <header className="flex items-center gap-3 border-b border-border bg-surface px-3 py-2.5">
