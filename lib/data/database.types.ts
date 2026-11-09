@@ -1872,7 +1872,12 @@ export type Database = {
         Returns: { linked: boolean; pco_name: string | null; pco_teams: string[] }[];
       };
       planning_center_sign_in: {
-        Args: { p_pco_person_id: string; p_pco_organization_id: string; p_emails: string[] };
+        Args: {
+          p_pco_person_id: string;
+          p_pco_organization_id: string;
+          p_emails: string[];
+          p_name?: string | null;
+        };
         Returns: { user_id: string; email: string }[];
       };
       pco_unlinked_places: {
