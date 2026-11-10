@@ -29,5 +29,11 @@ select ok(
   and not has_function_privilege('anon', 'public.planning_center_schedules()', 'execute'),
   'only the service role can ask');
 
+-- PostgREST runs stable functions read-only, where the helper's FOR SHARE is refused (HTTP 405).
+select is(
+  (select provolatile::text from pg_proc where oid = 'public.planning_center_schedules()'::regprocedure),
+  'v',
+  'the check runs read-write through the API');
+
 select * from finish();
 rollback;
