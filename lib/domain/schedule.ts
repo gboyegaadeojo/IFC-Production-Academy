@@ -86,6 +86,35 @@ export function eventDayLabel(startsAt: string): string {
   return DAY.format(new Date(startsAt));
 }
 
+const DATE_PARTS = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TIME_ZONE,
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+});
+
+/**
+ * A service's day for a calendar tile (Serve option A, G 2026-11-10), in Winnipeg time:
+ * { month: "NOV", monthName: "November", day: "15", weekday: "Sunday", time: "10:05 a.m. – 12:00 p.m." }.
+ * No time when the service's times aren't set yet.
+ */
+export function eventDateParts(
+  startsAt: string,
+  endsAt: string | null,
+): { month: string; monthName: string; day: string; weekday: string; time: string | null } {
+  const start = new Date(startsAt);
+  const parts = DATE_PARTS.formatToParts(start);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  const monthName = get("month");
+  return {
+    month: monthName.slice(0, 3).toUpperCase(),
+    monthName,
+    day: get("day"),
+    weekday: get("weekday"),
+    time: endsAt ? `${TIME.format(start)} – ${TIME.format(new Date(endsAt))}` : null,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------
