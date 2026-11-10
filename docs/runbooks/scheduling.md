@@ -19,7 +19,9 @@ gh secret set PCO_PAT_SECRET
 
 Then run the job once by hand: **Actions → Planning Center sync → Run workflow**. Its log shows
 counts only, such as "plans 9, scheduled 31, people matched 18". If it says Planning Center refused
-the token, the token is wrong or doesn't include Services and People.
+the token, the token is wrong or doesn't include Services and People. If it says "Couldn't read who
+schedules", the Academy's own database refused the job: check `SUPABASE_SERVICE_ROLE_KEY` and that
+the `planning_center_schedules()` migration is applied.
 
 ### Starting jobs on time
 

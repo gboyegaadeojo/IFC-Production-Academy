@@ -370,16 +370,17 @@ async function main(): Promise<void> {
     return;
   }
   // While the Academy schedules (Who schedules, on the Planning Center page), Planning Center
-  // Services isn't read, so nothing it holds can overwrite the Academy's schedule.
-  const source = await fetch(
-    `${supabaseUrl}/rest/v1/organizations?select=scheduling_source&order=created_at.asc&limit=1`,
-    { headers: supabaseKeyHeaders(serviceKey) },
-  );
+  // Services isn't read, so nothing it holds can overwrite the Academy's schedule. Asked through a
+  // function: the service role can't read organizations directly.
+  const source = await fetch(`${supabaseUrl}/rest/v1/rpc/planning_center_schedules`, {
+    method: "POST",
+    headers: { ...supabaseKeyHeaders(serviceKey), "Content-Type": "application/json" },
+    body: "{}",
+  });
   if (!source.ok) {
     throw new Error(`Couldn't read who schedules (HTTP ${source.status}).`);
   }
-  const [organization] = (await source.json()) as { scheduling_source?: unknown }[];
-  if (organization?.scheduling_source !== "planning_center") {
+  if ((await source.json()) !== true) {
     console.log("Planning Center sync: the Academy schedules production, so nothing was read.");
     return;
   }
