@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ChevronLeftIcon } from "@/components/ui/icons";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/ui/icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DeviceAlerts } from "@/app/(app)/get-the-app/device-alerts";
 import { requireActiveUser } from "@/lib/data/auth";
+import { getMyCapabilities } from "@/lib/data/capabilities";
+import { getTeamAlertStatus } from "@/lib/data/push";
+import { canOpenAdminSection } from "@/lib/domain/admin";
 import { getFeatureFlags } from "@/lib/data/features";
 import { getMyNotificationChoices, offersLeadingChoices } from "@/lib/data/notifications";
 import {
@@ -49,7 +52,45 @@ export default function NotificationSettingsPage() {
         only come for anything you&apos;ve turned off for your phone. New courses, certificates, and
         SOP updates stay in the app.
       </p>
+
+      <Suspense fallback={null}>
+        <YourTeams />
+      </Suspense>
     </div>
+  );
+}
+
+/**
+ * For leaders only: their teams at a glance, leading to Admin, Phone alerts and app (G,
+ * 2026-11-10: "organic"). The list itself stays in Admin, where only leaders can open it.
+ */
+async function YourTeams() {
+  const grants = await getMyCapabilities();
+  if (!canOpenAdminSection(grants, "alerts")) {
+    return null;
+  }
+  const people = await getTeamAlertStatus();
+  if (people.length === 0) {
+    return null;
+  }
+  const alertsOn = people.filter((p) => p.status === "on").length;
+  const withApp = people.filter((p) => p.appPlatforms.length > 0).length;
+  return (
+    <Link
+      href="/admin/alerts"
+      className="flex items-center justify-between gap-3 rounded-card border border-border bg-surface p-4 transition-surface hover:bg-card"
+    >
+      <span className="flex flex-col gap-0.5">
+        <span className="font-semibold">Your teams</span>
+        <span className="text-small text-text-secondary">
+          {alertsOn} of {people.length} have alerts on · {withApp} have the app
+        </span>
+      </span>
+      <span className="flex shrink-0 items-center gap-1 text-small font-semibold text-accent-light">
+        See who
+        <ChevronRightIcon className="size-4" />
+      </span>
+    </Link>
   );
 }
 

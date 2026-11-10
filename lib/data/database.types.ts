@@ -1343,6 +1343,17 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      app_installs: {
+        Row: {
+          user_id: string;
+          platform: string;
+          first_opened_at: string;
+          last_opened_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       onboarding_stages: {
         Row: {
           id: string;
@@ -2161,8 +2172,11 @@ export type Database = {
           status: string;
           devices: string[];
           last_sent_at: string | null;
+          app_platforms: string[];
+          push_off_kinds: string[];
         }[];
       };
+      record_app_open: { Args: { p_platform: string }; Returns: undefined };
       assignable_people: {
         Args: { p_course_id: string };
         Returns: { user_id: string; display_name: string }[];

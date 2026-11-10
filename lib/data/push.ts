@@ -3,7 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/data/database.types";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { publicEnv } from "@/lib/env";
-import { toAlertStatus, type AlertStatus } from "@/lib/domain/alerts";
+import {
+  isAppPlatform,
+  toAlertStatus,
+  type AlertStatus,
+  type AppPlatform,
+} from "@/lib/domain/alerts";
 import { badgesByEndpoint } from "@/lib/domain/app-badge";
 import { pushMessageFor, sendPush, type PushMessage, type VapidKeys } from "@/lib/domain/web-push";
 
@@ -141,6 +146,10 @@ export type TeamAlertRow = {
   status: AlertStatus;
   devices: string[];
   lastSentAt: string | null;
+  /** Kinds of device they've opened the installed app on. */
+  appPlatforms: AppPlatform[];
+  /** Notification kinds they've switched off for their phone. */
+  pushOffKinds: string[];
 };
 
 /** Who on the teams this person may see has alerts on (alerts.view, checked in the database). */
@@ -157,7 +166,16 @@ export async function getTeamAlertStatus(): Promise<TeamAlertRow[]> {
     status: toAlertStatus(row.status),
     devices: row.devices,
     lastSentAt: row.last_sent_at,
+    appPlatforms: row.app_platforms.filter(isAppPlatform),
+    pushOffKinds: row.push_off_kinds,
   }));
+}
+
+/** Notes that the signed-in person opened the installed app on this kind of device. */
+export async function recordAppOpen(platform: AppPlatform): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("record_app_open", { p_platform: platform });
+  return !error;
 }
 
 /** Whether to ask this person to set up alerts: on a team, no phone on, no exception. */

@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
+import { recordAppOpen } from "@/lib/data/push";
 import {
   clearNotifications,
   getAppBadge,
@@ -153,4 +154,13 @@ export async function clearNotificationsAction(ids: string[] | null): Promise<{ 
 export async function appBadgeAction(): Promise<number> {
   const user = await getCurrentUser();
   return user?.status === "active" ? getAppBadge() : 0;
+}
+
+/** Notes that the installed app was opened, for the leaders' list (G, 2026-11-10). */
+export async function recordAppOpenAction(platform: string): Promise<void> {
+  const parsed = z.enum(["iphone", "android", "computer"]).safeParse(platform);
+  const user = await getCurrentUser();
+  if (parsed.success && user?.status === "active") {
+    await recordAppOpen(parsed.data);
+  }
 }
