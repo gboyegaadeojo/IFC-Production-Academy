@@ -18,7 +18,7 @@ test("a leader sees who has phone alerts on", async ({ page, isMobile }) => {
     "aria-pressed",
     "true",
   );
-  await expect(page.getByText("Not installed").first()).toBeVisible();
+  await expect(page.getByText("Not installed", { exact: true }).first()).toBeVisible();
 
   // Their own Notification settings lead here too.
   await page.goto("/notifications/settings");
