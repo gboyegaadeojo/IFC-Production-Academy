@@ -5,6 +5,7 @@
  */
 import { hasCapability, hasCapabilityAnywhere, type CapabilityGrant } from "./capabilities";
 import { FEATURES } from "./features";
+import { TIME_ZONE } from "./time-zone";
 
 export type AdminSectionKey =
   | "overview"
@@ -604,7 +605,7 @@ export function describeAuditEvent(event: AuditEventSummary): string {
 // ---------------------------------------------------------------------------
 
 const DATE_TIME = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   dateStyle: "medium",
   timeStyle: "short",
 });

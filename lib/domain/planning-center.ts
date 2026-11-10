@@ -5,6 +5,8 @@
  * Follows the same rules as IFC's Sunday Pre-Service Checklist app, which reads the same account.
  */
 
+import { TIME_ZONE } from "./time-zone.ts";
+
 /** One JSON:API resource, as Planning Center returns it. */
 export type Resource = {
   type: string;
@@ -201,7 +203,7 @@ export function mapPerson(
 /** The Winnipeg calendar date of an instant. */
 export function winnipegDate(instant: number): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Winnipeg",
+    timeZone: TIME_ZONE,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

@@ -57,8 +57,8 @@ reset role;
 -- A one-off service three days away, which Ada has accepted.
 select pg_temp.act_as('a7700000-0000-4000-8000-000000000001');
 insert into public.events (title, starts_at, ends_at) values ('Fake reminder service',
-  ((((now() at time zone 'America/Winnipeg')::date + 3) + time '10:30') at time zone 'America/Winnipeg'),
-  ((((now() at time zone 'America/Winnipeg')::date + 3) + time '12:00') at time zone 'America/Winnipeg'));
+  ((((now() at time zone 'Etc/GMT+5')::date + 3) + time '10:30') at time zone 'Etc/GMT+5'),
+  ((((now() at time zone 'Etc/GMT+5')::date + 3) + time '12:00') at time zone 'Etc/GMT+5'));
 insert into ctx values ('event', (select id from public.events where title = 'Fake reminder service'));
 insert into ctx values
   ('place', public.add_event_position((select id from ctx where key = 'event'), (select id from ctx where key = 'cam')));

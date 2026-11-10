@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { utcToWinnipeg, winnipegToUtc } from "./schedule";
+import { TIME_ZONE } from "./time-zone";
 
 export const PLAN_ITEM_KINDS = ["item", "song", "header"] as const;
 export type PlanItemKind = (typeof PLAN_ITEM_KINDS)[number];
@@ -102,7 +103,7 @@ export function planTimeline(items: readonly Pick<PlanItem, "kind" | "lengthSeco
 }
 
 const CLOCK = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   hour: "numeric",
   minute: "2-digit",
 });

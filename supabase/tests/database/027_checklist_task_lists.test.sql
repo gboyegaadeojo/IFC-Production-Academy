@@ -51,8 +51,8 @@ insert into public.checklist_positions (checklist_id, role_id) values ((select i
 -- Today's service is the current one; another in three days.
 insert into public.events (organization_id, title, starts_at, ends_at)
 select d.organization_id, 'Fake lists today',
-       greatest(((now() at time zone 'America/Winnipeg')::date::timestamp at time zone 'America/Winnipeg'), now() - interval '1 hour'),
-       greatest(((now() at time zone 'America/Winnipeg')::date::timestamp at time zone 'America/Winnipeg'), now() - interval '1 hour') + interval '2 hours'
+       greatest(((now() at time zone 'Etc/GMT+5')::date::timestamp at time zone 'Etc/GMT+5'), now() - interval '1 hour'),
+       greatest(((now() at time zone 'Etc/GMT+5')::date::timestamp at time zone 'Etc/GMT+5'), now() - interval '1 hour') + interval '2 hours'
 from public.departments d where d.id = 'b7ba9dae-cab5-43e0-a996-8ae9d2436855';
 insert into public.events (organization_id, title, starts_at, ends_at)
 select d.organization_id, 'Fake lists later', now() + interval '3 days', now() + interval '3 days 2 hours'

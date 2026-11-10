@@ -6,8 +6,8 @@
 import { serviceChecklistHref } from "./checklists";
 import { formatMinutes } from "./learning";
 import { READINESS_LABELS, type AssignmentReadiness } from "./schedule";
+import { TIME_ZONE } from "./time-zone";
 
-const TIME_ZONE = "America/Winnipeg";
 const HOUR = new Intl.DateTimeFormat("en-CA", {
   timeZone: TIME_ZONE,
   hour: "numeric",

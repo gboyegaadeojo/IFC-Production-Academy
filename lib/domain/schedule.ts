@@ -4,10 +4,11 @@
  * check when someone is assigned.
  */
 import { z } from "zod";
+import { TIME_ZONE } from "./time-zone";
 
-export const TIME_ZONE = "America/Winnipeg";
+export { TIME_ZONE };
 
-/** The UTC offset in minutes of Winnipeg at an instant (−300 in summer, −360 in winter). */
+/** The UTC offset in minutes of Winnipeg at an instant (−300 all year since 2026-11-01). */
 function winnipegOffsetMinutes(instant: Date): number {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: TIME_ZONE,

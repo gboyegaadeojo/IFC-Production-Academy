@@ -30,6 +30,7 @@ jobs:
             lib/domain/email-design.ts
             lib/domain/notifications.ts
             lib/domain/supabase-keys.ts
+            lib/domain/time-zone.ts
             lib/domain/web-push.ts
             scripts/send-notifications.ts
           sparse-checkout-cone-mode: false

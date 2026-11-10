@@ -51,6 +51,7 @@ import { CoursePoster } from "@/components/course-poster";
 import { DepartmentTile, ExploreRow } from "./department-card";
 import Loading from "./loading";
 import { NextSteps } from "./next-steps";
+import { TIME_ZONE } from "@/lib/domain/time-zone";
 
 export const metadata: Metadata = { title: "Training" };
 
@@ -342,7 +343,7 @@ async function TrainingContent() {
 }
 
 const MONTH_MS = 31 * 24 * 60 * 60 * 1000;
-const WINNIPEG = "America/Winnipeg";
+const WINNIPEG = TIME_ZONE;
 const WEEKDAY = new Intl.DateTimeFormat("en-CA", { timeZone: WINNIPEG, weekday: "short" });
 const DAY_OF_MONTH = new Intl.DateTimeFormat("en-CA", { timeZone: WINNIPEG, day: "numeric" });
 const TIME = new Intl.DateTimeFormat("en-CA", {
