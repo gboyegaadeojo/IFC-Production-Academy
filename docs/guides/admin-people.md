@@ -21,18 +21,23 @@ The person opens the link and signs in with **Planning Center**, or with an emai
 
 To stop a link, choose **Revoke**. It stops working straight away, and people who already joined stay members.
 
-## Phone alerts
+## Phone alerts and app
 
-**Phone alerts** shows who on your teams has alerts on their phone, with anyone to follow up first. Department Leaders see their own departments. Production Directors and Platform Admins see everyone.
+**Phone alerts and app** shows who on your teams has the Academy on their phone and alerts turned on, with anyone to follow up first. Department Leaders see their own departments. Production Directors and Platform Admins see everyone. Your own **Notification settings** also has a **Your teams** card that leads here.
+
+At the top are four numbers: how many have the app, how many have alerts on, how many have some alerts off, and how many don't have alerts on. Choose **Everyone**, **No app**, **Alerts not on**, **Some alerts off** or **Phone can't** to narrow the list. On a phone, each person has two small marks, **App** and **Alerts**. On a computer, each has a column.
 
 | Shown as | What it means |
 | --- | --- |
+| **Installed** | They've opened the Academy from their Home Screen, on the device shown |
+| **Not installed** | They use the website, or haven't opened the installed app yet |
 | **On** | Alerts are on for a phone or tablet |
+| **Some off** | Alerts are on, but they've switched some off for their phone, shown as "Off for: Training" |
 | **Not on** | No alerts on any device yet |
 | **Computer only** | Alerts are on a computer but not a phone |
 | **Phone can't** | They've said their phone can't do alerts. They get emails instead |
 
-Only each person can turn alerts on, so someone listed as **Not on** may need a hand. On an iPhone, the Academy has to be on the Home Screen first. Someone can also switch alerts off in their phone's settings without the Academy knowing until an alert fails to reach them, so **On** means the last we heard.
+Only each person can install the app or turn alerts on, so someone listed as **Not installed** or **Not on** may need a hand. On an iPhone, the Academy has to be on the Home Screen first. The app is counted once someone opens it from their Home Screen, and a phone doesn't say when an app is deleted. Someone can also switch alerts off in their phone's settings without the Academy knowing until an alert fails to reach them, so **On** means the last we heard.
 
 ## People and roles
 

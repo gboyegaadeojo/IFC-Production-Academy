@@ -10,15 +10,31 @@ test("a leader sees who has phone alerts on", async ({ page, isMobile }) => {
   test.skip(isMobile, "Shared seed accounts: desktop project only");
   await signInByEmail(page, "casey.leader@example.com");
   await page.goto("/admin/alerts");
-  await expect(page.getByRole("heading", { level: 1, name: "Phone alerts" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: /alerts on a phone$/ })).toBeVisible();
-  await expect(page.getByText("Not on").first()).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Phone alerts and app" })).toBeVisible();
+  // Filters narrow the list (G, 2026-11-10): who has no app, whose alerts aren't on.
+  const show = page.getByRole("group", { name: "Show" });
+  await show.getByRole("button", { name: /^Alerts not on/ }).click();
+  await expect(show.getByRole("button", { name: /^Alerts not on/ })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.getByText("Not installed", { exact: true }).first()).toBeVisible();
+
+  // Their own Notification settings lead here too.
+  await page.goto("/notifications/settings");
+  await page.getByRole("link", { name: /Your teams/ }).click();
+  await expect(page).toHaveURL(/\/admin\/alerts$/);
 });
 
 test("a volunteer can't open the list", async ({ page }, testInfo) => {
   await signInByEmail(page, `e2e-alerts-${testInfo.project.name}-${Date.now()}@example.com`);
   await page.goto("/admin/alerts");
   await expect(page.getByRole("heading", { level: 1, name: "Phone alerts" })).toHaveCount(0);
+  await page.goto("/notifications/settings");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Notification settings" }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: /Your teams/ })).toHaveCount(0);
 });
 
 // Only touch screens are asked, and "Not now" holds until the app is next opened.

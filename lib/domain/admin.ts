@@ -146,7 +146,7 @@ const SECTIONS: readonly AdminSection[] = [
   },
   { key: "reports", href: "/admin/reports", label: "Reports", group: "Training Academy" },
   { key: "people", href: "/admin/people", label: "People and roles", group: "People & Teams" },
-  { key: "alerts", href: "/admin/alerts", label: "Phone alerts", group: "People & Teams" },
+  { key: "alerts", href: "/admin/alerts", label: "Phone alerts and app", group: "People & Teams" },
   {
     key: "onboarding",
     href: "/admin/onboarding",
