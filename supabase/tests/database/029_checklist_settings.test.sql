@@ -49,7 +49,7 @@ create temporary table ctx (key text primary key, id uuid);
 create temporary table vals (key text primary key, n integer);
 grant all on ctx, vals to authenticated, service_role;
 insert into vals values ('tomorrow_dow',
-  extract(dow from (now() at time zone 'America/Winnipeg')::date + 1)::integer);
+  extract(dow from (now() at time zone 'Etc/GMT+5')::date + 1)::integer);
 
 -- Only church-wide checklist managers see and change the settings.
 select pg_temp.act_as('aa000000-0000-4000-8000-000000000002');
@@ -94,8 +94,8 @@ select is(public.current_service(), (select id from ctx where key = 'opened'), '
 reset role;
 select ok((select is_placeholder from public.events where id = (select id from ctx where key = 'opened')),
   'it is marked as opened by the checklist');
-select is((select (starts_at at time zone 'America/Winnipeg')::date from public.events where id = (select id from ctx where key = 'opened')),
-  (now() at time zone 'America/Winnipeg')::date + 1, 'for the next service day');
+select is((select (starts_at at time zone 'Etc/GMT+5')::date from public.events where id = (select id from ctx where key = 'opened')),
+  (now() at time zone 'Etc/GMT+5')::date + 1, 'for the next service day');
 select is((select count(*)::integer from public.events where is_placeholder), 1, 'only one is opened');
 select pg_temp.act_as('aa000000-0000-4000-8000-000000000003');
 select throws_ok($$ insert into public.events (organization_id, title, starts_at, ends_at, is_placeholder)
@@ -109,11 +109,11 @@ select lives_ok($$ select public.sync_planning_center(jsonb_build_object(
   'from', now() - interval '1 day', 'to', now() + interval '60 days',
   'plans', jsonb_build_array(
     jsonb_build_object('id', 'plan-fake-other', 'service_type_id', 'st-fake-other', 'title', 'Fake Youth Night',
-      'starts_at', (((now() at time zone 'America/Winnipeg')::date + 1 + time '09:00') at time zone 'America/Winnipeg'),
-      'ends_at', (((now() at time zone 'America/Winnipeg')::date + 1 + time '10:00') at time zone 'America/Winnipeg')),
+      'starts_at', (((now() at time zone 'Etc/GMT+5')::date + 1 + time '09:00') at time zone 'Etc/GMT+5'),
+      'ends_at', (((now() at time zone 'Etc/GMT+5')::date + 1 + time '10:00') at time zone 'Etc/GMT+5')),
     jsonb_build_object('id', 'plan-fake-sun', 'service_type_id', 'st-fake-sun', 'title', 'Fake Sunday Service',
-      'starts_at', (((now() at time zone 'America/Winnipeg')::date + 1 + time '10:00') at time zone 'America/Winnipeg'),
-      'ends_at', (((now() at time zone 'America/Winnipeg')::date + 1 + time '12:00') at time zone 'America/Winnipeg'))))) $$,
+      'starts_at', (((now() at time zone 'Etc/GMT+5')::date + 1 + time '10:00') at time zone 'Etc/GMT+5'),
+      'ends_at', (((now() at time zone 'Etc/GMT+5')::date + 1 + time '12:00') at time zone 'Etc/GMT+5'))))) $$,
   'the sync runs');
 reset role;
 select is((select external_id from public.events where id = (select id from ctx where key = 'opened')), 'plan-fake-sun',

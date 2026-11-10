@@ -57,8 +57,8 @@ reset role;
 -- Cleo is blocked out that day.
 insert into public.unavailability (user_id, starts_on, ends_on, note)
 values ('a7600000-0000-4000-8000-000000000004',
-        ((now() + interval '6 days') at time zone 'America/Winnipeg')::date,
-        ((now() + interval '6 days') at time zone 'America/Winnipeg')::date, 'Away');
+        ((now() + interval '6 days') at time zone 'Etc/GMT+5')::date,
+        ((now() + interval '6 days') at time zone 'Etc/GMT+5')::date, 'Away');
 
 -- Ada declines: Ben is free, so he's added and asked; the lead is told.
 select pg_temp.act_as('a7600000-0000-4000-8000-000000000002');
@@ -87,7 +87,7 @@ select is(
     where user_id = 'a7600000-0000-4000-8000-000000000001' and kind = 'schedule_update'
       and title = 'Declined: Fake decline camera'),
   'Test Ada Decline can''t serve at Fake decline Sunday, ' ||
-    to_char((now() + interval '6 days') at time zone 'America/Winnipeg', 'Dy Mon FMDD, FMHH12:MI AM') ||
+    to_char((now() + interval '6 days') at time zone 'Etc/GMT+5', 'Dy Mon FMDD, FMHH12:MI AM') ||
     '. Test Ben Decline was free, so they were added and asked.',
   'the scheduler is told who declined and who was added');
 select ok(exists (select 1 from public.audit_events where action = 'schedule.declined_replaced'),

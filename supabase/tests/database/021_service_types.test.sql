@@ -80,7 +80,7 @@ select is(
   9, 'each service gets every position'
 );
 select is(
-  (select to_char(starts_at at time zone 'America/Winnipeg', 'HH24:MI') from public.events
+  (select to_char(starts_at at time zone 'Etc/GMT+5', 'HH24:MI') from public.events
     where service_type_id = (select id from ctx where key = 'type') order by starts_at limit 1),
   '10:05', 'services start at the usual Winnipeg time'
 );

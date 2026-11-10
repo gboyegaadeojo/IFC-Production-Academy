@@ -53,12 +53,12 @@ from unnest(array['a8000000-0000-4000-8000-000000000002', 'a8000000-0000-4000-80
 -- another three days later with one.
 select pg_temp.act_as('a8000000-0000-4000-8000-000000000001');
 insert into public.events (title, starts_at, ends_at) values
-  ('Fake auto morning', ((select day from days where key = 'day') + time '10:30') at time zone 'America/Winnipeg',
-                        ((select day from days where key = 'day') + time '12:00') at time zone 'America/Winnipeg'),
-  ('Fake auto evening', ((select day from days where key = 'day') + time '18:00') at time zone 'America/Winnipeg',
-                        ((select day from days where key = 'day') + time '19:30') at time zone 'America/Winnipeg'),
-  ('Fake auto later', ((select day from days where key = 'later') + time '10:30') at time zone 'America/Winnipeg',
-                      ((select day from days where key = 'later') + time '12:00') at time zone 'America/Winnipeg');
+  ('Fake auto morning', ((select day from days where key = 'day') + time '10:30') at time zone 'Etc/GMT+5',
+                        ((select day from days where key = 'day') + time '12:00') at time zone 'Etc/GMT+5'),
+  ('Fake auto evening', ((select day from days where key = 'day') + time '18:00') at time zone 'Etc/GMT+5',
+                        ((select day from days where key = 'day') + time '19:30') at time zone 'Etc/GMT+5'),
+  ('Fake auto later', ((select day from days where key = 'later') + time '10:30') at time zone 'Etc/GMT+5',
+                      ((select day from days where key = 'later') + time '12:00') at time zone 'Etc/GMT+5');
 insert into ctx values
   ('morning', (select id from public.events where title = 'Fake auto morning')),
   ('evening', (select id from public.events where title = 'Fake auto evening')),

@@ -130,8 +130,8 @@ reset role;
 select pg_temp.act_as('e0000000-0000-4000-8000-000000000002');
 select lives_ok(
   $$ select public.add_unavailability(
-       ((select starts_at from public.events where id = (select id from ctx where key = 'event')) at time zone 'America/Winnipeg')::date,
-       ((select starts_at from public.events where id = (select id from ctx where key = 'event')) at time zone 'America/Winnipeg')::date,
+       ((select starts_at from public.events where id = (select id from ctx where key = 'event')) at time zone 'Etc/GMT+5')::date,
+       ((select starts_at from public.events where id = (select id from ctx where key = 'event')) at time zone 'Etc/GMT+5')::date,
        'Away') $$,
   'a volunteer marks a day away'
 );
@@ -187,10 +187,10 @@ select ok(
 -- One position a day across the production team, even at different times.
 select pg_temp.act_as('e0000000-0000-4000-8000-000000000004');
 insert into public.events (title, starts_at, ends_at) values
-  ('Fake morning', ((current_date + 20)::timestamp + time '09:00') at time zone 'America/Winnipeg',
-                   ((current_date + 20)::timestamp + time '10:00') at time zone 'America/Winnipeg'),
-  ('Fake evening', ((current_date + 20)::timestamp + time '18:00') at time zone 'America/Winnipeg',
-                   ((current_date + 20)::timestamp + time '19:00') at time zone 'America/Winnipeg');
+  ('Fake morning', ((current_date + 20)::timestamp + time '09:00') at time zone 'Etc/GMT+5',
+                   ((current_date + 20)::timestamp + time '10:00') at time zone 'Etc/GMT+5'),
+  ('Fake evening', ((current_date + 20)::timestamp + time '18:00') at time zone 'Etc/GMT+5',
+                   ((current_date + 20)::timestamp + time '19:00') at time zone 'Etc/GMT+5');
 insert into ctx values
   ('pos5', public.add_event_position((select id from public.events where title = 'Fake morning'), (select id from ctx where key = 'role'))),
   ('pos6', public.add_event_position((select id from public.events where title = 'Fake evening'), (select id from ctx where key = 'role')));

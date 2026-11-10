@@ -45,8 +45,8 @@ values ((select id from ctx where key = 'cam'), 'b7ba9dae-cab5-43e0-a996-8ae9d24
 -- A Sunday service, 10:30 to 12:00.
 select pg_temp.act_as('a7900000-0000-4000-8000-000000000001');
 insert into public.events (title, starts_at, ends_at) values ('Fake blockout Sunday',
-  ((select day from days where key = 'sunday') + time '10:30') at time zone 'America/Winnipeg',
-  ((select day from days where key = 'sunday') + time '12:00') at time zone 'America/Winnipeg');
+  ((select day from days where key = 'sunday') + time '10:30') at time zone 'Etc/GMT+5',
+  ((select day from days where key = 'sunday') + time '12:00') at time zone 'Etc/GMT+5');
 insert into ctx values ('event', (select id from public.events where title = 'Fake blockout Sunday'));
 reset role;
 
