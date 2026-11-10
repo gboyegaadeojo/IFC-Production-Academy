@@ -136,6 +136,11 @@ export function PanelHost({ panels, children }: { panels: Panel[]; children: Rea
   );
 }
 
+/** For a choice inside a panel that closes it once made. */
+export function useClosePanel() {
+  return usePanels().close;
+}
+
 /** A button that opens one of the host's panels. */
 export function PanelButton({
   panel,
