@@ -1,14 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
+import { CLIENT_ERROR_EVENT } from "@/lib/domain/monitoring";
 import "./globals.css";
 
-/** The last resort when a page crashes: says so plainly, tells Sentry if it's on, and offers a retry. */
+/**
+ * The last resort when a page crashes: says so plainly, tells Sentry if it's on, and offers a retry.
+ * The browser's Sentry (instrumentation-client.ts) reports it, so this page doesn't import Sentry,
+ * which would put another copy in the server's bundle.
+ */
 export default function GlobalError({ error, reset }: { error: Error; reset: () => void }) {
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
-      void import("@sentry/nextjs").then((Sentry) => Sentry.captureException(error));
-    }
+    window.dispatchEvent(new CustomEvent(CLIENT_ERROR_EVENT, { detail: error }));
   }, [error]);
 
   return (

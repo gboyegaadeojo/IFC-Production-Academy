@@ -1,11 +1,23 @@
 // The Worker's entry (ADD-DASH-09): the Next.js app, plus the live room, which OpenNext can't
 // export by itself. This folder is left out of tsconfig: it needs Cloudflare's runtime types and
 // the built app. The rules it uses are typed and tested in lib/domain/live-room.ts.
-import { withSentry } from "@sentry/nextjs/cloudflare";
+import { captureException, withSentry } from "@sentry/nextjs/cloudflare";
 import handler from "../.open-next/worker.js";
 import { startFrequentJobs } from "../lib/domain/job-trigger";
 import { bridgeTokenFrom, bridgeTokenMatches, verifyLiveTicket } from "../lib/domain/live-room";
-import { scrubEvent, SENTRY_DATA_COLLECTION } from "../lib/domain/monitoring";
+import {
+  scrubEvent,
+  SENTRY_DATA_COLLECTION,
+  SERVER_ERROR_REPORTER,
+  type ServerErrorReporter,
+} from "../lib/domain/monitoring";
+
+// The app's server errors come here (instrumentation.ts), so it needn't bundle Sentry itself. Inside
+// a request, withSentry below has set Sentry up; with no address, this does nothing.
+const reportServerError: ServerErrorReporter = (error, tags) => {
+  captureException(error, { tags, mechanism: { type: "onRequestError", handled: false } });
+};
+(globalThis as Record<string, unknown>)[SERVER_ERROR_REPORTER] = reportServerError;
 
 export { LiveRoom } from "./live-room";
 

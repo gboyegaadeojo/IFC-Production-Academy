@@ -13,6 +13,17 @@ export const SENTRY_DATA_COLLECTION = {
   urlQueryParams: false,
 };
 
+/**
+ * How server errors reach Sentry without the app bundling Sentry a second time: the Worker
+ * (workers/entry.ts), which already has it, puts a reporter on globalThis under this name, and
+ * instrumentation.ts calls it. Each extra copy of Sentry in the app's own code was about 1.6 MB.
+ */
+export const SERVER_ERROR_REPORTER = "__academyReportServerError";
+export type ServerErrorReporter = (error: unknown, tags: Record<string, string>) => void;
+
+/** The page's error screen asks the browser's Sentry to report through this event. */
+export const CLIENT_ERROR_EVENT = "academy:report-error";
+
 const PRIVATE_PATHS: readonly [RegExp, string][] = [
   [/^\/invite\/[^/]+/, "/invite/[token]"],
   [/^\/verify\/[^/]+/, "/verify/[reference]"],

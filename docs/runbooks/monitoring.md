@@ -17,6 +17,11 @@ Deploy workflow. They're variables because both values reach the browser, so the
 
 In PostHog, also turn on **Discard client IP data** under Project Settings.
 
+## Where it's wired
+
+- **Browser:** `instrumentation-client.ts` loads Sentry and PostHog in a quiet moment and counts page views as you move between pages. The page error screen (`app/global-error.tsx`) hands its error to it.
+- **Server:** the Worker (`workers/entry.ts`) sets Sentry up and reports the app's server errors, which `instrumentation.ts` passes to it. Don't import Sentry or PostHog anywhere else in the app: each copy adds megabytes to what a cold start loads.
+
 ## What gets sent
 
 **Sentry** receives the error, where in the code it happened, the browser, and the page's address.
