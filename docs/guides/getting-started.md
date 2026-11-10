@@ -78,6 +78,8 @@ Open your name, then **Get the app**. It's free, takes a minute, and doesn't use
 - **Android:** open the Academy in Chrome and tap **Install app**.
 - **Computer:** in Chrome or Edge, select the install icon at the right of the address bar.
 
+The app keeps itself up to date. When a new version is out, it loads it the next time you come back to the app, or when you move to another page if you're in the middle of typing. You never need to delete it and add it again.
+
 ### Alerts
 
 On the same page, choose **Turn on alerts** to get updates that drop down like any other app. If you're on a team, the app asks you to do this on your phone each time you open it, until it's done. **Not now** puts it off until next time, and nothing is locked in the meantime. If your phone can't do alerts, choose **My phone can't do this**. Your leaders will see that, and you'll get emails instead. You turn alerts on separately for each device, and they come at any time of day (your phone's Do Not Disturb still applies). On iPhone and iPad, alerts need iOS 16.4 or later, and they only work once the Academy is on your Home Screen.

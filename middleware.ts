@@ -9,7 +9,8 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except static files and images, and the service worker and its offline page.
-    "/((?!_next/static|_next/image|favicon.ico|sw\\.js|offline\\.html|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|webmanifest)$).*)",
+    // Everything except static files and images, the service worker and its offline page, and
+    // the version check, which needs no session.
+    "/((?!_next/static|_next/image|favicon.ico|sw\\.js|offline\\.html|api/version|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|webmanifest)$).*)",
   ],
 };

@@ -34,6 +34,11 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Each build's version, so an app left open on an older one loads the new one
+  // (components/shell/version-watcher.tsx). The commit in CI; the build time locally.
+  env: {
+    NEXT_PUBLIC_APP_VERSION: process.env.GITHUB_SHA?.slice(0, 12) ?? `local-${Date.now()}`,
+  },
   // Cache Components stays off: on the Workers runtime its staged rendering relies on Node's
   // setTimeout behaviour and every request hangs. CI smoke tests the built Worker to catch this.
   cacheComponents: false,

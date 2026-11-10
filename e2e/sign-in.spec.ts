@@ -127,3 +127,12 @@ test("Planning Center sign-in fails safely without its setup or state", async ({
   await page.goto("/auth/planning-center/callback?error=access_denied");
   await expect(page.getByRole("main").getByRole("alert")).toContainText("cancelled");
 });
+
+test("the live version is published, so open apps can update themselves", async ({ request }) => {
+  // components/shell/version-watcher.tsx asks this, signed in or not (G, 2026-11-10).
+  const response = await request.get("/api/version");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  const body = (await response.json()) as { version: string };
+  expect(body.version.length).toBeGreaterThan(0);
+});
