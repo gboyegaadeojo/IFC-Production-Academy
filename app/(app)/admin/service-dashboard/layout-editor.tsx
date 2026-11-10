@@ -248,7 +248,7 @@ export function LayoutEditor({ initial, canEdit }: { initial: DashboardLayout; c
         {message?.text}
       </p>
 
-      <div className="grid gap-4 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[15rem_minmax(0,1fr)] lg:items-start">
         <aside aria-label="Tiles" className="flex flex-col gap-3">
           {TILE_GROUPS.map((group) => (
             <div key={group} className="flex flex-col gap-1">

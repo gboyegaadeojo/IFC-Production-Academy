@@ -135,7 +135,7 @@ async function PeopleContent({
         </details>
       ) : null}
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_26rem]">
+      <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_26rem]">
         <section
           aria-labelledby="people-heading"
           className="overflow-hidden rounded-card border border-border bg-surface"

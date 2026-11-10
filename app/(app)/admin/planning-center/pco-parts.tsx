@@ -201,7 +201,7 @@ export function PcoPeople({ names, inviteHref }: { names: string[]; inviteHref: 
         ) : null}
       </div>
       {shown.length > 0 ? (
-        <ul className="grid overflow-hidden rounded-card border border-border bg-surface sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 overflow-hidden rounded-card border border-border bg-surface sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((name, index) => (
             <li key={`${name}-${index}`} className="-mt-px border-t border-border px-3.5 py-1.5">
               {name}

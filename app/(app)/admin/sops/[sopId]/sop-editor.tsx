@@ -230,7 +230,7 @@ export function SopEditor(props: Props) {
         </div>
       </div>
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_18rem]">
         {editing ? (
           <form id="sop-form" action={save} className="flex min-w-0 flex-col gap-3.5">
             {fields}

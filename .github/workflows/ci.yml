@@ -124,7 +124,7 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - run: npm run build
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
 
       # Design review screenshots (e2e/visual.spec.ts). They show only fake seed data and generated

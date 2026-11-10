@@ -185,7 +185,7 @@ export function BrandingForm({
     }`;
 
   return (
-    <div className="grid gap-6 xl:grid-cols-2 xl:items-start">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:items-start">
       <div className="flex flex-col gap-4 rounded-card border border-border bg-surface p-4">
         <div className="flex flex-col gap-1">
           <label htmlFor="brand-name" className="text-small font-medium text-text-secondary">

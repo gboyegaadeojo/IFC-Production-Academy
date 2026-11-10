@@ -12,6 +12,8 @@ const port = Number(process.env.E2E_PORT ?? 3000);
 const baseURL = `http://localhost:${port}`;
 
 const LOAD_TEST = /thirty-people\.spec\.ts/;
+// Safari's engine on an iPhone 13: only the screens-fit check, which Chrome can't stand in for.
+const IPHONE_TEST = /iphone\.spec\.ts/;
 
 export default defineConfig({
   testDir: "./e2e",
@@ -24,8 +26,13 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   projects: [
-    { name: "desktop", testIgnore: LOAD_TEST, use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", testIgnore: LOAD_TEST, use: { ...devices["Pixel 7"] } },
+    {
+      name: "desktop",
+      testIgnore: [LOAD_TEST, IPHONE_TEST],
+      use: { ...devices["Desktop Chrome"] },
+    },
+    { name: "mobile", testIgnore: [LOAD_TEST, IPHONE_TEST], use: { ...devices["Pixel 7"] } },
+    { name: "iphone", testMatch: IPHONE_TEST, use: { ...devices["iPhone 13"] } },
     // Runs after the others, on an otherwise quiet machine, so its limit measures the app and not
     // the rest of the test suite competing for the same server.
     {

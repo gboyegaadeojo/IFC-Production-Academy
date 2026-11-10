@@ -37,6 +37,35 @@ export async function expectNoHorizontalOverflow(page: Page) {
   ).toBeLessThanOrEqual(0);
 }
 
+/**
+ * Nothing on the page reaches past the screen's right edge, except inside a box built to scroll or
+ * clip its own content (a sideways row of departments). Stricter than expectNoHorizontalOverflow:
+ * the page clips overflow, so a scroll width can't show content that's cut off at the edge, as the
+ * done marks were on an iPhone (2026-11-10). Tag and classes only in the message, never text.
+ */
+export async function expectFitsScreen(page: Page) {
+  const culprits = await page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    const main = document.getElementById("main") ?? document.body;
+    const contained = (el: Element | null): boolean => {
+      for (let node = el; node && node !== main; node = node.parentElement) {
+        if (getComputedStyle(node).overflowX !== "visible") {
+          return true;
+        }
+      }
+      return false;
+    };
+    const wide = [...main.querySelectorAll<HTMLElement>("*")].filter(
+      (el) => el.getBoundingClientRect().right > width + 1 && !contained(el.parentElement),
+    );
+    return wide
+      .filter((el) => !wide.includes(el.parentElement as HTMLElement))
+      .slice(0, 5)
+      .map((el) => `${el.tagName.toLowerCase()}.${[...el.classList].slice(0, 6).join(".")}`);
+  });
+  expect(culprits, "reaches past the edge of the screen").toEqual([]);
+}
+
 /** Checks for sideways scrolling, then saves a full-page screenshot. */
 export async function capture(page: Page, name: string) {
   await expectNoHorizontalOverflow(page);

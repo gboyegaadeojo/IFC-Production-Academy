@@ -315,7 +315,7 @@ function SettingsSummary({ quiz }: { quiz: QuizEditor }) {
       <h2 id="settings-heading" className="text-subheading font-semibold">
         Settings
       </h2>
-      <dl className="grid gap-2 sm:grid-cols-[12rem_1fr]">
+      <dl className="grid grid-cols-1 gap-2 sm:grid-cols-[12rem_1fr]">
         <dt className="text-small text-text-muted">Where it sits</dt>
         <dd>{placementLabel(quiz)}</dd>
         <dt className="text-small text-text-muted">Rules</dt>
@@ -392,7 +392,7 @@ function SettingsForm({ quiz }: { quiz: QuizEditor }) {
             <option value="end">At the end of the course</option>
           </select>
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Field id="quiz-pass" label="Pass mark (%)" hint="The default is 80%.">
             <input
               id="quiz-pass"

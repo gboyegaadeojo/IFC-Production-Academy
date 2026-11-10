@@ -50,7 +50,7 @@ async function PlanTemplatesContent() {
           Add one below, or save a service&apos;s order of service as a template.
         </EmptyState>
       ) : (
-        <ul className="grid max-w-4xl gap-3 sm:grid-cols-2">
+        <ul className="grid max-w-4xl grid-cols-1 gap-3 sm:grid-cols-2">
           {templates.map((template) => {
             const usual = types.filter((type) => type.defaultTemplateId === template.id);
             return (
