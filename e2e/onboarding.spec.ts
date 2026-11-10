@@ -23,12 +23,14 @@ test("a director builds Join the team, adds someone, and sees their follow-up", 
 
   const pathways = page.getByRole("navigation", { name: "Pathways" });
   if ((await pathways.getByRole("link", { name: /^Join the team/ }).count()) === 0) {
-    await page.getByText("Set up a pathway").click();
-    await page
-      .getByLabel("For")
+    // Scoped to the set-up form: another pathway's editor may be on the page too.
+    const setup = page.locator("details").filter({ hasText: "Set up a pathway" });
+    await setup.getByText("Set up a pathway").click();
+    await setup
+      .getByLabel("For", { exact: true })
       .selectOption({ label: "Everyone joining the team (Join the team)" });
-    await page.getByLabel("Name", { exact: true }).fill("Join the team");
-    await page.getByRole("button", { name: "Create pathway" }).click();
+    await setup.getByLabel("Name", { exact: true }).fill("Join the team");
+    await setup.getByRole("button", { name: "Create pathway" }).click();
   } else {
     await pathways.getByRole("link", { name: /^Join the team/ }).click();
   }

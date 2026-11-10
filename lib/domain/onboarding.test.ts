@@ -14,6 +14,9 @@ import {
   volunteerPathways,
   whoReachesOut,
   type MyOnboardingRow,
+  describeSnapshot,
+  parseSnapshot,
+  restoreChanges,
 } from "./onboarding";
 
 const ROLE = "11111111-1111-4111-8111-111111111111";
@@ -259,5 +262,49 @@ describe("choose a department", () => {
     ]);
     expect(pathway?.choosing).toBe(true);
     expect(pathway?.offeredDepartmentIds).toEqual([CAM]);
+  });
+});
+
+describe("pathway versions", () => {
+  const base = {
+    name: "Join the team",
+    summary: "",
+    stages: [{ id: "s1", name: "Interested" }],
+    steps: [
+      { id: "a", stage_id: "s1", title: "Form", config: {}, sort_order: 10 },
+      { id: "b", stage_id: "s1", title: "Welcome", config: { subject: "Hi" }, sort_order: 20 },
+    ],
+  };
+
+  it("reads a saved version, and refuses anything else", () => {
+    expect(parseSnapshot(base)).toEqual(base);
+    expect(parseSnapshot({ name: "x" })).toBeNull();
+    expect(parseSnapshot(null)).toBeNull();
+  });
+
+  it("describes a version at a glance", () => {
+    expect(describeSnapshot(base)).toBe("1 stage, 2 steps");
+  });
+
+  it("says what a restore brings back, takes out, and changes", () => {
+    const now = {
+      ...base,
+      name: "Join us",
+      steps: [
+        { id: "a", stage_id: "s1", title: "Sign-up form", config: {}, sort_order: 10 },
+        { id: "c", stage_id: "s1", title: "Extra", config: {}, sort_order: 30 },
+      ],
+    };
+    expect(restoreChanges(now, base)).toEqual({
+      bringsBack: ["Welcome"],
+      takesOut: ["Extra"],
+      changed: 1,
+      renamed: true,
+      same: false,
+    });
+  });
+
+  it("knows when restoring would change nothing", () => {
+    expect(restoreChanges(base, base).same).toBe(true);
   });
 });

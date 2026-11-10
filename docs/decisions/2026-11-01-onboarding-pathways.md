@@ -21,4 +21,9 @@ SPEC §1 aims to "reduce the time it takes to onboard a new production volunteer
 - Every change to pathways, entries and tasks is audited.
 
 ## Not now
-Publishing versions of a pathway (edits apply to everyone straight away; removed steps are archived, never deleted, so history stays readable), the Planning Center workflow reader, and drag-and-drop on touch screens (buttons do the same job everywhere).
+Publishing versions of a pathway (edits apply to everyone straight away; removed steps are archived, never deleted, so history stays readable) and drag-and-drop on touch screens (buttons do the same job everywhere).
+
+## Update 2026-11-10
+
+- **Version history (built).** Every change is saved as a version automatically, one per sitting (the same person within 30 minutes). A leader can restore any earlier version: it first lists what restoring brings back, takes out and changes, then saves the result as a new version, so a restore can be undone. Stages and steps a version didn't have are archived, never deleted, and people in the pathway carry on. Versions are written only by database functions and audited (`20270119121000_onboarding_pathway_versions.sql`).
+- **The Planning Center workflow reader is dropped.** IFC doesn't use Planning Center Workflows; people come in through the Academy's own pathway.

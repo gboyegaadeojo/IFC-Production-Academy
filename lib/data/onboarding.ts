@@ -1,7 +1,12 @@
 import "server-only";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { hasCapability, type CapabilityGrant } from "@/lib/domain/capabilities";
-import type { StepKind, StepPlacement } from "@/lib/domain/onboarding";
+import {
+  parseSnapshot,
+  type PathwaySnapshot,
+  type StepKind,
+  type StepPlacement,
+} from "@/lib/domain/onboarding";
 
 // Onboarding pathways (docs/decisions/2026-11-01-onboarding-pathways.md). Row-level security
 // limits every read to pathways the person looks after; the database functions move people on.
@@ -484,6 +489,70 @@ export async function placeSteps(placements: readonly StepPlacement[]): Promise<
     }
   }
   return { ok: true };
+}
+
+// ---------------------------------------------------------------------------
+// Version history (G, 2026-11-10)
+// ---------------------------------------------------------------------------
+
+export type PathwayVersion = {
+  id: string;
+  number: number;
+  snapshot: PathwaySnapshot;
+  /** Who saved it; null for the version saved when history began. */
+  savedBy: string | null;
+  restoredFrom: number | null;
+  /** When the version was last saved: the end of that sitting. */
+  savedAt: string;
+};
+
+/** A pathway's versions, newest first. Row-level security limits them to its leaders. */
+export async function getPathwayVersions(pathwayId: string, limit = 20): Promise<PathwayVersion[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("onboarding_pathway_versions")
+    .select("id, number, snapshot, saved_by, restored_from, updated_at")
+    .eq("pathway_id", pathwayId)
+    .order("number", { ascending: false })
+    .limit(limit);
+  if (error || !data) {
+    return [];
+  }
+  const ids = [...new Set(data.map((v) => v.saved_by).filter((v): v is string => v !== null))];
+  const people = ids.length
+    ? await supabase.from("profiles").select("id, display_name").in("id", ids)
+    : { data: [] as { id: string; display_name: string }[] };
+  const names = new Map((people.data ?? []).map((p) => [p.id, p.display_name]));
+  return data.flatMap((v) => {
+    const snapshot = parseSnapshot(v.snapshot);
+    return snapshot
+      ? [
+          {
+            id: v.id,
+            number: v.number,
+            snapshot,
+            savedBy: v.saved_by ? (names.get(v.saved_by) ?? "A leader") : null,
+            restoredFrom: v.restored_from,
+            savedAt: v.updated_at,
+          },
+        ]
+      : [];
+  });
+}
+
+/** Puts the pathway back as a version had it, saved as a new version (audited). */
+export async function restorePathwayVersion(
+  versionId: string,
+): Promise<{ ok: true; number: number } | { ok: false; error: string }> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("restore_onboarding_pathway_version", {
+    p_version_id: versionId,
+  });
+  if (error) {
+    const failed = result(error);
+    return { ok: false, error: failed.ok ? "unknown" : failed.error };
+  }
+  return { ok: true, number: data };
 }
 
 // ---------------------------------------------------------------------------

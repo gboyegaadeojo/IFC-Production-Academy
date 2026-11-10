@@ -30,6 +30,12 @@ The steps you can use:
 
 To remove a stage, move or remove its steps first.
 
+## Version history
+
+Changes save as you make them, and each sitting is kept as a version: all your changes within half an hour count as one. Open **Version history** beside **Rename or describe** to see each version, when it was saved, who by, and how many stages and steps it had.
+
+To go back, choose **Restore this version** under the one you want. It first lists what restoring would do: steps it brings back, steps it takes out, and steps whose settings it puts back. Choose **Restore version** to do it. The pathway goes back as it was, and that's saved as a new version, so you can undo a restore the same way. Nothing is deleted, and people already in the pathway carry on from where they are.
+
 ## Follow-ups
 
 **Follow-ups** is what onboarding needs from you: **Yours**, **Anyone can take**, and **With other leaders**. Choose **I'll take this**, **Hand over** to someone else, or **Mark done**. Ticking one moves that person on to their next step.
