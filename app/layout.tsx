@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { ServiceWorkerSetup } from "@/components/pwa/service-worker-setup";
 import { BrandProvider } from "@/components/brand-context";
+import { VersionWatcher } from "@/components/shell/version-watcher";
 import { getBranding, iconUrlFor } from "@/lib/data/branding";
 import { getAppearance } from "@/lib/data/appearance";
 import { THEME_COLORS } from "@/lib/domain/appearance";
@@ -76,6 +77,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </BrandProvider>
         <ServiceWorkerSetup />
+        <VersionWatcher />
       </body>
     </html>
   );
