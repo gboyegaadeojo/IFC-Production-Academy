@@ -98,12 +98,18 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await page.getByRole("button", { name: "Undo the last reset" }).click();
   await expect(page.getByLabel(first)).toBeChecked();
 
-  // On a phone the board fits the screen like the rest of the app: nothing on it is wider than the
-  // phone, except inside a row built to scroll sideways (the departments).
+  // On a phone one button names the checklist and opens a sheet to choose another (option B,
+  // G 2026-11-10), and nothing on the board is wider than the phone.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/serve/${eventId}`);
   await expect(page.getByText(/done across the team/)).toBeVisible();
-  await openDepartment();
+  await expect(page.getByRole("navigation", { name: "Departments" })).toBeHidden();
+  await page.getByRole("button", { name: /tap to change/ }).click();
+  const sheet = page.getByRole("dialog", { name: "Choose a checklist" });
+  await sheet.getByRole("button", { name: new RegExp(name) }).click();
+  await expect(sheet).toBeHidden();
+  await expect(page.getByRole("heading", { level: 2, name })).toBeVisible();
+  await expect(page.getByLabel(first)).toBeChecked();
   await capture(page, "serve-board-390");
   const tooWide = await page.evaluate(() => {
     const width = document.documentElement.clientWidth;

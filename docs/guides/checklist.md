@@ -8,7 +8,7 @@ When Messages is switched on, phones show the checklist under **Serve** on the b
 
 When you're scheduled, the **Checklist** button on your serving card on Training, and **Open checklist** on Schedule, take you to that service with your position's checklist open. If you serve in two positions, each one opens its own.
 
-Your own department's checklist comes first, marked **YOU**. Choose another department along the top to see theirs. Tick items as you go. The tick shows straight away and saves in the background. If a save fails, the tick goes back and tells you why.
+Your own department's checklist comes first, marked **YOU**. On a computer, choose another department from the list on the left to see theirs. On a phone or iPad, the button at the top names the checklist you're looking at: tap it, and a sheet slides up listing every checklist with how much is done. Tap one to open it, or drag the sheet down to close it. Tick items as you go. The tick shows straight away and saves in the background. If a save fails, the tick goes back and tells you why.
 
 Everyone sees each other's ticks within about 30 seconds, without reloading.
 
