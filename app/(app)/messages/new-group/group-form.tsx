@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ActionForm, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { ChevronLeftIcon } from "@/components/ui/icons";
 import type { MessagingPerson } from "@/lib/domain/messages";
 import { createGroupAction } from "../actions";

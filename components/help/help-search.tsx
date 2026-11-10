@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { HELP_SECTIONS, type HelpSection } from "@/lib/domain/help";
 
 export type HelpEntry = {

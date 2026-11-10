@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useId } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import { ChevronDownIcon } from "@/components/ui/icons";
 import { decideMembershipAction, type DecisionState } from "./actions";

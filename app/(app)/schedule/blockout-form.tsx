@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm, Field } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import {
   BLOCKOUT_KIND_LABELS,
   BLOCKOUT_KINDS,

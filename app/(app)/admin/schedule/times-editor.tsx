@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ActionForm, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import {
   EVENT_TIME_KINDS,

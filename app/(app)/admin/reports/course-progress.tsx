@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useState } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { CheckIcon, PlusIcon } from "@/components/ui/icons";

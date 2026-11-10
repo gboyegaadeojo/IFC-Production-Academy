@@ -3,7 +3,7 @@
 import type { CSSProperties } from "react";
 import { useActionState, useId } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { submitInterestAction, type InterestState } from "./actions";

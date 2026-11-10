@@ -3,13 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Fragment, Suspense } from "react";
 import { DepartmentIcon } from "@/components/department-icon";
-import {
-  ActionForm,
-  Field,
-  fieldClasses,
-  IconActionForm,
-  SwitchForm,
-} from "@/components/ui/action-form";
+import { ActionForm, Field, IconActionForm, SwitchForm } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { EmptyState } from "@/components/ui/empty-state";
 import { buttonClasses } from "@/components/ui/button";
 import { ChevronDownIcon, ChevronRightIcon } from "@/components/ui/icons";

@@ -3,7 +3,7 @@
 import { useMemo, useState, type CSSProperties } from "react";
 import { CoursePoster } from "@/components/course-poster";
 import { TopicFilter } from "@/components/topic-filter";
-import { compactFieldClasses } from "@/components/ui/action-form";
+import { compactFieldClasses } from "@/components/ui/field-classes";
 import { buttonClasses } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ScrollRail } from "@/components/ui/scroll-rail";
