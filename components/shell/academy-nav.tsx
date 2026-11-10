@@ -61,7 +61,7 @@ function isCurrent(pathname: string, href: string): boolean {
 const FOLDED_HIDE = "group-data-[folded=true]/sidebar:sr-only";
 
 /**
- * One link in the side bar: the icon and its name, in 9px type (side bar B, G 2026-11-09). Folded,
+ * One link in the side bar: the icon and its name, in 11px type (side bar B, G 2026-11-09; 2px larger, 2026-11-10). Folded,
  * only the icon shows and the name is its tooltip. The tinted row and the weight mark the current
  * page, not colour alone.
  */
@@ -84,7 +84,7 @@ export function AcademyNavLink({
       href={href}
       title={label}
       aria-current={current ? "page" : undefined}
-      className={`relative flex min-h-[1.875rem] items-center gap-2.5 rounded-button px-2.5 text-[0.5625rem] leading-tight transition-surface group-data-[folded=true]/sidebar:justify-center group-data-[folded=true]/sidebar:px-0 pointer-coarse:min-h-11 ${
+      className={`relative flex min-h-7 items-center gap-2.5 rounded-button px-2.5 text-[0.6875rem] leading-tight transition-surface group-data-[folded=true]/sidebar:justify-center group-data-[folded=true]/sidebar:px-0 pointer-coarse:min-h-11 ${
         current
           ? "bg-accent-soft font-semibold text-text"
           : "font-medium text-text-secondary hover:bg-card hover:text-text"
@@ -111,7 +111,7 @@ function Section({ heading, children }: { heading: string; children: ReactNode }
       />
       <p
         id={id}
-        className={`px-2.5 pt-3.5 pb-1.5 text-[0.5rem] font-semibold tracking-[0.04em] text-text-muted uppercase ${FOLDED_HIDE}`}
+        className={`px-2.5 pt-3 pb-1.5 text-[0.625rem] font-semibold tracking-[0.04em] text-text-muted uppercase ${FOLDED_HIDE}`}
       >
         {heading}
       </p>
