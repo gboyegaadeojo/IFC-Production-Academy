@@ -68,7 +68,9 @@ export function ServiceBoard({
   const sections = boardSections(current.sections, filter);
 
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:gap-7">
+    // One phone-width column below lg: without it Safari let the grid grow to the departments row's
+    // full width, so the iPhone zoomed the whole page out to fit it.
+    <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[17.5rem_minmax(0,1fr)] lg:gap-7">
       <nav aria-label="Departments" className="min-w-0 lg:sticky lg:top-20">
         <p className="mb-2 ml-1 hidden eyebrow lg:block">Departments</p>
         <ul className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-1.5 lg:overflow-visible lg:pb-0">
@@ -151,7 +153,7 @@ export function ServiceBoard({
         {sections.length === 0 ? (
           <EmptyState title="All done">Everything in this department is ticked.</EmptyState>
         ) : (
-          <div className="grid items-start gap-3.5 xl:grid-cols-2">
+          <div className="grid grid-cols-1 items-start gap-3.5 xl:grid-cols-2">
             {sections.map((section) => {
               const complete = section.total > 0 && section.done === section.total;
               return (

@@ -315,7 +315,7 @@ async function CourseContent({ params }: Pick<PageProps<"/courses/[courseId]">, 
 
       {/* Phones and smaller windows: the lessons first, then About. Wide: side by side, with the
           panel rising over the line under the cover. */}
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_26.25rem] xl:gap-x-12">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_26.25rem] xl:gap-x-12">
         {course.canOpen ? (
           <aside className="relative flex min-w-0 flex-col gap-3 xl:col-start-2 xl:row-start-1 xl:-mt-26">
             {card ? (

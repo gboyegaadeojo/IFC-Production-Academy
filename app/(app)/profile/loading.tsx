@@ -9,7 +9,7 @@ export default function ProfileSkeleton() {
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-12 w-72 max-w-full" />
       </div>
-      <div className="grid gap-6 lg:grid-cols-[21.25rem_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[21.25rem_minmax(0,1fr)]">
         <Skeleton className="h-80" />
         <div className="flex flex-col gap-5">
           <Skeleton className="h-64" />

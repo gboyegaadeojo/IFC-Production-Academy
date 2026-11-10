@@ -14,7 +14,7 @@ export default function CourseSkeleton() {
           <Skeleton className="h-4 w-64 max-w-full" />
         </div>
       </div>
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_26.25rem] xl:gap-12">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_26.25rem] xl:gap-12">
         <Skeleton className="h-96 xl:col-start-2 xl:row-start-1 xl:-mt-26" />
         <Skeleton className="h-64 xl:col-start-1 xl:row-start-1" />
       </div>

@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { mailpitAvailable, signInByEmail } from "./support/email-sign-in";
+import { capture } from "./support/screenshots";
 
 // Pre-service checklists (decision record 9, stage 2). Needs the local Supabase stack with the
 // fake seed accounts; desktop project only, one at a time.
@@ -96,6 +97,28 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await expect(page.getByLabel(first)).not.toBeChecked();
   await page.getByRole("button", { name: "Undo the last reset" }).click();
   await expect(page.getByLabel(first)).toBeChecked();
+
+  // On a phone the board fits the screen like the rest of the app: nothing on it is wider than the
+  // phone, except inside a row built to scroll sideways (the departments).
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`/serve/${eventId}`);
+  await expect(page.getByText(/done across the team/)).toBeVisible();
+  await openDepartment();
+  await capture(page, "serve-board-390");
+  const tooWide = await page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    const scrolls = (el: Element | null): boolean =>
+      !!el && (/(auto|scroll)/.test(getComputedStyle(el).overflowX) || scrolls(el.parentElement));
+    return [...document.querySelectorAll("#main *")]
+      .filter((el) => el.getBoundingClientRect().right > width + 1 && !scrolls(el.parentElement))
+      .slice(0, 5)
+      .map(
+        (el) =>
+          `${el.tagName.toLowerCase()} ${String(el.getAttribute("class") ?? "").slice(0, 80)}`,
+      );
+  });
+  expect(tooWide, "wider than a phone on the service checklist").toEqual([]);
+  await page.setViewportSize({ width: 1280, height: 720 });
 
   // Every tick, reset, and undo is in the activity log, with the checklist edits.
   await page.goto(`/admin/checklists/activity?service=${eventId}`);

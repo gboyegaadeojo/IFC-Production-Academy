@@ -382,6 +382,8 @@ html {
   background: var(--bg);
   color: var(--text);
   -webkit-text-size-adjust: 100%;
+  /* Here as well as on body: iPhones heed it on the root, so nothing too wide can widen the page. */
+  overflow-x: clip;
 }
 
 body {

@@ -275,7 +275,7 @@ function ServeSkeleton() {
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-12 w-80 max-w-full" />
       </div>
-      <div className="grid gap-7 lg:grid-cols-[17.5rem_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-7 lg:grid-cols-[17.5rem_minmax(0,1fr)]">
         <Skeleton className="h-64" />
         <Skeleton className="h-96" />
       </div>

@@ -9,7 +9,7 @@ export default function NotificationsSkeleton() {
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-12 w-72 max-w-full" />
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Skeleton className="h-72" />
         <Skeleton className="h-96" />
       </div>
