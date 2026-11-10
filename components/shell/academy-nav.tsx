@@ -6,14 +6,13 @@ import { usePathname } from "next/navigation";
 import {
   BookOpenIcon,
   CalendarRangeIcon,
+  ChevronLeftIcon,
   ClipboardIcon,
   DashboardIcon,
   FileTextIcon,
   GraduationCapIcon,
   ListChecksIcon,
   MessageIcon,
-  PanelLeftCloseIcon,
-  PanelLeftOpenIcon,
   PlayCircleIcon,
 } from "@/components/ui/icons";
 import { ACADEMY_SIDEBAR_COOKIE } from "@/lib/domain/appearance";
@@ -158,7 +157,9 @@ export function AcademyNav({ extra, messages }: { extra?: ReactNode; messages?: 
 
 /**
  * Folds the side bar to icons and back, remembered on this device. The side bar starts the way
- * the cookie says (no jump on load), and this flips data-folded on it.
+ * the cookie says (no jump on load), and this flips data-folded on it. A round tab on the side
+ * bar's edge (fold option A, G 2026-11-10): it shows when you point at the side bar or reach it by
+ * keyboard, and stays while folded or on a touch screen, where there's no pointing.
  */
 export function SidebarFoldButton({ initialFolded }: { initialFolded: boolean }) {
   const [folded, setFolded] = useState(initialFolded);
@@ -172,7 +173,6 @@ export function SidebarFoldButton({ initialFolded }: { initialFolded: boolean })
     }
     document.cookie = `${ACADEMY_SIDEBAR_COOKIE}=${next ? "folded" : "open"}; path=/; max-age=${60 * 60 * 24 * 400}; samesite=lax`;
   };
-  const Icon = folded ? PanelLeftOpenIcon : PanelLeftCloseIcon;
   return (
     <button
       ref={ref}
@@ -180,9 +180,11 @@ export function SidebarFoldButton({ initialFolded }: { initialFolded: boolean })
       onClick={toggle}
       aria-pressed={folded}
       title={folded ? "Show names" : "Icons only"}
-      className="inline-flex size-8 shrink-0 items-center justify-center rounded-button text-text-muted transition-surface hover:bg-hover hover:text-text pointer-coarse:size-11"
+      className="absolute top-[3.75rem] -right-3.5 z-10 flex size-7 items-center justify-center rounded-pill border border-border bg-surface text-text-secondary opacity-0 shadow-[0_2px_8px_rgb(22_20_31/0.12)] transition-[opacity,background-color,color] duration-[var(--duration-fast)] group-hover/sidebar:opacity-100 group-data-[folded=true]/sidebar:opacity-100 hover:bg-hover hover:text-text focus-visible:opacity-100 pointer-coarse:opacity-100 pointer-coarse:after:absolute pointer-coarse:after:-inset-2"
     >
-      <Icon className="size-[18px]" />
+      <ChevronLeftIcon
+        className={`size-3.5 transition-transform duration-[var(--duration-base)] ease-standard ${folded ? "rotate-180" : ""}`}
+      />
       <span className="sr-only">Icons only</span>
     </button>
   );

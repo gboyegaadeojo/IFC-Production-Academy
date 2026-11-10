@@ -46,7 +46,9 @@ export async function AcademySidebar() {
       data-folded={folded}
       className="group/sidebar sticky top-0 z-30 hidden h-dvh w-44 shrink-0 flex-col gap-1 border-r border-border bg-surface px-2.5 pt-3.5 pb-3 transition-[width] duration-[var(--duration-base)] ease-standard data-[folded=true]:w-[4.25rem] md:flex print:hidden"
     >
-      <div className="mb-2 flex min-h-11 items-center justify-between gap-1 group-data-[folded=true]/sidebar:flex-col group-data-[folded=true]/sidebar:justify-center">
+      {/* The fold tab sits on the side bar's right edge (fold option A, G 2026-11-10). */}
+      <SidebarFoldButton initialFolded={folded} />
+      <div className="mb-2 flex min-h-11 items-center group-data-[folded=true]/sidebar:justify-center">
         <Link
           href="/home"
           title="Training"
@@ -55,7 +57,6 @@ export async function AcademySidebar() {
           <StackedWordmark nameClassName="group-data-[folded=true]/sidebar:hidden" />
           <span className="sr-only">Training</span>
         </Link>
-        <SidebarFoldButton initialFolded={folded} />
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         <AcademyNav
