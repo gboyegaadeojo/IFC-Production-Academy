@@ -3,9 +3,11 @@
  * 2026-11-07). The due date is optional and only a date to aim for: missing it never blocks anything.
  */
 
+import { TIME_ZONE } from "./time-zone";
+
 /** Dates are "YYYY-MM-DD", the day in Winnipeg. */
 const WINNIPEG_DAY = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   year: "numeric",
   month: "2-digit",
   day: "2-digit",

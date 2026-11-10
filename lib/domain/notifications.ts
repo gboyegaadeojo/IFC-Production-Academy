@@ -1,4 +1,5 @@
 import { calmEmailHtml } from "./email-design.ts";
+import { TIME_ZONE } from "./time-zone.ts";
 
 /**
  * Notifications (SRS-NOTIF-001..006). Labels, and the email built from a notification. No
@@ -256,14 +257,14 @@ export function relativeTime(iso: string, now: Date): string {
 }
 
 const WINNIPEG_DAY = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   year: "numeric",
   month: "2-digit",
   day: "2-digit",
 });
 
 const WINNIPEG_SHORT_DATE = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   month: "short",
   day: "numeric",
 });

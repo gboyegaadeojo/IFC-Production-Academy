@@ -5,8 +5,8 @@
  */
 import { formatMinutes } from "./learning";
 import { eventTimeLabel } from "./schedule";
+import { TIME_ZONE } from "./time-zone";
 
-const TIME_ZONE = "America/Winnipeg";
 const DAY = new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE, weekday: "long" });
 const DATE = new Intl.DateTimeFormat("en-CA", { timeZone: TIME_ZONE, dateStyle: "short" });
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;

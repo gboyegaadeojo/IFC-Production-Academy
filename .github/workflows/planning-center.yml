@@ -28,6 +28,7 @@ jobs:
             .github/actions
             lib/domain/planning-center.ts
             lib/domain/supabase-keys.ts
+            lib/domain/time-zone.ts
             scripts/sync-planning-center.ts
           sparse-checkout-cone-mode: false
 

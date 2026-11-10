@@ -1,7 +1,9 @@
 // Dates are stored in UTC and shown in Winnipeg time.
 
+import { TIME_ZONE } from "./time-zone";
+
 const DATE = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   dateStyle: "medium",
 });
 
@@ -11,7 +13,7 @@ export function formatDate(iso: string): string {
 }
 
 const LONG_DATE = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   dateStyle: "long",
 });
 

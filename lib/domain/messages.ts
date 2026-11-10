@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { attachmentPreview, type ChatAttachment } from "./chat-files";
+import { TIME_ZONE } from "./time-zone";
 
 export type ConversationKind = "department" | "group" | "direct";
 
@@ -116,27 +117,27 @@ export function badgeLabel(count: number): string {
 }
 
 const TIME = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   hour: "numeric",
   minute: "2-digit",
 });
 const DAY_KEY = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   year: "numeric",
   month: "2-digit",
   day: "2-digit",
 });
 const WEEKDAY = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   weekday: "short",
 });
 const SHORT_DATE = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   month: "short",
   day: "numeric",
 });
 const LONG_DAY = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/Winnipeg",
+  timeZone: TIME_ZONE,
   weekday: "long",
   month: "long",
   day: "numeric",

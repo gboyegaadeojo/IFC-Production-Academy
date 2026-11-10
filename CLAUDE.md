@@ -41,7 +41,7 @@ Native iOS and Android apps are Phase 5 (React Native and Expo on the same API).
 - All schema changes go through Supabase CLI migrations in `supabase/migrations/`. Never edit the production schema by hand.
 - **Migration timestamps:** 72 existing migrations are dated in the future and are already applied to production, so never rename them. A new migration's timestamp must be later than the newest existing file, not today's date (for example, the next one after `20270109120000_feature_flags.sql`). CI fails a change that breaks this (`scripts/check-migration-order.ts`).
 - Writes that can be retried (progress, quiz submit) are idempotent (SRS-PROG-004).
-- Store timestamps in UTC (`timestamptz`) and display them in America/Winnipeg.
+- Store timestamps in UTC (`timestamptz`) and display them in Winnipeg time, which is a fixed UTC−5 since Manitoba stopped changing its clocks: `TIME_ZONE` from `lib/domain/time-zone.ts` in TypeScript, `'Etc/GMT+5'` in SQL, never `'America/Winnipeg'` ([decision, 2026-11-10](docs/decisions/2026-11-10-winnipeg-fixed-offset.md)).
 - Use stable UUIDs, never display names, as keys.
 - Mentoring private notes have their own RLS policies, separate from shared feedback (SRS-RBAC-006). They are never included in exports.
 
