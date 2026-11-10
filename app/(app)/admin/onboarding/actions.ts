@@ -262,6 +262,23 @@ export async function saveStepAction(_: FormState, formData: FormData): Promise<
   return { status: "done", message: "Saved." };
 }
 
+/** Puts the pathway back as an earlier version had it, saved as a new version (G, 2026-11-10). */
+export async function restoreVersionAction(_: FormState, formData: FormData): Promise<FormState> {
+  const versionId = id.safeParse(formData.get("versionId"));
+  if (!versionId.success || !(await signedIn())) {
+    return failed("unknown");
+  }
+  const restored = await onboarding.restorePathwayVersion(versionId.data);
+  if (!restored.ok) {
+    return failed(restored.error);
+  }
+  refresh();
+  return {
+    status: "done",
+    message: `Restored. That's saved as version ${restored.number}, so you can undo it.`,
+  };
+}
+
 export async function removeStepAction(_: FormState, formData: FormData): Promise<FormState> {
   const stepId = id.safeParse(formData.get("stepId"));
   const pathwayId = id.safeParse(formData.get("pathwayId"));

@@ -1328,6 +1328,21 @@ export type Database = {
         Update: { name?: string; summary?: string; archived_at?: string | null };
         Relationships: [];
       };
+      onboarding_pathway_versions: {
+        Row: {
+          id: string;
+          pathway_id: string;
+          number: number;
+          snapshot: Json;
+          saved_by: string | null;
+          restored_from: number | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       onboarding_stages: {
         Row: {
           id: string;
@@ -1580,6 +1595,7 @@ export type Database = {
       create_course: { Args: { p_level_id: string; p_title: string }; Returns: string };
       start_course_draft: { Args: { p_course_id: string }; Returns: string };
       restore_course_version: { Args: { p_version_id: string }; Returns: string };
+      restore_onboarding_pathway_version: { Args: { p_version_id: string }; Returns: number };
       publish_course_version: {
         Args: { p_version_id: string; p_change_note?: string | null };
         Returns: number;

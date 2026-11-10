@@ -655,3 +655,83 @@ export function offeredIds(config: StepConfig): string[] {
   const value = config.department_ids;
   return Array.isArray(value) ? value.filter((v): v is string => typeof v === "string") : [];
 }
+
+// ---------------------------------------------------------------------------
+// Version history (G, 2026-11-10): what a saved version holds, and what restoring it would change.
+// ---------------------------------------------------------------------------
+
+const snapshotSchema = z.object({
+  name: z.string(),
+  summary: z.string(),
+  stages: z.array(z.object({ id: z.string(), name: z.string() })),
+  steps: z.array(
+    z.object({
+      id: z.string(),
+      stage_id: z.string(),
+      title: z.string(),
+      config: z.record(z.string(), z.unknown()),
+      sort_order: z.number(),
+    }),
+  ),
+});
+export type PathwaySnapshot = z.infer<typeof snapshotSchema>;
+
+/** A saved version as the database keeps it, or null if it isn't one. */
+export function parseSnapshot(value: unknown): PathwaySnapshot | null {
+  const parsed = snapshotSchema.safeParse(value);
+  return parsed.success ? parsed.data : null;
+}
+
+/** "2 stages, 7 steps": a version at a glance. */
+export function describeSnapshot(snapshot: PathwaySnapshot): string {
+  const count = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+  return `${count(snapshot.stages.length, "stage")}, ${count(snapshot.steps.length, "step")}`;
+}
+
+export type RestoreChanges = {
+  /** Step names the version has and the pathway doesn't now. */
+  bringsBack: string[];
+  /** Step names the pathway has now and the version doesn't. */
+  takesOut: string[];
+  /** Steps in both whose name, settings, stage or place differ. */
+  changed: number;
+  /** The pathway's name would change. */
+  renamed: boolean;
+  /** The two are the same: restoring would change nothing. */
+  same: boolean;
+};
+
+/** What restoring `version` over `current` would do, so a leader can see before they choose. */
+export function restoreChanges(current: PathwaySnapshot, version: PathwaySnapshot): RestoreChanges {
+  const now = new Map(current.steps.map((step) => [step.id, step]));
+  const then = new Map(version.steps.map((step) => [step.id, step]));
+  const bringsBack = version.steps.filter((step) => !now.has(step.id)).map((step) => step.title);
+  const takesOut = current.steps.filter((step) => !then.has(step.id)).map((step) => step.title);
+  const changed = version.steps.filter((step) => {
+    const other = now.get(step.id);
+    return (
+      other !== undefined &&
+      (other.title !== step.title ||
+        other.stage_id !== step.stage_id ||
+        other.sort_order !== step.sort_order ||
+        JSON.stringify(other.config) !== JSON.stringify(step.config))
+    );
+  }).length;
+  const stagesDiffer =
+    JSON.stringify(current.stages.map((s) => [s.id, s.name])) !==
+    JSON.stringify(version.stages.map((s) => [s.id, s.name]));
+  const renamed = current.name !== version.name;
+  return {
+    bringsBack,
+    takesOut,
+    changed,
+    renamed,
+    same:
+      bringsBack.length === 0 &&
+      takesOut.length === 0 &&
+      changed === 0 &&
+      !renamed &&
+      !stagesDiffer &&
+      current.summary === version.summary,
+  };
+}

@@ -8,12 +8,19 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { UsersIcon } from "@/components/ui/icons";
 import { PageHeader } from "@/components/ui/page-header";
 import { getAdminAccess } from "@/lib/data/admin/access";
-import { getPathwayEditor, getPathways, type PathwayEditor } from "@/lib/data/onboarding";
+import {
+  getPathwayEditor,
+  getPathways,
+  getPathwayVersions,
+  type PathwayEditor,
+  type PathwayVersion,
+} from "@/lib/data/onboarding";
 import { departmentHueVar } from "@/lib/domain/departments";
 import { stepNeedsSetup, stepSummary } from "@/lib/domain/onboarding";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
 import { createPathwayAction, updatePathwayAction } from "./actions";
+import { VersionHistory } from "./version-history";
 import { Workspace } from "./workspace";
 
 export const metadata: Metadata = { title: "Onboarding pathways" };
@@ -56,6 +63,7 @@ async function OnboardingContent({
     : askedEditor?.id === selected.id
       ? askedEditor
       : await getPathwayEditor(selected.id);
+  const versions = editor ? await getPathwayVersions(editor.id) : [];
 
   return (
     <div className="flex flex-col gap-6">
@@ -145,7 +153,12 @@ async function OnboardingContent({
           moves into a department&apos;s pathway.
         </EmptyState>
       ) : (
-        <Editor editor={editor} stepId={param("step")} stageId={param("stage")} />
+        <Editor
+          editor={editor}
+          versions={versions}
+          stepId={param("step")}
+          stageId={param("stage")}
+        />
       )}
     </div>
   );
@@ -153,10 +166,12 @@ async function OnboardingContent({
 
 function Editor({
   editor,
+  versions,
   stepId,
   stageId,
 }: {
   editor: PathwayEditor;
+  versions: PathwayVersion[];
   stepId: string | null;
   stageId: string | null;
 }) {
@@ -238,6 +253,7 @@ function Editor({
               </Field>
             </ActionForm>
           </details>
+          <VersionHistory versions={versions} />
         </div>
       }
     />
