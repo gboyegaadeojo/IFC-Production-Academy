@@ -153,7 +153,7 @@ async function LessonContent({ params }: Pick<Props, "params">) {
             ]}
           />
         </div>
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-10">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-10">
           <article aria-labelledby="lesson-heading" className="flex min-w-0 flex-col gap-5">
             {record ? <RecordView record={record} /> : null}
             {lesson.video ? (

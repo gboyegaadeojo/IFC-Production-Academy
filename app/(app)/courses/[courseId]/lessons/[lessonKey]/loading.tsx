@@ -6,7 +6,7 @@ export default function LessonSkeleton() {
     <div className="page-container flex flex-col gap-8 py-8 lg:py-10" aria-busy="true">
       <LoadingStatus label="Loading the lesson…" />
       <Skeleton className="h-4 w-72 max-w-full" />
-      <div className="grid gap-8 lg:grid-cols-[1fr_19rem]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_19rem]">
         <div className="flex min-w-0 flex-col gap-4">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-10 w-96 max-w-full" />

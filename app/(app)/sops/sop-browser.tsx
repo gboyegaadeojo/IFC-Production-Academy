@@ -136,7 +136,7 @@ export function SopBrowser({
         </div>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
         <nav aria-label="Browse SOPs" className="hidden flex-col gap-px md:flex">
           <RailButton
             label="All SOPs"

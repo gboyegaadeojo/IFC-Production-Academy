@@ -194,7 +194,7 @@ async function TrainingContent() {
       </div>
 
       {/* What's next sits beside this month's services; everything below uses the full width. */}
-      <div className="grid gap-7 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+      <div className="grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="flex min-w-0 flex-col gap-7">
           {onboarding.map((pathway) => (
             <NextSteps key={pathway.entryId} pathway={pathway} departments={openDepartments} />

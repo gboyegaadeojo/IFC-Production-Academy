@@ -212,7 +212,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
         </nav>
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_23rem]">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_23rem]">
         <section aria-label="Calendar" className="flex flex-col gap-4">
           <MonthCalendar
             month={month}
