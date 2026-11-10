@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm, Field } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getSchedulingSource } from "@/lib/data/planning-center";

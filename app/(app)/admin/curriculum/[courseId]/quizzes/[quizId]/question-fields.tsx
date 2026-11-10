@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Field, fieldClasses } from "@/components/ui/action-form";
+import { Field } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import {
   MAX_OPTIONS,
   QUESTION_KINDS,

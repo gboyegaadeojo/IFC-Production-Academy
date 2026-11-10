@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { ActionForm, fieldClasses, type FormAction } from "@/components/ui/action-form";
+import { ActionForm, type FormAction } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import {
   clockAfter,

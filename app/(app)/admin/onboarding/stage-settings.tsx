@@ -1,6 +1,7 @@
 "use client";
 
-import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm, Field } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { buttonClasses } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { addStageAction, removeStageAction, updateStageAction } from "./actions";

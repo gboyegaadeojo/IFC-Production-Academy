@@ -1,4 +1,5 @@
-import { Field, fieldClasses } from "@/components/ui/action-form";
+import { Field } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 
 /** The fields for a service type, shared by the add and edit forms. */
 export function ServiceTypeFields({

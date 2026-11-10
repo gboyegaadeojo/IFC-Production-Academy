@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ActionForm, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { getAdminAccess } from "@/lib/data/admin/access";

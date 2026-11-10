@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { ActionForm, Field, fieldClasses, SwitchForm } from "@/components/ui/action-form";
+import { ActionForm, Field, SwitchForm } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { getAdminAccess } from "@/lib/data/admin/access";
 import { getFeatureFlags, getMessagingSettings } from "@/lib/data/features";
 import { FEATURES } from "@/lib/domain/features";

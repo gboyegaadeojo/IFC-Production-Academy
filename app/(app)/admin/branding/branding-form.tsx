@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import {
   BRAND_ICON_SIZE,

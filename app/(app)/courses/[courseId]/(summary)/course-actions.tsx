@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { ActionForm, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { ChevronDownIcon, ChevronLeftIcon, UserPlusIcon } from "@/components/ui/icons";
 import { dueDateChoices, formatDueDate, type Assignee } from "@/lib/domain/course-assignments";
 import { assignableMatches } from "@/lib/domain/course-progress";

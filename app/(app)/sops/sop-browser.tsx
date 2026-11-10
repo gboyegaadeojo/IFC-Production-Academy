@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   ALL_PRODUCTION_LABEL,

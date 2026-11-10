@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, type ReactNode } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import { addTopicAction } from "./actions";
 import { topicChipClasses } from "./topic-chip-classes";

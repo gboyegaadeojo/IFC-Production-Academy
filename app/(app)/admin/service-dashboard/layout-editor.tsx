@@ -2,7 +2,7 @@
 
 import { type PointerEvent, useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { GROUP_TILE_CLASSES, TILE_ICONS } from "@/components/service-dashboard/tile-wall";
 import {
   addTile,

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useId, useRef, useState } from "react";
-import { ActionForm, Field, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm, Field } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import { ChevronRightIcon } from "@/components/ui/icons";
 import { StatusBadge } from "@/components/ui/status-badge";

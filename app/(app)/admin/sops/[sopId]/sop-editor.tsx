@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
-import { ActionForm, type FormState, fieldClasses } from "@/components/ui/action-form";
+import { ActionForm, type FormState } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { StatusBadge } from "@/components/ui/status-badge";

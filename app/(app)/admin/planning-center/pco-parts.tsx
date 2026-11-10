@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useActionState, useRef, useState, type ReactNode } from "react";
-import { type FormState, fieldClasses } from "@/components/ui/action-form";
+import { type FormState } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { ChevronDownIcon } from "@/components/ui/icons";
 import { pcoLinkStatus, type LinkRowGroup } from "@/lib/domain/pco-links";
 import { setLinkAction } from "./actions";

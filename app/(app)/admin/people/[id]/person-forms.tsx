@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useId, useState } from "react";
-import { fieldClasses } from "@/components/ui/action-form";
+import { fieldClasses } from "@/components/ui/field-classes";
 import { Button } from "@/components/ui/button";
 import type { DepartmentOption, RoleOption } from "@/lib/data/admin/people";
 import type { AccountStatusChange } from "@/lib/domain/admin";
