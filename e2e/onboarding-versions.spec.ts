@@ -23,10 +23,11 @@ test("a leader sees what restoring changes, restores an earlier version, and can
   ).toBeVisible();
   const pathways = leader.getByRole("navigation", { name: "Pathways" });
   if ((await pathways.getByRole("link").count()) === 0) {
-    await leader.getByText("Set up a pathway").click();
-    await leader.getByLabel("For").selectOption({ label: "Audio Engineering" });
-    await leader.getByLabel("Name", { exact: true }).fill("Audio onboarding");
-    await leader.getByRole("button", { name: "Create pathway" }).click();
+    const setup = leader.locator("details").filter({ hasText: "Set up a pathway" });
+    await setup.getByText("Set up a pathway").click();
+    await setup.getByLabel("For", { exact: true }).selectOption({ label: "Audio Engineering" });
+    await setup.getByLabel("Name", { exact: true }).fill("Audio onboarding");
+    await setup.getByRole("button", { name: "Create pathway" }).click();
   } else {
     await pathways.getByRole("link").first().click();
   }
@@ -42,9 +43,10 @@ test("a leader sees what restoring changes, restores an earlier version, and can
   await signInByEmail(director, "emery.director@example.com");
   await director.goto(address);
   const renamed = `Audio renamed ${Date.now()}`;
-  await director.getByText("Rename or describe").click();
-  await director.getByLabel("Name", { exact: true }).fill(renamed);
-  await director.getByRole("button", { name: "Save", exact: true }).click();
+  const rename = director.locator("details").filter({ hasText: "Rename or describe" });
+  await rename.getByText("Rename or describe").click();
+  await rename.getByLabel("Name", { exact: true }).fill(renamed);
+  await rename.getByRole("button", { name: "Save", exact: true }).click();
   await expect(director.getByRole("heading", { level: 2, name: renamed })).toBeVisible();
   await directorContext.close();
 
