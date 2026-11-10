@@ -21,6 +21,9 @@ const WORKFLOWS = [
   { file: "restore-test.yml", label: "Monthly restore test", staleAfterHours: 24 * 40 },
   { file: "notifications.yml", label: "Notification emails", staleAfterHours: 24 },
   { file: "chat-cleanup.yml", label: "Chat cleanup", staleAfterHours: 48 },
+  // Every 15 minutes; a day without a good run means schedules aren't reaching the Academy
+  // (health check, 2026-11-10: it failed for 22 hours and the summary didn't list it).
+  { file: "planning-center.yml", label: "Planning Center sync", staleAfterHours: 24 },
 ] as const;
 
 /** Free plan usage in bytes (platform_usage), or null if it can't be read. Sizes only. */

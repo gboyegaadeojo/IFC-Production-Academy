@@ -12,7 +12,8 @@ Supabase Free keeps no backups, so the Academy makes its own (SPEC §9 "Backup d
 - **Weekly** (`weekly-summary.yml`, Mondays 14:00 UTC): emails when each job last succeeded and
   commits `status/last-run.json`, which stops GitHub disabling scheduled jobs after 60 quiet days.
   A keep-alive with no success for two days, or a backup with none for eight, counts as an incident
-  and alerts the admins.
+  and alerts the admins. It also lists the notification emails, chat cleanup, and the Planning
+  Center sync (late after a day without a good run).
 
 **Chat photos and documents are left out** (the `chat-files` bucket, `SKIPPED_BUCKETS` in
 `lib/domain/backup.ts`): they're removed after 90 days anyway, and would make every copy larger.
