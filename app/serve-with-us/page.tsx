@@ -25,7 +25,7 @@ export default async function ServeWithUsPage() {
   const departments = await getOpenDepartments();
   return (
     <main id="main" className="flex flex-1 justify-center px-4 py-10 sm:py-16">
-      <div className="grid w-full max-w-5xl items-start gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
+      <div className="grid w-full max-w-5xl grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <section className="flex flex-col gap-4 rounded-card border border-border bg-[linear-gradient(160deg,var(--accent-soft),var(--surface)_60%)] p-6 sm:p-8">
           <Wordmark />
           <p className="eyebrow">Immanuel Fellowship Church · Production team</p>

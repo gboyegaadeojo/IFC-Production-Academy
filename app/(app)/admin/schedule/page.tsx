@@ -116,7 +116,7 @@ async function AdminScheduleContent() {
                 className={fieldClasses}
               />
             </Field>
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <Field id="event-date" label="Date">
                 <input id="event-date" name="date" type="date" required className={fieldClasses} />
               </Field>
@@ -177,7 +177,7 @@ function NewService({ types, templates }: { types: ServiceType[]; templates: Pla
         submitLabel="Create service"
         pendingLabel="Creating…"
       >
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Field id="service-day" label="Day">
             <input id="service-day" name="date" type="date" required className={fieldClasses} />
           </Field>

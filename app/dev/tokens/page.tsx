@@ -81,7 +81,7 @@ export default function TokensPage() {
       {colourGroups.map((group) => (
         <section key={group.title} className="flex flex-col gap-4">
           <h2 className="text-subheading font-semibold">{group.title}</h2>
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {group.tokens.map((token) => (
               <li key={token.name} className="rounded-card border border-border bg-card p-4">
                 <div
@@ -99,7 +99,7 @@ export default function TokensPage() {
       <section className="flex flex-col gap-4">
         <h2 className="text-subheading font-semibold">Department hues</h2>
         <p className="text-text-secondary">Covers, icons, rings, and badges only. Never buttons.</p>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           {departmentHues.map((item) => (
             <li
               key={item.hue}

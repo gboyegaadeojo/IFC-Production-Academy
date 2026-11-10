@@ -124,7 +124,7 @@ export function NewDepartmentForm({ kind = "team" }: { kind?: DepartmentKind }) 
         </div>
       </fieldset>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {isTopic ? (
           <label className="flex items-center gap-2 self-end pb-2 text-small text-text-secondary">
             <input type="checkbox" name="usesLevels" />

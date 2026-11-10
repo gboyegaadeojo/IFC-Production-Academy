@@ -535,7 +535,7 @@ function EditEvent({ event }: { event: EventDetail }) {
               className={fieldClasses}
             />
           </Field>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Field id="edit-date" label="Date">
               <input
                 id="edit-date"

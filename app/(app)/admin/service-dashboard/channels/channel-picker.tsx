@@ -48,7 +48,7 @@ export function ChannelPicker({ layout, canEdit }: { layout: DashboardLayout; ca
           Only editors can change these.
         </p>
       )}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <div className="flex flex-col gap-3 rounded-card border border-border bg-card p-4">
           {GROUPS.map((group) => (
             <fieldset key={group} className="flex flex-col gap-1">

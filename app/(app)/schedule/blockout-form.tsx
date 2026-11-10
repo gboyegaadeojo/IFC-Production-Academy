@@ -44,7 +44,7 @@ export function BlockoutForm({ today }: { today: string }) {
         </div>
       </fieldset>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Field
           id="blockout-from"
           label={kind === "range" || kind === "repeating" ? "From" : "Date"}

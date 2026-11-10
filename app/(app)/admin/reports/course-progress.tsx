@@ -143,7 +143,7 @@ export function CourseProgress({
         ))}
       </div>
 
-      <div className="grid items-start gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+      <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
         <div className="rounded-card border border-border bg-surface p-1.5">
           {shown.length === 0 ? (
             <p className="p-3 text-small text-text-secondary">Nobody here right now.</p>

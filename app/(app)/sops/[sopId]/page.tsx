@@ -141,7 +141,7 @@ async function SopContent({ params, searchParams }: Props) {
           </section>
         ) : null}
 
-        <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[10rem_1fr]">
+        <dl className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[10rem_1fr]">
           <dt className="text-small text-text-muted">Owner</dt>
           <dd>{sop.ownerName ?? "Not recorded"}</dd>
           <dt className="text-small text-text-muted">Last reviewed</dt>

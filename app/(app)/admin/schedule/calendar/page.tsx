@@ -79,7 +79,7 @@ async function CalendarContent({
         description="Every service this month. Tap a day to see who's serving and what's still open."
       />
       <ScheduleTabs current="calendar" />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
         <MonthCalendar
           month={month}
           today={today}

@@ -65,7 +65,7 @@ export function QuizResults({
             None yet. When you finish a quiz, your best score shows here.
           </p>
         ) : (
-          <ul className="grid items-start gap-2.5 md:grid-cols-2">
+          <ul className="grid grid-cols-1 items-start gap-2.5 md:grid-cols-2">
             {quizzes.map((quiz) => (
               <li key={`${quiz.courseId}:${quiz.quizKey}`}>
                 <QuizCard quiz={quiz} />

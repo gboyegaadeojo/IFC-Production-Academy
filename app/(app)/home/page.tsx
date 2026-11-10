@@ -322,7 +322,7 @@ async function TrainingContent() {
           <h2 id="departments-heading" className="mb-1 text-subheading font-bold">
             {memberOf.length > 0 ? "Other departments" : "Choose a department"}
           </h2>
-          <ul className="grid gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="grid grid-cols-1 gap-x-6 sm:grid-cols-2 lg:grid-cols-3">
             {others.map((department) => (
               <li key={department.id}>
                 <ExploreRow department={department} />
@@ -449,7 +449,7 @@ async function RecentlyWatched({ userId }: { userId: string }) {
   }
   return (
     <Section id="recent-heading" title="Recently watched">
-      <ul className="grid gap-x-6 lg:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-x-6 lg:grid-cols-2">
         {lessons.map((lesson) => (
           <li key={lesson.key}>
             <RecentRow lesson={lesson} />
@@ -778,7 +778,7 @@ function HowTrainingWorks() {
         How serving works
         <ChevronDownIcon className="size-4 text-text-muted transition-surface group-open:rotate-180" />
       </summary>
-      <ol className="grid gap-px border-t border-border bg-border md:grid-cols-3">
+      <ol className="grid grid-cols-1 gap-px border-t border-border bg-border md:grid-cols-3">
         {steps.map((step, index) => (
           <li key={step.title} className="flex flex-col gap-1.5 bg-card p-4">
             <span className="tabular text-small text-accent-light">

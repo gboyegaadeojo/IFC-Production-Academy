@@ -48,7 +48,7 @@ export function HelpSearch({ entries }: { entries: HelpEntry[] }) {
             <h2 id={headingId} className="text-heading font-semibold">
               {section}
             </h2>
-            <ul className="grid gap-2 md:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
               {pages.map((page) => (
                 <li key={page.slug}>
                   <Link

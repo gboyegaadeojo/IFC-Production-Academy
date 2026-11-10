@@ -143,7 +143,7 @@ function LevelCard({
  */
 function CourseGrid({ courses, canOpen }: { courses: PathCourse[]; canOpen: boolean }) {
   return (
-    <ul className="grid gap-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] md:gap-4">
+    <ul className="grid grid-cols-1 gap-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] md:gap-4">
       {courses.map((course) => (
         <li key={course.id}>
           {canOpen ? (

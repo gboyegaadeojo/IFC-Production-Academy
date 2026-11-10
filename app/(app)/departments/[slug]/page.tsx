@@ -144,7 +144,7 @@ async function DepartmentContent({ params }: Pick<PageProps<"/departments/[slug]
         }
       />
 
-      <div className="page-container grid gap-7 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-8">
+      <div className="page-container grid grid-cols-1 gap-7 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start lg:gap-8">
         {/* The next step overlaps the cover: on a phone first, on a wide screen top right. */}
         <section
           id={NEXT_STEP_ID}

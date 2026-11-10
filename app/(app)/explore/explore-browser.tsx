@@ -182,7 +182,7 @@ export function ExploreBrowser({
                   {shownVideos.length}
                 </span>
               </h2>
-              <ul className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+              <ul className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {shownVideos.map((video) => (
                   <li key={video.key}>
                     <VideoCard video={video} />

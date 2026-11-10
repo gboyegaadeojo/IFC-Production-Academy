@@ -560,7 +560,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                 </select>
               </Field>
               {householdOptions.length > 0 ? (
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Field id="pref-household" label="Someone in my household (optional)">
                     <select
                       id="pref-household"

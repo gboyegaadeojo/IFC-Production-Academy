@@ -88,7 +88,7 @@ function Form({
   }
 
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
       <form
         action={formAction}
         aria-labelledby="create-heading"
@@ -143,7 +143,7 @@ function Form({
           <div
             role="radiogroup"
             aria-labelledby={ids.audience}
-            className="grid gap-2.5 sm:grid-cols-2"
+            className="grid grid-cols-1 gap-2.5 sm:grid-cols-2"
           >
             {(
               [
@@ -327,7 +327,7 @@ function CreatedInvitation({
           : `Up to ${state.maxUses} people can use it`}{" "}
         until {formatDateTime(state.expiresAt)}.
       </p>
-      <div className="grid items-start gap-5 sm:grid-cols-[minmax(0,1fr)_auto]">
+      <div className="grid grid-cols-1 items-start gap-5 sm:grid-cols-[minmax(0,1fr)_auto]">
         <div className="flex flex-col gap-2">
           <label htmlFor={linkId} className="text-small font-medium text-text-secondary">
             Invitation link
