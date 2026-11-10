@@ -40,6 +40,10 @@ The button shows the new state straight away and goes back, with a message, if t
 
 Sentry and PostHog download after the page has settled (`whenIdle`, `lib/domain/when-idle.ts`), because they're about 300 KB that nobody waits for on purpose. An error in the first moments of a page may not be reported.
 
+### A smaller Worker (2026-11-10)
+
+The occasional slow first load (about 1.5 s) is the Worker starting cold, and it has to load all of its code to do that. Sentry was bundled into the app's own server code twice, by the server error hook and the page error screen, and each copy carried Sentry's 1.6 MB catalogue of field names. PostHog's 350 KB was in it too, through the page-view component. Now the Worker, which already has Sentry, reports the app's server errors (`instrumentation.ts` calls a reporter it leaves on `globalThis`), and the browser-only `instrumentation-client.ts` loads Sentry and PostHog and counts page views. The packed Worker went from 20.3 MB to 15.0 MB, or 4.1 MB to 3.0 MB compressed.
+
 ### Left as it is
 
 - **The sign-in key.** The app fetches it close to once per page, and we don't know why. It takes about 25 ms, which doesn't justify changing sign-in.
