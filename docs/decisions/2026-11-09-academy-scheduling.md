@@ -46,3 +46,12 @@ stop using Services for production whenever it chooses. Until then, nothing chan
 As small updates, each safe while Planning Center schedules. The first makes the switch stop the
 sync, guards service types, and adds **Edit details** to a service. The approved mock is the
 guide for the screens.
+
+## The Schedule page while the Academy schedules (G, 2026-11-10)
+
+G wants the Schedule page to look the same whichever system schedules. Chosen from clickable mocks:
+
+- **Computers: option A.** The page stays as it is: calendar, the day, upcoming assignments and blocked dates. **Can you cover?** and **Open spots** are cards in the side panel. **Calendar link**, **How I like to serve**, **Files** and **Manage blocked dates** open a panel on the right.
+- **Phones: option D.** Three tabs under the title: **My schedule** (the page), **Open spots** and **Blockouts**. The last two open as a sheet from the bottom that can be dragged down to close. Android's back button closes it, and it stays clear of the iPhone home bar and the Android gesture area.
+- **Open spots sheet: option 1.** One simple list, cover requests first, each row tagged **Cover** or **Open spot**.
+- The long sections that used to sit under the calendar are gone. Planning Center's version of the page is unchanged.

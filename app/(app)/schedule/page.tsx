@@ -7,7 +7,16 @@ import { fieldClasses } from "@/components/ui/field-classes";
 import { serviceChecklistHref } from "@/lib/domain/checklists";
 import { buttonClasses } from "@/components/ui/button";
 import { CalendarRangeIcon, CheckIcon, PlaneIcon } from "@/components/ui/icons";
-import { BlockoutForm } from "./blockout-form";
+import { PanelButton, PanelHost, PanelTabs } from "@/components/ui/panel-sheet";
+import {
+  BlockedCard,
+  BlockoutsPanel,
+  CoverCard,
+  FilesPanel,
+  PANEL_LINK,
+  SpotsCard,
+  SpotsSheet,
+} from "./academy-panels";
 import Loading from "./loading";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { requireActiveUser } from "@/lib/data/auth";
@@ -32,8 +41,6 @@ import {
 import { getHouseholdOptions, getMyPreferences } from "@/lib/data/auto-schedule";
 import { getMyCalendarFeedSince } from "@/lib/data/calendar-feed";
 import { getServiceFiles } from "@/lib/data/service-files";
-import { fileSizeLabel } from "@/lib/domain/service-files";
-import { HOUSEHOLD_MODE_LABELS, HOUSEHOLD_MODES } from "@/lib/domain/auto-schedule";
 import { blockoutLabel, blocksDate } from "@/lib/domain/blockouts";
 import {
   addDays,
@@ -52,17 +59,7 @@ import {
   syncedAgo,
   winnipegToUtc,
 } from "@/lib/domain/schedule";
-import {
-  removeUnavailabilityAction,
-  requestCoverAction,
-  respondAction,
-  signUpAction,
-  takeCoverAction,
-  withdrawCoverAction,
-  savePreferencesAction,
-  resetCalendarFeedAction,
-  stopCalendarFeedAction,
-} from "./actions";
+import { requestCoverAction, respondAction, withdrawCoverAction } from "./actions";
 
 export const metadata: Metadata = { title: "Your schedule" };
 
@@ -160,7 +157,7 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
   };
   const upcomingAway = away.filter((entry) => entry.endsOn >= today);
 
-  return (
+  const page = (
     <div className="page-container flex flex-col gap-10 py-8 lg:py-12">
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex flex-col gap-2">
@@ -193,7 +190,12 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                 />
               ) : null}
             </div>
-          ) : null}
+          ) : (
+            <span className="mt-1 flex items-center gap-2 text-small text-text">
+              <CheckIcon className="size-4 text-success" />
+              Scheduled in the Academy
+            </span>
+          )}
         </div>
         <nav aria-label="Change month" className="flex flex-wrap items-center gap-2">
           <MonthLink href={query({ month: shiftMonth(month, -1) })} label="Previous month">
@@ -211,6 +213,20 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
           <MonthLink href={query({ month: today.slice(0, 7), day: today })}>Today</MonthLink>
         </nav>
       </header>
+
+      {pco ? null : (
+        <PanelTabs
+          pageLabel="My schedule"
+          tabs={[
+            {
+              panel: "spots",
+              label: "Open spots",
+              count: coverRequests.length + openSpots.length,
+            },
+            { panel: "blockouts", label: "Blockouts" },
+          ]}
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_23rem]">
         <section aria-label="Calendar" className="flex flex-col gap-4">
@@ -344,264 +360,72 @@ async function ScheduleContent({ searchParams }: Pick<PageProps<"/schedule">, "s
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </section>
-          ) : null}
+          ) : (
+            <>
+              <BlockedCard away={away} today={today} />
+              {/* On a computer only: phones open these from the tabs (option D). */}
+              <div className="hidden flex-col gap-8 lg:flex">
+                <CoverCard requests={coverRequests} />
+                <SpotsCard spots={openSpots} />
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  <PanelButton panel="blockouts" className={PANEL_LINK}>
+                    Calendar link
+                  </PanelButton>
+                  <PanelButton panel="blockouts" className={PANEL_LINK}>
+                    How I like to serve
+                  </PanelButton>
+                  {files.length > 0 ? (
+                    <PanelButton panel="files" className={PANEL_LINK}>
+                      Files ({files.length})
+                    </PanelButton>
+                  ) : null}
+                </div>
+              </div>
+              {files.length > 0 ? (
+                <PanelButton panel="files" className={`${PANEL_LINK} lg:hidden`}>
+                  Files for your services ({files.length})
+                </PanelButton>
+              ) : null}
+            </>
+          )}
         </aside>
       </div>
-
-      {!pco && coverRequests.length > 0 ? (
-        <section aria-labelledby="cover-heading" className="flex flex-col gap-3">
-          <h2 id="cover-heading" className="text-heading font-semibold">
-            Can you cover?
-          </h2>
-          <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
-            {coverRequests.map((request) => (
-              <li
-                key={request.id}
-                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span className="flex flex-col gap-1">
-                  <span className="font-medium">
-                    {request.roleName} · {request.event.title}
-                  </span>
-                  <span className="text-small text-text-secondary">
-                    {eventTimeLabel(request.event.startsAt, request.event.endsAt)}
-                  </span>
-                  <span className="text-small text-text-muted">
-                    {request.note
-                      ? `${request.requestedBy} can't make it: “${request.note}”`
-                      : `${request.requestedBy} can't make it.`}
-                  </span>
-                </span>
-                <ActionForm
-                  action={takeCoverAction}
-                  submitLabel="I'll cover it"
-                  pendingLabel="Saving…"
-                  hidden={{ requestId: request.id }}
-                  srLabel={`${request.roleName}, ${request.event.title}`}
-                  className="flex"
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {!pco && openSpots.length > 0 ? (
-        <section aria-labelledby="spots-heading" className="flex flex-col gap-3">
-          <h2 id="spots-heading" className="text-heading font-semibold">
-            Open spots
-          </h2>
-          <p className="max-w-3xl text-small text-text-secondary">
-            Positions on your teams that still need someone, on days you&apos;re free.
-          </p>
-          <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
-            {openSpots.map((spot) => (
-              <li
-                key={spot.positionId}
-                className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <span className="flex flex-col gap-1">
-                  <span className="font-medium">
-                    {spot.roleName} · {spot.event.title}
-                  </span>
-                  <span className="text-small text-text-secondary">
-                    {eventTimeLabel(spot.event.startsAt, spot.event.endsAt)}
-                    {spot.event.location ? ` · ${spot.event.location}` : ""}
-                  </span>
-                </span>
-                <ActionForm
-                  action={signUpAction}
-                  submitLabel="Sign up"
-                  pendingLabel="Signing up…"
-                  variant="secondary"
-                  hidden={{ positionId: spot.positionId }}
-                  srLabel={`${spot.roleName}, ${spot.event.title}`}
-                  className="flex"
-                />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {pco ? null : (
-        <section aria-labelledby="away-heading" className="flex flex-col gap-3">
-          <h2 id="away-heading" className="text-heading font-semibold">
-            Blockout dates
-          </h2>
-          <p className="max-w-3xl text-small text-text-secondary">
-            Times you can&apos;t serve: one day, a date range, part of a day, or repeating.
-            Schedulers see them, and the Academy never picks you then.
-          </p>
-          {away.length > 0 ? (
-            <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
-              {away.map((entry) => (
-                <li
-                  key={entry.id}
-                  className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <span className="flex flex-col">
-                    <span className="font-medium">{blockoutLabel(entry)}</span>
-                    {entry.note ? (
-                      <span className="text-small text-text-muted">{entry.note}</span>
-                    ) : null}
-                  </span>
-                  <ActionForm
-                    action={removeUnavailabilityAction}
-                    submitLabel="Remove"
-                    pendingLabel="Removing…"
-                    variant="tertiary"
-                    hidden={{ id: entry.id }}
-                    className="flex"
-                  />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
-            <BlockoutForm today={today} />
-          </div>
-        </section>
-      )}
-
-      {!pco && files.length > 0 ? (
-        <section aria-labelledby="files-heading" className="flex flex-col gap-3">
-          <h2 id="files-heading" className="text-heading font-semibold">
-            Files for your services
-          </h2>
-          <ul className="flex max-w-3xl flex-col divide-y divide-border rounded-card border border-border">
-            {files.map((file) => {
-              const service = assignments.find((a) => a.event.id === file.eventId)?.event;
-              return (
-                <li key={file.id} className="flex flex-col gap-0.5 px-4 py-3">
-                  {file.url ? (
-                    <a
-                      href={file.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium text-accent-light underline-offset-4 hover:underline"
-                    >
-                      {file.name}
-                    </a>
-                  ) : (
-                    <span className="font-medium">{file.name}</span>
-                  )}
-                  <span className="text-small text-text-muted">
-                    {service ? `${service.title} · ` : ""}
-                    {fileSizeLabel(file.bytes)}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      ) : null}
-
-      {!pco ? (
-        <section aria-labelledby="feed-heading" className="flex flex-col gap-3">
-          <h2 id="feed-heading" className="text-heading font-semibold">
-            Calendar link
-          </h2>
-          <p className="max-w-3xl text-small text-text-secondary">
-            Add a private link to Google, Apple, or Outlook Calendar once, and your serving shows up
-            there and stays up to date.
-            {feedSince ? " You have a link. Making a new one stops the old one." : ""}
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <ActionForm
-              action={resetCalendarFeedAction}
-              submitLabel={feedSince ? "Make a new link" : "Make my calendar link"}
-              pendingLabel="Making…"
-              variant="secondary"
-              className="flex flex-col gap-2"
-            />
-            {feedSince ? (
-              <ActionForm
-                action={stopCalendarFeedAction}
-                submitLabel="Stop my link"
-                pendingLabel="Stopping…"
-                variant="tertiary"
-                className="flex"
-              />
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
-      {preferences ? (
-        <section aria-labelledby="preferences-heading" className="flex flex-col gap-3">
-          <h2 id="preferences-heading" className="text-heading font-semibold">
-            How I like to serve
-          </h2>
-          <p className="max-w-3xl text-small text-text-secondary">
-            Auto-schedule follows these. A scheduler can still ask you for more.
-          </p>
-          <div className="max-w-3xl rounded-card border border-border bg-surface p-5">
-            <ActionForm
-              action={savePreferencesAction}
-              submitLabel="Save preferences"
-              pendingLabel="Saving…"
-              variant="secondary"
-              className="flex flex-col gap-3"
-            >
-              <Field id="pref-max" label="At most, a month">
-                <select
-                  id="pref-max"
-                  name="maxPerMonth"
-                  defaultValue={preferences.maxPerMonth ?? ""}
-                  className={fieldClasses}
-                >
-                  <option value="">No limit</option>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((times) => (
-                    <option key={times} value={times}>
-                      {times === 1 ? "Once" : `${times} times`}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              {householdOptions.length > 0 ? (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <Field id="pref-household" label="Someone in my household (optional)">
-                    <select
-                      id="pref-household"
-                      name="householdMemberId"
-                      defaultValue={preferences.householdMemberId ?? ""}
-                      className={fieldClasses}
-                    >
-                      <option value="">Nobody</option>
-                      {householdOptions.map((person) => (
-                        <option key={person.id} value={person.id}>
-                          {person.name}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                  <Field id="pref-mode" label="Schedule us">
-                    <select
-                      id="pref-mode"
-                      name="householdMode"
-                      defaultValue={preferences.householdMode ?? "together"}
-                      className={fieldClasses}
-                    >
-                      {HOUSEHOLD_MODES.map((mode) => (
-                        <option key={mode} value={mode}>
-                          {HOUSEHOLD_MODE_LABELS[mode]}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
-                </div>
-              ) : (
-                <input type="hidden" name="householdMemberId" value="" />
-              )}
-              {householdOptions.length === 0 ? (
-                <input type="hidden" name="householdMode" value="together" />
-              ) : null}
-            </ActionForm>
-          </div>
-        </section>
-      ) : null}
     </div>
+  );
+  if (pco) {
+    return page;
+  }
+  const titles = new Map(assignments.map((a) => [a.event.id, a.event.title]));
+  return (
+    <PanelHost
+      panels={[
+        {
+          key: "spots",
+          title: "Open spots",
+          content: <SpotsSheet requests={coverRequests} spots={openSpots} />,
+        },
+        {
+          key: "blockouts",
+          title: "Blockouts",
+          content: (
+            <BlockoutsPanel
+              away={away}
+              today={today}
+              feedSince={feedSince}
+              preferences={preferences}
+              householdOptions={householdOptions}
+            />
+          ),
+        },
+        {
+          key: "files",
+          title: "Files for your services",
+          content: <FilesPanel files={files} titles={titles} />,
+        },
+      ]}
+    >
+      {page}
+    </PanelHost>
   );
 }
 

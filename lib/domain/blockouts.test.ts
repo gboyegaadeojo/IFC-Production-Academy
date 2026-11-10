@@ -7,6 +7,7 @@ import {
   repeatFallsOn,
   repeatLabel,
   type Blockout,
+  blockoutTile,
 } from "./blockouts";
 
 const blockout = (change: Partial<Blockout>): Blockout => ({
@@ -119,5 +120,12 @@ describe("the blockout form", () => {
         note: "",
       }).success,
     ).toBe(false);
+  });
+});
+
+describe("blockoutTile", () => {
+  it("shows the first day's month and day", () => {
+    expect(blockoutTile("2026-11-29")).toEqual({ month: "NOV", day: "29" });
+    expect(blockoutTile("2027-01-03")).toEqual({ month: "JAN", day: "3" });
   });
 });
