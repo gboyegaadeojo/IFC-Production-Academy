@@ -105,9 +105,13 @@ select is(
   (select email_status::text from public.notifications where user_id = '92000000-0000-4000-8000-000000000001' and kind = 'assessment_recorded'),
   'skipped', 'a turned-off kind is skipped'
 );
+-- The job gets the id from the claim; the service role can't read the table itself.
+create temporary table sent_notification as
+  select id from public.notifications
+  where user_id = '92000000-0000-4000-8000-000000000001' and kind = 'membership_approved';
+grant select on sent_notification to service_role;
 set local role service_role;
-select public.complete_email_notification(
-  (select id from public.notifications where user_id = '92000000-0000-4000-8000-000000000001' and kind = 'membership_approved'), true);
+select public.complete_email_notification((select id from sent_notification), true);
 reset role;
 select is(
   (select email_status::text from public.notifications where user_id = '92000000-0000-4000-8000-000000000001' and kind = 'membership_approved'),
