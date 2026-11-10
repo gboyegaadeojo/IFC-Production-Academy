@@ -1,14 +1,14 @@
-import { readdirSync, readFileSync } from "node:fs";
+﻿import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { TIME_ZONE } from "./time-zone";
 
 const MIGRATIONS = join(process.cwd(), "supabase", "migrations");
 /** The migration that moved every database function to the fixed offset. */
-const FIXED_FROM = "20270119121400";
+const FIXED_FROM = "20270119121500";
 
 describe("TIME_ZONE", () => {
-  it("is UTC−5 in winter, as Manitoba has been since 2026-11-01", () => {
+  it("is UTCâˆ’5 in winter, as Manitoba has been since 2026-11-01", () => {
     const time = new Intl.DateTimeFormat("en-CA", {
       timeZone: TIME_ZONE,
       hour: "numeric",
