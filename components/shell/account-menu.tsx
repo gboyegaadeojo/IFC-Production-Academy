@@ -130,7 +130,7 @@ export function AccountMenu({
         {inRail ? (
           <span
             aria-hidden="true"
-            className="flex min-w-0 flex-1 flex-col text-[0.5rem] leading-snug group-data-[folded=true]/sidebar:hidden"
+            className="flex min-w-0 flex-1 flex-col text-[0.625rem] leading-snug group-data-[folded=true]/sidebar:hidden"
           >
             <span className="truncate font-semibold">{displayName}</span>
             <span className="truncate text-text-muted">Settings, sign out</span>

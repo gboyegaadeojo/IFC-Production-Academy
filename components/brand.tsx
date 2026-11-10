@@ -59,7 +59,7 @@ export function StackedWordmark({ nameClassName = "" }: { nameClassName?: string
     <span className="flex min-w-0 items-center gap-2">
       <BrandMark height={28} className="shrink-0" />
       <span
-        className={`flex min-w-0 flex-col text-[0.5625rem] leading-tight font-bold text-text ${nameClassName}`}
+        className={`flex min-w-0 flex-col text-[0.6875rem] leading-tight font-bold text-text ${nameClassName}`}
       >
         <span className="truncate">{lead}</span>
         <span className="truncate text-text-secondary">{soft}</span>

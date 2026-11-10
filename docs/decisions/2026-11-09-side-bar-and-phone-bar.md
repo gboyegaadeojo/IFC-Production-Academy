@@ -9,7 +9,7 @@ Option B, a labelled side bar, replaces mock 5's 96px icon rail, which ran out o
 
 - 176px wide, with each link's name beside its icon. A round tab on its right edge (fold option A, chosen 2026-11-10 over a Collapse row and a logo toggle) folds it to 68px, icons only; the tab shows when you point at the side bar or reach it by keyboard, and stays while folded and on touch screens; the device remembers the choice (`academy_sidebar` cookie, so it loads the right width).
 - Training and Messages first, then **Learn** (Courses, Explore) and **Serve** (Schedule, Checklist, SOPs, Service Dashboard) under small headings. Every page keeps its own link.
-- Small type, chosen by G in two steps: links 9px, headings and your name 8px.
+- Small type, chosen by G in two steps: links 9px, headings and your name 8px. On 2026-11-10 G made it 2px larger (links 11px, headings and your name 10px) and the rows one step tighter (28px).
 - Your name and "Settings, sign out" at the bottom open the account menu, which now holds the light or dark switch. The bell beside it shows the unread count.
 
 ## Phone bar (below 768px)
