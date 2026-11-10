@@ -56,3 +56,29 @@ test("on a phone, the tab bar floats clear of the screen's edges", async ({ page
   await bar.getByRole("link", { name: "Schedule" }).click();
   await expect(bar.getByRole("link", { name: "Schedule" })).toHaveAttribute("aria-current", "page");
 });
+
+test("on a phone, Schedule's tabs open Open spots and Blockouts as sheets", async ({
+  page,
+  isMobile,
+}) => {
+  // Schedule option D (G, 2026-11-10). The tests' organisation schedules in the Academy.
+  test.skip(!isMobile, "Phones only");
+  await signInByEmail(page, "avery.volunteer@example.com");
+  await page.goto("/schedule");
+  await page.getByRole("button", { name: /^Open spots/ }).click();
+  const spots = page.getByRole("dialog", { name: "Open spots" });
+  await expect(spots).toBeVisible();
+  await spots.getByRole("button", { name: "Close open spots" }).click();
+  await expect(spots).toBeHidden();
+  await expect(page.getByRole("button", { name: "My schedule" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+
+  await page.getByRole("button", { name: "Blockouts" }).click();
+  const blockouts = page.getByRole("dialog", { name: "Blockouts" });
+  await expect(blockouts).toBeVisible();
+  await expect(blockouts.getByText("Add blocked dates")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(blockouts).toBeHidden();
+});

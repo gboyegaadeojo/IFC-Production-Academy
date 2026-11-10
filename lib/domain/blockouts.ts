@@ -184,3 +184,14 @@ export const blockoutSchema = z
       note: value.note,
     };
   });
+
+const TILE_MONTH = new Intl.DateTimeFormat("en-CA", { timeZone: "UTC", month: "short" });
+
+/** The small calendar tile beside a blockout: its first day's month and day, as "NOV" and "29". */
+export function blockoutTile(startsOn: string): { month: string; day: string } {
+  const date = new Date(`${startsOn}T12:00:00Z`);
+  return {
+    month: TILE_MONTH.format(date).replace(".", "").toUpperCase(),
+    day: String(date.getUTCDate()),
+  };
+}

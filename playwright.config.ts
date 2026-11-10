@@ -38,7 +38,7 @@ export default defineConfig({
     {
       name: "load",
       testMatch: LOAD_TEST,
-      dependencies: ["desktop", "mobile"],
+      dependencies: ["desktop", "mobile", "iphone"],
       use: { ...devices["Desktop Chrome"] },
     },
   ],
