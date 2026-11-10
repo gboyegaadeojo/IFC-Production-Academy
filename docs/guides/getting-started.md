@@ -80,7 +80,11 @@ Open your name, then **Get the app**. It's free, takes a minute, and doesn't use
 
 ### Alerts
 
-On the same page, choose **Turn on alerts** to get updates that drop down like any other app. If you're on a team, the app asks you to do this on your phone each time you open it, until it's done. **Not now** puts it off until next time, and nothing is locked in the meantime. If your phone can't do alerts, choose **My phone can't do this**. Your leaders will see that, and you'll get emails instead. You turn alerts on separately for each device. Alerts wait until morning between 8 pm and 8 am. On iPhone and iPad, alerts need iOS 16.4 or later, and they only work once the Academy is on your Home Screen.
+On the same page, choose **Turn on alerts** to get updates that drop down like any other app. If you're on a team, the app asks you to do this on your phone each time you open it, until it's done. **Not now** puts it off until next time, and nothing is locked in the meantime. If your phone can't do alerts, choose **My phone can't do this**. Your leaders will see that, and you'll get emails instead. You turn alerts on separately for each device, and they come at any time of day (your phone's Do Not Disturb still applies). On iPhone and iPad, alerts need iOS 16.4 or later, and they only work once the Academy is on your Home Screen.
+
+### The number on the app's icon
+
+Once the Academy is on your Home Screen, its icon shows how many notifications and messages you haven't read yet, added together, like other apps. It goes down as you read them, and it updates when an alert arrives, even with the app closed. On iPhone and iPad it needs iOS 16.4 or later and alerts turned on. On an installed computer app it shows on the taskbar or dock. Android shows its own dot on the icon instead of a number.
 
 ## Dark or light
 

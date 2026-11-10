@@ -1,6 +1,7 @@
 import "server-only";
 import { vapidKeys } from "@/lib/data/push";
 import { createSupabaseAdminClient } from "@/lib/data/supabase/admin";
+import { badgesByEndpoint } from "@/lib/domain/app-badge";
 import { messageAlert } from "@/lib/domain/message-alerts";
 import { sendPush } from "@/lib/domain/web-push";
 
@@ -21,19 +22,25 @@ export async function sendMessageAlerts(messageId: string): Promise<void> {
     return;
   }
   const counts = { sent: 0, gone: 0, failed: 0 };
+  const badges = badgesByEndpoint(
+    (await admin.rpc("push_badges", { p_endpoints: data.map((row) => row.endpoint) })).data,
+  );
   await Promise.all(
     data.map(async (row) => {
       const outcome = await sendPush(
         row,
-        messageAlert({
-          conversationId: row.conversation_id,
-          kind: row.kind,
-          chatName: row.chat_name,
-          senderName: row.sender_name,
-          preview: row.preview,
-          attachmentKind: row.attachment_kind,
-          unreadCount: row.unread_count,
-        }),
+        {
+          ...messageAlert({
+            conversationId: row.conversation_id,
+            kind: row.kind,
+            chatName: row.chat_name,
+            senderName: row.sender_name,
+            preview: row.preview,
+            attachmentKind: row.attachment_kind,
+            unreadCount: row.unread_count,
+          }),
+          badge: badges.get(row.endpoint),
+        },
         vapid,
       );
       counts[outcome] += 1;

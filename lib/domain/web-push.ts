@@ -7,7 +7,14 @@
 
 export type PushSubscriptionKeys = { endpoint: string; p256dh: string; auth: string };
 export type VapidKeys = { publicKey: string; privateKey: string; subject: string };
-export type PushMessage = { title: string; body: string; url: string; tag?: string };
+export type PushMessage = {
+  title: string;
+  body: string;
+  url: string;
+  tag?: string;
+  /** The number for the app's icon: everything unread, this included (lib/domain/app-badge.ts). */
+  badge?: number;
+};
 
 const encoder = new TextEncoder();
 

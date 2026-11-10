@@ -6,6 +6,7 @@
  * the browser or the app's runtime. Logs counts only, never addresses, names, or content
  * (CLAUDE.md "Actions logs must never contain data"). With no Resend key it does nothing.
  */
+import { badgesByEndpoint } from "../lib/domain/app-badge.ts";
 import { notificationEmail, onboardingEmail } from "../lib/domain/notifications.ts";
 import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
 import { pushMessageFor, sendPush } from "../lib/domain/web-push.ts";
@@ -37,15 +38,26 @@ async function sendPendingPush(supabaseUrl: string, serviceKey: string, siteUrl:
     p_limit: 200,
   });
   const counts = { sent: 0, gone: 0, failed: 0 };
+  // The number for each device's icon; without it the alert still goes, just without a number.
+  const badges = claimed.length
+    ? badgesByEndpoint(
+        await rpc<{ endpoint: string; badge: number }[]>(supabaseUrl, serviceKey, "push_badges", {
+          p_endpoints: claimed.map((item) => item.endpoint),
+        }).catch(() => []),
+      )
+    : new Map<string, number>();
   for (const item of claimed) {
     const outcome = await sendPush(
       item,
-      pushMessageFor({
-        id: item.notification_id,
-        title: item.title,
-        body: item.body,
-        link: item.link,
-      }),
+      {
+        ...pushMessageFor({
+          id: item.notification_id,
+          title: item.title,
+          body: item.body,
+          link: item.link,
+        }),
+        badge: badges.get(item.endpoint),
+      },
       vapid,
     );
     counts[outcome] += 1;

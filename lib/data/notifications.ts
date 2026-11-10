@@ -44,6 +44,16 @@ export async function getMyNotifications(userId: string): Promise<AppNotificatio
   );
 }
 
+/**
+ * The number for the app's icon: every unread notification and message together, as the alerts
+ * carry it (supabase/migrations/20270119121100_app_badge.sql). Zero when it can't be read.
+ */
+export async function getAppBadge(): Promise<number> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("my_app_badge");
+  return error ? 0 : (data ?? 0);
+}
+
 export async function getUnreadCount(userId: string): Promise<number> {
   const supabase = await createSupabaseServerClient();
   const { count, error } = await supabase

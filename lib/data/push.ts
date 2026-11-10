@@ -4,6 +4,7 @@ import type { Database } from "@/lib/data/database.types";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { publicEnv } from "@/lib/env";
 import { toAlertStatus, type AlertStatus } from "@/lib/domain/alerts";
+import { badgesByEndpoint } from "@/lib/domain/app-badge";
 import { pushMessageFor, sendPush, type PushMessage, type VapidKeys } from "@/lib/domain/web-push";
 
 /**
@@ -50,11 +51,25 @@ export async function dispatchNotification(id: string, token: string): Promise<D
     return { ok: false, sent: 0, gone: 0, failed: 0 };
   }
   const result: DispatchResult = { ok: true, sent: 0, gone: 0, failed: 0 };
+  // The number for each device's icon; without it the alert still goes, just without a number.
+  const badges = badgesByEndpoint(
+    data.length
+      ? (
+          await supabase.rpc("push_badges", {
+            p_endpoints: data.map((row) => row.endpoint),
+            p_token: token,
+          })
+        ).data
+      : [],
+  );
   await Promise.all(
     data.map(async (row) => {
       const outcome = await sendPush(
         row,
-        pushMessageFor({ id, title: row.title, body: row.body, link: row.link }),
+        {
+          ...pushMessageFor({ id, title: row.title, body: row.body, link: row.link }),
+          badge: badges.get(row.endpoint),
+        },
         vapid,
       );
       result[outcome === "sent" ? "sent" : outcome === "gone" ? "gone" : "failed"] += 1;

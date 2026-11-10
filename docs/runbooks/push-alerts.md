@@ -9,6 +9,7 @@ Alerts that drop down on phones and computers, like a native app's, for anyone w
 3. The app claims the notification once (`claim_push`), gets the person's devices, and sends each one an encrypted alert (`lib/domain/web-push.ts`, RFC 8291 and RFC 8292).
 4. Anything not sent within a minute is picked up by `notifications.yml` (every 15 minutes) through `claim_push_batch`. Alerts older than a day are dropped.
 5. A device the push service reports as gone (404 or 410) is deleted.
+6. Each alert carries the number for the app's icon: the person's unread notifications and messages together (`push_badges`, same token; `private.app_badge_count`). The service worker sets it with the Badging API. While the app is open, `components/shell/app-icon-badge.tsx` keeps it right (`my_app_badge`). Message notices aren't counted twice. If the lookup fails, the alert still goes, just without a number.
 
 There are no quiet hours: alerts and emails go out at any time of day (G, 2026-11-09). Phones have their own Do Not Disturb.
 

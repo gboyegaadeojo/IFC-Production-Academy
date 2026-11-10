@@ -6,6 +6,7 @@ import type { FormState } from "@/components/ui/action-form";
 import { getCurrentUser } from "@/lib/data/auth";
 import {
   clearNotifications,
+  getAppBadge,
   getMyNotifications,
   markAllRead,
   setEmailPreference,
@@ -146,4 +147,10 @@ export async function clearNotificationsAction(ids: string[] | null): Promise<{ 
     refresh();
   }
   return { ok };
+}
+
+/** The number for the app's icon, for the page to set while it's open (badge A, G 2026-11-10). */
+export async function appBadgeAction(): Promise<number> {
+  const user = await getCurrentUser();
+  return user?.status === "active" ? getAppBadge() : 0;
 }
