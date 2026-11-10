@@ -27,7 +27,7 @@ import {
   teamProgress,
   type ServiceChecklist,
 } from "@/lib/domain/checklists";
-import { eventDayLabel, eventTimeLabel, TIME_ZONE } from "@/lib/domain/schedule";
+import { eventDateParts, TIME_ZONE } from "@/lib/domain/schedule";
 import { resetAction, setItemAction, undoResetAction } from "../actions";
 
 export const metadata: Metadata = { title: "Service checklist" };
@@ -82,18 +82,19 @@ async function ServeContent({ params, searchParams }: Pick<Props, "params" | "se
           />
           <p className="eyebrow">{today ? "Today's checklist" : "Service checklist"}</p>
           <h1 className="text-title font-semibold text-balance">{service.title}</h1>
-          <div className="flex flex-wrap items-center gap-2.5 text-text-secondary">
-            <span>
-              {service.notPublished
-                ? eventDayLabel(service.startsAt)
-                : eventTimeLabel(service.startsAt, service.endsAt)}
-              {service.location ? ` · ${service.location}` : ""}
-            </span>
-            {service.cancelled ? <StatusBadge tone="neutral">Cancelled</StatusBadge> : null}
-            {data?.state.isScheduled ? (
-              <StatusBadge tone="success">{servingLabel(data.state.myPositions)}</StatusBadge>
-            ) : null}
-          </div>
+          <ServiceDay
+            startsAt={service.startsAt}
+            endsAt={service.notPublished ? null : service.endsAt}
+            location={service.location}
+          />
+          {service.cancelled || data?.state.isScheduled ? (
+            <div className="flex flex-wrap items-center gap-2.5">
+              {service.cancelled ? <StatusBadge tone="neutral">Cancelled</StatusBadge> : null}
+              {data?.state.isScheduled ? (
+                <StatusBadge tone="success">{servingLabel(data.state.myPositions)}</StatusBadge>
+              ) : null}
+            </div>
+          ) : null}
         </div>
         <div className="flex items-center gap-4">
           {/* Serve holds the checklist and the SOPs on phones (G, 2026-11-08). */}
@@ -197,6 +198,45 @@ function Notice({ children }: { children: ReactNode }) {
       <InfoIcon className="size-[18px] shrink-0 text-accent-light" />
       <span>{children}</span>
     </p>
+  );
+}
+
+/**
+ * The service's day as a calendar tile, with the weekday and time large beside it (option A,
+ * G 2026-11-10), so they stand out in both themes.
+ */
+function ServiceDay({
+  startsAt,
+  endsAt,
+  location,
+}: {
+  startsAt: string;
+  endsAt: string | null;
+  location: string | null;
+}) {
+  const day = eventDateParts(startsAt, endsAt);
+  return (
+    <div className="mt-1 flex items-center gap-3.5">
+      <span
+        aria-hidden="true"
+        className="flex h-16 w-15 shrink-0 flex-col items-center justify-center rounded-card border border-accent/40 bg-accent-soft"
+      >
+        <span className="text-small font-bold tracking-[0.08em] text-accent-light">
+          {day.month}
+        </span>
+        <span className="text-title leading-none font-bold">{day.day}</span>
+      </span>
+      <span className="flex min-w-0 flex-col gap-0.5">
+        <span className="text-heading font-semibold">
+          {day.weekday}
+          <span className="sr-only">
+            , {day.monthName} {day.day}
+          </span>
+        </span>
+        {day.time ? <span className="font-semibold">{day.time}</span> : null}
+        {location ? <span className="text-small text-text-secondary">{location}</span> : null}
+      </span>
+    </div>
   );
 }
 

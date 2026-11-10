@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   assignmentStatusLabel,
   candidateLabel,
+  eventDateParts,
   eventDayLabel,
   eventSchema,
   eventTimeLabel,
@@ -91,6 +92,27 @@ describe("eventDayLabel", () => {
   it("shows the Winnipeg day, even just after midnight there", () => {
     const start = winnipegToUtc("2026-12-06", "00:00")?.toISOString() ?? "";
     expect(eventDayLabel(start)).toContain("Dec 6");
+  });
+});
+
+describe("eventDateParts", () => {
+  it("splits the Winnipeg day for a calendar tile", () => {
+    const start = winnipegToUtc("2026-11-15", "10:05")?.toISOString() ?? "";
+    const end = winnipegToUtc("2026-11-15", "12:00")?.toISOString() ?? "";
+    const parts = eventDateParts(start, end);
+    expect(parts).toMatchObject({ month: "NOV", monthName: "November", day: "15" });
+    expect(parts.weekday).toBe("Sunday");
+    expect(parts.time).toMatch(/^10:05.* – 12:00/);
+  });
+
+  it("uses Winnipeg's day just after midnight there, and no time when none is set", () => {
+    const start = winnipegToUtc("2026-12-06", "00:00")?.toISOString() ?? "";
+    expect(eventDateParts(start, null)).toMatchObject({
+      month: "DEC",
+      day: "6",
+      weekday: "Sunday",
+      time: null,
+    });
   });
 });
 

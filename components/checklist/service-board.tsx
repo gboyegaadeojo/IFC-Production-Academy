@@ -149,27 +149,40 @@ export function ServiceBoard({
             <h2 id="board-heading" className="text-title font-semibold">
               {current.isMine ? `Your checklist: ${current.name}` : current.name}
             </h2>
+            {/* Solid purple for the one that's on, with counts (option A, G 2026-11-10). */}
             <div
               role="group"
               aria-label="Show"
-              className="inline-flex gap-0.5 rounded-pill border border-border p-[3px]"
+              className="grid w-full grid-cols-2 gap-1 rounded-card border border-border-strong bg-card p-1 sm:w-auto"
             >
               {(
                 [
-                  ["all", "All tasks"],
-                  ["todo", "Still to do"],
+                  ["all", "All tasks", current.total],
+                  ["todo", "Still to do", current.total - current.done],
                 ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={filter === value}
-                  onClick={() => setFilter(value)}
-                  className="min-h-9 rounded-pill px-3 text-small text-text-secondary transition-surface hover:text-text aria-pressed:bg-hover aria-pressed:text-text"
-                >
-                  {label}
-                </button>
-              ))}
+              ).map(([value, label, count]) => {
+                const on = filter === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => setFilter(value)}
+                    className={`flex min-h-touch items-center justify-center gap-1.5 rounded-button px-4 text-small font-semibold transition-surface ${
+                      on ? "bg-accent text-on-accent" : "text-text hover:bg-hover"
+                    }`}
+                  >
+                    {label}
+                    <span
+                      className={`tabular flex h-5.5 min-w-5.5 items-center justify-center rounded-pill px-1.5 text-small ${
+                        on ? "bg-on-accent/20 text-on-accent" : "bg-hover text-text-secondary"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

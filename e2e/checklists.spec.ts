@@ -79,7 +79,10 @@ test("a leader builds a checklist by pasting, then ticks, resets, and undoes on 
   await expect(page.getByLabel(first)).toBeChecked();
   await expect(page.getByText("Done by").first()).toBeVisible();
 
-  // "Still to do" hides what's ticked.
+  // "Still to do" hides what's ticked; both buttons show how many they hold.
+  await expect(
+    page.getByRole("group", { name: "Show" }).getByRole("button", { name: /^Still to do \d+$/ }),
+  ).toBeVisible();
   await page
     .getByRole("group", { name: "Show" })
     .getByRole("button", { name: "Still to do" })
