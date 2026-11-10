@@ -191,6 +191,26 @@
   }
 }
 
+/* Phones: notifications pull down from under the top bar, over a dimmed page (notifications B). */
+@keyframes notification-drop {
+  from {
+    translate: 0 -110%;
+  }
+}
+@keyframes notification-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .notification-drop {
+    animation: notification-drop 340ms cubic-bezier(0.25, 0.9, 0.3, 1) backwards;
+  }
+  .notification-fade {
+    animation: notification-fade 260ms var(--ease-standard) backwards;
+  }
+}
+
 /* Sign-in entrance (DESIGN §5): a short rise for each part of the page. */
 @keyframes auth-rise {
   from {

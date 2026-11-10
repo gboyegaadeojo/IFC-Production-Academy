@@ -49,7 +49,9 @@ Open your name, then choose your name at the top of the menu. Your profile shows
 
 ## Notifications
 
-Notifications come to your phone and email as you've chosen, and they're all in the app too. Choose the bell beside your name. On a phone a dot on it means something is unread; in the side bar it shows how many. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it slides up from the bottom. Choose the bell again, or anywhere outside the panel, to close it.
+Notifications come to your phone and email as you've chosen, and they're all in the app too. Choose the bell beside your name. On a phone a dot on it means something is unread; in the side bar it shows how many. The bell opens a panel with your newest notifications, such as being scheduled or an assessment result. On a phone it pulls down from under the top bar, with a point at the bell. Choose the bell again, anywhere outside the panel, or the handle at its foot to close it.
+
+New notifications are listed first, under **New**, and the rest under **Earlier**. When there's more than one kind, choose **All**, **Serving**, **Training** or **Leading** at the top to see just those.
 
 Each notification has an icon for what it's about (serving, training, or leading) and a line in purple saying what tapping it does, such as **Confirm or decline**.
 

@@ -20,3 +20,7 @@ Option A, the sliding pill.
 - A soft purple pill springs across to the tab you tap, and that tab's icon lifts a little. Pages reached from the tabs fade up into place.
 - Lessons, chats, and a department's Continue bar don't animate, so their own fixed bars never move. Reduced motion turns all of it off.
 - The tabs themselves are unchanged (decisions of 2026-11-04 and 2026-11-08).
+
+## Notifications on phones (2026-11-10)
+
+G chose option B of three mocks: the panel pulls down from under the top bar instead of rising from the bottom, as a card 8px in from the sides with a point at the bell (from option A), and the bell tips a little as it opens (from option C). Unread notifications are listed under **New** and the rest under **Earlier**, and filter chips (All, Serving, Training, Leading) appear when there's more than one kind. The grouping and filters apply to the side bar's panel too. A handle at the foot closes it.

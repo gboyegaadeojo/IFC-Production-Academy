@@ -99,3 +99,17 @@ test("a leader also sees the leading choices", async ({ page }) => {
     page.getByRole("region", { name: "What to send me" }).getByRole("group", { name: "Leading" }),
   ).toBeVisible();
 });
+
+test("on a phone, notifications pull down from under the top bar", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "Phones only");
+  await signInByEmail(page, `e2e-bell-sheet-${Date.now()}@example.com`);
+  await bell(page).click();
+  const panel = page.getByRole("dialog", { name: "Notifications" });
+  await expect(panel).toBeVisible();
+  const header = await page.locator("header").first().boundingBox();
+  const headerBottom = (header?.y ?? 0) + (header?.height ?? 0);
+  // Once it has finished sliding down, it sits just under the bar.
+  await expect.poll(async () => (await panel.boundingBox())?.y ?? 0).toBeGreaterThan(headerBottom);
+  await panel.getByRole("button", { name: "Close notifications" }).click();
+  await expect(panel).toHaveCount(0);
+});
