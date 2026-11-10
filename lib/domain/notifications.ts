@@ -200,6 +200,20 @@ export const NOTIFICATION_GROUP_HINTS: Record<NotificationGroup["id"], string> =
     "New messages in your chats, as a phone alert. They're never emailed. Mute a chat to stop its alerts",
 };
 
+/** The group a notification belongs to, for the bell's filters. App-only kinds belong to none. */
+export function notificationGroupOf(kind: NotificationKind): NotificationGroup["id"] | null {
+  return NOTIFICATION_GROUPS.find((group) => group.kinds.includes(kind))?.id ?? null;
+}
+
+/**
+ * The bell's filter chips after All (notifications B, G 2026-11-10): only groups with something in
+ * the list, in the usual order, so nobody sees a filter that can only come up empty.
+ */
+export function panelFilterGroups(kinds: readonly NotificationKind[]): NotificationGroup[] {
+  const present = new Set(kinds.map(notificationGroupOf));
+  return NOTIFICATION_GROUPS.filter((group) => present.has(group.id));
+}
+
 export type GroupChoice = "on" | "off" | "some";
 
 /**

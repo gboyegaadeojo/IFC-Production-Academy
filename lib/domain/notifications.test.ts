@@ -10,6 +10,8 @@ import {
   relativeTime,
   emailButtonLabel,
   notificationEmail,
+  notificationGroupOf,
+  panelFilterGroups,
   notificationUrl,
   onboardingEmail,
 } from "./notifications";
@@ -202,5 +204,20 @@ describe("relativeTime", () => {
   it("says Yesterday by the Winnipeg calendar, then a short date", () => {
     expect(relativeTime("2026-10-31T15:00:00Z", now)).toBe("Yesterday");
     expect(relativeTime("2026-10-30T15:00:00Z", now)).toBe("Oct 30");
+  });
+});
+
+describe("the bell's filters", () => {
+  it("puts each kind in its group, and app-only kinds in none", () => {
+    expect(notificationGroupOf("assignment_scheduled")).toBe("serving");
+    expect(notificationGroupOf("course_assigned")).toBe("training");
+    expect(notificationGroupOf("join_requested")).toBe("leading");
+    expect(notificationGroupOf("new_course")).toBeNull();
+  });
+
+  it("offers only groups with something in the list, in the usual order", () => {
+    const groups = panelFilterGroups(["join_requested", "assignment_scheduled", "new_course"]);
+    expect(groups.map((group) => group.id)).toEqual(["serving", "leading"]);
+    expect(panelFilterGroups([])).toEqual([]);
   });
 });
