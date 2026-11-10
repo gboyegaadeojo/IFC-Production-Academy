@@ -38,14 +38,31 @@ self.addEventListener("push", (event) => {
   }
   const title = typeof data.title === "string" && data.title ? data.title : "IFC Academy";
   event.waitUntil(
-    self.registration.showNotification(title, {
-      body: typeof data.body === "string" ? data.body : "",
-      icon: "/icons/icon-192.png",
-      tag: typeof data.tag === "string" ? data.tag : undefined,
-      data: { url: typeof data.url === "string" ? data.url : "/notifications" },
-    }),
+    Promise.all([
+      self.registration.showNotification(title, {
+        body: typeof data.body === "string" ? data.body : "",
+        icon: "/icons/icon-192.png",
+        tag: typeof data.tag === "string" ? data.tag : undefined,
+        data: { url: typeof data.url === "string" ? data.url : "/notifications" },
+      }),
+      showBadge(data.badge),
+    ]),
   );
 });
+
+// The number on the app's icon: everything unread, sent with each alert, so it's right even with
+// the app closed. Devices that can't show one (Android's Chrome shows its own dot) skip it.
+function showBadge(count) {
+  if (typeof count !== "number" || !Number.isFinite(count)) {
+    return Promise.resolve();
+  }
+  const host = self.navigator;
+  const step =
+    count > 0
+      ? host.setAppBadge && host.setAppBadge(Math.floor(count))
+      : host.clearAppBadge && host.clearAppBadge();
+  return Promise.resolve(step).catch(() => undefined);
+}
 
 // Opens the alert's page in the app, reusing an open window when there is one. Only paths inside
 // the Academy are followed.

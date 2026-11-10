@@ -113,3 +113,30 @@ test("on a phone, notifications pull down from under the top bar", async ({ page
   await panel.getByRole("button", { name: "Close notifications" }).click();
   await expect(panel).toHaveCount(0);
 });
+
+test("the app keeps the number on its icon up to date", async ({ page }, testInfo) => {
+  // Stands in for the Badging API, so the test can see what the app asks the device to show.
+  await page.addInitScript(() => {
+    const calls: (number | "clear")[] = [];
+    Object.assign(window, { badgeCalls: calls });
+    Object.defineProperty(navigator, "setAppBadge", {
+      value: (count?: number) => {
+        calls.push(count ?? 0);
+        return Promise.resolve();
+      },
+    });
+    Object.defineProperty(navigator, "clearAppBadge", {
+      value: () => {
+        calls.push("clear");
+        return Promise.resolve();
+      },
+    });
+  });
+  await signInByEmail(page, `e2e-badge-${testInfo.project.name}-${Date.now()}@example.com`);
+  await page.goto("/home");
+  await expect
+    .poll(() =>
+      page.evaluate(() => (window as unknown as { badgeCalls: unknown[] }).badgeCalls.length),
+    )
+    .toBeGreaterThan(0);
+});

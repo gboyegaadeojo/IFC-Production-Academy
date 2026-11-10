@@ -1596,6 +1596,11 @@ export type Database = {
       start_course_draft: { Args: { p_course_id: string }; Returns: string };
       restore_course_version: { Args: { p_version_id: string }; Returns: string };
       restore_onboarding_pathway_version: { Args: { p_version_id: string }; Returns: number };
+      push_badges: {
+        Args: { p_endpoints: string[]; p_token?: string };
+        Returns: { endpoint: string; badge: number }[];
+      };
+      my_app_badge: { Args: never; Returns: number };
       publish_course_version: {
         Args: { p_version_id: string; p_change_note?: string | null };
         Returns: number;

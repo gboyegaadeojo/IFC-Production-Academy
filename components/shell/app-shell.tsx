@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { AcademyHeader, AcademySidebar } from "@/components/shell/academy-header";
 import { AlertsSetupBanner } from "@/components/shell/alerts-setup-banner";
+import { AppIconBadge } from "@/components/shell/app-icon-badge";
 import { AcademyTabBar } from "@/components/shell/academy-nav";
 import { HideOnAdmin } from "@/components/shell/hide-on-admin";
 import { MessagesAwareTabBar } from "@/components/shell/messages-nav";
@@ -38,6 +39,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Suspense fallback={<AcademyTabBar />}>
         <MessagesAwareTabBar />
       </Suspense>
+      <AppIconBadge />
     </>
   );
 }

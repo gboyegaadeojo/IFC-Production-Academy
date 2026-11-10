@@ -53,6 +53,8 @@ select is_empty(
       -- account: starting a code reveals nothing, and the rest need its pass (043).
       and p.proname not in ('keepalive', 'check_certificate', 'submit_interest', 'open_departments',
                             'claim_push', 'push_subscription_gone', 'app_branding',
+                            -- The icon number for alerts being sent: the same token as claim_push.
+                            'push_badges',
                             'screen_start_pairing', 'screen_claim', 'screen_dashboard',
                             'service_youtube_state', 'save_youtube_check',
                             -- A calendar app reads someone's serving with their private link, which
