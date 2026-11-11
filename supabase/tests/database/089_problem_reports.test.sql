@@ -32,6 +32,7 @@ select throws_ok($$ select * from public.problem_reports_list(true) $$, '42501',
   'a volunteer cannot read the reports');
 select throws_ok($$ select count(*) from public.problem_reports $$, '42501', null,
   'nor the table itself');
+select is(public.problem_reports_open_count(), 0, 'and sees no count');
 reset role;
 
 select is(
@@ -59,6 +60,7 @@ select lives_ok(
        (select id from public.problem_reports_list(false) where message = 'The tick went back'), true) $$,
   'and marks one sorted');
 select is((select count(*)::int from public.problem_reports_list(false)), 9, 'it leaves the open list');
+select is(public.problem_reports_open_count(), 9, 'and the sidebar count drops');
 select is((select count(*)::int from public.problem_reports_list(true)), 10, 'but stays under All');
 reset role;
 select is(

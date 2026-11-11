@@ -2032,6 +2032,7 @@ export type Database = {
         }[];
       };
       set_problem_report_status: { Args: { p_id: string; p_sorted: boolean }; Returns: undefined };
+      problem_reports_open_count: { Args: never; Returns: number };
       claim_message_alerts: {
         Args: { p_message_id: string };
         Returns: {

@@ -58,7 +58,7 @@ Someone can hold different roles in different departments, such as leading Audio
 
 Anyone can tell the team something isn't working: open your name, then **Report a problem**. **Admin → Problem reports** lists what people sent, newest first, for Platform Administrators. Each report shows who sent it and when, and the page, device, and app version it was sent from, so you can find the problem. Platform Administrators also get a notification for each one.
 
-Choose **Mark as sorted** once it's dealt with, or **Reopen** if it comes back. **Open** shows what's still to do and **All** shows everything. Each change goes in the audit log. Someone can send up to 10 reports a day.
+Choose **Mark as sorted** once it's dealt with, or **Reopen** if it comes back. **Open** shows what's still to do and **All** shows everything. The number beside **Problem reports** in the sidebar is how many are open. Each change goes in the audit log. Someone can send up to 10 reports a day.
 
 ## Features
 

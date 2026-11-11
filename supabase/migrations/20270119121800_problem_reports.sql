@@ -146,3 +146,19 @@ end;
 $$;
 revoke all on function public.set_problem_report_status(uuid, boolean) from public, anon;
 grant execute on function public.set_problem_report_status(uuid, boolean) to authenticated;
+
+-- How many are open, for the Admin sidebar's badge. Zero for anyone who can't review them.
+create function public.problem_reports_open_count()
+returns integer
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select case when private.is_active_user() and private.has_capability('problem.review')
+    then (select count(*)::int from public.problem_reports r
+          where r.organization_id = private.current_organization_id() and r.status = 'open')
+    else 0 end;
+$$;
+revoke all on function public.problem_reports_open_count() from public, anon;
+grant execute on function public.problem_reports_open_count() to authenticated;
