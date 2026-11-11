@@ -26,6 +26,14 @@ test("a Platform Admin changes the short name and logo, and the installed app is
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText(/^Saved\./)).toBeVisible();
 
+  // The chosen logo replaces the built-in Signal Line mark in the app, not just on the phone.
+  await page.goto("/admin");
+  await expect(
+    page.locator('img[src*="/storage/v1/object/public/branding/app-icon-"]').first(),
+  ).toBeVisible();
+  await expect(page.locator("svg[data-logo]")).toHaveCount(0);
+  await page.goto("/admin/branding");
+
   const manifest = await (await request.get("/manifest.webmanifest")).json();
   expect(manifest.short_name).toBe("Fake Team");
   expect(manifest.icons[0].src).toContain("/storage/v1/object/public/branding/app-icon-");
