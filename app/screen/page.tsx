@@ -69,7 +69,7 @@ export default async function ScreenPage() {
           renderedAt={now}
         >
           <header className="flex min-h-9 shrink-0 items-center gap-4 px-1.5 font-semibold">
-            <BrandMark height={24} />
+            <BrandMark size={24} />
             <h1 className="text-lg">
               {service ? <CurrentItemName /> : "No service on the schedule yet"}
             </h1>

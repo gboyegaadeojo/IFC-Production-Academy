@@ -245,7 +245,7 @@ export function AdminSidebar({
             className="flex min-h-10 min-w-0 items-center gap-2.5 rounded-button"
             title="Admin dashboard"
           >
-            <BrandMark className="shrink-0" height={16} />
+            <BrandMark size={16} decorative />
             {compact ? (
               <span className="sr-only">
                 {lead} {soft} admin

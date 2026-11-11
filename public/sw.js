@@ -1,7 +1,8 @@
 // IFC Production Academy service worker (SPEC §PWA "launch"). It keeps one small offline page and
 // the app icons, and never caches pages or data, so nothing private is stored on the device. It
 // also shows the alerts the Academy sends (web push) and opens the right page when one is tapped.
-const CACHE = "academy-shell-v1";
+// v2: the Signal Line icon (2026-11-10). A new name makes every installed copy fetch it again.
+const CACHE = "academy-shell-v2";
 const SHELL = ["/offline.html", "/icons/icon-192.png"];
 
 self.addEventListener("install", (event) => {

@@ -6,8 +6,35 @@ import {
   iconInitials,
   isSquarePng,
   manifestIcons,
+  markColoursOn,
+  usesBuiltInLogo,
   wordmarkParts,
 } from "./branding";
+
+describe("markColoursOn", () => {
+  it("follows the brand's colour rules, with the dot as the only accent", () => {
+    expect(markColoursOn("#ffffff")).toEqual({ line: "#000000", dot: "#7c3aed" });
+    expect(markColoursOn("#000000")).toEqual({ line: "#f5f5f5", dot: "#b69bff" });
+    expect(markColoursOn("#7C3AED")).toEqual({ line: "#f5f5f5", dot: "#f5f5f5" });
+    expect(markColoursOn("#1f5fd1")).toEqual({ line: "#f5f5f5", dot: "#f5f5f5" });
+  });
+});
+
+describe("usesBuiltInLogo", () => {
+  it("shows Signal Line when nothing is chosen in Admin, Branding", () => {
+    expect(usesBuiltInLogo({ name: DEFAULT_BRANDING.name, iconUrl: null })).toBe(true);
+  });
+
+  it("gives way to an uploaded logo", () => {
+    expect(usesBuiltInLogo({ name: DEFAULT_BRANDING.name, iconUrl: "https://x/icon.png" })).toBe(
+      false,
+    );
+  });
+
+  it("gives way to a new name, which the built-in wordmark can't spell", () => {
+    expect(usesBuiltInLogo({ name: "Booth Crew", iconUrl: null })).toBe(false);
+  });
+});
 
 /** A PNG's signature and header, enough to read its size. */
 function pngHeader(width: number, height: number): Uint8Array {
@@ -49,8 +76,11 @@ describe("iconInitials", () => {
 });
 
 describe("wordmarkParts", () => {
-  it("drops IFC, which the mark already says, so today's name reads the same", () => {
-    expect(wordmarkParts(DEFAULT_BRANDING.name)).toEqual({ lead: "Production", soft: "Academy" });
+  it("keeps the whole name, since the Signal Line mark doesn't spell IFC", () => {
+    expect(wordmarkParts(DEFAULT_BRANDING.name)).toEqual({
+      lead: "IFC Production",
+      soft: "Academy",
+    });
   });
 
   it("handles other names", () => {
@@ -85,6 +115,16 @@ describe("isSquarePng", () => {
 describe("manifestIcons", () => {
   it("keeps the original icons until one is chosen", () => {
     expect(manifestIcons(null).map((icon) => icon.src)).toContain("/icons/icon-512.png");
+  });
+
+  it("gives the built-in icon separate any and maskable files at 192 and 512", () => {
+    const icons = manifestIcons(null).map((icon) => `${icon.purpose} ${icon.sizes} ${icon.src}`);
+    expect(icons).toEqual([
+      "any 192x192 /icons/icon-192.png",
+      "any 512x512 /icons/icon-512.png",
+      "maskable 192x192 /icons/icon-maskable-192.png",
+      "maskable 512x512 /icons/icon-maskable-512.png",
+    ]);
   });
 
   it("uses the chosen icon, including for Android's masked shape", () => {

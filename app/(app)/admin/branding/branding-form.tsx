@@ -8,8 +8,10 @@ import {
   DEFAULT_BRANDING,
   ICON_BACKGROUNDS,
   iconInitials,
+  markColoursOn,
   SHORT_NAME_FITS,
 } from "@/lib/domain/branding";
+import { MARK_LINE_PATH } from "@/lib/generated/brand-paths";
 import { saveBrandingAction } from "./actions";
 
 type IconPick = "keep" | "original" | "mark" | "cross" | "initials" | "upload";
@@ -51,16 +53,25 @@ async function drawIcon(
     );
     return;
   }
-  // Keep the mark inside Android's safe area: the middle 80% of the icon.
+  // The Signal Line mark at 62% of the icon, as the built-in app icon draws it, which keeps it
+  // inside Android's safe area (the middle 80%). Its colours follow the brand rules.
   if (pick === "mark") {
-    const image = await loadImage(
-      `/brand/ifc-mark-${background === "#ffffff" ? "black" : "white"}.png`,
-    );
-    const width = SIZE * 0.62;
-    const height = width * (image.height / image.width);
+    const { line, dot } = markColoursOn(background);
+    const scale = (SIZE * 0.62) / 96;
     context.fillStyle = background;
     context.fillRect(0, 0, SIZE, SIZE);
-    context.drawImage(image, (SIZE - width) / 2, (SIZE - height) / 2, width, height);
+    context.save();
+    context.translate(SIZE * 0.19, SIZE * 0.19);
+    context.scale(scale, scale);
+    context.strokeStyle = line;
+    context.lineWidth = 10;
+    context.lineCap = "round";
+    context.stroke(new Path2D(MARK_LINE_PATH));
+    context.fillStyle = dot;
+    context.beginPath();
+    context.arc(82, 14, 7, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
     return;
   }
   context.fillStyle = background;
@@ -86,7 +97,7 @@ async function drawIcon(
 }
 
 const PICKS: { key: IconPick; label: string }[] = [
-  { key: "mark", label: "IFC mark" },
+  { key: "mark", label: "Signal Line mark" },
   { key: "cross", label: "Cross" },
   { key: "initials", label: "Initials" },
 ];

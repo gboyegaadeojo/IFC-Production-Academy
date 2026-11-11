@@ -56,6 +56,9 @@ dates below for real volunteers are not yet confirmed.
 
 ## 4. Brand and theme
 
+> **Logo replaced 2026-11-10.** The app now uses its own Signal Line logo, not the IFC mark. See
+> [2026-11-10-signal-line-brand.md](2026-11-10-signal-line-brand.md). The name is unchanged.
+
 - **Name and lockup:** "IFC Production Academy". The IFC mark (the pillars and the dove) sits beside
   a "Production Academy" wordmark in the app header, the sign-in page, emails, and certificates.
   It is an IFC ministry tool, not a separate brand.

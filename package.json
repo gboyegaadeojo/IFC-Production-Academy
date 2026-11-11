@@ -12,6 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "help:build": "node scripts/build-help.mjs",
+    "brand:build": "node scripts/build-brand-assets.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",

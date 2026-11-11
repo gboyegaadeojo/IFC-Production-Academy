@@ -125,6 +125,12 @@ Choose **After the service** at the top of the dashboard. It builds itself from 
 
 Platform administrators can change the app's name, short name, and logo under **Admin**, then **App name and logo**.
 
+The built-in logo is **Signal Line**: a line that rises in three steps to a dot. **Original** brings it back at any time.
+
+- **A logo you upload or make on the page** replaces Signal Line everywhere in the app and on the installed app. **Signal Line mark** makes one from the mark on the colour you pick.
+- **A new name** keeps the Signal Line mark, but the full logo on the sign-in page becomes the mark with your new name beside it, since the built-in logo spells "IFC Production Academy".
+- **Link previews** (when someone shares a link to the Academy) always show Signal Line.
+
 - **New installs** get the change straight away.
 - **Android** picks it up by itself, but it can take days, and the name may not change in every case.
 - **iPhone** will most likely need the app removed and added again.

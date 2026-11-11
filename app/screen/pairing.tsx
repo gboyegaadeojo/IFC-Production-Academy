@@ -67,7 +67,7 @@ export function ScreenPairing() {
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-6 p-8 text-center">
-      <BrandMark height={72} />
+      <BrandMark size={72} />
       <h1 className="text-[3rem] leading-tight font-semibold">Connect this screen</h1>
       {failed ? (
         <p role="status" className="text-2xl text-text-secondary">
