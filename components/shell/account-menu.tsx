@@ -41,8 +41,9 @@ export function AccountMenu({
   /** Unread notifications. Only Admin passes it, since it has no bell. */
   unread?: number;
   /**
-   * The phone bar (initials only), the learner side bar (your name beside the initials), or the
-   * admin sidebar's footer. In both side bars it opens beside the bar, never over its links.
+   * The phone bar (initials only), the learner side bar (your name beside the initials, opening
+   * upwards, or sideways when the side bar is folded), or the admin sidebar's footer (opening
+   * upwards, or sideways when it's icons only).
    */
   placement?: "header" | "rail" | "sidebar";
   /** Icons-only admin sidebar: just the avatar. */
@@ -175,11 +176,11 @@ export function AccountMenu({
           id={panelId}
           className={`absolute z-40 w-[18.75rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-card border border-border bg-surface shadow-[0_24px_60px_-20px_var(--bg)] ${
             inSidebar
-              ? "bottom-0 left-full ml-3"
+              ? compact
+                ? "bottom-0 left-full ml-3"
+                : "bottom-full left-0 mb-2"
               : inRail
-                ? // Beside the side bar, folded or not, so it never covers the links in it
-                  // (Report a problem made it a row taller; 2026-11-11).
-                  "bottom-0 left-full ml-3"
+                ? "bottom-full left-0 mb-2 group-data-[folded=true]/sidebar:bottom-0 group-data-[folded=true]/sidebar:left-full group-data-[folded=true]/sidebar:mb-0 group-data-[folded=true]/sidebar:ml-3"
                 : "right-0 mt-2"
           }`}
         >
