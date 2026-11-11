@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # the alert looks up the previous run
 
 concurrency:
   group: keepalive
@@ -52,10 +53,11 @@ jobs:
           fi
 
       - name: Email the admins
-        if: failure()
+        if: always()
         uses: ./.github/actions/notify-failure
         with:
           resend-api-key: ${{ secrets.RESEND_API_KEY }}
           to: ${{ secrets.ALERT_EMAILS }}
           from: ${{ secrets.ALERT_FROM }}
           subject: "IFC Academy: keep-alive failed"
+          outcome: ${{ job.status }}
