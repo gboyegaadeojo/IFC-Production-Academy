@@ -311,7 +311,7 @@ test("App name and logo, for design review", async ({ page }) => {
   await signInByEmail(page, "frankie.admin@example.com");
   await page.goto("/admin/branding");
   await expect(page.getByRole("heading", { level: 1, name: "App name and logo" })).toBeVisible();
-  await page.getByRole("button", { name: "IFC mark" }).click();
+  await page.getByRole("button", { name: "Signal Line mark" }).click();
   await capture(page, "branding-1440");
 });
 
