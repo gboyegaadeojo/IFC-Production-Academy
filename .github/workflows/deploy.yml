@@ -150,17 +150,15 @@ jobs:
           NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL }}
           NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
 
+      # The new version is live, pages load, private pages redirect, and the database API answers
+      # (scripts/check-live.ts). Logs status codes and timings only.
       - name: Check the live site
         env:
           SITE_URL: ${{ vars.SITE_URL }}
-        run: |
-          set -euo pipefail
-          code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 --retry 3 --retry-delay 5 "$SITE_URL/sign-in" || true)"
-          echo "GET /sign-in -> HTTP $code"
-          if [ "$code" != "200" ]; then
-            echo "::error::The deployed site did not respond with 200"
-            exit 1
-          fi
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/check-live.ts
 
       - name: Email the admins
         if: always()
