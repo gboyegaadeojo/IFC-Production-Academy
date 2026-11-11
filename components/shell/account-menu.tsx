@@ -107,7 +107,7 @@ export function AccountMenu({
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
         title={inSidebar || inRail ? displayName : undefined}
-        className={
+        className={`${open ? "relative z-40" : ""}${
           inSidebar
             ? `flex min-h-11 items-center gap-2 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
                 compact ? "relative w-11 justify-center" : "w-full px-2"
@@ -115,7 +115,7 @@ export function AccountMenu({
             : inRail
               ? "flex w-full min-w-0 items-center gap-2 rounded-button p-1 text-left text-text transition-surface group-data-[folded=true]/sidebar:justify-center hover:bg-card"
               : "flex min-h-touch items-center rounded-pill text-text"
-        }
+        }`}
       >
         <span
           aria-hidden="true"
@@ -171,6 +171,16 @@ export function AccountMenu({
           , account menu
         </span>
       </button>
+      {open ? (
+        // An invisible layer over the page while the menu is open: a tap anywhere else closes the
+        // menu, and nothing half-hidden behind it can be tapped by mistake (axe target-size;
+        // Report a problem made the menu a row taller, 2026-11-11).
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-30"
+          onClick={() => setOpenedOn(null)}
+        />
+      ) : null}
       {open ? (
         <div
           id={panelId}
