@@ -32,6 +32,7 @@ jobs:
             .github/actions
             lib/domain/backup.ts
             lib/domain/supabase-keys.ts
+            lib/domain/time-zone.ts
             lib/domain/usage.ts
             scripts/backup
             scripts/weekly-summary.ts

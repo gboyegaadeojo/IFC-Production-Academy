@@ -11,6 +11,7 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { backupNames, latestCompleteStamp } from "../lib/domain/backup.ts";
 import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
+import { winnipegRuleChanged } from "../lib/domain/time-zone.ts";
 import { usageLines, usageWarnings, type Usage } from "../lib/domain/usage.ts";
 import { driveConfigured, driveToken, listFolder } from "./backup/drive.ts";
 
@@ -107,6 +108,7 @@ async function main(): Promise<void> {
     const age = lastSuccess ? (now - Date.parse(lastSuccess)) / 3_600_000 : Infinity;
     const expected =
       workflow.file === "keepalive.yml" ||
+      workflow.file === "planning-center.yml" ||
       ((workflow.file === "backup.yml" || workflow.file === "restore-test.yml") && backupsEnabled);
     const ok = !expected || age <= workflow.staleAfterHours;
     jobs[workflow.file.replace(".yml", "")] = { last_run: lastRun, last_success: lastSuccess, ok };
@@ -115,6 +117,13 @@ async function main(): Promise<void> {
         `${workflow.label}: no successful run in the last ${workflow.staleAfterHours} hours`,
       );
     }
+  }
+
+  // GitHub keeps Node's time zone data current, so this notices if Manitoba changes its clocks again.
+  if (winnipegRuleChanged(new Date(now))) {
+    problems.push(
+      `Manitoba's time rules seem to have changed (time zone data ${process.versions.tz ?? "unknown"}; 2026e or later is current): update TIME_ZONE and the database functions (docs/decisions/2026-11-10-winnipeg-fixed-offset.md)`,
+    );
   }
 
   let sizes: { db: number; files: number } | null = null;

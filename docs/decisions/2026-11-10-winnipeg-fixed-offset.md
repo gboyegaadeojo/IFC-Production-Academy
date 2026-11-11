@@ -25,6 +25,8 @@ In these names the sign is reversed: `Etc/GMT+5` is UTCâˆ’5.
 - Times are right whichever time zone data a server has.
 - No stored time moves. Every Academy record dates from October 2026 or later, when Winnipeg was
   already at UTCâˆ’5.
-- If Manitoba ever changes its clocks again, change the one constant and the SQL name.
+- If Manitoba ever changes its clocks again, change the one constant and the SQL name. The weekly
+  summary checks this every week (`winnipegRuleChanged`): it compares the official rule in GitHub's
+  up-to-date time zone data with the fixed offset for the year ahead, and says so if they differ.
 - `lib/domain/time-zone.test.ts` fails if a later migration uses `'America/Winnipeg'`, and pgTAP
   test 087 checks that no database function does.
