@@ -57,3 +57,19 @@ automated browsers, so an automated test needs to hide that it's one.
    appear in Sentry within a minute.
 2. **PostHog:** open a few pages, then look under Activity. Open an event and check that its address
    has no query string or ID.
+
+## When a job or a deploy fails
+
+Every scheduled job, and the deploy, emails G and the Platform Admin through Resend
+(`.github/actions/notify-failure`). Since 2026-11-11 that's once per problem: the first failed run
+emails, later failed runs don't, and the first good run after them emails "is working again". The
+weekly summary still emails every week it finds a problem.
+
+After every deploy, `scripts/check-live.ts` checks the live site: the new version is being served,
+public pages load, private pages send signed-out visitors to sign-in, and the database API answers
+the keep-alive and the Planning Center sync's check. A failure fails the deploy job and emails as
+above. It logs status codes and timings only.
+
+The weekly summary also says if a job is late (the Planning Center sync after a day without a good
+run), and if Manitoba's time rules seem to have changed (see
+`docs/decisions/2026-11-10-winnipeg-fixed-offset.md`).
