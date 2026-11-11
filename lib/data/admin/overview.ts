@@ -192,7 +192,7 @@ export async function getAdminNavCounts(
   grants: readonly CapabilityGrant[],
 ): Promise<Partial<Record<AdminSectionKey, number>>> {
   const supabase = await createSupabaseServerClient();
-  const [requests, unlinked] = await Promise.all([
+  const [requests, unlinked, reports] = await Promise.all([
     canOpenAdminSection(grants, "members")
       ? supabase
           .from("department_memberships")
@@ -202,6 +202,9 @@ export async function getAdminNavCounts(
     canOpenAdminSection(grants, "planning-center")
       ? getUnlinkedPlaces().catch(() => [])
       : Promise.resolve([]),
+    canOpenAdminSection(grants, "problem-reports")
+      ? supabase.rpc("problem_reports_open_count")
+      : null,
   ]);
   const counts: Partial<Record<AdminSectionKey, number>> = {};
   if (requests && !requests.error && requests.count) {
@@ -209,6 +212,9 @@ export async function getAdminNavCounts(
   }
   if (unlinked.length > 0) {
     counts["planning-center"] = unlinked.length;
+  }
+  if (reports && !reports.error && reports.data) {
+    counts["problem-reports"] = reports.data;
   }
   return counts;
 }

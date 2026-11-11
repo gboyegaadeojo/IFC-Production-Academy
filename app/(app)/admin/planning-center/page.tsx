@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
+import { SyncWarning } from "../sync-warning";
 import {
   getLastRefreshRequest,
   getPcoMapping,
@@ -138,6 +139,7 @@ async function PlanningCenterContent() {
 
   return (
     <div className="flex flex-col gap-4">
+      <SyncWarning grants={grants} onPlanningCenterPage />
       <PageHeader
         title="Planning Center"
         description="The schedule comes from Planning Center. Link each position so its people get the right checklist and training."

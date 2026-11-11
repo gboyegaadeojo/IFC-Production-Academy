@@ -99,3 +99,5 @@ If you're not serving yet, the **Serve with us** page is the place to start. Tel
 ## Getting more help
 
 Open your name, then **Help**, from any page. If you're on a screen with its own guide, that's where it opens. For anything else, ask your department leader or the Production Director.
+
+If something isn't working, open your name, then **Report a problem**. Say what happened. Your note goes to the team with the page you were on, your kind of phone or computer, and the app's version, and nothing else, so they can find it. You'll see a thank-you once it's sent.

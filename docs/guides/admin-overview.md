@@ -13,6 +13,8 @@ The first page answers two questions.
 
 Below that is recent activity from the audit log.
 
+If Planning Center hasn't synced for an hour, an orange warning sits at the top for people who run the teams: "Schedules haven't updated from Planning Center since…". **Try again now** asks for a sync straight away. It goes away by itself once a sync works, and admins are emailed once when it stops and once when it's working again.
+
 ## Who can do what
 
 | Role | What it's for |
@@ -51,6 +53,12 @@ Someone can hold different roles in different departments, such as leading Audio
 | **System & Settings** | Audit log | [Reports, mentoring, and the audit log](admin-reports-mentoring-audit.md) |
 | **System & Settings** | App name and logo | [Service Dashboard](service-dashboard.md) |
 | **System & Settings** | Features | This guide, under Features below |
+
+## Problem reports
+
+Anyone can tell the team something isn't working: open your name, then **Report a problem**. **Admin → Problem reports** lists what people sent, newest first, for Platform Administrators. Each report shows who sent it and when, and the page, device, and app version it was sent from, so you can find the problem. Platform Administrators also get a notification for each one.
+
+Choose **Mark as sorted** once it's dealt with, or **Reopen** if it comes back. **Open** shows what's still to do and **All** shows everything. The number beside **Problem reports** in the sidebar is how many are open. Each change goes in the audit log. Someone can send up to 10 reports a day.
 
 ## Features
 

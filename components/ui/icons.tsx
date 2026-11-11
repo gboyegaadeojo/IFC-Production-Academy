@@ -73,6 +73,12 @@ export const PlusIcon = (props: IconProps) => (
     <path d="M12 5v14M5 12h14" />
   </Icon>
 );
+export const AlertTriangleIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3.5 2.5 20h19L12 3.5z" />
+    <path d="M12 10v4.5M12 17.5v.01" />
+  </Icon>
+);
 export const CheckIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M5 12.5l4.5 4.5L19 7.5" />

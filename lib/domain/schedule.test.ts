@@ -12,6 +12,8 @@ import {
   reminderDaysSchema,
   sendRequestsSchema,
   syncedAgo,
+  syncedAtLabel,
+  syncIsLate,
   toScheduleError,
   utcToWinnipeg,
   winnipegToUtc,
@@ -132,6 +134,27 @@ describe("toScheduleError", () => {
     expect(toScheduleError({ message: "schedule_conflict" })).toBe("schedule_conflict");
     expect(toScheduleError({ code: "42501", message: "x" })).toBe("not_authorized");
     expect(toScheduleError({ code: "XX000", message: "secret" })).toBe("unknown");
+  });
+});
+
+describe("syncIsLate", () => {
+  const now = new Date("2026-11-11T20:00:00Z");
+
+  it("is quiet within the hour", () => {
+    expect(syncIsLate("2026-11-11T19:15:00Z", now)).toBe(false);
+  });
+
+  it("warns after an hour without a good sync, or with none at all", () => {
+    expect(syncIsLate("2026-11-11T18:45:00Z", now)).toBe(true);
+    expect(syncIsLate(null, now)).toBe(true);
+  });
+});
+
+describe("syncedAtLabel", () => {
+  it("gives the time today, and the day as well otherwise, in Winnipeg time", () => {
+    const now = new Date("2026-11-11T22:00:00Z");
+    expect(syncedAtLabel("2026-11-11T20:45:00Z", now)).toMatch(/^3:45/);
+    expect(syncedAtLabel("2026-11-10T20:45:00Z", now)).toMatch(/Nov 10 at 3:45/);
   });
 });
 

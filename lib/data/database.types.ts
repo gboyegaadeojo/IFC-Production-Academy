@@ -2012,6 +2012,27 @@ export type Database = {
       remove_topic: { Args: { p_topic_id: string }; Returns: undefined };
       restart_course: { Args: { p_course_id: string }; Returns: undefined };
       set_feature_flag: { Args: { p_key: string; p_enabled: boolean }; Returns: undefined };
+      report_problem: {
+        Args: { p_message: string; p_page?: string; p_device?: string; p_app_version?: string };
+        Returns: string;
+      };
+      problem_reports_list: {
+        Args: { p_include_sorted?: boolean };
+        Returns: {
+          id: string;
+          message: string;
+          page: string;
+          device: string;
+          app_version: string;
+          status: string;
+          created_at: string;
+          sorted_at: string | null;
+          reporter_name: string;
+          sorted_by_name: string | null;
+        }[];
+      };
+      set_problem_report_status: { Args: { p_id: string; p_sorted: boolean }; Returns: undefined };
+      problem_reports_open_count: { Args: never; Returns: number };
       claim_message_alerts: {
         Args: { p_message_id: string };
         Returns: {
@@ -2686,7 +2707,8 @@ export type Database = {
         | "assignment_cancelled"
         | "mentoring_ended"
         | "course_unassigned"
-        | "message";
+        | "message"
+        | "problem_reported";
       onboarding_step_kind:
         | "trigger_form"
         | "trigger_manual"

@@ -35,7 +35,8 @@ export type AdminSectionKey =
   | "onboarding-follow-ups"
   | "service-dashboard"
   | "branding"
-  | "features";
+  | "features"
+  | "problem-reports";
 
 /**
  * Sidebar groups (DESIGN §3.2), one per part of the ministry's tools, so an admin knows where a
@@ -175,6 +176,12 @@ const SECTIONS: readonly AdminSection[] = [
     group: "System & Settings",
   },
   { key: "features", href: "/admin/features", label: "Features", group: "System & Settings" },
+  {
+    key: "problem-reports",
+    href: "/admin/problem-reports",
+    label: "Problem reports",
+    group: "System & Settings",
+  },
 ];
 
 /** Visible sections grouped for the sidebar, in order, skipping empty groups. */
@@ -261,6 +268,8 @@ export function canOpenAdminSection(
       return hasCapability(grants, "branding.manage");
     case "features":
       return hasCapability(grants, "feature.manage");
+    case "problem-reports":
+      return hasCapability(grants, "problem.review");
     case "service-dashboard":
       return hasCapability(grants, "dashboard.edit") || hasCapability(grants, "dashboard.manage");
   }

@@ -6,8 +6,10 @@ import { helpHrefFor } from "@/lib/domain/help";
 import { HELP_ADMIN_PATHS } from "@/lib/domain/admin";
 import { useEffect, useId, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ReportProblemDialog } from "./report-problem";
 import type { Appearance } from "@/lib/domain/appearance";
 import {
+  AlertTriangleIcon,
   BellIcon,
   ChevronRightIcon,
   LogOutIcon,
@@ -19,7 +21,7 @@ import {
 
 /**
  * Account menu (DESIGN §3.2; mock 5, approved 2026-11-06): your name at the top opens your profile,
- * then Mentoring, Admin when permitted, Get the app, Help, and Sign out. The bell beside the button
+ * then Mentoring, Admin when permitted, Get the app, Help, Report a problem, and Sign out. The bell beside the button
  * has notifications, except in Admin, which has no bell, so the menu lists them there. A disclosure,
  * not an ARIA menu: Tab moves through the links, Escape closes and returns focus to the button, and
  * a click outside closes it.
@@ -60,6 +62,7 @@ export function AccountMenu({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const inAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -76,9 +79,29 @@ export function AccountMenu({
         setOpenedOn(null);
       }
     }
+    // The rest of the page is inert while the menu is open, as behind a dialog: a tap outside lands
+    // on the page and closes the menu without pressing what's there, and nothing half-hidden
+    // behind the menu can be tapped by mistake (axe target-size; Report a problem made the menu a
+    // row taller, 2026-11-11).
+    const inerted: Element[] = [];
+    for (
+      let node: Element | null = rootRef.current;
+      node && node !== document.body;
+      node = node.parentElement
+    ) {
+      for (const sibling of Array.from(node.parentElement?.children ?? [])) {
+        if (sibling !== node && !sibling.hasAttribute("inert")) {
+          sibling.setAttribute("inert", "");
+          inerted.push(sibling);
+        }
+      }
+    }
     document.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer);
     return () => {
+      for (const element of inerted) {
+        element.removeAttribute("inert");
+      }
       document.removeEventListener("keydown", onKey);
       document.removeEventListener("pointerdown", onPointer);
     };
@@ -104,7 +127,7 @@ export function AccountMenu({
         aria-controls={panelId}
         onClick={() => setOpen(!open)}
         title={inSidebar || inRail ? displayName : undefined}
-        className={
+        className={`${
           inSidebar
             ? `flex min-h-11 items-center gap-2 rounded-button text-left text-text-secondary transition-surface hover:bg-card hover:text-text ${
                 compact ? "relative w-11 justify-center" : "w-full px-2"
@@ -112,7 +135,7 @@ export function AccountMenu({
             : inRail
               ? "flex w-full min-w-0 items-center gap-2 rounded-button p-1 text-left text-text transition-surface group-data-[folded=true]/sidebar:justify-center hover:bg-card"
               : "flex min-h-touch items-center rounded-pill text-text"
-        }
+        }`}
       >
         <span
           aria-hidden="true"
@@ -233,6 +256,20 @@ export function AccountMenu({
                 Help
               </Link>
             </li>
+            <li>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => {
+                  setOpenedOn(null);
+                  setReporting(true);
+                }}
+                className={`${item} w-full`}
+              >
+                <AlertTriangleIcon className="size-[18px] shrink-0" />
+                Report a problem
+              </button>
+            </li>
             {/* The sidebar has its own workspace switcher. */}
             {/* Admin's own sidebar has the way back, so only there does the menu leave it out. */}
             {showAdmin && !(inSidebar && inAdmin) ? (
@@ -255,6 +292,7 @@ export function AccountMenu({
           </div>
         </div>
       ) : null}
+      <ReportProblemDialog open={reporting} onClose={() => setReporting(false)} />
     </div>
   );
 }

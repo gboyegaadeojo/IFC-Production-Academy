@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  AlertTriangleIcon,
   CalendarRangeIcon,
   CheckIcon,
   ClockIcon,
@@ -48,6 +49,7 @@ const KIND_ICON: Record<
   mentoring_ended: { icon: UsersIcon, tone: "text-text-secondary" },
   course_unassigned: { icon: GraduationCapIcon, tone: "text-text-secondary" },
   message: { icon: MessageIcon, tone: "text-accent-light" },
+  problem_reported: { icon: AlertTriangleIcon, tone: "text-warning" },
 };
 
 /** A round icon for what kind of notification it is: serving, training, leading. Decorative. */

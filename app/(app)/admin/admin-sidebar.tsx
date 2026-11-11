@@ -157,7 +157,7 @@ function CountBadge({ count, label }: { count: number | undefined; label: string
 }
 
 function countLabel(key: AdminSectionKey): string {
-  return key === "members" ? "waiting" : "to look at";
+  return key === "members" ? "waiting" : key === "problem-reports" ? "open" : "to look at";
 }
 
 /**

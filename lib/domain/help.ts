@@ -93,7 +93,7 @@ export const HELP_PAGES: readonly HelpPage[] = [
     summary: "The Dashboard, who can do what, and where everything is.",
     section: "For leaders",
     source: "docs/guides/admin-overview.md",
-    adminSections: ["overview", "features"],
+    adminSections: ["overview", "features", "problem-reports"],
   },
   {
     slug: "admin-people",
