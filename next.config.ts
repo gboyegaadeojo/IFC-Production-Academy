@@ -68,9 +68,7 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       { source: "/", destination: "/home", permanent: false },
-      // Pages name their icon, but browsers and bookmarks still ask for /favicon.ico (health check,
-      // 2026-11-10: it was a 404).
-      { source: "/favicon.ico", destination: "/icons/icon-192.png", permanent: false },
+      // /favicon.ico is a real file now (public/favicon.ico, Signal Line 16, 32 and 48px).
     ];
   },
 };

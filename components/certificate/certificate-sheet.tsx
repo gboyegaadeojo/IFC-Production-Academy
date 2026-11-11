@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { Literata } from "next/font/google";
-import { IfcMark } from "@/components/brand";
+import { Logo } from "@/components/brand/logo";
 import { QrCode } from "@/components/qr-code";
 import { formatLongDate } from "@/lib/domain/dates";
 import { departmentHueVar } from "@/lib/domain/departments";
@@ -29,7 +29,7 @@ export type CertificateSheetProps = {
 
 /**
  * The certificate (SRS-CERT-002..004, decision 8; Design C, approved 2026-11-04): a light, landscape
- * sheet that reads the same on screen and on paper. The IFC mark, the recipient in Literata, the
+ * sheet that reads the same on screen and on paper. The Signal Line mark, the recipient in Literata, the
  * course, a band of details (department and level, issue date in Winnipeg time, the reference and QR
  * code to the public check), and a signature line. It says plainly that completing training is not
  * approval to serve (SPEC §3).
@@ -49,10 +49,11 @@ export function CertificateSheet(props: CertificateSheetProps) {
 
       <div className="relative flex h-full flex-col items-center justify-between gap-5 px-5 pt-9 pb-5 text-center sm:px-12 sm:pt-11 sm:pb-6">
         <div className="flex items-center gap-3.5">
-          <IfcMark tone="black" height={46} />
+          {/* Paper is always light, so the light colourway whatever the screen's theme. */}
+          <Logo variant="mark" tone="light" size={46} label="" decorative />
           <div className="flex flex-col text-left">
             <p className="font-mono text-small font-medium tracking-[0.16em] uppercase">
-              Production Academy
+              IFC Production Academy
             </p>
             <p className="font-mono text-small tracking-[0.16em] text-paper-muted uppercase">
               Certificate of completion

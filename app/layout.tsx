@@ -22,10 +22,21 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+/** The site's address, if it's set and valid; without it Next.js uses the request's own host. */
+function siteUrl(): URL | undefined {
+  try {
+    return process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getBranding();
   const iconUrl = iconUrlFor(branding);
   return {
+    // Absolute links for the Open Graph image (app/opengraph-image.png) in shared-link previews.
+    metadataBase: siteUrl(),
     title: {
       default: branding.name,
       template: `%s · ${branding.name}`,
@@ -36,7 +47,12 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: iconUrl
       ? { icon: [{ url: iconUrl, type: "image/png" }], apple: [{ url: iconUrl }] }
       : {
-          icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }],
+          // Signal Line (decision 2026-11-10): the ICO for older browsers, then an SVG that follows
+          // the browser's light or dark theme, and a full-square icon iOS rounds itself.
+          icon: [
+            { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+            { url: "/icon.svg", type: "image/svg+xml" },
+          ],
           apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
         },
     appleWebApp: { capable: true, title: branding.shortName, statusBarStyle: "default" },

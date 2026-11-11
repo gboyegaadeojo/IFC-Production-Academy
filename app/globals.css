@@ -40,6 +40,12 @@
   --on-accent: #ffffff;
   /* A soft wash behind selected items and icon tiles. Never behind text that needs contrast alone. */
   --accent-soft: #241d3d;
+  /* Signal Line logo (decision 2026-11-10): the line and wordmark, and the dot with "ACADEMY", the
+     logo's only accent. Brand values, kept apart from the action purple above. */
+  --brand-purple: #7c3aed;
+  --brand-lavender: #b69bff;
+  --logo-ink: #f5f5f5;
+  --logo-accent: var(--brand-lavender);
   /* A row or card lifted on hover ("Lift", approved 2026-11-02). */
   --shadow-lift: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 22px -8px rgb(0 0 0 / 0.6);
 
@@ -130,6 +136,8 @@
   --accent: #6d3fe0;
   --accent-light: #5b2fd0;
   --accent-soft: #efe9fd;
+  --logo-ink: #000000;
+  --logo-accent: var(--brand-purple);
   --shadow-lift: 0 1px 2px rgb(22 20 31 / 0.06), 0 6px 18px -6px rgb(22 20 31 / 0.14);
   --success: #12733a;
   --warning: #a15c07;
@@ -163,9 +171,14 @@
   --dept-lime: #4b7612;
 }
 
-/* The IFC mark is white artwork: dark on a light theme. */
-[data-theme="light"] .mark-on-theme {
-  filter: invert(1);
+/* A logo that must stay one colourway whatever the theme, such as on a printed certificate. */
+.logo-tone-light {
+  --logo-ink: #000000;
+  --logo-accent: var(--brand-purple);
+}
+.logo-tone-dark {
+  --logo-ink: #f5f5f5;
+  --logo-accent: var(--brand-lavender);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -282,6 +295,10 @@
   --color-accent-light: var(--accent-light);
   --color-on-accent: var(--on-accent);
   --color-accent-soft: var(--accent-soft);
+  --color-brand-purple: var(--brand-purple);
+  --color-brand-lavender: var(--brand-lavender);
+  --color-logo-ink: var(--logo-ink);
+  --color-logo-accent: var(--logo-accent);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { IfcMark } from "@/components/brand";
+import { BrandLogo } from "@/components/brand";
 import { buttonClasses } from "@/components/ui/button";
 import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
@@ -32,10 +32,9 @@ export default function SignInPage({ searchParams }: PageProps<"/sign-in">) {
       className="flex min-h-dvh flex-1 flex-col bg-bg px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-12 sm:py-8"
     >
       <div className="auth-rise flex items-center justify-between gap-4">
-        <p className="flex items-center gap-3 text-small font-bold tracking-[0.14em] text-text">
-          <IfcMark className="mark-on-theme" height={18} />
-          IFC PRODUCTION ACADEMY
-        </p>
+        {/* The full Signal Line logo at 52px, the smallest size it's used at (decision 2026-11-10). */}
+        <BrandLogo size={52} />
+
         <Suspense fallback={null}>
           <SignInAppearance />
         </Suspense>

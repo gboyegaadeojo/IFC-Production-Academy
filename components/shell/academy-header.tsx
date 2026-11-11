@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { cache, Suspense } from "react";
-import { StackedWordmark, Wordmark } from "@/components/brand";
+import { BrandMark } from "@/components/brand";
 import { ACADEMY_SIDEBAR_COOKIE } from "@/lib/domain/appearance";
 import { getAppearance } from "@/lib/data/appearance";
 import { getCurrentUser } from "@/lib/data/auth";
@@ -16,13 +16,21 @@ import { MessagesNavLink } from "./messages-nav";
 import { NotificationsBell } from "./notifications-bell";
 import { ServiceDashboardNavLink } from "./service-dashboard-nav-link";
 
-/** Slim bar on phones: the brand, then light or dark, the bell, and the account (mock 5). */
+/**
+ * Slim bar on phones: the Signal Line mark alone (decision 2026-11-10; the full logo's "ACADEMY"
+ * would be too small to read here), then light or dark, the bell, and the account (mock 5).
+ */
 export function AcademyHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border bg-surface pt-[env(safe-area-inset-top)] md:hidden print:hidden">
       <div className="page-container flex min-h-14 items-center justify-between gap-3">
-        <Link href="/home" className="flex min-h-touch items-center rounded-button">
-          <Wordmark />
+        <Link
+          href="/home"
+          title="Training"
+          className="-ml-1.5 flex min-h-touch min-w-11 items-center justify-center rounded-button"
+        >
+          <BrandMark size={30} />
+          <span className="sr-only">Training</span>
         </Link>
         <Suspense fallback={<div className="size-10 rounded-pill bg-card" aria-hidden="true" />}>
           <Account placement="header" />
@@ -52,9 +60,10 @@ export async function AcademySidebar() {
         <Link
           href="/home"
           title="Training"
-          className="flex min-h-touch min-w-0 items-center rounded-button px-1"
+          className="flex min-h-touch min-w-11 items-center justify-center rounded-button px-1"
         >
-          <StackedWordmark nameClassName="group-data-[folded=true]/sidebar:hidden" />
+          {/* The mark alone, open or folded (decision 2026-11-10). */}
+          <BrandMark size={30} />
           <span className="sr-only">Training</span>
         </Link>
       </div>
