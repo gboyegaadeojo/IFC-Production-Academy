@@ -174,6 +174,13 @@ export const HELP_PAGES: readonly HelpPage[] = [
     adminSections: ["service-dashboard"],
   },
   {
+    slug: "runbook-phone-test",
+    title: "Testing on real phones",
+    summary: "A 15-minute check on an iPhone and an Android phone.",
+    section: "Setting things up",
+    source: "docs/runbooks/phone-test.md",
+  },
+  {
     slug: "runbook-scheduling",
     title: "Planning Center and scheduling setup",
     summary: "Connecting Planning Center, and keeping the sync running.",

@@ -1,7 +1,10 @@
 name: Email a failure alert
 description: >
   Emails G and the Platform Admin through Resend when a scheduled job fails (SPEC §9).
-  Sends only the workflow name, time, and run link. Never include data in the message.
+  Once per problem (health check, 2026-11-10: a 22-hour outage sent 91 emails): the first failed
+  run emails, later failed runs don't, and the first good run after failures emails that it's
+  working again. Sends only the workflow name, time, and run link. Never include data in the message.
+  The calling job needs `actions: read` to look up its previous run.
 
 inputs:
   resend-api-key:
@@ -14,8 +17,16 @@ inputs:
     description: Verified sender address (from secrets)
     required: true
   subject:
-    description: Email subject
+    description: Email subject for a failure; a recovery says it's working again
     required: true
+  outcome:
+    description: This run's result, `job.status` (success, failure, or cancelled)
+    required: false
+    default: failure
+  once:
+    description: "true: email only when the result changes. false: email every failure"
+    required: false
+    default: "true"
 
 runs:
   using: composite
@@ -27,19 +38,57 @@ runs:
         ALERT_TO: ${{ inputs.to }}
         ALERT_FROM: ${{ inputs.from }}
         ALERT_SUBJECT: ${{ inputs.subject }}
+        OUTCOME: ${{ inputs.outcome }}
+        ONCE: ${{ inputs.once }}
+        GH_TOKEN: ${{ github.token }}
+        REPO: ${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
+        WORKFLOW_REF: ${{ github.workflow_ref }}
         RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         WORKFLOW_NAME: ${{ github.workflow }}
       run: |
         set -euo pipefail
+        if [ "$OUTCOME" != "failure" ] && [ "$OUTCOME" != "success" ]; then
+          echo "Run was $OUTCOME: no alert."
+          exit 0
+        fi
+
+        # The previous finished run of this workflow that passed or failed (not cancelled or skipped).
+        previous="unknown"
+        if [ "$ONCE" = "true" ]; then
+          file="$(printf '%s' "$WORKFLOW_REF" | sed -E 's#^[^/]+/[^/]+/\.github/workflows/([^@]+)@.*#\1#')"
+          previous="$(gh api "repos/$REPO/actions/workflows/$file/runs?status=completed&per_page=20" \
+            --jq "[.workflow_runs[] | select(.id != $RUN_ID) | select(.conclusion == \"success\" or .conclusion == \"failure\")][0].conclusion // \"none\"" \
+            2>/dev/null || echo unknown)"
+        fi
+        echo "This run: $OUTCOME. Previous run: $previous."
+
+        if [ "$OUTCOME" = "failure" ]; then
+          if [ "$ONCE" = "true" ] && [ "$previous" = "failure" ]; then
+            echo "Still failing; the admins were emailed when it started. No email."
+            exit 0
+          fi
+          subject="$ALERT_SUBJECT"
+          text="The \"$WORKFLOW_NAME\" workflow failed at $(date -u +%Y-%m-%dT%H:%MZ). Details: $RUN_URL"
+          if [ "$ONCE" = "true" ]; then
+            text="$text"$'\n\n'"You'll get one more email when it's working again, not one for every failed run."
+          fi
+        else
+          if [ "$ONCE" != "true" ] || [ "$previous" != "failure" ]; then
+            exit 0
+          fi
+          subject="IFC Academy: $WORKFLOW_NAME is working again"
+          text="The \"$WORKFLOW_NAME\" workflow worked again at $(date -u +%Y-%m-%dT%H:%MZ), after failing. Details: $RUN_URL"
+        fi
+
         if [ -z "$RESEND_API_KEY" ] || [ -z "$ALERT_TO" ] || [ -z "$ALERT_FROM" ]; then
           echo "::error::Alert secrets are not configured, so no email was sent"
           exit 1
         fi
-        text="The \"$WORKFLOW_NAME\" workflow failed at $(date -u +%Y-%m-%dT%H:%MZ). Details: $RUN_URL"
         payload="$(jq -n \
           --arg from "$ALERT_FROM" \
           --arg to "$ALERT_TO" \
-          --arg subject "$ALERT_SUBJECT" \
+          --arg subject "$subject" \
           --arg text "$text" \
           '{from: $from, to: ($to | split(",") | map(gsub("^\\s+|\\s+$"; ""))), subject: $subject, text: $text}')"
         status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' \

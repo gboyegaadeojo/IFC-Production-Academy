@@ -1,14 +1,14 @@
-﻿import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { TIME_ZONE } from "./time-zone";
+import { TIME_ZONE, winnipegRuleChanged } from "./time-zone";
 
 const MIGRATIONS = join(process.cwd(), "supabase", "migrations");
 /** The migration that moved every database function to the fixed offset. */
 const FIXED_FROM = "20270119121500";
 
 describe("TIME_ZONE", () => {
-  it("is UTCâˆ’5 in winter, as Manitoba has been since 2026-11-01", () => {
+  it("is UTC−5 in winter, as Manitoba has been since 2026-11-01", () => {
     const time = new Intl.DateTimeFormat("en-CA", {
       timeZone: TIME_ZONE,
       hour: "numeric",
@@ -25,6 +25,18 @@ describe("TIME_ZONE", () => {
       hourCycle: "h23",
     }).format(new Date("2027-07-04T15:00:00Z"));
     expect(time).toBe("10");
+  });
+});
+
+describe("winnipegRuleChanged", () => {
+  // The real rule depends on the runtime's time zone data, so these compare with fixed zones.
+  it("is quiet while the official rule matches the fixed offset", () => {
+    expect(winnipegRuleChanged(new Date("2026-11-11T12:00:00Z"), "Etc/GMT+5")).toBe(false);
+  });
+
+  it("speaks up when it differs at any time in the next year", () => {
+    expect(winnipegRuleChanged(new Date("2026-11-11T12:00:00Z"), "Etc/GMT+6")).toBe(true);
+    expect(winnipegRuleChanged(new Date("2026-11-11T12:00:00Z"), "America/Chicago")).toBe(true);
   });
 });
 

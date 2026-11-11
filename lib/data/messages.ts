@@ -1,4 +1,5 @@
 import "server-only";
+import { getCurrentUser } from "@/lib/data/auth";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import type { Database } from "@/lib/data/database.types";
 import {
@@ -267,6 +268,10 @@ export async function readFirstBytes(path: string): Promise<Uint8Array | null> {
 }
 
 export async function getMessagingPeople(): Promise<MessagingPerson[]> {
+  // Signed out: nobody, without asking the database (see getMyCapabilities).
+  if (!(await getCurrentUser())) {
+    return [];
+  }
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("messaging_people");
   if (error) {

@@ -33,6 +33,7 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: read
+      actions: read # the alert looks up the previous run
       id-token: write # keyless sign-in to Google
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -159,10 +160,11 @@ jobs:
         run: rm -rf "$RUNNER_TEMP/plain" "$RUNNER_TEMP/out"
 
       - name: Email the admins
-        if: failure()
+        if: always()
         uses: ./.github/actions/notify-failure
         with:
           resend-api-key: ${{ secrets.RESEND_API_KEY }}
           to: ${{ secrets.ALERT_EMAILS }}
           from: ${{ secrets.ALERT_FROM }}
           subject: "IFC Academy: weekly backup failed"
+          outcome: ${{ job.status }}

@@ -49,3 +49,23 @@ describe("scheduled jobs fetch every file their scripts need", () => {
     expect(needed.filter((file) => !covered(file))).toEqual([]);
   });
 });
+
+/**
+ * Failure alerts go out once per problem, and again when it's fixed (health check, 2026-11-10).
+ * That needs the alert step to run after every run, with the run's result, and permission to look
+ * up the previous run. The weekly summary emails every failure on purpose.
+ */
+describe("failure alerts email once per problem", () => {
+  const workflows = readdirSync(".github/workflows")
+    .filter((name) => name.endsWith(".yml") && name !== "weekly-summary.yml")
+    .map((name) => `.github/workflows/${name}`)
+    .filter((path) => readFileSync(path, "utf8").includes("notify-failure"));
+
+  it.each(workflows)("%s", (workflow) => {
+    const text = readFileSync(workflow, "utf8").replace(/\r\n/g, "\n");
+    const step = text.slice(text.indexOf("- name: Email the admins"));
+    expect(step).toMatch(/^- name: Email the admins\n\s+if: always\(\)/);
+    expect(step).toContain("outcome: ${{ job.status }}");
+    expect(text).toMatch(/\n\s+actions: read/);
+  });
+});
