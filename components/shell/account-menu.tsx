@@ -6,8 +6,10 @@ import { helpHrefFor } from "@/lib/domain/help";
 import { HELP_ADMIN_PATHS } from "@/lib/domain/admin";
 import { useEffect, useId, useRef, useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ReportProblemDialog } from "./report-problem";
 import type { Appearance } from "@/lib/domain/appearance";
 import {
+  AlertTriangleIcon,
   BellIcon,
   ChevronRightIcon,
   LogOutIcon,
@@ -19,7 +21,7 @@ import {
 
 /**
  * Account menu (DESIGN §3.2; mock 5, approved 2026-11-06): your name at the top opens your profile,
- * then Mentoring, Admin when permitted, Get the app, Help, and Sign out. The bell beside the button
+ * then Mentoring, Admin when permitted, Get the app, Help, Report a problem, and Sign out. The bell beside the button
  * has notifications, except in Admin, which has no bell, so the menu lists them there. A disclosure,
  * not an ARIA menu: Tab moves through the links, Escape closes and returns focus to the button, and
  * a click outside closes it.
@@ -60,6 +62,7 @@ export function AccountMenu({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const inAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -233,6 +236,20 @@ export function AccountMenu({
                 Help
               </Link>
             </li>
+            <li>
+              <button
+                type="button"
+                aria-haspopup="dialog"
+                onClick={() => {
+                  setOpenedOn(null);
+                  setReporting(true);
+                }}
+                className={`${item} w-full`}
+              >
+                <AlertTriangleIcon className="size-[18px] shrink-0" />
+                Report a problem
+              </button>
+            </li>
             {/* The sidebar has its own workspace switcher. */}
             {/* Admin's own sidebar has the way back, so only there does the menu leave it out. */}
             {showAdmin && !(inSidebar && inAdmin) ? (
@@ -255,6 +272,7 @@ export function AccountMenu({
           </div>
         </div>
       ) : null}
+      <ReportProblemDialog open={reporting} onClose={() => setReporting(false)} />
     </div>
   );
 }

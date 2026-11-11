@@ -364,6 +364,36 @@ export function scheduleErrorMessage(error: ScheduleError): string {
 }
 
 /** "just now", "2 minutes ago", "3 hours ago", "2 days ago": for "Last synced". */
+/** A Planning Center sync with no success for this long is late (runs are every 15 minutes). */
+export const SYNC_LATE_MINUTES = 60;
+
+/**
+ * Whether admins should be warned that Planning Center hasn't synced (health check follow-up,
+ * G 2026-11-11). Never synced counts as late.
+ */
+export function syncIsLate(lastSynced: string | null, now: Date = new Date()): boolean {
+  return lastSynced === null || now.getTime() - Date.parse(lastSynced) > SYNC_LATE_MINUTES * 60_000;
+}
+
+const SYNC_TIME = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TIME_ZONE,
+  hour: "numeric",
+  minute: "2-digit",
+});
+const SYNC_DAY = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TIME_ZONE,
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+});
+
+/** "3:45 p.m." today, or "Mon, Nov 9 at 3:45 p.m." on another day, in Winnipeg time. */
+export function syncedAtLabel(iso: string, now: Date = new Date()): string {
+  const at = new Date(iso);
+  const time = SYNC_TIME.format(at);
+  return SYNC_DAY.format(at) === SYNC_DAY.format(now) ? time : `${SYNC_DAY.format(at)} at ${time}`;
+}
+
 export function syncedAgo(iso: string, now: Date = new Date()): string {
   const minutes = Math.max(0, Math.floor((now.getTime() - Date.parse(iso)) / 60_000));
   if (minutes < 1) {

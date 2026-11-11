@@ -39,7 +39,8 @@ export type NotificationKind =
   | "assignment_cancelled"
   | "mentoring_ended"
   | "course_unassigned"
-  | "message";
+  | "message"
+  | "problem_reported";
 
 /** These stay in the app, so there's nothing to choose (decision 2026-11-05). */
 export const APP_ONLY_KINDS: readonly NotificationKind[] = [
@@ -79,6 +80,7 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "mentoring_ended",
   "course_unassigned",
   "message",
+  "problem_reported",
   ...APP_ONLY_KINDS,
 ];
 
@@ -113,6 +115,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   mentoring_ended: "When my mentoring ends",
   course_unassigned: "When a course is no longer assigned to me",
   message: "New messages in my chats, a few at a time",
+  problem_reported: "When someone uses Report a problem",
   certificate_ready: "When a certificate is ready",
   new_course: "When my department has a new course",
   sop_updated: "When an SOP in my department is updated",
@@ -125,6 +128,7 @@ export const NOTIFICATION_KIND_HINTS: Partial<Record<NotificationKind, string>> 
   assessment_requested: "Leaders and assessors",
   sop_review_due: "SOP owners",
   onboarding_task: "Leaders who welcome new people",
+  problem_reported: "Platform admins",
 };
 
 export type NotificationGroup = {
@@ -182,6 +186,7 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "onboarding_task",
       "onboarding_update",
       "role_removed",
+      "problem_reported",
     ],
   },
   // Only while messaging is on (team messaging decision, 2026-11-08; ADD-MSG-06). Phone only: G
@@ -196,7 +201,7 @@ export const NOTIFICATION_GROUP_HINTS: Record<NotificationGroup["id"], string> =
   training:
     "Joining, courses, nudges, results, approvals, certificates, mentoring, and changes a leader makes",
   leading:
-    "Roles a leader gives or removes, join requests, people ready for an assessment, SOP reviews, and onboarding follow-ups",
+    "Roles a leader gives or removes, join requests, people ready for an assessment, SOP reviews, onboarding follow-ups, and problem reports",
   messages:
     "New messages in your chats, as a phone alert. They're never emailed. Mute a chat to stop its alerts",
 };
@@ -314,6 +319,7 @@ const BUTTON_LABELS: Record<NotificationKind, string> = {
   mentoring_ended: "Open mentoring",
   course_unassigned: "See the course",
   message: "Open the chat",
+  problem_reported: "Read the report",
 };
 
 export function emailButtonLabel(kind: string): string {

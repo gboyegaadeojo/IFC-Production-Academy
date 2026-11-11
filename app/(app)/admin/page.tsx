@@ -8,6 +8,7 @@ import { ArrowRightIcon, GraduationCapIcon, UserCheckIcon, UsersIcon } from "@/c
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getAdminAccess } from "@/lib/data/admin/access";
+import { SyncWarning } from "./sync-warning";
 import { getAdminOverview, type TrainingSummary } from "@/lib/data/admin/overview";
 import { getCurrentUser } from "@/lib/data/auth";
 import { formatDateTime } from "@/lib/domain/admin";
@@ -97,6 +98,7 @@ async function DashboardContent() {
 
   return (
     <div className="flex flex-col gap-9">
+      <SyncWarning grants={grants} />
       <PageHeader
         title="Dashboard"
         description="What needs you today, then how each department's volunteers are moving from joining to serving."

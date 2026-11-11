@@ -33,6 +33,7 @@ export const CAPABILITIES = [
   "message.group_create",
   "topic.create",
   "topic.manage",
+  "problem.review",
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];
