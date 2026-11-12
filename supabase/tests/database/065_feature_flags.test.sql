@@ -32,7 +32,8 @@ select throws_ok($$ insert into public.feature_flags (organization_id, key)
 
 select pg_temp.act_as('a8100000-0000-4000-8000-000000000002');
 select is(private.feature_enabled('messaging'), false, 'a volunteer sees it''s off');
-select is((select count(*)::int from public.feature_flags), 1, 'and can read the flags');
+-- Messaging, and video and graphics approvals (090).
+select is((select count(*)::int from public.feature_flags), 2, 'and can read the flags');
 select throws_ok($$ select public.set_feature_flag('messaging', true) $$, '42501', 'not_authorized',
   'a volunteer can''t switch it');
 select throws_ok($$ update public.feature_flags set enabled = true $$, '42501', null,
