@@ -10,6 +10,12 @@ export const FEATURES = [
     description:
       "Department chats, group chats, and direct messages with photos. When it's on, Messages joins the bottom bar and the side bar for everyone.",
   },
+  {
+    key: "copyright",
+    name: "Video and graphics approvals",
+    description:
+      "The public request form, Quality control and copyright reviews, and Cleared to show for whoever is on duty. Set up Quality control and the emails in Video and graphics approvals first. While it's off, the form says requests are paused and nothing is emailed.",
+  },
 ] as const;
 
 export type FeatureKey = (typeof FEATURES)[number]["key"];

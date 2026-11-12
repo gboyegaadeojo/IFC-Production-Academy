@@ -43,6 +43,7 @@ Someone can hold different roles in different departments, such as leading Audio
 | **Checklists** | Task lists, Activity log, Service history, Hidden items, Checklist settings | [Checklists](admin-checklists.md) |
 | **Services & Scheduling** | Planning Center, Serving teams, Schedule | [Scheduling](admin-scheduling.md) |
 | **Services & Scheduling** | Service Dashboard setup | [Service Dashboard](service-dashboard.md) |
+| **Services & Scheduling** | Video and graphics approvals | [Video and graphics approvals](video-and-graphics-approvals.md) |
 | **Training Academy** | Curriculum | [Curriculum](admin-curriculum.md) |
 | **Training Academy** | SOP library | [SOP library](admin-sops.md) |
 | **Training Academy** | Assessments, Competencies and roles | [Assessments and competencies](admin-assessments.md) |

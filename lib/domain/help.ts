@@ -61,6 +61,7 @@ export const HELP_PAGES: readonly HelpPage[] = [
     section: "Using the app",
     source: "docs/guides/video-and-graphics-approvals.md",
     paths: ["/media-request", "/copyright"],
+    adminSections: ["copyright"],
   },
   {
     slug: "sops",
