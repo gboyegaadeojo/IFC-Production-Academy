@@ -160,3 +160,239 @@ export async function signedFileUrl(path: string): Promise<string | null> {
   const { data, error } = await admin.storage.from(BUCKET).createSignedUrl(path, 60);
   return error ? null : data.signedUrl;
 }
+
+// Quality control and reviewers (ADD-COPY-04..07). Each call passes the private link's secret or
+// relies on the signed-in person; the database checks both.
+
+const rowSchema = z.object({
+  id: z.string(),
+  reference: z.string(),
+  kind: z.enum(REQUEST_KINDS),
+  description: z.string(),
+  requesterName: z.string(),
+  serviceDay: z.string(),
+  serviceLabel: z.string(),
+  isLate: z.boolean(),
+  status: z.enum(REQUEST_STATUSES),
+  claimedBy: z.string().nullable(),
+  reviewers: z
+    .array(z.string().nullable())
+    .transform((names) => names.filter((name): name is string => name !== null)),
+  createdAt: z.string(),
+  decidedAt: z.string().nullable(),
+});
+export type RequestRow = z.infer<typeof rowSchema>;
+
+const detailSchema = z.object({
+  id: z.string(),
+  reference: z.string(),
+  kind: z.enum(REQUEST_KINDS),
+  description: z.string(),
+  requesterName: z.string(),
+  requesterEmail: z.string(),
+  mediaUrl: z.string().nullable(),
+  hasFile: z.boolean(),
+  serviceDay: z.string(),
+  serviceLabel: z.string(),
+  eventId: z.string().nullable(),
+  isLate: z.boolean(),
+  leadDays: z.number(),
+  status: z.enum(REQUEST_STATUSES),
+  claimedBy: z.string().nullable(),
+  question: z.string().nullable(),
+  sentForReviewBy: z.string().nullable(),
+  planItemId: z.string().nullable(),
+  decidedBy: z.string().nullable(),
+  decisionNote: z.string().nullable(),
+  decidedAt: z.string().nullable(),
+  createdAt: z.string(),
+  checks: z.array(z.string()).catch([]),
+  planItems: z.array(z.object({ id: z.string(), title: z.string() })).catch([]),
+});
+export type RequestDetail = z.infer<typeof detailSchema>;
+
+const reviewerSchema = z.object({
+  kind: z.enum(["member", "outside"]),
+  id: z.string(),
+  name: z.string(),
+});
+export type ReviewerChoice = z.infer<typeof reviewerSchema>;
+
+export type ActionResult = { ok: true } | { ok: false; error: string };
+
+const ACTION_ERRORS: Record<string, string> = {
+  link_expired: "This link has stopped working. Use the link in your latest email.",
+  already_decided: "Someone has already dealt with this request.",
+  question_needed: "Say what the reviewer should check.",
+  reviewer_needed: "Choose at least one reviewer.",
+  not_authorized: "This isn't open to you.",
+};
+
+function actionResult(error: { message?: string } | null): ActionResult {
+  if (!error) {
+    return { ok: true };
+  }
+  return { ok: false, error: ACTION_ERRORS[error.message ?? ""] ?? "That didn't save. Try again." };
+}
+
+/** Quality control's open and recent requests, or null if the link isn't good. */
+export async function getQualityControlRequests(
+  token: string,
+): Promise<{ me: string; requests: RequestRow[] } | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("copyright_qc_requests", { p_token: token });
+  if (error) {
+    throw new Error("Could not load the requests", { cause: error.code });
+  }
+  const parsed = z.object({ me: z.string(), requests: z.array(rowSchema) }).safeParse(data);
+  return parsed.success ? parsed.data : null;
+}
+
+/** Opens one request for Quality control, putting their name on a new one. */
+export async function openQualityControlRequest(
+  token: string,
+  requestId: string,
+): Promise<(RequestDetail & { me: string; reviewers: ReviewerChoice[] }) | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("copyright_qc_open", {
+    p_token: token,
+    p_request: requestId,
+  });
+  if (error) {
+    throw new Error("Could not open the request", { cause: error.code });
+  }
+  const parsed = detailSchema
+    .extend({ me: z.string(), reviewers: z.array(reviewerSchema) })
+    .safeParse(data);
+  return parsed.success ? parsed.data : null;
+}
+
+export async function qualityControlDecide(input: {
+  token: string;
+  requestId: string;
+  approve: boolean;
+  note: string;
+  planItemId: string | null;
+}): Promise<ActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("copyright_qc_decide", {
+    p_token: input.token,
+    p_request: input.requestId,
+    p_approve: input.approve,
+    p_note: input.note,
+    p_plan_item: input.planItemId,
+  });
+  return actionResult(error);
+}
+
+export async function qualityControlSendForReview(input: {
+  token: string;
+  requestId: string;
+  members: string[];
+  outside: string[];
+  question: string;
+  planItemId: string | null;
+}): Promise<ActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("copyright_qc_send_for_review", {
+    p_token: input.token,
+    p_request: input.requestId,
+    p_members: input.members,
+    p_outside: input.outside,
+    p_question: input.question,
+    p_plan_item: input.planItemId,
+  });
+  return actionResult(error);
+}
+
+/** An outside reviewer's one request, or null once decided, expired, or for a wrong link. */
+export async function getOutsideReview(
+  token: string,
+): Promise<(RequestDetail & { me: string }) | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("copyright_review_open", { p_token: token });
+  if (error) {
+    throw new Error("Could not open the request", { cause: error.code });
+  }
+  const parsed = detailSchema.extend({ me: z.string() }).safeParse(data);
+  return parsed.success ? parsed.data : null;
+}
+
+export async function outsideReviewDecide(input: {
+  token: string;
+  approve: boolean;
+  note: string;
+}): Promise<ActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("copyright_review_decide", {
+    p_token: input.token,
+    p_approve: input.approve,
+    p_note: input.note,
+  });
+  return actionResult(error);
+}
+
+/** The requests sent to the signed-in Academy reviewer. */
+export async function getMyReviews(): Promise<RequestRow[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("copyright_my_reviews");
+  if (error) {
+    throw new Error("Could not load your requests", { cause: error.code });
+  }
+  const parsed = z.array(rowSchema).safeParse(data);
+  return parsed.success ? parsed.data : [];
+}
+
+/** How many requests wait for the signed-in person; 0 for anyone without the permission. */
+export async function getMyReviewCount(): Promise<number> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("copyright_my_review_count");
+  return error ? 0 : (data ?? 0);
+}
+
+export async function openMyReview(requestId: string): Promise<RequestDetail | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("copyright_member_open", { p_request: requestId });
+  if (error) {
+    return null;
+  }
+  const parsed = detailSchema.safeParse(data);
+  return parsed.success ? parsed.data : null;
+}
+
+export async function memberReviewDecide(input: {
+  requestId: string;
+  approve: boolean;
+  note: string;
+}): Promise<ActionResult> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("copyright_member_decide", {
+    p_request: input.requestId,
+    p_approve: input.approve,
+    p_note: input.note,
+  });
+  return actionResult(error);
+}
+
+export type FileAccess =
+  | { via: "quality_control"; token: string; requestId: string }
+  | { via: "review"; token: string }
+  | { via: "member"; requestId: string };
+
+/** A one-minute link to a request's graphic, if the caller may see it; otherwise null. */
+export async function fileLinkFor(access: FileAccess): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } =
+    access.via === "quality_control"
+      ? await supabase.rpc("copyright_qc_file", {
+          p_token: access.token,
+          p_request: access.requestId,
+        })
+      : access.via === "review"
+        ? await supabase.rpc("copyright_review_file", { p_token: access.token })
+        : await supabase.rpc("copyright_member_file", { p_request: access.requestId });
+  if (error || !data) {
+    return null;
+  }
+  return signedFileUrl(data);
+}

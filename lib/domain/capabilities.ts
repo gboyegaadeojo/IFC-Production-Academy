@@ -34,6 +34,8 @@ export const CAPABILITIES = [
   "topic.create",
   "topic.manage",
   "problem.review",
+  "copyright.manage",
+  "copyright.review",
 ] as const;
 
 export type Capability = (typeof CAPABILITIES)[number];

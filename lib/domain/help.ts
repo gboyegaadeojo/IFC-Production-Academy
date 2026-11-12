@@ -60,7 +60,7 @@ export const HELP_PAGES: readonly HelpPage[] = [
     summary: "Asking to show a video or graphic on a livestream, and how it's checked.",
     section: "Using the app",
     source: "docs/guides/video-and-graphics-approvals.md",
-    paths: ["/media-request"],
+    paths: ["/media-request", "/copyright"],
   },
   {
     slug: "sops",

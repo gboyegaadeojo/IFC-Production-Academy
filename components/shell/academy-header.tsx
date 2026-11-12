@@ -14,6 +14,7 @@ import { AccountMenu } from "./account-menu";
 import { AcademyNav, SidebarFoldButton } from "./academy-nav";
 import { MessagesNavLink } from "./messages-nav";
 import { NotificationsBell } from "./notifications-bell";
+import { CopyrightNavLink } from "./copyright-nav-link";
 import { ServiceDashboardNavLink } from "./service-dashboard-nav-link";
 
 /**
@@ -75,9 +76,14 @@ export async function AcademySidebar() {
             </Suspense>
           }
           extra={
-            <Suspense fallback={null}>
-              <ServiceDashboardNavLink />
-            </Suspense>
+            <>
+              <Suspense fallback={null}>
+                <ServiceDashboardNavLink />
+              </Suspense>
+              <Suspense fallback={null}>
+                <CopyrightNavLink />
+              </Suspense>
+            </>
           }
         />
       </div>
