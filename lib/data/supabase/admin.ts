@@ -4,10 +4,12 @@ import type { Database } from "@/lib/data/database.types";
 import { publicEnv } from "@/lib/env";
 
 /**
- * Service-role client, for two things only: Planning Center sign-in
+ * Service-role client, for three things only: Planning Center sign-in
  * (lib/data/planning-center-auth.ts), which creates and signs in an account after Planning Center
- * has vouched for the person, and instant message alerts (lib/data/message-alerts.ts), which reads
- * other people's alert devices. It bypasses row-level security, so nothing else may use it. The key is a Cloudflare secret, never in the
+ * has vouched for the person; instant message alerts (lib/data/message-alerts.ts), which reads
+ * other people's alert devices; and signing upload and download links for approval graphics
+ * (lib/data/copyright.ts), only after the database has said the caller may see that request
+ * (ADD-COPY-10). It bypasses row-level security, so nothing else may use it. The key is a Cloudflare secret, never in the
  * repo, the browser, or a log. Null until it's set.
  */
 export function createSupabaseAdminClient() {
