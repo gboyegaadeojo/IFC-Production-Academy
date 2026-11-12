@@ -59,7 +59,14 @@ select is_empty(
                             'service_youtube_state', 'save_youtube_check',
                             -- A calendar app reads someone's serving with their private link, which
                             -- it can't sign in to give (082_service_files_and_calendar_feed).
-                            'calendar_feed')
+                            'calendar_feed',
+                            -- Video and graphics approvals (ADD-COPY-01..05; 090): the public form,
+                            -- and the private links for requesters, Quality control and outside
+                            -- reviewers, who have no accounts. Each needs a secret from an email.
+                            'copyright_form', 'submit_copyright_request', 'copyright_request_status',
+                            'copyright_qc_requests', 'copyright_qc_open', 'copyright_qc_decide',
+                            'copyright_qc_send_for_review', 'copyright_review_open',
+                            'copyright_review_decide')
       -- Ignore functions owned by extensions such as pgTAP itself.
       and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
   $$,
