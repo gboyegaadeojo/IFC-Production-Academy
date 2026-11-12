@@ -288,6 +288,21 @@ These follow your package unchanged: **SRS-SOP-001–006** (searchable, versione
 | ADD-MSG-09 | Documents in chats: PDF, Word, Excel, PowerPoint, and plain text, up to 10 MB, checked by type and first bytes, in the private chat bucket, opened as downloads through one-minute signed links, removed after 90 days like photos, and left out of the weekly backup (G, 2026-11-09) | S |
 | ADD-MSG-06 | A Messages group in notification settings, phone only, and mute per chat. **Phone alerts are instant** (G, 2026-11-09): sent by the Worker straight after a message is sent, to people who can read the chat, have alerts on a device, haven't muted it, aren't looking at it, and have Messages on for their phone, with one alert per chat that updates ("4 new messages in Camera Operations") and a 20-second cooldown per person per chat. Direct-message alerts show only who it's from. Messages are never emailed (G, 2026-11-09); the 15-minute job writes notices for the bell only, never a second phone alert. The messaging switch and ADD-NOTIF-02 apply; no quiet hours (G, 2026-11-09) | M |
 
+**Video and graphics approvals** (approved 2026-11-12; [decision](decisions/2026-11-12-copyright-approvals.md)). Replaces the church's JotForm. Behind the `copyright` feature switch (ADD-FLAG-01).
+
+| ID | Addition | Level |
+| --- | --- | --- |
+| ADD-COPY-01 | A public form, no account: name, email, video (a link) or graphic (an upload of an image or PDF up to 20 MB, or a link), the service from upcoming Planning Center services or another date, and what it's for. A hidden trap field for bots, at most 5 requests per email address a day, and the same answer whether or not the address is known. While the switch is off, the form says requests are paused | M |
+| ADD-COPY-02 | A deadline in days before the service, counted as calendar or business days (Monday to Friday), 5 calendar days by default. A late request is accepted and marked Late, or refused, by a setting. The form's wording uses the setting, so it never disagrees with itself | M |
+| ADD-COPY-03 | The requester gets a "we got it" email with a private status link: sent, with Quality control, copyright review if needed, decision. Nobody else can open it | M |
+| ADD-COPY-04 | Quality control is a list of names and email addresses with no Academy accounts. Each new request emails each of them a private link to their open requests, valid 30 days and only while they're on the list. Opening a request puts their name on it. They approve or decline it, with a note, or send it for a copyright review | M |
+| ADD-COPY-05 | Copyright reviewers are Academy members with the Copyright reviewer permission (`copyright.review`), who see Copyright in the side bar with the requests sent to them, or outside people on a name-and-email list, who review from a private link that opens only that request and stops working once it's decided or after 14 days. Quality control picks one or more reviewers and writes what to check; the first to decide closes it | M |
+| ADD-COPY-06 | A decision emails the requester straight away. A reviewer's decision copies Quality control. People decide, by design: a copyright call isn't a training result | M |
+| ADD-COPY-07 | Quality control places each item at its point in the Planning Center order of service. Unplaced items show as "Not placed yet" | S |
+| ADD-COPY-08 | Once approved, everyone with an assignment on that service, in any position, sees a "Cleared to show" card on their home page and that day's checklist, with a shared "Loaded" tick, and the wall TV shows the same list. The media inbox gets a "Cleared to show" email whose subject starts "Approved media:", and optionally everyone on duty does too | M |
+| ADD-COPY-09 | Admin → Copyright (`copyright.manage`): the switch's wording, deadline, late rule, intro text, Quality control and outside reviewer lists, the checks reviewers tick, the media inbox, and six emails (subject and message with fill-ins, preview, Send me a test, put back the original), plus every request and its history. Every change is audited | M |
+| ADD-COPY-10 | Private links carry a random secret and only its SHA-256 is stored; a link in a queued email is cleared once it's sent. Requests and files are readable only by admins and the people a request was sent to. Emails follow the switch: nothing is sent while it's off | M |
+
 ## 3. Progression, business rules and workflows
 
 ```mermaid
@@ -377,6 +392,7 @@ Everything a volunteer sees is configuration, so Lighting Operations goes live b
 | Mentoring | MentorRelationship, MentoringSession, MentoringNote (private or shared) | Restricted access |
 | Platform | Notification, AuditEvent, **added:** FeatureFlag | Flags switch modules on per organization. Messaging is the first (ADD-FLAG-01) |
 | Messaging (**added** 2026-11-08) | Conversation, ConversationMember, Message, MessageAttachment | Department chats follow department membership and position teams; direct messages have two members. Deletions blank the content and are audited (ADD-MSG-01–06) |
+| Approvals (**added** 2026-11-12) | CopyrightSettings, CopyrightContact, CopyrightRequest, CopyrightReviewAssignment, CopyrightAccessLink, CopyrightOutbox, CopyrightLoaded | A request belongs to a service or a date. Quality control and outside reviewers are contacts, not accounts, reached by private links; Academy reviewers hold `copyright.review` (ADD-COPY-01–10) |
 
 **Integrity:** stable IDs, consistent timestamps shown in local time (America/Winnipeg), history linked to versions, no duplicate active memberships or assignments, database constraints plus server validation, retention rules for personal data.
 
