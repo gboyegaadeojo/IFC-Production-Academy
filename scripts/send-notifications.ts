@@ -7,6 +7,7 @@
  * (CLAUDE.md "Actions logs must never contain data"). With no Resend key it does nothing.
  */
 import { badgesByEndpoint } from "../lib/domain/app-badge.ts";
+import { copyrightEmail, isTemplateKey } from "../lib/domain/copyright-email.ts";
 import { notificationEmail, onboardingEmail } from "../lib/domain/notifications.ts";
 import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
 import { pushMessageFor, sendPush } from "../lib/domain/web-push.ts";
@@ -88,6 +89,15 @@ type ClaimedOnboarding = {
   subject: string;
   body: string;
   has_account: boolean;
+};
+
+type ClaimedCopyright = {
+  id: string;
+  email: string;
+  template: string;
+  vars: unknown;
+  link: string | null;
+  templates: unknown;
 };
 
 const env = (name: string) => process.env[name]?.trim() ?? "";
@@ -263,6 +273,60 @@ async function main(): Promise<void> {
   }
   console.log(`Onboarding emails: ${onboardingSent} sent, ${onboardingFailed} failed.`);
   if (onboardingFailed > 0) {
+    process.exitCode = 1;
+  }
+
+  // Video and graphics approvals (ADD-COPY-09). The database hands these over only while approvals
+  // are switched on, and clears each private link once its email is sent.
+  let copyrightSent = 0;
+  let copyrightFailed = 0;
+  for (let batch = 0; batch < 10 && !held; batch += 1) {
+    const claimed = await rpc<ClaimedCopyright[]>(
+      supabaseUrl,
+      serviceKey,
+      "claim_copyright_emails",
+      { p_limit: 50 },
+    );
+    if (claimed.length === 0) {
+      break;
+    }
+    for (const item of claimed) {
+      if (held) {
+        await rpc(supabaseUrl, serviceKey, "release_copyright_email", { p_id: item.id });
+        continue;
+      }
+      // The database only queues known templates; anything else counts as a failed try.
+      if (!isTemplateKey(item.template)) {
+        await rpc(supabaseUrl, serviceKey, "complete_copyright_email", {
+          p_id: item.id,
+          p_sent: false,
+        });
+        copyrightFailed += 1;
+        continue;
+      }
+      const email = copyrightEmail(
+        { template: item.template, vars: item.vars, link: item.link, templates: item.templates },
+        siteUrl,
+        appName,
+      );
+      const result = await sendEmail(resendKey, from, item.email, email);
+      await pause(SEND_GAP_MS);
+      if (result === "limit") {
+        held = true;
+        await rpc(supabaseUrl, serviceKey, "release_copyright_email", { p_id: item.id });
+        continue;
+      }
+      const ok = result === "sent";
+      await rpc(supabaseUrl, serviceKey, "complete_copyright_email", { p_id: item.id, p_sent: ok });
+      if (ok) {
+        copyrightSent += 1;
+      } else {
+        copyrightFailed += 1;
+      }
+    }
+  }
+  console.log(`Approval emails: ${copyrightSent} sent, ${copyrightFailed} failed.`);
+  if (copyrightFailed > 0) {
     process.exitCode = 1;
   }
 }

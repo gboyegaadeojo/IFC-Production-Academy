@@ -28,6 +28,7 @@ jobs:
           sparse-checkout: |
             .github/actions
             lib/domain/app-badge.ts
+            lib/domain/copyright-email.ts
             lib/domain/email-design.ts
             lib/domain/notifications.ts
             lib/domain/supabase-keys.ts

@@ -109,123 +109,13 @@ export function requesterSteps(
   ];
 }
 
-// The six emails (ADD-COPY-09). Fill-ins are written in braces, in plain words.
-
-export const TEMPLATE_KEYS = [
-  "received",
-  "new_request",
-  "review_needed",
-  "approved",
-  "declined",
-  "cleared",
-] as const;
-export type TemplateKey = (typeof TEMPLATE_KEYS)[number];
-
-export type EmailTemplate = { subject: string; body: string };
-
-export const TEMPLATE_INFO: Record<TemplateKey, { name: string; when: string }> = {
-  received: { name: "We got it", when: "Sent to the requester as soon as they send the form." },
-  new_request: {
-    name: "New request",
-    when: "Sent to everyone on the Quality control list, with their private link.",
-  },
-  review_needed: {
-    name: "Copyright review needed",
-    when: "Sent to the copyright reviewers Quality control chooses.",
-  },
-  approved: {
-    name: "Approved",
-    when: "Sent to the requester when Quality control or a copyright reviewer approves. A reviewer's decision copies Quality control.",
-  },
-  declined: {
-    name: "Not approved",
-    when: "Sent to the requester when Quality control or a copyright reviewer declines. A reviewer's decision copies Quality control.",
-  },
-  cleared: {
-    name: "Cleared to show",
-    when: "Sent to the media inbox, and to everyone on duty that day if that's on.",
-  },
-};
-
-export const FILL_INS = [
-  "first name",
-  "what",
-  "title",
-  "service date",
-  "reference",
-  "deadline",
-  "requester name",
-  "reviewer name",
-  "reviewer note",
-  "question",
-  "asked by",
-] as const;
-export type FillIn = (typeof FILL_INS)[number];
-
-export const DEFAULT_TEMPLATES: Record<TemplateKey, EmailTemplate> = {
-  received: {
-    subject: "We got your request for {service date}",
-    body: "Hi {first name},\n\nThanks for sending your {what} for {service date}. Our Quality control team will check it, and we'll email you as soon as it's decided.\n\nReference {reference}",
-  },
-  new_request: {
-    subject: "New request: {what} for {service date}",
-    body: "A new request needs checking.\n\nFrom {requester name}\n{what} for {service date}\n{title}",
-  },
-  review_needed: {
-    subject: "Copyright review needed: {what} for {service date}",
-    body: "Hi {first name},\n\n{asked by} from Quality control would like a copyright check on a request for {service date}.\n\nThey ask:\n{question}",
-  },
-  approved: {
-    subject: "Approved: your {what} for {service date}",
-    body: "Hi {first name},\n\nGood news: your {what} “{title}” has been approved to show on {service date}.\n\nA note from {reviewer name}:\n{reviewer note}",
-  },
-  declined: {
-    subject: "Not approved: your {what} for {service date}",
-    body: "Hi {first name},\n\nThanks for sending “{title}”. We can't show it on {service date} as it is, but here's what would help:\n\n{reviewer note}",
-  },
-  cleared: {
-    subject: "Approved media: {what} for {service date}",
-    body: "“{title}” is cleared to show on {service date}.\n\nAsked by {requester name}. Approved by {reviewer name}.\n\n{reviewer note}\n\nEveryone on duty sees it in the Academy when they sign in.",
-  },
-};
+// The six emails live in ./copyright-email.ts, which the email job can run without packages.
+export * from "./copyright-email.ts";
 
 export const templateSchema = z.object({
   subject: z.string().trim().min(1).max(200),
   body: z.string().trim().min(1).max(4000),
 });
-
-/** The templates in use: each saved one, or the original where none was saved or it's broken. */
-export function templatesFrom(saved: unknown): Record<TemplateKey, EmailTemplate> {
-  const result = { ...DEFAULT_TEMPLATES };
-  if (typeof saved !== "object" || saved === null) {
-    return result;
-  }
-  for (const key of TEMPLATE_KEYS) {
-    const parsed = templateSchema.safeParse((saved as Record<string, unknown>)[key]);
-    if (parsed.success) {
-      result[key] = parsed.data;
-    }
-  }
-  return result;
-}
-
-export type FillInValues = Partial<Record<FillIn, string>>;
-
-/**
- * Puts the values into a template. A fill-in with no value becomes empty, and the blank lines it
- * leaves are tidied away. Unknown braces stay as written, so a typo shows in the preview.
- */
-export function fillTemplate(text: string, values: FillInValues): string {
-  const filled = text.replace(/\{([a-z ]+)\}/g, (match, name: string) =>
-    (FILL_INS as readonly string[]).includes(name) ? (values[name as FillIn] ?? "") : match,
-  );
-  return filled
-    .split("\n")
-    .map((line) => line.trimEnd())
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
 
 /** What a request is, in an email: "video" or "graphic". */
 export function kindWord(kind: RequestKind): string {
@@ -266,3 +156,21 @@ export const requestFormSchema = z
   });
 
 export type RequestForm = z.infer<typeof requestFormSchema>;
+
+/** A safe file name for an upload: letters, digits, dots, dashes, underscores, kept short. */
+export function safeFileName(name: string): string {
+  const cleaned = name
+    .normalize("NFKD")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^[-.]+/, "")
+    .slice(-100);
+  return cleaned === "" || cleaned.startsWith(".") ? "graphic" : cleaned;
+}
+
+/** Whether an upload may be a graphic: one of the allowed types and no bigger than 20 MB. */
+export function isAllowedGraphic(type: string, size: number): boolean {
+  return (
+    (GRAPHIC_TYPES as readonly string[]).includes(type) && size > 0 && size <= GRAPHIC_MAX_BYTES
+  );
+}

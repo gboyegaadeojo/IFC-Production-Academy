@@ -66,7 +66,7 @@ select is_empty(
                             'copyright_form', 'submit_copyright_request', 'copyright_request_status',
                             'copyright_qc_requests', 'copyright_qc_open', 'copyright_qc_decide',
                             'copyright_qc_send_for_review', 'copyright_review_open',
-                            'copyright_review_decide')
+                            'copyright_review_decide', 'copyright_qc_file', 'copyright_review_file')
       -- Ignore functions owned by extensions such as pgTAP itself.
       and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')
   $$,

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  copyrightEmail,
   DEFAULT_TEMPLATES,
+  fillInsFrom,
+  isAllowedGraphic,
+  safeFileName,
   deadlineWording,
   fillTemplate,
   isLate,
@@ -166,5 +170,86 @@ describe("requestFormSchema", () => {
     expect(requestFormSchema.safeParse({ ...base, mediaUrl: "http://example.com/v" }).success).toBe(
       false,
     );
+  });
+});
+
+describe("copyrightEmail", () => {
+  const vars = {
+    "first name": "Sam",
+    what: "video",
+    title: "Missions moment",
+    "service date": "Sunday 22 Nov",
+    reference: "CR-0142",
+    "reviewer name": "Robin",
+    "reviewer note": "Covered by our licence.",
+  };
+
+  it("fills the template and links the button to the queued link", () => {
+    const email = copyrightEmail(
+      { template: "received", vars, link: "/media-request/status/abc", templates: {} },
+      "https://academy.example.org/",
+    );
+    expect(email.subject).toBe("We got your request for Sunday 22 Nov");
+    expect(email.text).toContain("Hi Sam,");
+    expect(email.text).toContain(
+      "See its progress: https://academy.example.org/media-request/status/abc",
+    );
+    expect(email.html).toContain('href="https://academy.example.org/media-request/status/abc"');
+  });
+
+  it("uses a saved template", () => {
+    const email = copyrightEmail(
+      {
+        template: "approved",
+        vars,
+        link: null,
+        templates: { approved: { subject: "Yes for {service date}", body: "Go, {first name}." } },
+      },
+      "https://academy.example.org",
+    );
+    expect(email.subject).toBe("Yes for Sunday 22 Nov");
+    expect(email.text.startsWith("Go, Sam.")).toBe(true);
+  });
+
+  it("sends a declined requester back to the form", () => {
+    const email = copyrightEmail(
+      { template: "declined", vars, link: null, templates: {} },
+      "https://academy.example.org",
+    );
+    expect(email.text).toContain("https://academy.example.org/media-request");
+  });
+
+  it("escapes what people typed", () => {
+    const email = copyrightEmail(
+      {
+        template: "approved",
+        vars: { ...vars, "reviewer note": "<b>hi</b>" },
+        link: null,
+        templates: {},
+      },
+      "https://academy.example.org",
+    );
+    expect(email.html).not.toContain("<b>hi</b>");
+  });
+
+  it("ignores fill-ins it doesn't know", () => {
+    expect(fillInsFrom({ "first name": "Sam", secret: "x", what: 3 })).toEqual({
+      "first name": "Sam",
+    });
+  });
+});
+
+describe("uploads", () => {
+  it("makes a safe file name", () => {
+    expect(safeFileName("Youth retreat (final).PNG")).toBe("Youth-retreat-final-.PNG");
+    expect(safeFileName("../../etc/passwd")).toBe("etc-passwd");
+    expect(safeFileName("???")).toBe("graphic");
+  });
+
+  it("allows images and PDFs up to 20 MB", () => {
+    expect(isAllowedGraphic("image/png", 1000)).toBe(true);
+    expect(isAllowedGraphic("application/pdf", 20 * 1024 * 1024)).toBe(true);
+    expect(isAllowedGraphic("image/svg+xml", 1000)).toBe(false);
+    expect(isAllowedGraphic("image/png", 20 * 1024 * 1024 + 1)).toBe(false);
   });
 });

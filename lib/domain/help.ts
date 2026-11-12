@@ -55,6 +55,14 @@ export const HELP_PAGES: readonly HelpPage[] = [
     paths: ["/serve"],
   },
   {
+    slug: "video-and-graphics-approvals",
+    title: "Video and graphics approvals",
+    summary: "Asking to show a video or graphic on a livestream, and how it's checked.",
+    section: "Using the app",
+    source: "docs/guides/video-and-graphics-approvals.md",
+    paths: ["/media-request"],
+  },
+  {
     slug: "sops",
     title: "SOPs",
     summary: "Finding and reading the team's procedures.",

@@ -2033,6 +2033,65 @@ export type Database = {
       };
       set_problem_report_status: { Args: { p_id: string; p_sorted: boolean }; Returns: undefined };
       problem_reports_open_count: { Args: never; Returns: number };
+      // Video and graphics approvals (ADD-COPY-01..10). Each returns jsonb, read with zod in
+      // lib/data/copyright.ts.
+      copyright_form: { Args: never; Returns: Json };
+      submit_copyright_request: {
+        Args: {
+          p_first_name: string;
+          p_last_name: string;
+          p_email: string;
+          p_kind: string;
+          p_media_url: string | null;
+          p_file_path: string | null;
+          p_event_id: string | null;
+          p_other_date: string | null;
+          p_description: string;
+          p_website?: string;
+        };
+        Returns: Json;
+      };
+      copyright_request_status: { Args: { p_token: string }; Returns: Json };
+      copyright_qc_requests: { Args: { p_token: string }; Returns: Json };
+      copyright_qc_open: { Args: { p_token: string; p_request: string }; Returns: Json };
+      copyright_qc_decide: {
+        Args: {
+          p_token: string;
+          p_request: string;
+          p_approve: boolean;
+          p_note: string;
+          p_plan_item?: string | null;
+        };
+        Returns: undefined;
+      };
+      copyright_qc_send_for_review: {
+        Args: {
+          p_token: string;
+          p_request: string;
+          p_members: string[];
+          p_outside: string[];
+          p_question: string;
+          p_plan_item?: string | null;
+        };
+        Returns: undefined;
+      };
+      copyright_review_open: { Args: { p_token: string }; Returns: Json };
+      copyright_review_decide: {
+        Args: { p_token: string; p_approve: boolean; p_note: string };
+        Returns: undefined;
+      };
+      copyright_my_reviews: { Args: never; Returns: Json };
+      copyright_my_review_count: { Args: never; Returns: number };
+      copyright_member_open: { Args: { p_request: string }; Returns: Json };
+      copyright_member_decide: {
+        Args: { p_request: string; p_approve: boolean; p_note: string };
+        Returns: undefined;
+      };
+      copyright_cleared_for_me: { Args: never; Returns: Json };
+      copyright_set_loaded: { Args: { p_request: string; p_loaded: boolean }; Returns: undefined };
+      copyright_qc_file: { Args: { p_token: string; p_request: string }; Returns: string | null };
+      copyright_review_file: { Args: { p_token: string }; Returns: string | null };
+      copyright_member_file: { Args: { p_request: string }; Returns: string | null };
       claim_message_alerts: {
         Args: { p_message_id: string };
         Returns: {
