@@ -109,38 +109,22 @@ describe("fillTemplate", () => {
     expect(text).toBe("Hi Sam,\n\nThanks");
   });
 
-  it("drops an empty note from the Approved email, as G saw it (2026-11-13)", () => {
-    const text = fillTemplate(DEFAULT_TEMPLATES.approved.body, {
-      "first name": "Gboyega",
-      what: "video",
-      title: "Because Na Me",
-      "service date": "Sunday 22 Nov",
-      "reviewer name": "gboyega",
-    });
-    expect(text).not.toContain("A note from");
-    expect(text.endsWith("has been approved to show on Sunday 22 Nov.")).toBe(true);
-  });
-
-  it("keeps the note's heading when there is a note", () => {
-    const text = fillTemplate(DEFAULT_TEMPLATES.approved.body, {
-      "reviewer name": "Robin",
-      "reviewer note": "Covered by our licence.",
-    });
-    expect(text).toContain("A note from Robin:\nCovered by our licence.");
+  it("drops a note heading in a saved template when there's no note (G, 2026-11-13)", () => {
+    const body = "Good news.\n\nA note from {reviewer name}:\n{reviewer note}";
+    expect(fillTemplate(body, { "reviewer name": "gboyega" })).toBe("Good news.");
+    expect(fillTemplate(body, { "reviewer name": "Robin", "reviewer note": "Covered." })).toBe(
+      "Good news.\n\nA note from Robin:\nCovered.",
+    );
   });
 
   it("says who asked for a copyright review without repeating Quality control", () => {
     const text = fillTemplate(DEFAULT_TEMPLATES.review_needed.body, {
       "first name": "Robin",
-      what: "video",
-      title: "Because Na Me",
       "service date": "Sunday 22 Nov",
-      "requester name": "Gboyega",
       "asked by": "IFC Quality Control Team",
-      question: "Check the music.",
     });
     expect(text).toContain("Quality control (IFC Quality Control Team) would like");
-    expect(text).toContain("“Because Na Me”, sent by Gboyega");
+    expect(text).not.toContain("from Quality control");
   });
 
   it("leaves an unknown fill-in as written, so a typo shows in the preview", () => {
@@ -298,5 +282,49 @@ describe("earliestOnTimeDay", () => {
 
   it("is today with no deadline", () => {
     expect(earliestOnTimeDay("2026-11-12", { days: 0, counting: "calendar" })).toBe("2026-11-12");
+  });
+});
+
+describe("design A emails (G, 2026-11-13)", () => {
+  const vars = {
+    "first name": "Gboyega",
+    what: "video",
+    title: "Because Na Me",
+    "service date": "Sunday 22 Nov",
+    reference: "CR-0001",
+    "reviewer name": "Robin",
+    "reviewer note": "The music is covered.",
+    question: "Check the music.",
+    "asked by": "IFC Quality Control Team",
+    "requester name": "Gboyega",
+  };
+
+  it("shows the status, the details and the note in their own parts", () => {
+    const email = copyrightEmail(
+      { template: "approved", vars, link: null, templates: {} },
+      "https://academy.example.org",
+    );
+    expect(email.html).toContain(">Approved</span>");
+    expect(email.html).toContain(">Because Na Me</td>");
+    expect(email.html).toContain("Robin&#39;s note");
+    expect(email.text).toContain("Reference: CR-0001");
+  });
+
+  it("puts what to check in its own box for reviewers", () => {
+    const email = copyrightEmail(
+      { template: "review_needed", vars, link: "/copyright/review/x", templates: {} },
+      "https://academy.example.org",
+    );
+    expect(email.html).toContain("What to check");
+    expect(email.html).toContain("Check the music.");
+    expect(email.html).toContain('href="https://academy.example.org/copyright/review/x"');
+  });
+
+  it("leaves the note box out when there's no note", () => {
+    const email = copyrightEmail(
+      { template: "approved", vars: { ...vars, "reviewer note": "" }, link: null, templates: {} },
+      "https://academy.example.org",
+    );
+    expect(email.html).not.toContain("&#39;s note");
   });
 });
