@@ -28,7 +28,8 @@ approved, everyone scheduled on that service sees it, placed in the order of ser
 5. **No separate Media page.** Everyone scheduled on that service in Planning Center, in any
    position, sees a "Cleared to show" card when they sign in, on their home page and that day's
    checklist, so whoever covers Computer Graphics sees it too. On the day, each item sits at its
-   place in the order of service with a shared "Loaded" tick. The wall TV shows the same list.
+   place in the order of service with a shared "Loaded" tick. The wall TV showing the same list
+   is a follow-up, so its one-screen layout can be fitted carefully.
 6. **The media inbox still gets an email** for each approval. Its subject always starts
    "Approved media:", so a Gmail label keeps working.
 7. **Quality control places each item** in the Planning Center order of service when it approves or

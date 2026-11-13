@@ -396,3 +396,49 @@ export async function fileLinkFor(access: FileAccess): Promise<string | null> {
   }
   return signedFileUrl(data);
 }
+
+// Cleared to show, for everyone on duty (ADD-COPY-08).
+
+const clearedSchema = z.object({
+  id: z.string(),
+  eventId: z.string(),
+  eventTitle: z.string(),
+  startsAt: z.string(),
+  kind: z.enum(REQUEST_KINDS),
+  description: z.string(),
+  requesterName: z.string(),
+  mediaUrl: z.string().nullable(),
+  hasFile: z.boolean(),
+  decidedBy: z.string().nullable(),
+  decidedVia: z.enum(["quality_control", "reviewer"]).nullable(),
+  note: z.string().nullable(),
+  planItemId: z.string().nullable(),
+  planItemTitle: z.string().nullable(),
+  planItemPosition: z.number().nullable(),
+  loadedAt: z.string().nullable(),
+});
+export type ClearedItem = z.infer<typeof clearedSchema>;
+
+/**
+ * Approved videos and graphics for services the signed-in person is scheduled on, until each
+ * service ends, in order of service. Empty while approvals are off.
+ */
+export async function getClearedForMe(): Promise<ClearedItem[]> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("copyright_cleared_for_me");
+  if (error) {
+    return [];
+  }
+  const parsed = z.array(clearedSchema).safeParse(data);
+  return parsed.success ? parsed.data : [];
+}
+
+/** Ticks an item as loaded, or un-ticks it. Anyone on duty for that service may. */
+export async function setClearedLoaded(requestId: string, loaded: boolean): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("copyright_set_loaded", {
+    p_request: requestId,
+    p_loaded: loaded,
+  });
+  return !error;
+}

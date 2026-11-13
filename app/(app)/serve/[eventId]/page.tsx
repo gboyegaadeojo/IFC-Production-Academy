@@ -12,7 +12,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { FileTextIcon, InfoIcon } from "@/components/ui/icons";
 import { LoadingStatus, Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ClearedToShow } from "@/components/copyright/cleared-to-show";
 import { requireActiveUser } from "@/lib/data/auth";
+import { getClearedForMe } from "@/lib/data/copyright";
 import {
   getPositionChecklistIds,
   getServiceChecklists,
@@ -108,6 +110,10 @@ async function ServeContent({ params, searchParams }: Pick<Props, "params" | "se
           {data && team.total > 0 ? <TeamRing done={team.done} total={team.total} /> : null}
         </div>
       </header>
+      {/* On the day: what's cleared to show, for everyone on duty (ADD-COPY-08). */}
+      <Suspense fallback={null}>
+        <ClearedForService eventId={eventId} today={today} />
+      </Suspense>
 
       {service.notPublished && !service.cancelled ? <Notice>{NOT_PUBLISHED_NOTE}</Notice> : null}
 
@@ -321,4 +327,10 @@ function ServeSkeleton() {
       </div>
     </div>
   );
+}
+
+/** This service's approved videos and graphics, if the person is on duty for it (ADD-COPY-08). */
+async function ClearedForService({ eventId, today }: { eventId: string; today: boolean }) {
+  const items = (await getClearedForMe()).filter((item) => item.eventId === eventId);
+  return items.length > 0 ? <ClearedToShow items={items} today={today} /> : null;
 }
