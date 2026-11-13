@@ -28,14 +28,14 @@
     "push:keys": "node scripts/setup-push-keys.mjs"
   },
   "dependencies": {
-    "@sentry/nextjs": "11.10.0",
+    "@sentry/nextjs": "11.11.0",
     "@supabase/ssr": "^0.12.7",
-    "@supabase/supabase-js": "^2.118.0",
-    "@tiptap/pm": "3.32.2",
-    "@tiptap/react": "3.32.2",
-    "@tiptap/starter-kit": "3.32.2",
+    "@supabase/supabase-js": "^2.119.0",
+    "@tiptap/pm": "3.33.0",
+    "@tiptap/react": "3.33.0",
+    "@tiptap/starter-kit": "3.33.0",
     "next": "16.4.6",
-    "posthog-js": "1.445.0",
+    "posthog-js": "1.447.7",
     "qrcode-generator": "2.0.4",
     "react": "19.3.1",
     "react-dom": "19.3.1",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@opennextjs/cloudflare": "^1.20.16",
-    "@playwright/test": "^1.64.1",
+    "@playwright/test": "^1.65.0",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24.19.2",
     "@types/react": "^19",
@@ -58,7 +58,7 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.1.0",
-    "wrangler": "^4.156.2"
+    "wrangler": "^4.159.0"
   },
   "allowScripts": {
     "esbuild": true,
