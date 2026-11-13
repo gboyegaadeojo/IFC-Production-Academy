@@ -31,12 +31,7 @@ export default async function MediaRequestPage() {
           </p>
         </section>
         {form.open ? (
-          <RequestForm
-            services={form.services}
-            today={form.today}
-            deadline={deadline}
-            latePolicy={form.latePolicy}
-          />
+          <RequestForm today={form.today} deadline={deadline} latePolicy={form.latePolicy} />
         ) : (
           <div role="status" className="rounded-card border border-border bg-surface p-6">
             <h2 className="text-heading font-semibold">Requests are paused right now</h2>

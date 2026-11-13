@@ -6,27 +6,28 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { fieldClasses } from "@/components/ui/field-classes";
 import {
   deadlineWording,
+  earliestOnTimeDay,
   isAllowedGraphic,
   isLate,
   type DeadlineCounting,
   type LatePolicy,
   type RequestKind,
 } from "@/lib/domain/copyright";
-import { TIME_ZONE } from "@/lib/domain/time-zone";
 import { graphicUploadAction, submitRequestAction, type RequestState } from "./actions";
 
 const idle: RequestState = { status: "idle" };
 
-const serviceTime = new Intl.DateTimeFormat("en-CA", {
-  timeZone: TIME_ZONE,
+const dayFormat = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "UTC",
   weekday: "long",
   day: "numeric",
-  month: "short",
-  hour: "numeric",
-  minute: "2-digit",
+  month: "long",
 });
 
-type Service = { id: string; title: string; startsAt: string; day: string };
+/** "Tuesday, November 17" for a YYYY-MM-DD date. */
+function dayLabel(isoDate: string): string {
+  return isoDate ? dayFormat.format(new Date(`${isoDate}T12:00:00Z`)) : "";
+}
 
 type Upload =
   | { state: "none" }
@@ -36,12 +37,10 @@ type Upload =
 
 /** The public request form (ADD-COPY-01, -02). */
 export function RequestForm({
-  services,
   today,
   deadline,
   latePolicy,
 }: {
-  services: Service[];
   today: string;
   deadline: { days: number; counting: DeadlineCounting };
   latePolicy: LatePolicy;
@@ -49,7 +48,6 @@ export function RequestForm({
   const [state, action, pending] = useActionState(submitRequestAction, idle);
   const [kind, setKind] = useState<RequestKind>("video");
   const [graphicSource, setGraphicSource] = useState<"upload" | "link">("upload");
-  const [service, setService] = useState(services[0]?.id ?? "other");
   const [otherDate, setOtherDate] = useState("");
   const [upload, setUpload] = useState<Upload>({ state: "none" });
   const ids = {
@@ -58,15 +56,16 @@ export function RequestForm({
     email: useId(),
     link: useId(),
     file: useId(),
-    service: useId(),
+    hint: useId(),
     other: useId(),
     description: useId(),
     late: useId(),
     error: useId(),
   };
 
-  const day = service === "other" ? otherDate : services.find((s) => s.id === service)?.day;
-  const late = Boolean(day && today && isLate(today, day, deadline));
+  const blocking = latePolicy === "block";
+  const earliest = today ? earliestOnTimeDay(today, deadline) : "";
+  const late = Boolean(otherDate && today && isLate(today, otherDate, deadline));
   const wording = deadlineWording(deadline);
 
   async function chooseFile(file: File | undefined) {
@@ -129,7 +128,7 @@ export function RequestForm({
     );
   }
 
-  const blocked = late && latePolicy === "block";
+  const blocked = late && blocking;
 
   return (
     <form
@@ -286,55 +285,40 @@ export function RequestForm({
       )}
 
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={ids.service} className="text-small font-medium text-text-secondary">
-          Which service?
+        <label htmlFor={ids.other} className="text-small font-medium text-text-secondary">
+          When should it be shown?
         </label>
-        <select
-          id={ids.service}
-          name="service"
-          value={service}
-          onChange={(event) => setService(event.target.value)}
-          aria-describedby={late ? ids.late : undefined}
-          className={fieldClasses}
-        >
-          {services.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.title} · {serviceTime.format(new Date(s.startsAt))}
-            </option>
-          ))}
-          <option value="other">Another date…</option>
-        </select>
-        {services.length > 0 ? (
-          <span className="text-small text-text-muted">From the Planning Center schedule.</span>
-        ) : null}
+        <input
+          id={ids.other}
+          name="otherDate"
+          type="date"
+          required
+          min={(blocking ? earliest : today) || undefined}
+          value={otherDate}
+          onChange={(event) => setOtherDate(event.target.value)}
+          aria-describedby={late ? ids.late : ids.hint}
+          className={`${fieldClasses} max-w-xs`}
+        />
+        <span id={ids.hint} className="text-small text-text-muted">
+          {blocking && earliest
+            ? `Requests need at least ${wording}' notice, so the earliest date is ${dayLabel(earliest)}.`
+            : `Requests need at least ${wording}' notice.`}
+        </span>
       </div>
-      {service === "other" ? (
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={ids.other} className="text-small font-medium text-text-secondary">
-            Date
-          </label>
-          <input
-            id={ids.other}
-            name="otherDate"
-            type="date"
-            required
-            min={today || undefined}
-            value={otherDate}
-            onChange={(event) => setOtherDate(event.target.value)}
-            className={fieldClasses}
-          />
-        </div>
-      ) : null}
       {late ? (
         <p
           id={ids.late}
-          role="status"
-          className="rounded-button border border-warning-line bg-warning-soft px-4 py-3 text-small"
+          role="alert"
+          className={`rounded-button border px-4 py-3 text-small ${
+            blocked ? "border-error bg-surface" : "border-warning-line bg-warning-soft"
+          }`}
         >
           {blocked ? (
             <>
-              <strong>That&apos;s less than {wording} away</strong>, which is too close to check in
-              time. Please ask the production team directly.
+              <strong>
+                That&apos;s less than {wording} away, so we can&apos;t check it in time.
+              </strong>{" "}
+              Choose {dayLabel(earliest)} or later, or ask the production team directly.
             </>
           ) : (
             <>

@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import {
+  kickApprovalEmails,
   memberReviewDecide,
   outsideReviewDecide,
   qualityControlDecide,
@@ -31,6 +33,14 @@ function read(formData: FormData) {
     question: formData.get("question") ?? "",
     reviewers: formData.getAll("reviewers"),
   });
+}
+
+/** After a decision, emails go within a minute or two (G, 2026-11-13). */
+function sendSoon(result: ActionResult): ActionResult {
+  if (result.ok) {
+    after(kickApprovalEmails);
+  }
+  return result;
 }
 
 const INVALID: ActionResult = { ok: false, error: "Choose what happens next, then try again." };
@@ -63,7 +73,7 @@ export async function qualityControlAction(
       planItemId,
     });
     revalidatePath(`/copyright/qc/${token}`);
-    return result;
+    return sendSoon(result);
   }
   const result = await qualityControlDecide({
     token,
@@ -73,7 +83,7 @@ export async function qualityControlAction(
     planItemId,
   });
   revalidatePath(`/copyright/qc/${token}`);
-  return result;
+  return sendSoon(result);
 }
 
 /** An outside reviewer, from the private link to the one request. */
@@ -86,11 +96,13 @@ export async function outsideReviewAction(
   if (!parsed.success || parsed.data.choice === "review") {
     return INVALID;
   }
-  return outsideReviewDecide({
-    token,
-    approve: parsed.data.choice === "approve",
-    note: parsed.data.note,
-  });
+  return sendSoon(
+    await outsideReviewDecide({
+      token,
+      approve: parsed.data.choice === "approve",
+      note: parsed.data.note,
+    }),
+  );
 }
 
 /** An Academy reviewer, signed in, from Copyright in the side bar. */
@@ -109,5 +121,5 @@ export async function memberReviewAction(
     note: parsed.data.note,
   });
   revalidatePath("/copyright");
-  return result;
+  return sendSoon(result);
 }

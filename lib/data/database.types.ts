@@ -2093,6 +2093,7 @@ export type Database = {
       copyright_review_file: { Args: { p_token: string }; Returns: string | null };
       copyright_member_file: { Args: { p_request: string }; Returns: string | null };
       copyright_admin_overview: { Args: never; Returns: Json };
+      copyright_kick_emails: { Args: never; Returns: boolean };
       copyright_admin_request: { Args: { p_request: string }; Returns: Json };
       save_copyright_settings: {
         Args: {

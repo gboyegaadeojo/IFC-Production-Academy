@@ -51,3 +51,16 @@ approved, everyone scheduled on that service sees it, placed in the order of ser
   While it's off, the form says requests are paused and nothing is emailed.
 - **Only admins see every request** in the Academy (`copyright.manage`). Reviewers in the Academy
   see only what's sent to them (`copyright.review`).
+
+## Changes after G tried it (2026-11-13)
+
+- **A date only.** The form asks for the date it should be shown, not a service. A request is
+  linked to that day's Planning Center service whenever it's saved, so a service published later is
+  picked up when Quality control opens it.
+- **Late requests are refused by default.** The date picker starts at the earliest on-time date and
+  the form says so; an earlier date is refused with what to do instead. Admins can still choose to
+  accept them, marked Late.
+- **Emails within a couple of minutes.** Emails are still sent by the GitHub job, which holds the
+  Resend key; the Academy never does. After a request or decision, the app asks GitHub to run that
+  job straight away, as Refresh now does for Planning Center, at most once a minute. Truly instant
+  emails would mean giving the Worker the Resend key, which G hasn't asked for.

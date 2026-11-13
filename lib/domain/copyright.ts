@@ -75,6 +75,24 @@ export function isLate(
   return leadDays(today, serviceDay, deadline.counting) < deadline.days;
 }
 
+/**
+ * The first day a request can be for and still be on time: Thursday 12 Nov with 5 calendar days
+ * gives Tuesday 17 Nov. The form's date picker starts there when late requests are refused.
+ */
+export function earliestOnTimeDay(
+  today: string,
+  deadline: { days: number; counting: DeadlineCounting },
+): string {
+  const start = dayNumber(today);
+  for (let day = start; day <= start + 366; day += 1) {
+    const iso = new Date(day * 86_400_000).toISOString().slice(0, 10);
+    if (leadDays(today, iso, deadline.counting) >= deadline.days) {
+      return iso;
+    }
+  }
+  return today;
+}
+
 /** "5 days", "1 day", "3 business days": how the form and emails say the deadline. */
 export function deadlineWording(deadline: { days: number; counting: DeadlineCounting }): string {
   const unit = deadline.counting === "business" ? "business day" : "day";
@@ -147,7 +165,7 @@ export const requestFormSchema = z
     website: z.string().max(200),
   })
   .refine((form) => form.eventId !== "" || form.otherDate !== "", {
-    message: "Choose the service, or another date.",
+    message: "Choose the date it should be shown.",
     path: ["eventId"],
   })
   .refine((form) => form.mediaUrl !== "" || (form.kind === "graphic" && form.filePath !== ""), {
