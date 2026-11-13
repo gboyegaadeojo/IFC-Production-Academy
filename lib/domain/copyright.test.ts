@@ -102,11 +102,45 @@ describe("fillTemplate", () => {
     ).toBe("We got your request for Sunday 22 Nov");
   });
 
-  it("drops a missing value and tidies the blank lines it leaves", () => {
+  it("drops a missing value, the heading that introduced it, and the blank lines left", () => {
     const text = fillTemplate("Hi {first name},\n\nA note:\n{reviewer note}\n\n\nThanks", {
       "first name": "Sam",
     });
-    expect(text).toBe("Hi Sam,\n\nA note:\n\nThanks");
+    expect(text).toBe("Hi Sam,\n\nThanks");
+  });
+
+  it("drops an empty note from the Approved email, as G saw it (2026-11-13)", () => {
+    const text = fillTemplate(DEFAULT_TEMPLATES.approved.body, {
+      "first name": "Gboyega",
+      what: "video",
+      title: "Because Na Me",
+      "service date": "Sunday 22 Nov",
+      "reviewer name": "gboyega",
+    });
+    expect(text).not.toContain("A note from");
+    expect(text.endsWith("has been approved to show on Sunday 22 Nov.")).toBe(true);
+  });
+
+  it("keeps the note's heading when there is a note", () => {
+    const text = fillTemplate(DEFAULT_TEMPLATES.approved.body, {
+      "reviewer name": "Robin",
+      "reviewer note": "Covered by our licence.",
+    });
+    expect(text).toContain("A note from Robin:\nCovered by our licence.");
+  });
+
+  it("says who asked for a copyright review without repeating Quality control", () => {
+    const text = fillTemplate(DEFAULT_TEMPLATES.review_needed.body, {
+      "first name": "Robin",
+      what: "video",
+      title: "Because Na Me",
+      "service date": "Sunday 22 Nov",
+      "requester name": "Gboyega",
+      "asked by": "IFC Quality Control Team",
+      question: "Check the music.",
+    });
+    expect(text).toContain("Quality control (IFC Quality Control Team) would like");
+    expect(text).toContain("“Because Na Me”, sent by Gboyega");
   });
 
   it("leaves an unknown fill-in as written, so a typo shows in the preview", () => {

@@ -27,7 +27,7 @@ export const TEMPLATE_INFO: Record<TemplateKey, { name: string; when: string }> 
   },
   review_needed: {
     name: "Copyright review needed",
-    when: "Sent to the copyright reviewers Quality control chooses.",
+    when: "Sent to every copyright reviewer when Quality control asks for a copyright review.",
   },
   approved: {
     name: "Approved",
@@ -69,7 +69,7 @@ export const DEFAULT_TEMPLATES: Record<TemplateKey, EmailTemplate> = {
   },
   review_needed: {
     subject: "Copyright review needed: {what} for {service date}",
-    body: "Hi {first name},\n\n{asked by} from Quality control would like a copyright check on a request for {service date}.\n\nThey ask:\n{question}",
+    body: "Hi {first name},\n\nQuality control ({asked by}) would like a copyright check on a {what} for {service date}: “{title}”, sent by {requester name}.\n\nWhat to check:\n{question}",
   },
   approved: {
     subject: "Approved: your {what} for {service date}",
@@ -123,12 +123,29 @@ export type FillInValues = Partial<Record<FillIn, string>>;
  * leaves are tidied away. Unknown braces stay as written, so a typo shows in the preview.
  */
 export function fillTemplate(text: string, values: FillInValues): string {
-  const filled = text.replace(/\{([a-z ]+)\}/g, (match, name: string) =>
-    (FILL_INS as readonly string[]).includes(name) ? (values[name as FillIn] ?? "") : match,
-  );
-  return filled
-    .split("\n")
-    .map((line) => line.trimEnd())
+  const known = (name: string) => (FILL_INS as readonly string[]).includes(name);
+  const fill = (line: string) =>
+    line.replace(/\{([a-z ]+)\}/g, (match, name: string) =>
+      known(name) ? (values[name as FillIn] ?? "") : match,
+    );
+  // A line of only fill-ins that are all empty goes, and so does a heading ending in ":" that only
+  // introduced it, such as "A note from Robin:" when there's no note (G, 2026-11-13).
+  const kept: string[] = [];
+  for (const line of text.split("\n")) {
+    const names = [...line.matchAll(/\{([a-z ]+)\}/g)].map((m) => m[1] ?? "").filter(known);
+    const onlyEmptyFillIns =
+      names.length > 0 &&
+      names.every((name) => !values[name as FillIn]) &&
+      !/[A-Za-z0-9]/.test(line.replace(/\{([a-z ]+)\}/g, ""));
+    if (onlyEmptyFillIns) {
+      if (kept.at(-1)?.endsWith(":")) {
+        kept.pop();
+      }
+      continue;
+    }
+    kept.push(fill(line).trimEnd());
+  }
+  return kept
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
