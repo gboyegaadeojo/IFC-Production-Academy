@@ -12,6 +12,7 @@ import {
   ShieldIcon,
 } from "@/components/ui/icons";
 import { badgeLabel } from "@/lib/domain/messages";
+import { tabClasses, tabIconClasses } from "./tab-styles";
 import {
   copyrightLine,
   serviceHeading,
@@ -100,15 +101,9 @@ export function ServeSheet({
         aria-haspopup="dialog"
         aria-current={current ? "page" : undefined}
         onClick={open}
-        className={`relative flex min-h-[3.25rem] w-full flex-col items-center justify-center gap-[3px] text-[0.625rem] transition-colors duration-[var(--duration-base)] ${
-          current ? "font-semibold text-accent-light" : "font-medium text-text-muted"
-        }`}
+        className={tabClasses(current)}
       >
-        <span
-          className={`flex transition-transform duration-[var(--duration-spring)] ease-[var(--ease-spring)] ${
-            current ? "-translate-y-px scale-110" : ""
-          }`}
-        >
+        <span className={tabIconClasses(current)}>
           <ClipboardIcon className="size-[1.375rem]" />
         </span>
         Serve

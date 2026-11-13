@@ -18,6 +18,7 @@ import {
 import { ACADEMY_SIDEBAR_COOKIE } from "@/lib/domain/appearance";
 import { MessagesBadge } from "./messages-badge";
 import { ServeSheet } from "./serve-sheet";
+import { tabClasses, tabIconClasses } from "./tab-styles";
 
 type NavLink = {
   href: string;
@@ -255,21 +256,26 @@ function TabList({
         SERVE_SHEET_PATHS.some((path) => isCurrent(pathname, path))),
   );
   const currentIndex = currentFlags.indexOf(true);
+  // Where the pill came from, so its front edge can lead the way (motion A, G 2026-11-13).
+  const [move, setMove] = useState({ index: currentIndex, from: currentIndex });
+  if (move.index !== currentIndex) {
+    setMove({ index: currentIndex, from: move.index });
+  }
+  // On a page that isn't a tab, the pill fades where it was.
+  const shown = currentIndex >= 0 ? currentIndex : Math.max(move.from, 0);
+  const share = 100 / links.length;
   return (
     <div className="relative">
-      {/* One pill, moved under the current tab; hidden on pages that aren't a tab. */}
+      {/* One solid pill under the current tab, stretching as it moves; hidden off the tabs. */}
       <span
         aria-hidden="true"
-        className={`absolute inset-y-0 left-0 transition-[translate,opacity] duration-[var(--duration-spring)] ease-[var(--ease-spring)] ${
-          currentIndex < 0 ? "opacity-0" : ""
-        }`}
+        data-moving={move.from >= 0 && currentIndex > move.from ? "right" : "left"}
+        className={`tab-pill absolute inset-y-0.5 rounded-2xl ${currentIndex < 0 ? "opacity-0" : ""}`}
         style={{
-          width: `${100 / links.length}%`,
-          translate: `${Math.max(currentIndex, 0) * 100}% 0`,
+          left: `calc(${shown * share}% + 2px)`,
+          right: `calc(${(links.length - 1 - shown) * share}% + 2px)`,
         }}
-      >
-        <span className="absolute inset-0.5 rounded-2xl bg-accent-soft" />
-      </span>
+      />
       <ul className="relative grid grid-cols-5">
         {links.map((link, index) => {
           const current = currentFlags[index];
@@ -286,15 +292,9 @@ function TabList({
               <Link
                 href={link.href}
                 aria-current={current ? "page" : undefined}
-                className={`relative flex min-h-[3.25rem] flex-col items-center justify-center gap-[3px] text-[0.625rem] transition-colors duration-[var(--duration-base)] ${
-                  current ? "font-semibold text-accent-light" : "font-medium text-text-muted"
-                }`}
+                className={tabClasses(current === true)}
               >
-                <span
-                  className={`flex transition-transform duration-[var(--duration-spring)] ease-[var(--ease-spring)] ${
-                    current ? "-translate-y-px scale-110" : ""
-                  }`}
-                >
+                <span className={tabIconClasses(current === true)}>
                   <Icon className="size-[1.375rem]" />
                 </span>
                 {link.label}
