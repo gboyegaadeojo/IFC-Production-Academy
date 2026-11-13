@@ -77,6 +77,33 @@ Either way, you see Quality control's question, the video or graphic, and the de
 **Approve** or **Not approved** and write a note for the requester. Need to ask something first?
 Reply to the email.
 
+## Setting it up (admins)
+
+**Admin → Video and graphics approvals** is for Platform Administrators. Every change is in the
+audit log.
+
+1. **Quality control.** Add each person's name and email. Nobody needs an Academy account. Removing
+   someone stops their links straight away.
+2. **Copyright reviewers.** Academy members get the **Copyright Reviewer** role in **People and
+   roles**, which puts Copyright in their side bar. Add people outside the Academy by name and email.
+3. **The form, the deadline, and what happens on approval.**
+   - The deadline in days, counted as calendar or business days, and whether a late request is
+     accepted (marked Late) or refused.
+   - An optional introduction for the form. Write {deadline} where the deadline should go.
+   - The checks reviewers tick, one per line. They help people decide; they don't decide for them.
+   - The media inbox, which gets a "Cleared to show" email for each approval, and whether everyone
+     on duty that day gets one too.
+4. **Emails.** Six emails, each with a subject and message. Press a fill-in, such as
+   {first name} or {service date}, to add it where your cursor is. The preview uses an example
+   request. **Save** keeps your version, **Send me a test** emails you the saved version within 15
+   minutes (even while approvals are off), and **Put back the original** undoes your changes. Keep
+   "Approved media:" at the start of the Cleared to show subject if a Gmail label sorts them.
+5. **Turn it on** in **Admin → Features**: *Video and graphics approvals*. Then put the
+   /media-request link where the old JotForm link was.
+
+**All requests** lists every request, newest service first. Open one to see its details and who it
+was sent to.
+
 ## Words we use
 
 | Word            | Meaning                                                                       |

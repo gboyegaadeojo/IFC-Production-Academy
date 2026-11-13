@@ -2092,6 +2092,31 @@ export type Database = {
       copyright_qc_file: { Args: { p_token: string; p_request: string }; Returns: string | null };
       copyright_review_file: { Args: { p_token: string }; Returns: string | null };
       copyright_member_file: { Args: { p_request: string }; Returns: string | null };
+      copyright_admin_overview: { Args: never; Returns: Json };
+      copyright_admin_request: { Args: { p_request: string }; Returns: Json };
+      save_copyright_settings: {
+        Args: {
+          p_deadline_days: number;
+          p_deadline_counting: string;
+          p_late_policy: string;
+          p_intro_text: string;
+          p_media_inbox_email: string | null;
+          p_media_inbox_on: boolean;
+          p_email_on_duty: boolean;
+          p_checks: string[];
+        };
+        Returns: undefined;
+      };
+      save_copyright_template: {
+        Args: { p_key: string; p_subject: string | null; p_body: string | null };
+        Returns: undefined;
+      };
+      add_copyright_contact: {
+        Args: { p_kind: string; p_name: string; p_email: string };
+        Returns: string;
+      };
+      remove_copyright_contact: { Args: { p_id: string }; Returns: undefined };
+      send_copyright_test_email: { Args: { p_key: string }; Returns: undefined };
       claim_message_alerts: {
         Args: { p_message_id: string };
         Returns: {

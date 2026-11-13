@@ -183,7 +183,7 @@ const rowSchema = z.object({
 });
 export type RequestRow = z.infer<typeof rowSchema>;
 
-const detailSchema = z.object({
+export const detailSchema = z.object({
   id: z.string(),
   reference: z.string(),
   kind: z.enum(REQUEST_KINDS),
