@@ -6,6 +6,7 @@ import {
   isAllowedGraphic,
   safeFileName,
   deadlineWording,
+  earliestOnTimeDay,
   fillTemplate,
   isLate,
   leadDays,
@@ -251,5 +252,17 @@ describe("uploads", () => {
     expect(isAllowedGraphic("application/pdf", 20 * 1024 * 1024)).toBe(true);
     expect(isAllowedGraphic("image/svg+xml", 1000)).toBe(false);
     expect(isAllowedGraphic("image/png", 20 * 1024 * 1024 + 1)).toBe(false);
+  });
+});
+
+describe("earliestOnTimeDay", () => {
+  it("is the first day with enough notice", () => {
+    expect(earliestOnTimeDay("2026-11-12", { days: 5, counting: "calendar" })).toBe("2026-11-17");
+    // Thursday 12 Nov, 5 business days: Fri 13, Mon 16 to Thu 19.
+    expect(earliestOnTimeDay("2026-11-12", { days: 5, counting: "business" })).toBe("2026-11-19");
+  });
+
+  it("is today with no deadline", () => {
+    expect(earliestOnTimeDay("2026-11-12", { days: 0, counting: "calendar" })).toBe("2026-11-12");
   });
 });

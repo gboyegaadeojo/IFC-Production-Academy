@@ -25,21 +25,17 @@ export function DecisionForm({
   mode,
   requesterFirstName,
   checks,
-  planItems = [],
-  planItemId = null,
   reviewers = [],
 }: {
   action: (state: DecisionState, formData: FormData) => Promise<DecisionState>;
   mode: "quality_control" | "reviewer";
   requesterFirstName: string;
   checks: string[];
-  planItems?: { id: string; title: string }[];
-  planItemId?: string | null;
   reviewers?: { kind: "member" | "outside"; id: string; name: string }[];
 }) {
   const [state, formAction, pending] = useActionState(action, idle);
   const [choice, setChoice] = useState<Choice>("approve");
-  const ids = { note: useId(), question: useId(), plan: useId(), error: useId() };
+  const ids = { note: useId(), question: useId(), error: useId() };
   const choices: Choice[] =
     mode === "quality_control" ? ["approve", "decline", "review"] : ["approve", "decline"];
 
@@ -99,62 +95,30 @@ export function DecisionForm({
         </div>
       </fieldset>
 
-      {mode === "quality_control" ? (
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor={ids.plan} className="text-small font-medium text-text-secondary">
-            Where it goes in the service
-          </label>
-          <select
-            id={ids.plan}
-            name="planItem"
-            defaultValue={planItemId ?? ""}
-            className={fieldClasses}
-          >
-            <option value="">Not placed yet</option>
-            {planItems.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.title}
-              </option>
-            ))}
-          </select>
-          <span className="text-small text-text-muted">
-            {planItems.length > 0
-              ? "From the Planning Center order of service."
-              : "The order of service isn't in Planning Center yet, or this isn't a service."}
-          </span>
-        </div>
-      ) : null}
-
       {choice === "review" ? (
         <>
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 font-semibold">Send it to</legend>
+          <div className="flex flex-col gap-1.5 rounded-button bg-hover p-4">
+            <p className="font-semibold">It goes to every copyright reviewer</p>
             {reviewers.length === 0 ? (
               <p className="text-small text-text-secondary">
-                There are no copyright reviewers yet. An admin adds them in Admin → Copyright.
+                There are no copyright reviewers yet. An admin adds them in Admin → Video and
+                graphics approvals.
               </p>
             ) : (
-              reviewers.map((reviewer) => (
-                <label key={`${reviewer.kind}:${reviewer.id}`} className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    name="reviewers"
-                    value={`${reviewer.kind}:${reviewer.id}`}
-                    className="size-4 accent-[var(--accent)]"
-                  />
-                  <span>
-                    {reviewer.name}
-                    <span className="ml-2 text-small text-text-muted">
-                      {reviewer.kind === "member" ? "in the Academy" : "by email"}
-                    </span>
-                  </span>
-                </label>
-              ))
+              <p className="text-small text-text-secondary">
+                {reviewers.map((reviewer) => reviewer.name).join(", ")}. The first to decide closes
+                it.
+              </p>
             )}
-            <span className="text-small text-text-muted">
-              Pick one or more. The first to decide closes it.
-            </span>
-          </fieldset>
+            {reviewers.map((reviewer) => (
+              <input
+                key={`${reviewer.kind}:${reviewer.id}`}
+                type="hidden"
+                name="reviewers"
+                value={`${reviewer.kind}:${reviewer.id}`}
+              />
+            ))}
+          </div>
           <div className="flex flex-col gap-1.5">
             <label htmlFor={ids.question} className="text-small font-medium text-text-secondary">
               What should they check?

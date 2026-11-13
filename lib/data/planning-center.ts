@@ -249,7 +249,7 @@ const dispatchSchema = z.object({
 
 type DispatchConfig = { token: string; repo: string };
 
-function dispatchConfig(): DispatchConfig | null {
+export function dispatchConfig(): DispatchConfig | null {
   const result = dispatchSchema.safeParse({
     GITHUB_DISPATCH_TOKEN: process.env.GITHUB_DISPATCH_TOKEN,
     GITHUB_DISPATCH_REPO: process.env.GITHUB_DISPATCH_REPO || undefined,

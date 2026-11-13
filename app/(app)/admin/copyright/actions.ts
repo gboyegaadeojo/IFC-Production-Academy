@@ -1,9 +1,11 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import type { FormState } from "@/components/ui/action-form";
 import { getAdminAccess } from "@/lib/data/admin/access";
+import { kickApprovalEmails } from "@/lib/data/copyright";
 import {
   addCopyrightContact,
   removeCopyrightContact,
@@ -118,9 +120,10 @@ export async function templateAction(_: FormState, formData: FormData): Promise<
   }
   const { key, intent, subject, body } = parsed.data;
   if (intent === "test") {
+    after(kickApprovalEmails);
     return toState(
       await sendCopyrightTestEmail(key),
-      "A test of the saved version is on its way to your email, within 15 minutes.",
+      "A test of the saved version is on its way to your email, within a couple of minutes.",
     );
   }
   if (intent === "reset") {

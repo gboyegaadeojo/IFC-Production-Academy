@@ -69,7 +69,8 @@ insert into public.copyright_contacts (id, organization_id, kind, name, email) v
    'quality_control', 'Morgan QC', 'morgan.qc@example.com'),
   ('a9000000-0000-4000-8000-0000000000c2', (select id from public.organizations order by created_at limit 1),
    'reviewer', 'Robin Outside', 'robin.outside@example.com');
-update public.copyright_settings set media_inbox_email = 'media.inbox@example.com';
+-- Late requests are refused by default (094); this test accepts them, marked Late.
+update public.copyright_settings set media_inbox_email = 'media.inbox@example.com', late_policy = 'accept';
 
 -- A visitor sends a request.
 select pg_temp.act_as_visitor();

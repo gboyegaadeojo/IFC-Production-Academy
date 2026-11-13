@@ -15,7 +15,8 @@ approved, everyone scheduled on that service sees it, placed in the order of ser
 ## G's decisions
 
 1. **Quality control is always first.** It can approve or decline on its own, or send a request
-   for a copyright review, choosing the reviewers and writing what to check.
+   for a copyright review, writing what to check. (It goes to every copyright reviewer: G,
+   2026-11-13.)
 2. **Quality control doesn't need the Academy.** It's a list of names and email addresses in
    Admin → Copyright. Each new request reaches them by email with a private link to their open
    requests. The first person to act takes the request. Removing someone turns their links off.
@@ -32,8 +33,8 @@ approved, everyone scheduled on that service sees it, placed in the order of ser
    is a follow-up, so its one-screen layout can be fitted carefully.
 6. **The media inbox still gets an email** for each approval. Its subject always starts
    "Approved media:", so a Gmail label keeps working.
-7. **Quality control places each item** in the Planning Center order of service when it approves or
-   sends it for review. Anything not placed shows at the top as "Not placed yet".
+7. ~~Quality control places each item in the Planning Center order of service.~~ Dropped
+   (G, 2026-11-13): not needed.
 8. **Defaults chosen by G's approval of the mock:** a deadline of 5 calendar days (editable, and
    calendar or business days); late requests accepted and marked Late (blocking is a setting);
    the service picked from upcoming Planning Center services, with "Another date"; graphics
@@ -51,3 +52,19 @@ approved, everyone scheduled on that service sees it, placed in the order of ser
   While it's off, the form says requests are paused and nothing is emailed.
 - **Only admins see every request** in the Academy (`copyright.manage`). Reviewers in the Academy
   see only what's sent to them (`copyright.review`).
+
+## Changes after G tried it (2026-11-13)
+
+- **A date only.** The form asks for the date it should be shown, not a service. A request is
+  linked to that day's Planning Center service whenever it's saved, so a service published later is
+  picked up when Quality control opens it.
+- **Late requests are refused by default.** The date picker starts at the earliest on-time date and
+  the form says so; an earlier date is refused with what to do instead. Admins can still choose to
+  accept them, marked Late.
+- **Emails within a couple of minutes.** Emails are still sent by the GitHub job, which holds the
+  Resend key; the Academy never does. After a request or decision, the app asks GitHub to run that
+  job straight away, as Refresh now does for Planning Center, at most once a minute. Truly instant
+  emails would mean giving the Worker the Resend key, which G hasn't asked for.
+- **Every copyright reviewer gets each copyright review.** Quality control no longer picks
+  reviewers; it writes what to check, and the first reviewer to decide closes it.
+- **No placing in the order of service.** Quality control isn't asked where an item plays.

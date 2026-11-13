@@ -1,7 +1,12 @@
 "use server";
 
+import { after } from "next/server";
 import { z } from "zod";
-import { createGraphicUploadSlot, submitCopyrightRequest } from "@/lib/data/copyright";
+import {
+  createGraphicUploadSlot,
+  kickApprovalEmails,
+  submitCopyrightRequest,
+} from "@/lib/data/copyright";
 import { requestFormSchema } from "@/lib/domain/copyright";
 
 export type RequestState =
@@ -20,8 +25,8 @@ const MESSAGES = {
   too_many:
     "You've sent several requests today. Please wait until tomorrow, or reply to one of our emails.",
   too_late:
-    "That's too close to the service to check in time. Please ask the production team directly.",
-  unknown_service: "That service isn't on the schedule any more. Choose another, or another date.",
+    "That's too close to the date to check in time. Choose a later date, or ask the production team directly.",
+  unknown_service: "Choose another date.",
   invalid: "Check the form and try again.",
   failed: "That didn't send. Check your connection and try again.",
 };
@@ -39,7 +44,6 @@ export async function submitRequestAction(
   _: RequestState,
   formData: FormData,
 ): Promise<RequestState> {
-  const service = field(formData, "service");
   const parsed = requestFormSchema.safeParse({
     firstName: field(formData, "firstName"),
     lastName: field(formData, "lastName"),
@@ -47,8 +51,9 @@ export async function submitRequestAction(
     kind: field(formData, "kind"),
     mediaUrl: field(formData, "mediaUrl"),
     filePath: field(formData, "filePath"),
-    eventId: service === "other" ? "" : service,
-    otherDate: service === "other" ? field(formData, "otherDate") : "",
+    // A date only (G, 2026-11-13); the database links it to that day's service.
+    eventId: "",
+    otherDate: field(formData, "otherDate"),
     description: field(formData, "description"),
     website: field(formData, "website"),
   });
@@ -59,6 +64,8 @@ export async function submitRequestAction(
   if (!result.ok) {
     return { status: "error", message: MESSAGES[result.error] };
   }
+  // Emails go within a minute or two, not at the next 15-minute run (G, 2026-11-13).
+  after(kickApprovalEmails);
   return {
     status: "sent",
     firstName: parsed.data.firstName,

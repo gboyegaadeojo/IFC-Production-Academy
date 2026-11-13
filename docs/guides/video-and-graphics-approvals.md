@@ -14,20 +14,21 @@ Anyone can ask, with no account, at **/media-request** (for example
    - A video is always a link: YouTube, Vimeo or Google Drive. Make sure anyone with the link can
      view it.
    - A graphic can be uploaded (PNG, JPEG, WebP or PDF, up to 20 MB) or linked.
-3. Choose the service from the Planning Center schedule, or **Another date…** for an event that
-   isn't on it.
+3. Choose the date it should be shown. If there's a service that day in Planning Center, the
+   request is linked to it.
 4. Say what it's for, such as "a missions update before the offering", and press **Send request**.
 
-**The deadline.** Requests need to arrive a set number of days before the service: 5 days unless an
-admin changes it, counted as calendar days or business days (Monday to Friday). If you're cutting it
-close, the form tells you. A late request is still sent, marked Late, and may not be checked in
-time. An admin can choose to refuse late requests instead.
+**The deadline.** Requests need to arrive a set number of days before the date: 5 days unless an
+admin changes it, counted as calendar days or business days (Monday to Friday). The form says which
+date is the earliest you can choose, and the date picker starts there. If you choose an earlier
+date, the form says it's too close to check in time and won't send it: choose a later date, or ask
+the production team directly. (An admin can choose to accept late requests instead, marked Late.)
 
 You can send up to 5 requests a day from one email address.
 
 ## Checking on your request
 
-Straight away you get a "We got your request" email with a **See its progress** link. That page
+Within a couple of minutes you get a "We got your request" email with a **See its progress** link. That page
 shows:
 
 - **Sent**, with the time.
@@ -52,13 +53,12 @@ link.
 1. Open a request. Your name goes on it, so two people don't check the same one.
 2. Watch the video or open the graphic, and tick the checks if they help. They never decide for
    you.
-3. Choose **Where it goes in the service** from the Planning Center order of service, so the team
-   knows when it plays. Leave it as **Not placed yet** if the plan isn't ready.
-4. Then choose what happens next:
+3. Then choose what happens next:
    - **Approve** or **Not approved**, with a note. The requester is emailed straight away. If you
      decline, say what would help.
-   - **Copyright review**, if the rights need a closer look. Pick one or more reviewers and write
-     what they should check, such as "Is the background song covered by our streaming licence?"
+   - **Copyright review**, if the rights need a closer look. It goes to every copyright reviewer,
+     in the Academy and outside it. Write what they should check, such as "Is the background song
+     covered by our streaming licence?"
 
 Requests decided in the last 30 days stay on your list underneath.
 
@@ -107,15 +107,15 @@ audit log.
    roles**, which puts Copyright in their side bar. Add people outside the Academy by name and email.
 3. **The form, the deadline, and what happens on approval.**
    - The deadline in days, counted as calendar or business days, and whether a late request is
-     accepted (marked Late) or refused.
+     refused (the default) or accepted, marked Late.
    - An optional introduction for the form. Write {deadline} where the deadline should go.
    - The checks reviewers tick, one per line. They help people decide; they don't decide for them.
    - The media inbox, which gets a "Cleared to show" email for each approval, and whether everyone
      on duty that day gets one too.
 4. **Emails.** Six emails, each with a subject and message. Press a fill-in, such as
    {first name} or {service date}, to add it where your cursor is. The preview uses an example
-   request. **Save** keeps your version, **Send me a test** emails you the saved version within 15
-   minutes (even while approvals are off), and **Put back the original** undoes your changes. Keep
+   request. **Save** keeps your version, **Send me a test** emails you the saved version within a
+   couple of minutes (even while approvals are off), and **Put back the original** undoes your changes. Keep
    "Approved media:" at the start of the Cleared to show subject if a Gmail label sorts them.
 5. **Turn it on** in **Admin → Features**: *Video and graphics approvals*. Then put the
    /media-request link where the old JotForm link was.

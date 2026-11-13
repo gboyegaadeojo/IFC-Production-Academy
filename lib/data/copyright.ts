@@ -1,7 +1,9 @@
 import "server-only";
 import { z } from "zod";
+import { dispatchConfig } from "@/lib/data/planning-center";
 import { createSupabaseAdminClient } from "@/lib/data/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
+import { dispatchWorkflow } from "@/lib/domain/job-trigger";
 import {
   DEADLINE_COUNTING,
   isAllowedGraphic,
@@ -441,4 +443,21 @@ export async function setClearedLoaded(requestId: string, loaded: boolean): Prom
     p_loaded: loaded,
   });
   return !error;
+}
+
+/**
+ * Asks for the email job straight away after a request or decision, so emails go within a minute
+ * or two instead of waiting for the 15-minute run (G, 2026-11-13). The database allows one ask a
+ * minute, so the public form can't flood GitHub. Does nothing without the dispatch token.
+ */
+export async function kickApprovalEmails(): Promise<void> {
+  const config = dispatchConfig();
+  if (!config) {
+    return;
+  }
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("copyright_kick_emails");
+  if (!error && data === true) {
+    await dispatchWorkflow("notifications.yml", config);
+  }
 }

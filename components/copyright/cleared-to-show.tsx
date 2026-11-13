@@ -73,7 +73,7 @@ export function ClearedToShow({ items, today = false }: { items: ClearedItem[]; 
                     <span className="font-semibold">{item.description}</span>
                     <span className="text-small text-text-secondary">
                       {item.kind === "video" ? "Video" : "Graphic"} ·{" "}
-                      {item.planItemTitle ? `at ${item.planItemTitle}` : "Not placed yet"} · from{" "}
+                      {item.planItemTitle ? `at ${item.planItemTitle} · ` : ""}from{" "}
                       {item.requesterName}
                     </span>
                     {item.note ? (
