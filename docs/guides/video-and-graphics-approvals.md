@@ -68,7 +68,8 @@ Quality control only sends a request for a copyright review when it needs one. T
 to decide closes it. The decision goes straight to the requester, and Quality control gets a copy.
 
 - **In the Academy.** If you have the Copyright reviewer role, **Copyright** appears in your side
-  bar on a computer or tablet, with a count of what's waiting. You also get a notification in the
+  bar on a computer or tablet, with a count of what's waiting. On a phone, tap **Serve** on the
+  bottom bar, then **Copyright**; a number on **Serve** means reviews are waiting. You also get a notification in the
   bell, and an alert on your phone if alerts are on (choose under **Copyright review** in your
   notification settings). The email's **Review it** button opens the same request, after you sign
   in.

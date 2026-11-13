@@ -4,7 +4,7 @@ SOPs are the team's written procedures: how to start the stream, how to set up a
 
 ## Finding one
 
-Open **SOPs** in the side bar and start typing to search. On a phone with Messages switched on, choose **Serve** on the bottom bar, then **SOPs** at the top of the checklist. Results update as you type, and search looks in titles, summaries, and categories. You can also choose a category, see what was **Recently updated**, or narrow it by department. Some SOPs are for **All of production** rather than one department.
+Open **SOPs** in the side bar and start typing to search. On a phone with Messages switched on, tap **Serve** on the bottom bar, then **SOPs**. Results update as you type, and search looks in titles, summaries, and categories. You can also choose a category, see what was **Recently updated**, or narrow it by department. Some SOPs are for **All of production** rather than one department.
 
 The list shows when each SOP was last reviewed, and marks any that are due for review. Open an SOP to see its summary and owner.
 

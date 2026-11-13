@@ -2,7 +2,7 @@
 
 **Checklist** is what each position does before and after a service. It opens to today's service, or the next one.
 
-When Messages is switched on, phones show the checklist under **Serve** on the bottom bar. The **SOPs** button at the top of the checklist opens the SOPs.
+When Messages is switched on, phones keep the checklist under **Serve** on the bottom bar: tap **Serve**, then **Checklist**. The **SOPs** button at the top of the checklist opens the SOPs.
 
 ## Using it
 

@@ -225,8 +225,8 @@ test("on a phone, Messages sits in the middle of the tabs, and Serve holds the c
   const tabs = page.getByRole("navigation", { name: "Academy" }).filter({ visible: true });
   // What a screen reader hears. An unread count comes after the name: "Messages, 1 unread".
   const links = tabs.getByRole("link");
-  await expect(links).toHaveCount(5);
-  const names = ["Training", "Courses", /^Messages\s*(, \d+ unread)?$/, "Schedule", "Serve"];
+  await expect(links).toHaveCount(4);
+  const names = ["Training", "Courses", /^Messages\s*(, \d+ unread)?$/, "Schedule"];
   for (const [index, name] of names.entries()) {
     await expect(links.nth(index)).toHaveAccessibleName(name);
   }
@@ -234,5 +234,16 @@ test("on a phone, Messages sits in the middle of the tabs, and Serve holds the c
     "aria-current",
     "page",
   );
+
+  // The fifth tab, Serve, opens a sheet of the pages under it (option A, G 2026-11-13).
+  await tabs.getByRole("button", { name: "Serve" }).click();
+  const sheet = page.getByRole("dialog", { name: "Serve" });
+  await expect(sheet.getByRole("link", { name: /Checklist/ })).toBeVisible();
+  // A volunteer without the Copyright reviewer permission isn't offered Copyright.
+  await expect(sheet.getByRole("link", { name: /Copyright/ })).toHaveCount(0);
+  await sheet.getByRole("link", { name: /SOPs/ }).click();
+  await expect(page).toHaveURL(/\/sops$/);
+  await expect(sheet).toBeHidden();
+  await expect(tabs.getByRole("button", { name: "Serve" })).toHaveAttribute("aria-current", "page");
   await phone.close();
 });
