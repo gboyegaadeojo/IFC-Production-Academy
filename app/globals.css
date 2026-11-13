@@ -108,6 +108,10 @@
   /* The phone tab bar's pill: a small overshoot as it lands (phone bar A, G 2026-11-09). */
   --duration-spring: 380ms;
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  /* Its liquid move (motion A, G 2026-11-13): the front edge leads, the back edge catches up. */
+  --tab-pill-lead: 320ms;
+  --tab-pill-trail: 500ms;
+  --tab-pill-lag: 80ms;
 
   /*
    * The phone tab bar floats with a gap beneath it: 12px above the screen's edge, or tucked just
@@ -187,7 +191,35 @@
     --duration-base: 0ms;
     --duration-slow: 0ms;
     --duration-spring: 0ms;
+    --tab-pill-lead: 0ms;
+    --tab-pill-trail: 0ms;
+    --tab-pill-lag: 0ms;
   }
+}
+
+/*
+ * The phone tab bar's pill, bolder (motion A, G 2026-11-13): solid accent with white on it, so the
+ * tab you're on reads at a glance. On the black dark theme it has a thin light edge and a glow, so
+ * it doesn't sit flat on the black. Moving right, the right edge leads; moving left, the left one.
+ */
+.tab-pill {
+  background: var(--accent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-light) 35%, transparent),
+    0 6px 20px color-mix(in srgb, var(--accent) 55%, transparent);
+  transition:
+    left var(--tab-pill-lead) var(--ease-spring),
+    right var(--tab-pill-trail) var(--ease-spring) var(--tab-pill-lag),
+    opacity var(--duration-base) var(--ease-standard);
+}
+.tab-pill[data-moving="right"] {
+  transition:
+    left var(--tab-pill-trail) var(--ease-spring) var(--tab-pill-lag),
+    right var(--tab-pill-lead) var(--ease-spring),
+    opacity var(--duration-base) var(--ease-standard);
+}
+[data-theme="light"] .tab-pill {
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
 /* Phones: each page fades in and settles as you move between tabs (phone bar A, G 2026-11-09). */

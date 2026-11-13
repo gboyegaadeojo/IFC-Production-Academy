@@ -347,6 +347,7 @@ export function notificationEmail(
   },
   siteUrl: string,
   appName = "IFC Production Academy",
+  accent?: string,
 ): { subject: string; text: string; html: string } {
   const url = notificationUrl(siteUrl, notification.link);
   const settings = notificationUrl(siteUrl, "/notifications/settings");
@@ -367,6 +368,7 @@ export function notificationEmail(
     appName,
   ].join("\n");
   const html = calmEmailHtml({
+    accent,
     preheader: notification.body,
     title: notification.title,
     paragraphs: notification.body ? [notification.body] : [],
@@ -391,6 +393,7 @@ export function onboardingEmail(
   email: { subject: string; body: string; hasAccount: boolean },
   siteUrl: string,
   appName = "IFC Production Academy",
+  accent?: string,
 ): { subject: string; text: string; html: string } {
   const settings = notificationUrl(siteUrl, "/notifications/settings");
   const footer = email.hasAccount
@@ -402,6 +405,7 @@ export function onboardingEmail(
     .map((paragraph) => paragraph.trim())
     .filter((paragraph) => paragraph.length > 0);
   const html = calmEmailHtml({
+    accent,
     preheader: paragraphs[0] ?? email.subject,
     title: email.subject,
     paragraphs,

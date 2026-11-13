@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { cache } from "react";
 import { createSupabaseServerClient } from "@/lib/data/supabase/server";
 import { brandIconUrl, type Branding, DEFAULT_BRANDING } from "@/lib/domain/branding";
+import { normaliseColour } from "@/lib/domain/system-colour";
 import { publicEnv } from "@/lib/env";
 
 /**
@@ -27,15 +28,25 @@ async function readBranding(): Promise<Branding> {
     );
     const { data, error } = await supabase.rpc("app_branding");
     const row = (
-      data as { app_name: string; app_short_name: string; app_icon_path: string | null }[] | null
+      data as
+        | {
+            app_name: string;
+            app_short_name: string;
+            app_icon_path: string | null;
+            app_colour?: string | null;
+            app_colour_logo?: boolean | null;
+          }[]
+        | null
     )?.[0];
     if (error || !row) {
       return DEFAULT_BRANDING;
     }
-    const branding = {
+    const branding: Branding = {
       name: row.app_name,
       shortName: row.app_short_name,
       iconPath: row.app_icon_path,
+      colour: normaliseColour(row.app_colour),
+      colourLogo: row.app_colour_logo ?? true,
     };
     shared.brandingHeld = { branding, until: Date.now() + HOLD_MS };
     return branding;
@@ -91,6 +102,20 @@ export async function saveBranding(
     // Tidying up only: an old file left behind does no harm.
     await supabase.storage.from("branding").remove([previous]);
   }
+  return { ok: true };
+}
+
+/** Saves the system colour. Only people with branding.manage get past the database. */
+export async function saveColour(colour: string, logo: boolean): Promise<{ ok: boolean }> {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("set_app_colour", {
+    p_colour: normaliseColour(colour),
+    p_logo: logo,
+  });
+  if (error) {
+    return { ok: false };
+  }
+  shared.brandingHeld = null;
   return { ok: true };
 }
 

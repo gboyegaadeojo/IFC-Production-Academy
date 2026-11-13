@@ -10,6 +10,7 @@ import { badgesByEndpoint } from "../lib/domain/app-badge.ts";
 import { copyrightEmail, isTemplateKey } from "../lib/domain/copyright-email.ts";
 import { notificationEmail, onboardingEmail } from "../lib/domain/notifications.ts";
 import { supabaseKeyHeaders } from "../lib/domain/supabase-keys.ts";
+import { emailAccent } from "../lib/domain/system-colour.ts";
 import { pushMessageFor, sendPush } from "../lib/domain/web-push.ts";
 
 type ClaimedPush = {
@@ -181,10 +182,18 @@ async function main(): Promise<void> {
     return;
   }
 
-  // The app's name for email subjects (ADD-DASH-04). Falls back to the original if this can't be read.
-  const appName = await rpc<{ app_name: string }[]>(supabaseUrl, serviceKey, "app_branding", {})
-    .then((rows) => rows[0]?.app_name)
+  // The app's name for email subjects (ADD-DASH-04), and the system colour for their buttons
+  // (G, 2026-11-13). Both fall back to the originals if this can't be read.
+  const brand = await rpc<{ app_name: string; app_colour?: string }[]>(
+    supabaseUrl,
+    serviceKey,
+    "app_branding",
+    {},
+  )
+    .then((rows) => rows[0])
     .catch(() => undefined);
+  const appName = brand?.app_name;
+  const accent = emailAccent(brand?.app_colour);
 
   let sent = 0;
   let failed = 0;
@@ -202,7 +211,7 @@ async function main(): Promise<void> {
         await rpc(supabaseUrl, serviceKey, "release_email_notification", { p_id: item.id });
         continue;
       }
-      const email = notificationEmail(item, siteUrl, appName);
+      const email = notificationEmail(item, siteUrl, appName, accent);
       const result = await sendEmail(resendKey, from, item.email, email);
       await pause(SEND_GAP_MS);
       if (result === "limit") {
@@ -251,6 +260,7 @@ async function main(): Promise<void> {
         { subject: item.subject, body: item.body, hasAccount: item.has_account },
         siteUrl,
         appName,
+        accent,
       );
       const result = await sendEmail(resendKey, from, item.email, email);
       await pause(SEND_GAP_MS);
@@ -308,6 +318,7 @@ async function main(): Promise<void> {
         { template: item.template, vars: item.vars, link: item.link, templates: item.templates },
         siteUrl,
         appName,
+        accent,
       );
       const result = await sendEmail(resendKey, from, item.email, email);
       await pause(SEND_GAP_MS);

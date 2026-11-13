@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { getBranding } from "@/lib/data/branding";
+import { emailAccent } from "@/lib/domain/system-colour";
 import { sendEmail } from "@/lib/data/email";
 import { isSupportedAction, signInEmail, verifyHookSignature } from "@/lib/domain/auth-email";
 import { publicEnv } from "@/lib/env";
@@ -47,11 +49,17 @@ export async function POST(request: Request) {
   if (!parsed.success || !isSupportedAction(parsed.data.email_data.email_action_type)) {
     return failure(400, "This kind of email isn't used by the Academy.");
   }
-  const email = signInEmail({
-    action: parsed.data.email_data.email_action_type,
-    tokenHash: parsed.data.email_data.token_hash,
-    siteUrl: publicEnv().NEXT_PUBLIC_SITE_URL,
-  });
+  const branding = await getBranding();
+  const email = signInEmail(
+    {
+      action: parsed.data.email_data.email_action_type,
+      tokenHash: parsed.data.email_data.token_hash,
+      siteUrl: publicEnv().NEXT_PUBLIC_SITE_URL,
+    },
+    undefined,
+    // The button in the system colour (G, 2026-11-13).
+    emailAccent(branding.colour),
+  );
   const sent = await sendEmail(parsed.data.user.email, email);
   return sent ? Response.json({}) : failure(502, "The email couldn't be sent. Try again.");
 }

@@ -3,7 +3,8 @@
 import { refresh } from "next/cache";
 import { z } from "zod";
 import { requireActiveUser } from "@/lib/data/auth";
-import { type BrandingIcon, saveBranding } from "@/lib/data/branding";
+import { type BrandingIcon, saveBranding, saveColour } from "@/lib/data/branding";
+import { COLOUR_PRESETS } from "@/lib/domain/system-colour";
 import {
   BRAND_ICON_MAX_BYTES,
   BRAND_ICON_SIZE,
@@ -54,4 +55,30 @@ export async function saveBrandingAction(formData: FormData): Promise<BrandingRe
     ok: true,
     message: "Saved. New installs get it now. See below for phones that already have the app.",
   };
+}
+
+const colourSchema = z.object({
+  colour: z.union([z.enum(COLOUR_PRESETS), z.string().regex(/^#[0-9a-f]{6}$/)]),
+  logo: z.boolean(),
+});
+
+/** Saves the system colour (G, 2026-11-13). The database checks the permission and logs it. */
+export async function saveColourAction(input: {
+  colour: string;
+  logo: boolean;
+}): Promise<BrandingResult> {
+  const parsed = colourSchema.safeParse({ colour: input.colour.toLowerCase(), logo: input.logo });
+  if (!parsed.success) {
+    return { ok: false, message: "That isn't a colour the app can use. Try a code like #2563EB." };
+  }
+  await requireActiveUser();
+  const result = await saveColour(parsed.data.colour, parsed.data.logo);
+  if (!result.ok) {
+    return {
+      ok: false,
+      message: "That didn't save. Check that your role allows this, then try again.",
+    };
+  }
+  refresh();
+  return { ok: true, message: "Saved. Everyone sees the new colour on their next page." };
 }

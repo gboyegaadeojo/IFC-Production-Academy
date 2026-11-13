@@ -102,29 +102,40 @@ The media inbox also gets a **Cleared to show** email for each approval. Its sub
 ## Setting it up (admins)
 
 **Admin → Video and graphics approvals** is for Platform Administrators. Every change is in the
-audit log.
+audit log. It has three tabs.
 
-1. **Quality control.** Add each person's name and email. Nobody needs an Academy account. Removing
+**Form and reviewers**
+
+1. **The public form, the deadline, the checks, and what happens on approval.** Four boxes, saved
+   together with **Save settings**:
+   - **The public form:** an optional introduction for the form. Write {deadline} where the
+     deadline should go.
+   - **Deadline:** the days before the service, counted as calendar or business days, and whether
+     a late request is refused (the default) or accepted, marked Late.
+   - **Checks reviewers tick:** one per line. They help people decide; they don't decide for them.
+   - **When something is approved:** the media inbox, which gets a "Cleared to show" email for
+     each approval, and whether everyone on duty that day gets one too.
+2. **Quality control.** Add each person's name and email. Nobody needs an Academy account. Removing
    someone stops their links straight away.
-2. **Copyright reviewers.** Academy members get the **Copyright Reviewer** role in **People and
-   roles**, which puts Copyright in their side bar. Add people outside the Academy by name and email.
-3. **The form, the deadline, and what happens on approval.**
-   - The deadline in days, counted as calendar or business days, and whether a late request is
-     refused (the default) or accepted, marked Late.
-   - An optional introduction for the form. Write {deadline} where the deadline should go.
-   - The checks reviewers tick, one per line. They help people decide; they don't decide for them.
-   - The media inbox, which gets a "Cleared to show" email for each approval, and whether everyone
-     on duty that day gets one too.
-4. **Emails.** Six emails, each with a subject and message. Press a fill-in, such as
-   {first name} or {service date}, to add it where your cursor is. The preview uses an example
-   request. **Save** keeps your version, **Send me a test** emails you the saved version within a
-   couple of minutes (even while approvals are off), and **Put back the original** undoes your changes. Keep
-   "Approved media:" at the start of the Cleared to show subject if a Gmail label sorts them.
-5. **Turn it on** in **Admin → Features**: *Video and graphics approvals*. Then put the
-   /media-request link where the old JotForm link was.
+3. **Copyright reviewers.** Academy members get the **Copyright Reviewer** role in **People and
+   roles**, which puts Copyright in their side bar (and under **Serve** on a phone). Add people
+   outside the Academy by name and email.
 
-**All requests** lists every request, newest service first. Open one to see its details and who it
-was sent to.
+**Emails**
+
+Six emails, each with a subject and message. Press a fill-in, such as {first name} or
+{service date}, to add it where your cursor is. The preview uses an example request. **Save** keeps
+your version, **Send me a test** emails you the saved version within a couple of minutes (even while
+approvals are off), and **Put back the original** undoes your changes. Keep "Approved media:" at the
+start of the Cleared to show subject if a Gmail label sorts them.
+
+**All requests**
+
+Every request, newest service first, with how many there are on the tab. Open one to see its
+details and who it was sent to.
+
+**Turn it on** in **Admin → Features**: *Video and graphics approvals*. Then put the /media-request
+link where the old JotForm link was.
 
 ## Words we use
 

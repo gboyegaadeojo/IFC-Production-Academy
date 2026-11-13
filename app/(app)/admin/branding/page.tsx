@@ -5,6 +5,7 @@ import { getBranding, iconUrlFor } from "@/lib/data/branding";
 import { AccessDenied } from "../access-denied";
 import { PageSkeleton } from "../page-skeleton";
 import { BrandingForm } from "./branding-form";
+import { ColourForm } from "./colour-form";
 
 export const metadata: Metadata = { title: "App name and logo" };
 
@@ -16,7 +17,10 @@ export default function BrandingPage() {
   );
 }
 
-/** The app's name and logo (ADD-DASH-04). Platform administrators; the database checks and logs. */
+/**
+ * The app's name, logo and system colour (ADD-DASH-04; colour G, 2026-11-13). Platform
+ * administrators; the database checks and logs.
+ */
 async function BrandingContent() {
   const { allowed } = await getAdminAccess("branding");
   if (!allowed) {
@@ -37,6 +41,7 @@ async function BrandingContent() {
         initialShortName={branding.shortName}
         currentIconUrl={iconUrlFor(branding)}
       />
+      <ColourForm initialColour={branding.colour} initialLogo={branding.colourLogo} />
     </div>
   );
 }

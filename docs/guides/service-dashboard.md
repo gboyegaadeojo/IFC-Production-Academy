@@ -137,6 +137,16 @@ The built-in logo is **Signal Line**: a line that rises in three steps to a dot.
 - **Certificates already issued** keep the name they were issued under.
 - **The sign-in email and the offline page** keep the original name for now, because they are fixed files.
 
+### System colour
+
+Under the name and logo, **System colour** sets the colour of buttons, links, the current tab and highlights, for everyone, in light and dark. Department colours and the green, amber and red status colours never change.
+
+- **Pick one of seven colours**: Purple (the original), Blue, Teal, Green, Orange, Rose or Graphite. Each has been checked so white text on buttons, and coloured text on the page, are easy to read in both themes.
+- **Or choose Custom** and type a colour code, such as #2563EB. If it's too light for white text on buttons, the page says so and the app uses a deeper shade of it. The preview shows exactly what everyone will get.
+- **The logo's dot uses it too** is on to colour the Signal Line dot to match. Turn it off to keep the purple dot.
+- **The preview** shows light and dark side by side, with the buttons, tabs and phone bar people use most.
+- **Save** changes it for everyone on their next page. It also colours the installed app in the phone's app switcher and the buttons in emails. **Reset** goes back to purple; press **Save** to keep that. Every change is in the Audit log.
+
 ## Words we use
 
 | Word          | Meaning                                                                       |
