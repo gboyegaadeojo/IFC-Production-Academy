@@ -16,7 +16,7 @@ Open your name, then choose your name at the top of the menu, to see the quizzes
 
 ## Finding your way around
 
-On a tablet or computer, the side bar on the left lists these places, each an icon with its name, under **Learn** and **Serve**. The small round arrow on the side bar's right edge, which shows when you point at the side bar, folds it down to icons only (hover over an icon to see its name), and the device remembers your choice. On a phone, five of them are on the bar floating along the bottom: a soft purple highlight slides to the one you're on. **Explore** is at the top of **Courses** there.
+On a tablet or computer, the side bar on the left lists these places, each an icon with its name, under **Learn** and **Serve**. The small round arrow on the side bar's right edge, which shows when you point at the side bar, folds it down to icons only (hover over an icon to see its name), and the device remembers your choice. On a phone, five of them are on the bar floating along the bottom: a solid purple highlight stretches across to the one you're on, and its icon and name turn white. **Explore** is at the top of **Courses** there.
 
 | Place | What it's for | Guide |
 | --- | --- | --- |
