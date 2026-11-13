@@ -52,7 +52,9 @@ test.describe("signed in", () => {
     await expect(page.getByRole("heading", { name: "Quality control" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Send me a test" })).toBeVisible();
     await page.goto("/admin/features");
-    await expect(page.getByText("Video and graphics approvals").first()).toBeVisible();
+    await expect(
+      page.locator("main").getByText("Video and graphics approvals", { exact: true }),
+    ).toBeVisible();
   });
 
   test("a volunteer can't open Admin, Video and graphics approvals", async ({ page }) => {
