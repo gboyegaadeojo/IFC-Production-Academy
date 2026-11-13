@@ -7,6 +7,7 @@ import {
   FileTextIcon,
   GraduationCapIcon,
   MessageIcon,
+  ShieldIcon,
   UserCheckIcon,
   UsersIcon,
 } from "@/components/ui/icons";
@@ -50,6 +51,7 @@ const KIND_ICON: Record<
   course_unassigned: { icon: GraduationCapIcon, tone: "text-text-secondary" },
   message: { icon: MessageIcon, tone: "text-accent-light" },
   problem_reported: { icon: AlertTriangleIcon, tone: "text-warning" },
+  copyright_review: { icon: ShieldIcon, tone: "text-accent-light" },
 };
 
 /** A round icon for what kind of notification it is: serving, training, leading. Decorative. */

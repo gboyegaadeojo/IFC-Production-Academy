@@ -68,8 +68,10 @@ Quality control only sends a request for a copyright review when it needs one. T
 to decide closes it. The decision goes straight to the requester, and Quality control gets a copy.
 
 - **In the Academy.** If you have the Copyright reviewer role, **Copyright** appears in your side
-  bar on a computer or tablet, with a count of what's waiting. The email's **Review it** button
-  opens the same request, after you sign in.
+  bar on a computer or tablet, with a count of what's waiting. You also get a notification in the
+  bell, and an alert on your phone if alerts are on (choose under **Copyright review** in your
+  notification settings). The email's **Review it** button opens the same request, after you sign
+  in.
 - **Outside the Academy.** You don't need an account. The email's **Review it** link opens that one
   request. It stops working once someone decides, or after 14 days.
 

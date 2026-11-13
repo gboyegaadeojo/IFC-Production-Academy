@@ -40,7 +40,8 @@ export type NotificationKind =
   | "mentoring_ended"
   | "course_unassigned"
   | "message"
-  | "problem_reported";
+  | "problem_reported"
+  | "copyright_review";
 
 /** These stay in the app, so there's nothing to choose (decision 2026-11-05). */
 export const APP_ONLY_KINDS: readonly NotificationKind[] = [
@@ -81,6 +82,7 @@ export const NOTIFICATION_KINDS: readonly NotificationKind[] = [
   "course_unassigned",
   "message",
   "problem_reported",
+  "copyright_review",
   ...APP_ONLY_KINDS,
 ];
 
@@ -116,6 +118,7 @@ export const NOTIFICATION_KIND_LABELS: Record<NotificationKind, string> = {
   course_unassigned: "When a course is no longer assigned to me",
   message: "New messages in my chats, a few at a time",
   problem_reported: "When someone uses Report a problem",
+  copyright_review: "A video or graphic sent to you for a copyright review",
   certificate_ready: "When a certificate is ready",
   new_course: "When my department has a new course",
   sop_updated: "When an SOP in my department is updated",
@@ -129,6 +132,7 @@ export const NOTIFICATION_KIND_HINTS: Partial<Record<NotificationKind, string>> 
   sop_review_due: "SOP owners",
   onboarding_task: "Leaders who welcome new people",
   problem_reported: "Platform admins",
+  copyright_review: "Copyright reviewers. The request also comes by email",
 };
 
 export type NotificationGroup = {
@@ -187,6 +191,7 @@ export const NOTIFICATION_GROUPS: readonly NotificationGroup[] = [
       "onboarding_update",
       "role_removed",
       "problem_reported",
+      "copyright_review",
     ],
   },
   // Only while messaging is on (team messaging decision, 2026-11-08; ADD-MSG-06). Phone only: G
@@ -320,6 +325,7 @@ const BUTTON_LABELS: Record<NotificationKind, string> = {
   course_unassigned: "See the course",
   message: "Open the chat",
   problem_reported: "Read the report",
+  copyright_review: "Review it",
 };
 
 export function emailButtonLabel(kind: string): string {

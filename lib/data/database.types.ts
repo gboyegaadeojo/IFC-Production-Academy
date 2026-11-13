@@ -2793,7 +2793,8 @@ export type Database = {
         | "mentoring_ended"
         | "course_unassigned"
         | "message"
-        | "problem_reported";
+        | "problem_reported"
+        | "copyright_review";
       onboarding_step_kind:
         | "trigger_form"
         | "trigger_manual"
