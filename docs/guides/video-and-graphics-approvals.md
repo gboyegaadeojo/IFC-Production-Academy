@@ -77,6 +77,25 @@ Either way, you see Quality control's question, the video or graphic, and the de
 **Approve** or **Not approved** and write a note for the requester. Need to ask something first?
 Reply to the email.
 
+## Cleared to show (everyone on duty)
+
+Once something is approved, everyone scheduled on that service in Planning Center sees it, whatever
+their position. So if someone covers Computer Graphics, they see it too.
+
+- **On your Training page:** a **Cleared to show** card for each service you're on, from the moment
+  something is approved until the service ends.
+- **On that day's checklist:** **Cleared to show today**, in order of service. Each item says where
+  it plays, such as "at Offering", or "Not placed yet".
+
+Each item has **Open video** or **Download**, any note from the reviewer, and a **Loaded** tick.
+The tick is shared, so the producer and everyone else on duty can see what's ready.
+
+**Only show what's on the list.** If someone hands you a video or graphic that isn't there, it
+hasn't been cleared. Ask the producer before it goes on screen.
+
+The media inbox also gets a **Cleared to show** email for each approval. Its subject always starts
+"Approved media:", so a Gmail label can sort them.
+
 ## Setting it up (admins)
 
 **Admin → Video and graphics approvals** is for Platform Administrators. Every change is in the

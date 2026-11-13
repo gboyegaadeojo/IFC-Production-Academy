@@ -51,6 +51,8 @@ import { CoursePoster } from "@/components/course-poster";
 import { DepartmentTile, ExploreRow } from "./department-card";
 import Loading from "./loading";
 import { NextSteps } from "./next-steps";
+import { ClearedToShow } from "@/components/copyright/cleared-to-show";
+import { getClearedForMe } from "@/lib/data/copyright";
 import { TIME_ZONE } from "@/lib/domain/time-zone";
 
 export const metadata: Metadata = { title: "Training" };
@@ -200,6 +202,10 @@ async function TrainingContent() {
           {onboarding.map((pathway) => (
             <NextSteps key={pathway.entryId} pathway={pathway} departments={openDepartments} />
           ))}
+          {/* What's cleared to show, for whoever is on duty (ADD-COPY-08). Nothing while it's off. */}
+          <Suspense fallback={null}>
+            <ClearedForMe />
+          </Suspense>
           {spotlight ? <ServingCard spotlight={spotlight} /> : null}
           {newcomer ? (
             <GettingStarted
@@ -792,4 +798,10 @@ function HowTrainingWorks() {
       </ol>
     </details>
   );
+}
+
+/** Approved videos and graphics for the services this person is on duty for (ADD-COPY-08). */
+async function ClearedForMe() {
+  const items = await getClearedForMe();
+  return items.length > 0 ? <ClearedToShow items={items} /> : null;
 }
