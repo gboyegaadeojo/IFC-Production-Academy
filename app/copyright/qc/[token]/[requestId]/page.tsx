@@ -49,8 +49,6 @@ export default async function QualityControlRequestPage({
             mode="quality_control"
             requesterFirstName={request.requesterName.split(" ")[0] ?? request.requesterName}
             checks={request.checks}
-            planItems={request.planItems}
-            planItemId={request.planItemId}
             reviewers={request.reviewers}
           />
         ) : (

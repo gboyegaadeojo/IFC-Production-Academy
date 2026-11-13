@@ -53,13 +53,12 @@ link.
 1. Open a request. Your name goes on it, so two people don't check the same one.
 2. Watch the video or open the graphic, and tick the checks if they help. They never decide for
    you.
-3. Choose **Where it goes in the service** from the Planning Center order of service, so the team
-   knows when it plays. Leave it as **Not placed yet** if the plan isn't ready.
-4. Then choose what happens next:
+3. Then choose what happens next:
    - **Approve** or **Not approved**, with a note. The requester is emailed straight away. If you
      decline, say what would help.
-   - **Copyright review**, if the rights need a closer look. Pick one or more reviewers and write
-     what they should check, such as "Is the background song covered by our streaming licence?"
+   - **Copyright review**, if the rights need a closer look. It goes to every copyright reviewer,
+     in the Academy and outside it. Write what they should check, such as "Is the background song
+     covered by our streaming licence?"
 
 Requests decided in the last 30 days stay on your list underneath.
 
