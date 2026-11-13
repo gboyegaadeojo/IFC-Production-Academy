@@ -49,8 +49,19 @@ test.describe("signed in", () => {
       page.getByRole("heading", { level: 1, name: "Video and graphics approvals" }),
     ).toBeVisible();
     await expect(page.getByText("Approvals are off.")).toBeVisible();
+    // Three tabs (board 16, G 2026-11-13): the form and reviewers first, then the emails.
+    const tabs = page.getByRole("navigation", { name: "Approvals settings" });
+    await expect(tabs.getByRole("link", { name: "Form and reviewers" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
     await expect(page.getByRole("heading", { name: "Quality control" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Deadline" })).toBeVisible();
+    await tabs.getByRole("link", { name: "Emails" }).click();
+    await expect(page).toHaveURL(/tab=emails/);
     await expect(page.getByRole("button", { name: "Send me a test" })).toBeVisible();
+    await tabs.getByRole("link", { name: /All requests/ }).click();
+    await expect(page.getByText("No requests yet.")).toBeVisible();
     await page.goto("/admin/features");
     // The switch itself, starting off.
     await expect(
