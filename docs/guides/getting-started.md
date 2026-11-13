@@ -27,7 +27,7 @@ On a tablet or computer, the side bar on the left lists these places, each an ic
 | **SOPs** | The team's written procedures | [SOPs](sops.md) |
 | **Messages** | Chats with your department, groups, and anyone in the Academy, once it's switched on | [Messages](messages.md) |
 
-When Messages is switched on, it sits under **Training** in the side bar, with how many are unread, and in the middle of the bar along the bottom of a phone. On a phone, **Checklist** and **SOPs** then share one tab, **Serve**. Tap it and a sheet slides up with **Checklist** and **SOPs**, and **Copyright** too if you're a copyright reviewer. A number on **Serve** means copyright reviews are waiting for you. Swipe the sheet down, tap outside it, or use **Close** to put it away.
+When Messages is switched on, it sits under **Training** in the side bar, with how many are unread, and in the middle of the bar along the bottom of a phone. On a phone, **Checklist** and **SOPs** then share one tab, **Serve**. Tap it and a sheet slides up. At the top is **Your next service**: the day, your position, when it starts, and how much of your checklist is done, with **Open my checklist** underneath. Below it are **SOPs** (with how many changed this week) and **Copyright** too if you're a copyright reviewer. A number on **Serve** means copyright reviews are waiting for you. Swipe the sheet down, tap outside it, or use **Close** to put it away.
 
 If you're on a production team and using a computer, you also get the [Service Dashboard](service-dashboard.md).
 
