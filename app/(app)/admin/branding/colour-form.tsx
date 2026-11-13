@@ -90,7 +90,7 @@ export function ColourForm({
             return (
               <label
                 key={key}
-                className={`flex cursor-pointer flex-col items-center gap-1.5 rounded-card bg-surface px-1 py-2.5 transition-surface hover:bg-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-light ${
+                className={`relative flex cursor-pointer flex-col items-center gap-1.5 rounded-card bg-surface px-1 py-2.5 transition-surface hover:bg-hover has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-light ${
                   on ? "border-2 border-text" : "border border-border"
                 }`}
               >
@@ -103,7 +103,7 @@ export function ColourForm({
                     setPick(key);
                     setMessage(null);
                   }}
-                  className="sr-only"
+                  className="absolute inset-0 z-10 cursor-pointer appearance-none opacity-0"
                 />
                 <span
                   aria-hidden="true"
