@@ -67,19 +67,29 @@ test("a Platform Admin changes the system colour, sees it everywhere, and puts p
 
   await panel.getByRole("radio", { name: "Teal" }).check();
   await expect(panel.getByRole("img", { name: "Light theme with this colour" })).toBeVisible();
-  await panel.getByRole("button", { name: "Save colour" }).click();
-  await expect(panel.getByText(/^Saved\. Everyone sees/)).toBeVisible();
+  // The colour is for everyone, and other tests check the logo's purple dot at the same time,
+  // so the dot keeps its purple here.
+  await panel.getByRole("checkbox", { name: "The logo's dot uses it too" }).uncheck();
+  try {
+    await panel.getByRole("button", { name: "Save colour" }).click();
+    await expect(panel.getByText(/^Saved\. Everyone sees/)).toBeVisible();
 
-  await page.goto("/home");
-  await expect(page.locator("style#system-colour")).toContainText("--accent:#0f766e");
-  const manifest = await (await request.get("/manifest.webmanifest")).json();
-  expect(manifest.theme_color).toBe("#0f766e");
+    await page.goto("/home");
+    const style = page.locator("style#system-colour");
+    await expect.poll(() => style.textContent()).toContain("--accent:#0f766e");
+    expect(await style.textContent()).not.toContain("--logo-accent");
+    const manifest = await (await request.get("/manifest.webmanifest")).json();
+    expect(manifest.theme_color).toBe("#0f766e");
 
-  await page.goto("/admin/branding");
-  await expect(panel.getByRole("radio", { name: "Teal" })).toBeChecked();
-  await panel.getByRole("button", { name: "Reset colour" }).click();
-  await panel.getByRole("button", { name: "Save colour" }).click();
-  await expect(panel.getByText(/^Saved\. Everyone sees/)).toBeVisible();
+    await page.goto("/admin/branding");
+    await expect(panel.getByRole("radio", { name: "Teal" })).toBeChecked();
+  } finally {
+    // Purple back, even if a check above failed, so no other test sees Teal.
+    await page.goto("/admin/branding");
+    await panel.getByRole("button", { name: "Reset colour" }).click();
+    await panel.getByRole("button", { name: "Save colour" }).click();
+    await expect(panel.getByText(/^Saved\. Everyone sees/)).toBeVisible();
+  }
   await page.reload();
   await expect(page.locator("style#system-colour")).toHaveCount(0);
 });
