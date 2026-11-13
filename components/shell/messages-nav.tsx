@@ -5,6 +5,7 @@ import { getFeatureFlags } from "@/lib/data/features";
 import { getMessagesUnread } from "@/lib/data/messages";
 import { publicEnv } from "@/lib/env";
 import { AcademyNavLink, AcademyTabBar } from "./academy-nav";
+import { loadCopyrightTab } from "./copyright-nav-link";
 import { MessagesBadge } from "./messages-badge";
 import { MessagesLive } from "./messages-live";
 
@@ -54,7 +55,11 @@ export async function MessagesLiveUpdates() {
   );
 }
 
-/** The phone tab bar, with Messages in the middle while messaging is on. */
+/**
+ * The phone tab bar, with Messages in the middle while messaging is on, and Serve opening a sheet
+ * that has Copyright for reviewers (option A, G 2026-11-13).
+ */
 export async function MessagesAwareTabBar() {
-  return <AcademyTabBar messages={await loadMessages()} />;
+  const [messages, copyright] = await Promise.all([loadMessages(), loadCopyrightTab()]);
+  return <AcademyTabBar messages={messages} copyright={copyright} />;
 }

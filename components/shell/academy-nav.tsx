@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/icons";
 import { ACADEMY_SIDEBAR_COOKIE } from "@/lib/domain/appearance";
 import { MessagesBadge } from "./messages-badge";
+import { ServeSheet } from "./serve-sheet";
 
 type NavLink = {
   href: string;
@@ -190,12 +191,21 @@ export function SidebarFoldButton({ initialFolded }: { initialFolded: boolean })
   );
 }
 
+/** Copyright on a phone, for reviewers only, with how many wait for them (ADD-COPY-05). */
+export type CopyrightTab = { waiting: number };
+
 /**
  * Phone tab bar (DESIGN §3; phone bar A, G 2026-11-09): it floats with a gap beneath it, and a
  * soft pill springs across to the tab you tap. Below 768px only, never in the admin workspace, and
  * not on lessons or in a chat.
  */
-export function AcademyTabBar({ messages }: { messages?: { unread: number } | null }) {
+export function AcademyTabBar({
+  messages,
+  copyright = null,
+}: {
+  messages?: { unread: number } | null;
+  copyright?: CopyrightTab | null;
+}) {
   const pathname = usePathname();
   // Lessons have their own bottom bar (back, Mark complete, next), and an open chat has its
   // message box, so the tab bar steps aside.
@@ -216,26 +226,33 @@ export function AcademyTabBar({ messages }: { messages?: { unread: number } | nu
         aria-label="Academy"
         className="fixed inset-x-3 bottom-(--tab-bar-gap) z-30 rounded-[1.375rem] border border-border bg-surface p-1.5 shadow-[0_10px_30px_rgb(22_20_31/0.12),0_2px_6px_rgb(22_20_31/0.06)] md:hidden print:hidden"
       >
-        <TabList pathname={pathname} messages={messages ?? null} />
+        <TabList pathname={pathname} messages={messages ?? null} copyright={copyright} />
       </nav>
     </>
   );
 }
 
+/** The pages under Serve on a phone, when Serve is one tab (option A, G 2026-11-13). */
+const SERVE_SHEET_PATHS = ["/serve", "/sops", "/copyright"];
+
 function TabList({
   pathname,
   messages,
+  copyright,
 }: {
   pathname: string;
   messages: { unread: number } | null;
+  copyright: CopyrightTab | null;
 }) {
   const links = messages ? MESSAGE_TAB_LINKS : TAB_LINKS;
-  // Explore sits inside the Courses tab on phones, and SOPs inside Serve.
+  // Explore sits inside the Courses tab on phones, and SOPs and Copyright inside Serve.
   const currentFlags = links.map(
     (link) =>
       isCurrent(pathname, link.href) ||
       (link.href === "/courses" && pathname === "/explore") ||
-      (messages !== null && link.href === "/serve" && isCurrent(pathname, "/sops")),
+      (messages !== null &&
+        link.href === "/serve" &&
+        SERVE_SHEET_PATHS.some((path) => isCurrent(pathname, path))),
   );
   const currentIndex = currentFlags.indexOf(true);
   return (
@@ -257,6 +274,13 @@ function TabList({
         {links.map((link, index) => {
           const current = currentFlags[index];
           const Icon = link.icon;
+          if (messages && link.href === "/serve") {
+            return (
+              <li key={link.href}>
+                <ServeSheet current={current === true} copyright={copyright} />
+              </li>
+            );
+          }
           return (
             <li key={link.href}>
               <Link

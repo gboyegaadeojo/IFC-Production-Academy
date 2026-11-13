@@ -1,18 +1,33 @@
+import { cache } from "react";
 import { ShieldIcon } from "@/components/ui/icons";
+import { getCurrentUser } from "@/lib/data/auth";
 import { getMyCapabilities } from "@/lib/data/capabilities";
 import { getMyReviewCount } from "@/lib/data/copyright";
-import { AcademyNavLink } from "./academy-nav";
+import { AcademyNavLink, type CopyrightTab } from "./academy-nav";
 
 /**
- * Copyright in the side bar, for Academy members with the Copyright reviewer permission
- * (ADD-COPY-05), with how many requests wait for them. The page checks access on the server too.
+ * Whether to offer Copyright, and how many wait, once per request: for active Academy members
+ * with the Copyright reviewer permission (ADD-COPY-05). The page checks access on the server too.
  */
-export async function CopyrightNavLink() {
+export const loadCopyrightTab = cache(async (): Promise<CopyrightTab | null> => {
+  const user = await getCurrentUser();
+  if (user?.status !== "active") {
+    return null;
+  }
   const grants = await getMyCapabilities();
   if (!grants.some((grant) => grant.capability === "copyright.review")) {
     return null;
   }
-  const waiting = await getMyReviewCount();
+  return { waiting: await getMyReviewCount() };
+});
+
+/** Copyright in the side bar, with how many requests wait. */
+export async function CopyrightNavLink() {
+  const copyright = await loadCopyrightTab();
+  if (!copyright) {
+    return null;
+  }
+  const { waiting } = copyright;
   return (
     <li>
       <AcademyNavLink
