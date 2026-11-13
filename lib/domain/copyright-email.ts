@@ -3,7 +3,7 @@
  * queued one becomes an email. No packages, because the notifications job runs it with Node alone
  * (scripts/send-notifications.ts). lib/domain/copyright.ts re-exports all of it.
  */
-import { escapeHtml } from "./email-design.ts";
+import { buttonColour, escapeHtml } from "./email-design.ts";
 
 // The six emails (ADD-COPY-09). Fill-ins are written in braces, in plain words.
 
@@ -200,6 +200,7 @@ export function copyrightEmail(
   item: { template: TemplateKey; vars: unknown; link: string | null; templates: unknown },
   siteUrl: string,
   appName = "IFC Production Academy",
+  accent?: string,
 ): { subject: string; text: string; html: string } {
   const site = siteUrl.replace(/\/+$/, "");
   const template = templatesFrom(item.templates)[item.template];
@@ -257,6 +258,7 @@ export function copyrightEmail(
     iconUrl: `${site}/brand/icon`,
     footer,
     appName,
+    accent: buttonColour(accent),
   });
   return { subject, text: fullText, html };
 }
@@ -325,6 +327,7 @@ const DESIGN: Record<
 const FONT = "Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif";
 
 function designAHtml(email: {
+  accent: string;
   preheader: string;
   status: { label: string; tone: Tone };
   title: string;
@@ -353,7 +356,7 @@ function designAHtml(email: {
     ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0 0;"><tr><td style="background:${TONES[email.box.tone].bg};border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.55;color:#16141f;"><div style="font-size:13px;font-weight:600;color:${TONES[email.box.tone].ink};margin:0 0 4px;">${escapeHtml(email.box.heading)}</div>${escapeHtml(email.box.text).replaceAll("\n", "<br>")}</td></tr></table>`
     : "";
   const button = email.button
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0 0;"><tr><td style="border-radius:999px;background:#6d3fe0;"><a href="${escapeHtml(email.button.url)}" style="display:inline-block;padding:13px 24px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;">${escapeHtml(email.button.label)}</a></td></tr></table>`
+    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:22px 0 0;"><tr><td style="border-radius:999px;background:${email.accent};"><a href="${escapeHtml(email.button.url)}" style="display:inline-block;padding:13px 24px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px;">${escapeHtml(email.button.label)}</a></td></tr></table>`
     : "";
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${escapeHtml(email.title)}</title></head><body style="margin:0;padding:0;background:#eceaf2;font-family:${FONT};"><div style="display:none;max-height:0;overflow:hidden;">${escapeHtml(email.preheader)}</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eceaf2;"><tr><td align="center" style="padding:28px 12px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;"><tr><td style="padding:20px 32px;border-bottom:1px solid #efedf5;"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="vertical-align:middle;"><img src="${escapeHtml(email.iconUrl)}" width="28" height="28" alt="" style="display:block;border:0;border-radius:7px;"></td><td style="vertical-align:middle;padding-left:10px;font-size:14px;font-weight:600;color:#16141f;">${escapeHtml(email.appName)}</td></tr></table></td></tr><tr><td style="padding:28px 32px 30px;"><span style="display:inline-block;padding:5px 12px;border-radius:999px;background:${status.bg};color:${status.ink};font-size:13px;font-weight:600;">${escapeHtml(email.status.label)}</span><h1 style="margin:16px 0 14px;font-size:24px;line-height:1.25;font-weight:700;color:#16141f;">${escapeHtml(email.title)}</h1>${paragraphs}${rows ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0 0;">${rows}</table>` : ""}${box}${button}</td></tr><tr><td style="padding:16px 32px;background:#faf9fc;font-size:12px;line-height:1.5;color:#67637b;">${escapeHtml(email.footer)}<br>${escapeHtml(email.appName)}</td></tr></table></td></tr></table></body></html>`;
 }

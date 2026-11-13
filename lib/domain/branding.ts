@@ -4,12 +4,22 @@
  */
 import { z } from "zod";
 
-export type Branding = { name: string; shortName: string; iconPath: string | null };
+export type Branding = {
+  name: string;
+  shortName: string;
+  iconPath: string | null;
+  /** The system colour: a preset's name or #rrggbb (lib/domain/system-colour.ts). */
+  colour: string;
+  /** Whether the logo's dot follows the system colour. */
+  colourLogo: boolean;
+};
 
 export const DEFAULT_BRANDING: Branding = {
   name: "IFC Production Academy",
   shortName: "IFC Academy",
   iconPath: null,
+  colour: "purple",
+  colourLogo: true,
 };
 
 export const BRAND_ICON_SIZE = 512;

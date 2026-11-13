@@ -41,12 +41,57 @@ test("a Platform Admin changes the short name and logo, and the installed app is
   expect(icon.ok()).toBe(true);
   expect(icon.headers()["content-type"]).toContain("image/png");
 
-  await page.getByRole("button", { name: "Reset" }).click();
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByText(/^Saved\./)).toBeVisible();
   const restored = await (await request.get("/manifest.webmanifest")).json();
   expect(restored.short_name).toBe("IFC Academy");
   expect(restored.icons[0].src).toBe("/icons/icon-192.png");
+});
+
+test("a Platform Admin changes the system colour, sees it everywhere, and puts purple back", async ({
+  page,
+  request,
+}) => {
+  await signInByEmail(page, "frankie.admin@example.com");
+  await page.goto("/admin/branding");
+  const panel = page.getByRole("region", { name: "System colour" });
+  await expect(panel.getByRole("radio", { name: "Purple" })).toBeChecked();
+  // Purple is the stylesheet's own, so nothing is added to the page.
+  await expect(page.locator("style#system-colour")).toHaveCount(0);
+
+  // Custom: a colour too light for white text is deepened, and the page says so.
+  await panel.getByRole("radio", { name: "Custom" }).check();
+  await panel.getByLabel("Your colour (hex)").fill("#F59E0B");
+  await expect(panel.getByText(/uses a deeper shade of it/)).toBeVisible();
+
+  await panel.getByRole("radio", { name: "Teal" }).check();
+  await expect(panel.getByRole("img", { name: "Light theme with this colour" })).toBeVisible();
+  // The colour is for everyone, and other tests check the logo's purple dot at the same time,
+  // so the dot keeps its purple here.
+  await panel.getByRole("checkbox", { name: "The logo's dot uses it too" }).uncheck();
+  try {
+    await panel.getByRole("button", { name: "Save colour" }).click();
+    await expect(panel.getByText(/^Saved\. Everyone sees/)).toBeVisible();
+
+    await page.goto("/home");
+    const style = page.locator("style#system-colour");
+    await expect.poll(() => style.textContent()).toContain("--accent:#0f766e");
+    expect(await style.textContent()).not.toContain("--logo-accent");
+    const manifest = await (await request.get("/manifest.webmanifest")).json();
+    expect(manifest.theme_color).toBe("#0f766e");
+
+    await page.goto("/admin/branding");
+    await expect(panel.getByRole("radio", { name: "Teal" })).toBeChecked();
+  } finally {
+    // Purple back, even if a check above failed, so no other test sees Teal.
+    await page.goto("/admin/branding");
+    await panel.getByRole("button", { name: "Reset colour" }).click();
+    await panel.getByRole("button", { name: "Save colour" }).click();
+    await expect(panel.getByText(/^Saved\. Everyone sees/)).toBeVisible();
+  }
+  await page.reload();
+  await expect(page.locator("style#system-colour")).toHaveCount(0);
 });
 
 test("a volunteer can't open it", async ({ page }) => {

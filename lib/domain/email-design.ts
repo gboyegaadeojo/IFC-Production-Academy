@@ -10,6 +10,11 @@ const MUTED = "#6e6e73";
 const QUIET = "#86868b";
 const PAGE = "#f5f5f7";
 const ACCENT = "#6d3fe0";
+
+/** The system colour for a button, or purple if it isn't a plain #rrggbb (G, 2026-11-13). */
+export function buttonColour(accent: string | undefined): string {
+  return accent && /^#[0-9a-f]{6}$/i.test(accent) ? accent : ACCENT;
+}
 const FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Helvetica, Arial, sans-serif";
 
 export function escapeHtml(text: string): string {
@@ -35,6 +40,8 @@ export type CalmEmail = {
   /** Plain text; a link is added after it when given. */
   footer: { text: string; link?: { label: string; url: string } };
   appName: string;
+  /** The system colour for the button; purple when left out. */
+  accent?: string;
 };
 
 /** The whole HTML document for one email. */
@@ -58,7 +65,7 @@ export function calmEmailHtml(email: CalmEmail): string {
           .join("")}</table></td></tr>`
       : "";
   const button = email.button
-    ? `<tr><td align="center" style="padding:14px 0 6px;"><a href="${escapeHtml(email.button.url)}" style="display:inline-block;padding:13px 28px;border-radius:999px;background:${ACCENT};color:#ffffff;font-size:16px;font-weight:500;text-decoration:none;">${escapeHtml(email.button.label)}</a></td></tr>`
+    ? `<tr><td align="center" style="padding:14px 0 6px;"><a href="${escapeHtml(email.button.url)}" style="display:inline-block;padding:13px 28px;border-radius:999px;background:${buttonColour(email.accent)};color:#ffffff;font-size:16px;font-weight:500;text-decoration:none;">${escapeHtml(email.button.label)}</a></td></tr>`
     : "";
   const footerLink = email.footer.link
     ? ` <a href="${escapeHtml(email.footer.link.url)}" style="color:${QUIET};text-decoration:underline;">${escapeHtml(email.footer.link.label)}</a>.`

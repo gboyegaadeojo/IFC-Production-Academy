@@ -31,9 +31,6 @@ export const MARK_PLACEMENT: Record<LogoVariant, Box> = {
 /** How far the wordmark's two lines move from their place in the horizontal artwork. */
 export const STACKED_OFFSETS = { name: { x: 0, y: 78 }, academy: { x: 64, y: 78 } } as const;
 
-/** The installed app's theme colour: the brand purple (the manifest's theme_color). */
-export const BRAND_THEME_COLOR = "#7c3aed";
-
 /** The heavier cut is for marks this small or smaller (the 16px favicon). */
 export const SMALL_MARK_MAX_PX = 20;
 

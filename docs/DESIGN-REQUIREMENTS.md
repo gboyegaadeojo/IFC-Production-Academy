@@ -116,11 +116,13 @@ Dark is the signature theme; design an equally intentional light theme and respe
 | `--text` | `#F5F5F5` | Primary text |
 | `--text-secondary` | `#B4B4B4` | Secondary content |
 | `--text-muted` | `#929292` | Metadata, never essential information below contrast requirements |
-| `--accent` | `#7C3AED` | Primary actions |
+| `--accent` | `#7C3AED` | Primary actions (the system colour; purple by default, see below) |
 | `--accent-light` | `#B69BFF` | Accessible links and focus accents |
 | `--on-accent` | `#FFFFFF` | Button text |
 
 Light palette proposal: canvas `#F7F8FA`, surface `#FFFFFF`, card `#FFFFFF`, hover `#F0F1F5`, border `#E1E3E9`, primary text `#171820`, secondary `#515563`, accent `#6D28D9`. Test actual foreground/background contrast before shipping.
+
+**System colour** ([decision 2026-11-13](decisions/2026-11-13-system-colour.md)): `--accent`, `--accent-light` and `--accent-soft` are the one action colour, purple by default. A Platform Administrator can change them in Admin, App name and logo, to one of seven tested colours or a custom one that `lib/domain/system-colour.ts` deepens or lightens until white on fills and text on every surface reach 4.5 to 1. The root layout adds them over both themes. Department hues, status colours and `--brand-*` never change. Components still use only the tokens, never the colour's values.
 
 Logo (Signal Line, [decision 2026-11-10](decisions/2026-11-10-signal-line-brand.md)): `--logo-ink` (line and wordmark: `#000000` light, `#F5F5F5` dark) and `--logo-accent` (the dot and "ACADEMY", the logo's only accent: `#7C3AED` light, `#B69BFF` dark), from `--brand-purple` and `--brand-lavender`. Draw the logo only with `<Logo>`, `BrandMark` or `BrandLogo`; the full logo appears only at 52px tall or more, and the mark alone elsewhere.
 

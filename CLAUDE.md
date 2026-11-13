@@ -80,7 +80,7 @@ Any failed job emails G and the Platform Admin via Resend. Details are in SPEC �
 - TypeScript strict and no `any`. Use Zod to validate every input at the server boundary.
 - Use server components by default and client components only when interactive.
 - Accessibility is part of done: WCAG 2.2 AA, keyboard reachable, visible focus, labels, `prefers-reduced-motion` respected, and colour never the only signal (SPEC §6, §7).
-- Use design tokens and never hardcode hex values in components. Use department hues only for covers, icons, rings, and badges. Purple (`--accent`) is the single action colour. Use `--accent-light` for purple text on dark backgrounds.
+- Use design tokens and never hardcode hex values in components. Use department hues only for covers, icons, rings, and badges. `--accent` is the single action colour: purple by default, or the system colour chosen in Admin ([decision 2026-11-13](docs/decisions/2026-11-13-system-colour.md)), so never assume it's purple. Use `--accent-light` for accent text.
 - UI copy follows SPEC §7 "Writing style": warm, direct, no jargon, no emoji on operational screens.
 - Each feature ships with unit tests for its domain rules, RLS tests for any new table, and a Playwright test for its main workflow. The MVP acceptance checklist in SPEC §9 is the bar.
 - Use small, focused commits and PRs. Reference SPEC IDs in messages.
