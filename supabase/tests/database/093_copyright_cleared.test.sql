@@ -21,8 +21,9 @@ select (select id from public.departments where kind = 'team' order by sort_orde
 insert into public.serving_roles (department_id, name)
 select department_id, 'Fake graphics desk' from ctx;
 
-insert into public.events (id, title, starts_at, ends_at, source, external_id) values
-  ('a9300000-0000-4000-8000-0000000000e1', 'Fake Cleared Service', now() + interval '3 days',
+insert into public.events (id, organization_id, title, starts_at, ends_at, source, external_id) values
+  ('a9300000-0000-4000-8000-0000000000e1', (select id from public.organizations order by created_at limit 1),
+   'Fake Cleared Service', now() + interval '3 days',
    now() + interval '3 days 2 hours', 'planning_center', 'fake-cleared-1');
 insert into public.service_plan_items (event_id, external_id, position, item_type, title) values
   ('a9300000-0000-4000-8000-0000000000e1', 'fake-announcements', 2, 'item', 'Announcements'),
