@@ -4,6 +4,7 @@ import { ServiceWorkerSetup } from "@/components/pwa/service-worker-setup";
 import { BrandProvider } from "@/components/brand-context";
 import { VersionWatcher } from "@/components/shell/version-watcher";
 import { getBranding, iconUrlFor } from "@/lib/data/branding";
+import { colourCss } from "@/lib/domain/system-colour";
 import { getAppearance } from "@/lib/data/appearance";
 import { THEME_COLORS } from "@/lib/domain/appearance";
 import "./globals.css";
@@ -70,12 +71,20 @@ export async function generateViewport(): Promise<Viewport> {
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const [appearance, branding] = await Promise.all([getAppearance(), getBranding()]);
+  const systemColour = colourCss(branding.colour, branding.colourLogo);
   return (
     <html
       lang="en-CA"
       data-theme={appearance}
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
+      {systemColour ? (
+        <head>
+          {/* The system colour from Admin (G, 2026-11-13): only colours, checked in
+              lib/domain/system-colour.ts, so nothing else can reach the page's styles. */}
+          <style id="system-colour">{systemColour}</style>
+        </head>
+      ) : null}
       <body className="flex min-h-full flex-col overflow-x-clip bg-bg font-sans text-body text-text">
         <a
           href="#main"

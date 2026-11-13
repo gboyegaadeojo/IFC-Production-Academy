@@ -111,6 +111,7 @@ export function isSupportedAction(value: string): value is ActionType {
 export function signInEmail(
   input: { action: ActionType; tokenHash: string; siteUrl: string },
   appName = "IFC Production Academy",
+  accent?: string,
 ): { subject: string; text: string; html: string } {
   const copy = COPY[input.action];
   const site = input.siteUrl.replace(/\/+$/, "");
@@ -132,6 +133,7 @@ export function signInEmail(
       iconUrl: `${site}/brand/icon`,
       footer: { text: footer },
       appName,
+      accent,
     }),
   };
 }

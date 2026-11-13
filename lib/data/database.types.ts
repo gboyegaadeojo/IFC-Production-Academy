@@ -24,6 +24,8 @@ export type Database = {
           app_name: string;
           app_short_name: string;
           app_icon_path: string | null;
+          app_colour: string;
+          app_colour_logo: boolean;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -2005,7 +2007,13 @@ export type Database = {
       };
       app_branding: {
         Args: Record<string, never>;
-        Returns: { app_name: string; app_short_name: string; app_icon_path: string | null }[];
+        Returns: {
+          app_name: string;
+          app_short_name: string;
+          app_icon_path: string | null;
+          app_colour: string;
+          app_colour_logo: boolean;
+        }[];
       };
       create_topic: { Args: { p_name: string }; Returns: string };
       rename_topic: { Args: { p_topic_id: string; p_name: string }; Returns: undefined };
@@ -2315,6 +2323,7 @@ export type Database = {
         Args: { p_name: string; p_short_name: string; p_icon_path: string | null };
         Returns: undefined;
       };
+      set_app_colour: { Args: { p_colour: string; p_logo: boolean }; Returns: undefined };
       service_dashboard_team: {
         Args: { p_event_id: string };
         Returns: {
