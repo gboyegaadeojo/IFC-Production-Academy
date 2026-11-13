@@ -3,11 +3,12 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { unreadMessagesAction } from "@/app/(app)/messages/actions";
+import { onMessagesChanged } from "@/lib/data/messages-live";
 import { badgeLabel } from "@/lib/domain/messages";
 
 /**
- * The unread count on Messages (ADD-MSG-03). It checks once a minute while the tab is visible, and
- * on each page change, rather than holding a live connection open, to stay inside the free plan.
+ * The unread count on Messages (ADD-MSG-03). It updates as soon as a message arrives (MessagesLive),
+ * on each page change, and once a minute while the tab is visible as a safety net.
  * It comes after the link's name in the page, so screen readers hear "Messages, 3 unread", and
  * `className` places it: over the icon, or beside the name.
  */
@@ -29,10 +30,12 @@ export function MessagesBadge({ initial, className }: { initial: number; classNa
     check();
     const timer = window.setInterval(check, 60_000);
     document.addEventListener("visibilitychange", check);
+    const stopLive = onMessagesChanged(check);
     return () => {
       cancelled = true;
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", check);
+      stopLive();
     };
   }, [pathname]);
 

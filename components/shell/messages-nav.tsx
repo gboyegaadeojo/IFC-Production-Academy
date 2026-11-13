@@ -3,8 +3,10 @@ import { MessageIcon } from "@/components/ui/icons";
 import { getCurrentUser } from "@/lib/data/auth";
 import { getFeatureFlags } from "@/lib/data/features";
 import { getMessagesUnread } from "@/lib/data/messages";
+import { publicEnv } from "@/lib/env";
 import { AcademyNavLink, AcademyTabBar } from "./academy-nav";
 import { MessagesBadge } from "./messages-badge";
+import { MessagesLive } from "./messages-live";
 
 /** Whether to offer Messages, and the unread count, once per request (ADD-FLAG-01, ADD-MSG-03). */
 const loadMessages = cache(async (): Promise<{ unread: number } | null> => {
@@ -35,6 +37,20 @@ export async function MessagesNavLink() {
         }
       />
     </li>
+  );
+}
+
+/** Live message updates for the whole app, while messaging is on (ADD-MSG-03). */
+export async function MessagesLiveUpdates() {
+  if (!(await loadMessages())) {
+    return null;
+  }
+  const env = publicEnv();
+  return (
+    <MessagesLive
+      supabaseUrl={env.NEXT_PUBLIC_SUPABASE_URL}
+      publishableKey={env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+    />
   );
 }
 
