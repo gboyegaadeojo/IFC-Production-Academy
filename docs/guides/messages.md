@@ -7,7 +7,9 @@
 - **On a computer or tablet:** choose **Messages** in the side bar, under **Training**.
 - **On a phone:** choose **Messages** in the middle of the bottom bar.
 
-A number on Messages shows how many messages you haven't read. It updates about once a minute, and whenever you move to another page.
+A number on Messages shows how many messages you haven't read. While the Academy is open, it changes within a second or two of a message arriving, and so does your list of chats.
+
+If you've added the Academy to your Home Screen, its icon shows the same number, with your unread notifications, like other messaging apps. iPhones and computers show the number. Android phones show a dot instead, which Android decides.
 
 ## Your chats
 

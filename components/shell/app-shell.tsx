@@ -6,7 +6,7 @@ import { AppIconBadge } from "@/components/shell/app-icon-badge";
 import { AppOpenRecorder } from "@/components/pwa/app-open-recorder";
 import { AcademyTabBar } from "@/components/shell/academy-nav";
 import { HideOnAdmin } from "@/components/shell/hide-on-admin";
-import { MessagesAwareTabBar } from "@/components/shell/messages-nav";
+import { MessagesAwareTabBar, MessagesLiveUpdates } from "@/components/shell/messages-nav";
 import { getCurrentUser } from "@/lib/data/auth";
 import { getAlertsSetupNeeded } from "@/lib/data/push";
 
@@ -41,6 +41,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         <MessagesAwareTabBar />
       </Suspense>
       <AppIconBadge />
+      <Suspense fallback={null}>
+        <MessagesLiveUpdates />
+      </Suspense>
       <AppOpenRecorder />
     </>
   );
