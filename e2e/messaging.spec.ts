@@ -238,7 +238,7 @@ test("on a phone, Messages sits in the middle of the tabs, and Serve holds the c
   // The fifth tab, Serve, opens a sheet of the pages under it (option A, G 2026-11-13).
   await tabs.getByRole("button", { name: "Serve" }).click();
   const sheet = page.getByRole("dialog", { name: "Serve" });
-  await expect(sheet.getByRole("link", { name: /Checklist/ })).toBeVisible();
+  await expect(sheet.getByRole("link", { name: /checklist/i })).toBeVisible();
   // A volunteer without the Copyright reviewer permission isn't offered Copyright.
   await expect(sheet.getByRole("link", { name: /Copyright/ })).toHaveCount(0);
   await sheet.getByRole("link", { name: /SOPs/ }).click();
