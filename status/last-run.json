@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-09T23:17:27.749Z",
+  "generated_at": "2026-11-16T23:14:13.894Z",
   "jobs": {
     "keepalive": {
-      "last_run": "2026-11-08T21:53:39Z",
-      "last_success": "2026-11-08T21:53:39Z",
+      "last_run": "2026-11-15T22:40:32Z",
+      "last_success": "2026-11-15T22:40:32Z",
       "ok": true
     },
     "backup": {
-      "last_run": "2026-11-08T14:55:28Z",
-      "last_success": "2026-11-08T14:55:28Z",
+      "last_run": "2026-11-15T15:31:13Z",
+      "last_success": "2026-11-15T15:31:13Z",
       "ok": true
     },
     "restore-test": {
@@ -17,22 +17,27 @@
       "ok": true
     },
     "notifications": {
-      "last_run": "2026-11-09T23:15:52Z",
-      "last_success": "2026-11-09T23:15:52Z",
+      "last_run": "2026-11-16T23:00:51Z",
+      "last_success": "2026-11-16T23:00:51Z",
       "ok": true
     },
     "chat-cleanup": {
-      "last_run": "2026-11-09T13:04:42Z",
-      "last_success": "2026-11-09T13:04:42Z",
+      "last_run": "2026-11-16T19:46:35Z",
+      "last_success": "2026-11-16T19:46:35Z",
+      "ok": true
+    },
+    "planning-center": {
+      "last_run": "2026-11-16T23:01:09Z",
+      "last_success": "2026-11-16T23:01:09Z",
       "ok": true
     }
   },
   "latest_backup_bytes": {
-    "db": 1771744,
-    "files": 3999189
+    "db": 2232156,
+    "files": 4505808
   },
   "free_plan_bytes": {
-    "database": 23951027,
+    "database": 26138291,
     "storage": 4980746,
     "chat_files": 0
   },
