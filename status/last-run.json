@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-16T23:14:13.894Z",
+  "generated_at": "2026-11-24T01:29:51.488Z",
   "jobs": {
     "keepalive": {
-      "last_run": "2026-11-15T22:40:32Z",
-      "last_success": "2026-11-15T22:40:32Z",
+      "last_run": "2026-11-22T23:28:08Z",
+      "last_success": "2026-11-22T23:28:08Z",
       "ok": true
     },
     "backup": {
-      "last_run": "2026-11-15T15:31:13Z",
-      "last_success": "2026-11-15T15:31:13Z",
+      "last_run": "2026-11-22T16:07:04Z",
+      "last_success": "2026-11-22T16:07:04Z",
       "ok": true
     },
     "restore-test": {
@@ -17,28 +17,28 @@
       "ok": true
     },
     "notifications": {
-      "last_run": "2026-11-16T23:00:51Z",
-      "last_success": "2026-11-16T23:00:51Z",
+      "last_run": "2026-11-24T01:15:53Z",
+      "last_success": "2026-11-24T01:15:53Z",
       "ok": true
     },
     "chat-cleanup": {
-      "last_run": "2026-11-16T19:46:35Z",
-      "last_success": "2026-11-16T19:46:35Z",
+      "last_run": "2026-11-23T21:37:38Z",
+      "last_success": "2026-11-23T21:37:38Z",
       "ok": true
     },
     "planning-center": {
-      "last_run": "2026-11-16T23:01:09Z",
-      "last_success": "2026-11-16T23:01:09Z",
+      "last_run": "2026-11-24T01:16:09Z",
+      "last_success": "2026-11-24T01:16:09Z",
       "ok": true
     }
   },
   "latest_backup_bytes": {
-    "db": 2232156,
-    "files": 4505808
+    "db": 2263551,
+    "files": 5862029
   },
   "free_plan_bytes": {
-    "database": 26138291,
-    "storage": 4980746,
+    "database": 26801843,
+    "storage": 6547164,
     "chat_files": 0
   },
   "healthy": true
